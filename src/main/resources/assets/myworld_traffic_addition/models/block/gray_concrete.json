@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "all": "myworld_traffic_addition:block/gray_concrete"
+  }
+}

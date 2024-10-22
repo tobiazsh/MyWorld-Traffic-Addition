@@ -1,0 +1,42 @@
+{
+	"schemaVersion": 1,
+	"id": "myworld_traffic_addition",
+	"version": "${version}",
+	"name": "MyWorld Traffic Addition",
+	"description": "A Minecraft Mod that adds so much more than just stupid, lousy, pre-defined traffic signs! Create your own signs, make directional signs, turn them at any angle to create your perfect roads and highways!",
+	"authors": [
+		"Tobiazsh"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/myworld_traffic_addition/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition"
+		],
+		"client": [
+			"at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient"
+		]
+	},
+	"mixins": [
+		"myworld_traffic_addition.mixins.json",
+		{
+			"config": "myworld_traffic_addition.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.7",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	},
+	"accessWidener" : "myworld_traffic_addition.accesswidener"
+}

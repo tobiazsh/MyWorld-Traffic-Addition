@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "myworld_traffic_addition:block/border_block"
+  }
+}

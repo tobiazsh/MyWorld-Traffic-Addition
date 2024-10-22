@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "myworld_traffic_addition:block/border_block", "x": 90, "y": 0 }
+  }
+}

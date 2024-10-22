@@ -1,0 +1,101 @@
+{
+  "block.myworld_traffic_addition.border_block": "Border Block",
+  "block.myworld_traffic_addition.special_block": "Special Block",
+
+  "block.myworld_traffic_addition.sign_pole_block": "Sign Pole",
+
+  "block.myworld_traffic_addition.triangular_sign_block": "Triangular Sign",
+  "block.myworld_traffic_addition.upsidedown_triangular_sign_block": "Upside Down Triangular Sign",
+  "block.myworld_traffic_addition.octagonal_sign_block": "Octagonal Sign",
+  "block.myworld_traffic_addition.round_sign_block": "Round Sign",
+  "block.myworld_traffic_addition.customizable_sign_block": "Customizable Sign",
+
+  "itemGroup.myworld_traffic_addition": "MyWorld Traffic Addition",
+  "itemGroup.myworld_traffic_addition_austria": "MyWorld Traffic Addition Austria",
+
+  "item.myworld_traffic_addition.austria_item": "Austria Item",
+
+  "screen.myworld_traffic_addition.sign_pole_rotation_screen": "Sign Pole Rotation Screen",
+
+  "screen.myworld_traffic_addition.sign_customizer_title": "Sign Customizer",
+
+  "widget.myworld_traffic_addition.rotation_slider": "Rotate Sign Pole",
+  "widget.myworld_traffic_addition.rotation_slider_status_text": "Rotate by ",
+  "widget.myworld_traffic_addition.rotation_confirmation_button": "Confirm",
+
+  "widget.myworld_traffic_addition.draw_editor_button": "Reveal Editor",
+
+  "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Make Master and Initialize",
+
+  "commands.myworld_traffic_addition.main_command.root": "This is the main command of MyWorld Traffic Addition. You can configure and execute different things with it, but be cautious!",
+  "commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!",
+
+  "screen.signs.settings.section.myworld_traffic_addition.aut": "Austria (Österreich)",
+  "screen.signs.settings.section.myworld_traffic_addition.slo": "Slovenia (Slovenija)",
+  "screen.signs.settings.section.myworld_traffic_addition.hr": "Croatia (Hrvatska)",
+  "screen.signs.settings.section.myworld_traffic_addition.de": "Germany (Deutschland)",
+  "screen.signs.settings.section.myworld_traffic_addition.hu": "Hungary (Magyarország)",
+  "screen.signs.settings.section.myworld_traffic_addition.ro": "Romania (România)",
+  "screen.signs.settings.section.myworld_traffic_addition.it": "Italy (Italia)",
+  "screen.signs.settings.section.myworld_traffic_addition.fr": "France (France)",
+  "screen.signs.settings.section.myworld_traffic_addition.es": "Spain (España)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_5": "End of restriction (5 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_10": "End of restriction (10 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_20": "End of restriction (20 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_30": "End of restriction (30 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_40": "End of restriction (40 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_50": "End of restriction (50 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_60": "End of restriction (60 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_70": "End of restriction (70 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_80": "End of restriction (80 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_90": "End of restriction (90 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_100": "End of restriction (100 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_110": "End of restriction (110 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_120": "End of restriction (120 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_130": "End of restriction (130 km/h)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_5": "Speed Limit (5 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_10": "Speed Limit (10 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_20": "Speed Limit (20 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_30": "Speed Limit (30 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_40": "Speed Limit (40 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_50": "Speed Limit (50 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_60": "Speed Limit (60 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_70": "Speed Limit (70 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_80": "Speed Limit (80 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_90": "Speed Limit (90 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_100": "Speed Limit (100 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_110": "Speed Limit (110 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_120": "Speed Limit (120 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_130": "Speed Limit (130 km/h)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.all_allowed": "End of all restrictions",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.border_control": "Border Control",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.entry_prohibited": "Entry prohibited in both direction",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_entry": "Entry prohibited",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.lane_left_side": "Pass on left",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.lane_right_side": "Pass on right",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.left_side": "Left only",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.right_side": "Right only",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.straight": "Straight only",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_left_turn": "Left Turn prohibited",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_right_turn": "Right Turn prohibited",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_u_turns": "U-Turns prohibited",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.wait_for_oncoming_traffic": "Give way for oncoming traffic",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.overtaking_allowed": "End of overtaking restriction",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.overtaking_prohibited": "Overtaking prohibited",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.other_danger": "Other Danger ahead",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.roundabout_ahead": "Roundabout ahead",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.yield": "Yield",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.stop": "Stop"
+}

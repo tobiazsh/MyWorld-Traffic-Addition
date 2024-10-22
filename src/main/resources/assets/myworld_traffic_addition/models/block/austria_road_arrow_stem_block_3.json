@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "all": "myworld_traffic_addition:block/gray_concrete",
+    "top": "myworld_traffic_addition:block/austria_road_arrow_stem_block_3"
+  }
+}

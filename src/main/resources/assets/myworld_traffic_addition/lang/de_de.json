@@ -1,0 +1,100 @@
+{
+  "block.myworld_traffic_addition.border_block": "Blockelement zur Markierung von Abgrenzungen und Grenzübergangen von Territorien oder Gebieten",
+  "block.myworld_traffic_addition.special_block": "Spezieller Block",
+
+  "block.myworld_traffic_addition.sign_pole_block": "Straßenschildstange",
+
+  "block.myworld_traffic_addition.triangular_sign_block": "Dreieckiges Schild",
+  "block.myworld_traffic_addition.upsidedown_triangular_sign_block": "Umgedrehtes Dreieckiges Schild",
+  "block.myworld_traffic_addition.octagonal_sign_block": "Achteckiges Schild",
+  "block.myworld_traffic_addition.round_sign_block": "Rundes Schild",
+  "block.myworld_traffic_addition.customizable_sign_block": "Dynamisches Schild",
+
+  "itemGroup.myworld_traffic_addition": "MyWorld Traffic Addition",
+  "itemGroup.myworld_traffic_addition_austria": "MyWorld Traffic Addition Österreich",
+
+  "item.myworld_traffic_addition.austria_item": "Österreich Item",
+
+  "screen.myworld_traffic_addition.sign_pole_rotation_screen": "Straßenschild Stange Rotations Bildschirm",
+
+  "screen.myworld_traffic_addition.sign_customizer_title": "Straßenschild Bearbeiter",
+
+  "widget.myworld_traffic_addition.rotation_slider": "Straßenschild Stange Rotieren",
+  "widget.myworld_traffic_addition.rotation_slider_status_text": "Drehen um ",
+  "widget.myworld_traffic_addition.rotation_confirmation_button": "Bestätigen",
+
+  "widget.myworld_traffic_addition.draw_editor_button": "Bearbeiter Anzeigen",
+
+  "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Zum Master ernennen und konfigurieren",
+
+  "commands.myworld_traffic_addition.main_command.root": "Dies ist der Haupt-Command der MyWorld Traffic Addition Mod. Hiermit kannst du verschiedenste Dinge einrichten und ausführen, aber sei dennoch Vorsichtig!",
+
+  "screen.signs.settings.section.myworld_traffic_addition.aut": "Österreich (Österreich)",
+  "screen.signs.settings.section.myworld_traffic_addition.slo": "Slowenien (Slovenija)",
+  "screen.signs.settings.section.myworld_traffic_addition.hr": "Kroatien (Hrvatska)",
+  "screen.signs.settings.section.myworld_traffic_addition.de": "Deutschland (Deutschland)",
+  "screen.signs.settings.section.myworld_traffic_addition.hu": "Ungarn (Magyarország)",
+  "screen.signs.settings.section.myworld_traffic_addition.ro": "Rumänien (România)",
+  "screen.signs.settings.section.myworld_traffic_addition.it": "Italien (Italia)",
+  "screen.signs.settings.section.myworld_traffic_addition.fr": "Frankreich (France)",
+  "screen.signs.settings.section.myworld_traffic_addition.es": "Spanien (España)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_5": "Ende der Bregrenzung (5 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_10": "Ende der Bregrenzung (10 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_20": "Ende der Bregrenzung (20 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_30": "Ende der Bregrenzung (30 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_40": "Ende der Bregrenzung (40 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_50": "Ende der Bregrenzung (50 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_60": "Ende der Bregrenzung (60 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_70": "Ende der Bregrenzung (70 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_80": "Ende der Bregrenzung (80 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_90": "Ende der Bregrenzung (90 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_100": "Ende der Bregrenzung (100 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_110": "Ende der Bregrenzung (110 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_120": "Ende der Bregrenzung (120 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_allowed_130": "Ende der Bregrenzung (130 km/h)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_5": "Begrenzung (5 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_10": "Begrenzung (10 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_20": "Begrenzung (20 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_30": "Begrenzung (30 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_40": "Begrenzung (40 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_50": "Begrenzung (50 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_60": "Begrenzung (60 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_70": "Begrenzung (70 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_80": "Begrenzung (80 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_90": "Begrenzung (90 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_100": "Begrenzung (100 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_110": "Begrenzung (110 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_120": "Begrenzung (120 km/h)",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.speedlimit_130": "Begrenzung (130 km/h)",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.all_allowed": "Ende aller Verbote",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.border_control": "Vorsicht Grenzkontrolle",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.entry_prohibited": "Einfahrt in beide Richtungen verboten",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_entry": "Einfahrt verboten",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.lane_left_side": "Links vorbeifahren",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.lane_right_side": "Rechts vorbeifahren",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.left_side": "Nur Links",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.right_side": "Nur Rechts",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.straight": "Nur Gerade",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_left_turn": "Linksabbiegen verboten",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_right_turn": "Rechtsabbiegen verboten",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.no_u_turns": "Wenden verboten",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.wait_for_oncoming_traffic": "Wartepflicht",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.overtaking_allowed": "Überholverbot aufgehoben",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.overtaking_prohibited": "Überholverbot",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.other_danger": "Vorsicht Andere Gefahren",
+  "screen.signs.settings.section.myworld_traffic_addition.texture.roundabout_ahead": "Vorsicht Kreisverkehr",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.yield": "Vorrang geben",
+
+  "screen.signs.settings.section.myworld_traffic_addition.texture.stop": "Stopp"
+}

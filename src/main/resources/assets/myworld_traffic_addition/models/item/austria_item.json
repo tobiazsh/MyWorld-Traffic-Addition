@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "myworld_traffic_addition:item/austria_item"
+  }
+}

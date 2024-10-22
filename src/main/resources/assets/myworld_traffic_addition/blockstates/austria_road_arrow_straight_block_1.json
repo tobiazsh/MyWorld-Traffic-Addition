@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "facing=north": { "model": "myworld_traffic_addition:block/austria_road_arrow_straight_block_1" },
+    "facing=east": { "model": "myworld_traffic_addition:block/austria_road_arrow_straight_block_1",
+      "x": 90,
+      "y": 0
+    },
+    "facing=south": { "model": "myworld_traffic_addition:block/austria_road_arrow_straight_block_1",
+      "x": 180,
+      "y": 0
+    },
+    "facing=west": { "model": "myworld_traffic_addition:block/austria_road_arrow_straight_block_1",
+      "x": 270,
+      "y": 0
+    }
+  }
+}

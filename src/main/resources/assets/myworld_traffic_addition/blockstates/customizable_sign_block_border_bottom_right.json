@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "myworld_traffic_addition:block/customizable_sign_block_border_bottom_right" },
+    "facing=east": { "model": "myworld_traffic_addition:block/customizable_sign_block_border_bottom_right", "y": 90 },
+    "facing=south": { "model": "myworld_traffic_addition:block/customizable_sign_block_border_bottom_right", "y": 180 },
+    "facing=west": { "model": "myworld_traffic_addition:block/customizable_sign_block_border_bottom_right", "y": 270 }
+  }
+}
