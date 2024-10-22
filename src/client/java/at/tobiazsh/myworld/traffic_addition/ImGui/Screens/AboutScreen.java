@@ -22,7 +22,7 @@ public class AboutScreen {
     public static String description = "A Minecraft Mod for better roads in Minecraft";
     public static String[] other = {"Made in Austria", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"};
 
-    private static ImGui imgui = new ImGui();
+    private static final ImGui imgui = new ImGui();
 
     public static void render() {
         ImGui.begin("About " + title, ImGuiWindowFlags.MenuBar);

@@ -9,7 +9,6 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import imgui.ImGui;
 

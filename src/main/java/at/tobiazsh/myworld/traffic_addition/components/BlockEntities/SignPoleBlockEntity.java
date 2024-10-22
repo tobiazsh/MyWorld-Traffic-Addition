@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import net.minecraft.block.Block;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +15,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.SIGN_POLE_BLOCK_ENTITY;
 
@@ -68,8 +68,9 @@ public class SignPoleBlockEntity extends BlockEntity {
             this.rotation_value = value;
 
             markDirty();
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
-            this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+	        assert world != null;
+	        world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
+            Objects.requireNonNull(this.getWorld()).updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
         }
     }
 
@@ -78,8 +79,9 @@ public class SignPoleBlockEntity extends BlockEntity {
             this.shouldRender = value;
 
             markDirty();
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
-            this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+	        assert world != null;
+	        world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
+            Objects.requireNonNull(this.getWorld()).updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
         }
     }
 

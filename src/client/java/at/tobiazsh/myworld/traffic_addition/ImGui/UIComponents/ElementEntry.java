@@ -8,7 +8,6 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.Utils.Element;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -20,7 +19,6 @@ import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
-import java.awt.*;
 import java.util.Objects;
 
 public abstract class ElementEntry {

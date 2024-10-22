@@ -9,21 +9,12 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Utilities;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.resource.ResourceManager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FileSystem {
 	public static class FromResource {

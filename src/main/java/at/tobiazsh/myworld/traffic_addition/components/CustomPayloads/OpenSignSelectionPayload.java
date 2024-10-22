@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads;
 
-import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;

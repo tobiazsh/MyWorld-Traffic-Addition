@@ -13,13 +13,9 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiKey;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
-import imgui.lwjgl3.glfw.ImGuiImplGlfwNative;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWKeyCallback;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

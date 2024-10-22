@@ -2,14 +2,11 @@ package at.tobiazsh.myworld.traffic_addition.components.Blocks;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.TriangularSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;

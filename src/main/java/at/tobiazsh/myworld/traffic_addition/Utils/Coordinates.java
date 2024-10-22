@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Coordinates {
     public float x, y, z;
-    public Direction direction = Direction.NORTH;
+    public Direction direction;
 
     public Coordinates(float xs, float ys, float zs, @Nullable Direction direction) {
         this.x = xs;

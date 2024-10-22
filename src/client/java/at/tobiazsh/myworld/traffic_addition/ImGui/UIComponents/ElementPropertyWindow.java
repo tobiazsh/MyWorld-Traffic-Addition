@@ -10,13 +10,10 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImString;
-
-import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.baseElementDrawOrder;
 
@@ -149,7 +146,7 @@ public class ElementPropertyWindow {
 			}
 
 			if (ImGui.button("Center...")) {
-
+				// TODO: Create Centering logic that can adapt to different contexts and relate to different elements
 			}
 
 

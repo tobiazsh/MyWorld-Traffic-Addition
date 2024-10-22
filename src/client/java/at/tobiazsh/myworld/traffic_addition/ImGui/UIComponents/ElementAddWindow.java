@@ -34,7 +34,7 @@ public class ElementAddWindow {
 				ImGui.endChild();
 			}
 
-			ImGui.setCursorPos(style.getFramePaddingX(), (windowSize.y - (style.getFramePaddingY() * 2) - (ImGui.getFontSize() * 1.5)));
+			ImGui.setCursorPos(style.getFramePaddingX(), (windowSize.y - (style.getFramePaddingY() * 2) - (float)(ImGui.getFontSize() * 1.5)));
 			if (ImGui.beginChild("##controls")) {
 				ImGui.separator();
 

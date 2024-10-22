@@ -11,7 +11,6 @@ package at.tobiazsh.myworld.traffic_addition.components.Blocks;
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.RoundSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.TriangularSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

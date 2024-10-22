@@ -11,12 +11,6 @@ package at.tobiazsh.myworld.traffic_addition.ImGui;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Screens.AboutScreen;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen;
 import imgui.ImGui;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiPopupFlags;
-import imgui.flag.ImGuiStyleVar;
-import imgui.flag.ImGuiWindowFlags;
-import imgui.internal.ImGuiWindow;
-import imgui.type.ImString;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.*;
 

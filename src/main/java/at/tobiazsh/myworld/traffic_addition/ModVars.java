@@ -13,7 +13,7 @@ public class ModVars {
         RECT_STRETCH_SMALL,
         RECT_STRETCH_MEDIUM,
         RECT_STRETCH_LARGE,
-        SQUARE_TURN_45;
+        SQUARE_TURN_45
     }
 
     public static int getSignSelectionEnumInt (SIGN_SELECTION_TYPE type) {

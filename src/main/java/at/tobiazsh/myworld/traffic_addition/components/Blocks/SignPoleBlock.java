@@ -2,17 +2,12 @@ package at.tobiazsh.myworld.traffic_addition.components.Blocks;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenSignPoleRotationScreenPayload;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.serialization.MapCodec;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;

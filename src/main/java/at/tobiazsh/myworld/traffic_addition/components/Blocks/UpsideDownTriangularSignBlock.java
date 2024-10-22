@@ -10,14 +10,11 @@ package at.tobiazsh.myworld.traffic_addition.components.Blocks;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.UpsideDownTriangularSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -43,7 +40,7 @@ public class UpsideDownTriangularSignBlock extends SignBlock {
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (player.isSneaking() && !world.isClient()) {
             BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof UpsideDownTriangularSignBlockEntity blockEntity) {
+            if (entity instanceof UpsideDownTriangularSignBlockEntity) {
                 MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.TRIANGULAR_UPSIDE_DOWN));
                 return ActionResult.SUCCESS;
             }

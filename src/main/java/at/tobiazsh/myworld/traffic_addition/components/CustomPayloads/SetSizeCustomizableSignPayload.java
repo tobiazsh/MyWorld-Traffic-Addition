@@ -15,7 +15,6 @@ import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.Nullable;
 
 // IMPORTANT INFORMATION
 // If either height or width is -1, then it's counted as null and will not be set!

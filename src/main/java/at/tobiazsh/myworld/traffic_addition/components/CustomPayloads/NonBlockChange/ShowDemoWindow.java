@@ -9,12 +9,10 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockC
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 public record ShowDemoWindow(int i) implements CustomPayload {
