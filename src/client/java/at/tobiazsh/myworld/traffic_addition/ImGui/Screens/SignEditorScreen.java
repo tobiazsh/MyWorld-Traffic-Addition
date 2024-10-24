@@ -15,6 +15,7 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.ElementPropertyWi
 import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.JsonPreviewPopUp;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.Color;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
@@ -22,6 +23,7 @@ import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.SetCustomizableSignTexture;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.FileSystem.Folder;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.*;
@@ -33,11 +35,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson.deconstructStyleToArray;
+
 
 public class SignEditorScreen {
 
@@ -63,13 +67,15 @@ public class SignEditorScreen {
 
     private static Color isInitColors; // Colors for boolean value "Is Initialized" field in infoPop
 
-    private static List<FileSystem.Folder> availableBGStyles = new ArrayList<>();
+    private static Folder availableBGStyles = new Folder(null, null);
 
     private static SignStyleJson signJson = new SignStyleJson();
 
     private static List<String> previewTextures = new ArrayList<>();
 
     public static List<BaseElement> baseElementDrawOrder = new ArrayList<>();
+
+    private static String resourcePathFolderAbsolute = FileSystem.normalizePath(MyWorldTrafficAddition.class.getResource("/myworld_traffic_addition.accesswidener").getPath());
 
     private static void quit() {
         ImGui.closeCurrentPopup();
@@ -211,7 +217,12 @@ public class SignEditorScreen {
 
         // Initialisation
         initializeSize();
-        countriesBG = FileSystem.FromResource.listFolders("/ImGui/SignRes/Backgrounds/");
+        try {
+            countriesBG = FileSystem.FromResource.listFolders("/ImGui/SignRes/Backgrounds/");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         ratioedSignSize = createRatio(previewHeight, previewWidth, totalSignWidth, totalSignHeight);
         baseElementDrawOrder = new ArrayList<>();
 
@@ -263,7 +274,7 @@ public class SignEditorScreen {
     }
 
 
-    private static List<FileSystem.Folder> countriesBG; // All Countries in ImGui/SignRes/Backgrounds/ with name and Path
+    private static Folder countriesBG = null; // All Countries in ImGui/SignRes/Backgrounds/
 
     private static Texture currentTexture;
 
@@ -448,9 +459,9 @@ public class SignEditorScreen {
     }
 
 
-    private static FileSystem.Folder currentCountryBG = new FileSystem.Folder("No Country Selected", "/");
-    private static FileSystem.Folder oldBGStyle = null;
-    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Style Selected", "/ImGui/SignRes/Backgrounds/Austria/Normal"); // Default to Austria's Road Style
+    private static Folder currentCountryBG = new Folder("No Country Selected", "/");
+    private static Folder oldBGStyle = null;
+    private static Folder currentBGStyle = new Folder("No Style Selected", "/ImGui/SignRes/Backgrounds/Austria/Normal"); // Default to Austria's Road Style
     private static boolean styleSelected = false;
     private static boolean applyButtonDisabled = true;
 
@@ -474,8 +485,12 @@ public class SignEditorScreen {
 
                     // If country is selected, search the country's folder for styles, which are also folders, and put them in a list
                     if (ImGui.selectable(country.name, isSelected)) {
-                        currentCountryBG = country;
-                        availableBGStyles = FileSystem.FromResource.listFolders(country.path);
+                        currentCountryBG = (Folder) country;
+                        try {
+                            availableBGStyles = FileSystem.FromResource.listFolders(country.path);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                     if (isSelected) ImGui.setItemDefaultFocus();
@@ -496,7 +511,7 @@ public class SignEditorScreen {
                     boolean isSelected = (Objects.equals(currentBGStyle.name, style.name));
                     if (ImGui.selectable(style.name, isSelected)) {
                         oldBGStyle = currentBGStyle;
-                        currentBGStyle = style;
+                        currentBGStyle = (Folder) style;
                         styleSelected = true;
                     }
                 });

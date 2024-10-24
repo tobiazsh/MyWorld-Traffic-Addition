@@ -76,9 +76,9 @@ public class Texture {
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(0), height.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			}
 			else
-				System.out.println("Error: (Loading Texture): Unknown number of channels: " + channels.get(0) + "! Channels must either be 3 (RGB) or 4 (RGBA)!");
+				System.err.println("Error: (Loading Texture): Unknown number of channels: " + channels.get(0) + "! Channels must either be 3 (RGB) or 4 (RGBA)!");
 		} else {
-			System.out.println("Error: (Texture Loading) Couldn't load image: " + resourcePath);
+			System.err.println("Error: (Texture Loading) Couldn't load image: " + resourcePath);
 		}
 	}
 
@@ -154,9 +154,9 @@ public class Texture {
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width.get(0), height.get(0), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 			}
 			else
-				System.out.println("Error: (Loading Texture): Unknown number of channels: " + channels.get(0) + "! Channels must either be 3 (RGB) or 4 (RGBA)!");
+				System.err.println("Error: (Loading Texture): Unknown number of channels: " + channels.get(0) + "! Channels must either be 3 (RGB) or 4 (RGBA)!");
 		} else {
-			System.out.println("Error: (Texture Loading) Couldn't load image: " + resourcePath);
+			System.err.println("Error: (Texture Loading) Couldn't load image: " + resourcePath);
 		}
 
 		return texId;
