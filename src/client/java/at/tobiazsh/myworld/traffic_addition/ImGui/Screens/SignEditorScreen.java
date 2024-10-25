@@ -35,7 +35,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -219,7 +218,7 @@ public class SignEditorScreen {
         initializeSize();
         try {
             countriesBG = FileSystem.FromResource.listFolders("/ImGui/SignRes/Backgrounds/");
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -488,7 +487,7 @@ public class SignEditorScreen {
                         currentCountryBG = (Folder) country;
                         try {
                             availableBGStyles = FileSystem.FromResource.listFolders(country.path);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     }

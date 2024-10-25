@@ -8,13 +8,13 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Utilities;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,62 +28,65 @@ public class FileSystem {
 		 * Returns: List of Folders with both path and name
 		 * Description: Creates a list of folders in a folder from a path in the jar resources
 		 */
-		public static Folder listFolders(String path) throws IOException {
-			return crawlDirectory(path).removeFiles();
+		public static Folder listFolders(String path) throws IOException, URISyntaxException {
+			return crawlDirectory(path);
 		}
 
-		public static String resourceFolderLocator = "myworld_traffic_addition.folder.loc";
-
-		// Works.. Somehow... Idk even know anymore please leave me alone
-		// I know it's ugly but I am proud of it
-		public static Folder crawlDirectory(String path) throws IOException {
-			URL resourceURL = MyWorldTrafficAddition.class.getResource(normalizePath(path));
-			if (resourceURL == null) throw new IOException("Error (Crawling Directories): Specified Resource path not found!");
-
-			// Decode URL and handle Windows-specific leading slash in the path
-			String decodedResourceURLStr = URLDecoder.decode(resourceURL.getPath(), StandardCharsets.UTF_8);
-			decodedResourceURLStr = handleWindowsPath(decodedResourceURLStr);
-
-			URL locateFileURL = MyWorldTrafficAddition.class.getClassLoader().getResource(resourceFolderLocator);
-			if (locateFileURL == null) throw new IOException("Error (Crawling Directories): Couldn't locate resource folder locator file!");
-
-			// Decode URL and handle Windows-specific leading slash in the path
-			String decodedLocateFileURLStr = URLDecoder.decode(locateFileURL.getPath(), StandardCharsets.UTF_8);
-			decodedLocateFileURLStr = handleWindowsPath(decodedLocateFileURLStr);
-
-			Path resourcePath = Path.of(decodedResourceURLStr);
-			Path resourceFolderPath = Path.of(decodedLocateFileURLStr).getParent();
-
-			java.io.File resourceFolder = resourcePath.toFile();
-
-			Path relativeResourcePath = Path.of("/".concat(normalizePath(resourceFolderPath.relativize(resourcePath).toString()))); // Normalizes path and adds "/" at the beginning
-
-			Folder rootFolder = new Folder(relativeResourcePath.getFileName().toString(), relativeResourcePath.toString());
-
-			java.io.File contents[] = resourceFolder.listFiles();
-
-			assert contents != null;
-			for (java.io.File file : contents) {
-				if (file.isDirectory()) {
-					Path absPath = file.toPath();
-					Path relPath = resourceFolderPath.relativize(absPath);
-					String relPathStr = normalizePath(relPath.toString());
-
-					Folder subDir = new Folder(absPath.getFileName().toString(), relPathStr);
-
-					subDir.addContent(crawlDirectory(relPathStr));
-					rootFolder.addContent(subDir);
-				} else if (file.isFile()) {
-					Path absPath = file.toPath();
-					Path relPath = resourceFolderPath.relativize(absPath);
-					String relPathStr = normalizePath(relPath.toString());
-
-					File newFile = new File(absPath.getFileName().toString(), relPathStr);
-					rootFolder.addContent(newFile);
-				}
+		public static Folder crawlDirectory(String path) throws IOException, URISyntaxException {
+			// Retrieve the resource URL and handle missing resource
+			URL resourceURL = MyWorldTrafficAdditionClient.class.getResource(path);
+			if (resourceURL == null) {
+				throw new IllegalArgumentException("Error: Specified path not found - " + path);
 			}
 
-			return rootFolder;
+			URI uri = resourceURL.toURI();
+			java.nio.file.FileSystem fileSystem = initializeFileSystem(uri);
+
+			Path resourcePath = Paths.get(uri);
+			Folder rootDir = new Folder(resourcePath.getFileName().toString(), path);
+			populateDirectory(rootDir, resourcePath, path);
+
+			// Clean up the file system if created
+			if (fileSystem != null && fileSystem.isOpen()) {
+				fileSystem.close();
+			}
+
+			// Debug
+			for (DirectoryElement element : rootDir) {
+				System.out.println("Element Path: " + element.path + "     Element Name: " + element.name);
+			}
+
+			return rootDir;
+		}
+
+		private static java.nio.file.FileSystem initializeFileSystem(URI uri) throws IOException {
+			if ("jar".equals(uri.getScheme())) {
+				try {
+					return FileSystems.getFileSystem(uri);
+				} catch (FileSystemNotFoundException e) {
+					return FileSystems.newFileSystem(uri, new java.util.HashMap<>());
+				}
+			}
+			return null; // No file system needed for non-JAR resources
+		}
+
+		private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
+			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
+				for (Path entry : directoryStream) {
+					String entryPath = basePath + entry.getFileName();
+					String fileName = entry.getFileName().toString();
+
+					if (Files.isDirectory(entry)) {
+						entryPath = entryPath.concat("/");
+
+						// Recursively crawl the subdirectory with its full path
+						Folder subDir = crawlDirectory(entryPath);
+						rootDir.addContent(subDir);
+					} else {
+						rootDir.addContent(new File(fileName, entryPath));
+					}
+				}
+			}
 		}
 	}
 
