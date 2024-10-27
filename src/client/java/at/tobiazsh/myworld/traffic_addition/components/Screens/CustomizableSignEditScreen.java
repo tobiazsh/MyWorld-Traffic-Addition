@@ -241,24 +241,6 @@ public class CustomizableSignEditScreen extends Screen {
         Direction rightSide = getRightSideDirection(getFacing(masterPos, world));
 
         while (world.getBlockEntity(masterPos) instanceof CustomizableSignBlockEntity) {
-            // Old; Keeping if something doesn't work because of refactoring
-            /*List<Boolean> borders = new ArrayList<>();
-
-            if (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity) {
-                borders.add(false);
-            } else { borders.add(true); }
-
-            if (world.getBlockEntity(getBlockPosAtDirection(rightSide, masterPos)) instanceof CustomizableSignBlockEntity) {
-                borders.add(false);
-            } else { borders.add(true); }
-
-            if (world.getBlockEntity(getBlockPosAtDirection(rightSide.getOpposite(), masterPos)) instanceof CustomizableSignBlockEntity) {
-                borders.add(false);
-            } else { borders.add(true); }
-
-            if (world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity) {
-                borders.add(false);
-            } else { borders.add(true); }*/
 
             List<Boolean> borders = getBorderListBoundingBased(masterPos, world);
             String modelPath = CustomizableSignBlockEntity.getBorderName(borders.get(0), borders.get(1), borders.get(2), borders.get(3), "customizable_sign_block_border");
@@ -267,24 +249,6 @@ public class CustomizableSignEditScreen extends Screen {
             BlockPos posX = masterPos;
 
             while (world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) {
-                // Old; Keeping if something doesn't work because of refactoring
-                /*List<Boolean> bordersX = new ArrayList<>();
-
-                if (world.getBlockEntity(posX.up()) instanceof CustomizableSignBlockEntity) {
-                    bordersX.add(false);
-                } else { bordersX.add(true); }
-
-                if (world.getBlockEntity(getBlockPosAtDirection(rightSide, posX)) instanceof CustomizableSignBlockEntity) {
-                    bordersX.add(false);
-                } else { bordersX.add(true); }
-
-                if (world.getBlockEntity(getBlockPosAtDirection(rightSide.getOpposite(), posX)) instanceof CustomizableSignBlockEntity) {
-                    bordersX.add(false);
-                } else { bordersX.add(true); }
-
-                if (world.getBlockEntity(posX.down()) instanceof CustomizableSignBlockEntity) {
-                    bordersX.add(false);
-                } else { bordersX.add(true); }*/
 
                 List<Boolean> bordersX = getBorderListBoundingBased(posX, world);
                 String modelPathX = CustomizableSignBlockEntity.getBorderName(bordersX.get(0), bordersX.get(1), bordersX.get(2), bordersX.get(3), "customizable_sign_block_border");
@@ -296,37 +260,6 @@ public class CustomizableSignEditScreen extends Screen {
             masterPos = masterPos.up();
         }
     }
-
-    /*private Direction getFacing(BlockPos masterPos) {
-        return world.getBlockEntity(masterPos).getCachedState().get(CustomizableSignBlock.FACING);
-    }
-
-    private BlockPos getCheckPos(Direction dir, BlockPos masterPos) {
-        switch (dir) {
-            default -> { return masterPos.west(); }
-            case EAST -> { return masterPos.north(); }
-            case SOUTH -> { return masterPos.east(); }
-            case WEST -> { return masterPos.south(); }
-        }
-    }
-
-    public static Direction getRightSideDirection(Direction dir) {
-        switch (dir) {
-            default -> { return Direction.WEST; }
-            case EAST -> { return Direction.NORTH; }
-            case SOUTH -> { return Direction.EAST; }
-            case WEST -> { return Direction.SOUTH; }
-        }
-    }
-
-    public static BlockPos getBlockPosAtDirection(Direction dir, BlockPos pos) {
-        switch (dir) {
-            default -> { return pos.north(); }
-            case EAST -> { return pos.east(); }
-            case SOUTH -> { return pos.south(); }
-            case WEST -> { return pos.west(); }
-        }
-    }*/
 
     private void clearAll() {
         this.clearChildren();

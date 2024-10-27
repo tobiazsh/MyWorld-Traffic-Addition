@@ -7,12 +7,9 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Screens;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.ElementAddWindow;
-import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.ElementEntry;
+import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.ElementPropertyWindow;
-import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.JsonPreviewPopUp;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.Color;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
@@ -81,6 +78,11 @@ public class SignEditorScreen {
         ImGuiRenderer.showSignEditor = false;
     }
 
+    public static void disposeChildWindows() {
+        ElementsWindow.shouldRender = false;
+        ElementAddWindow.shouldRender = false;
+        ElementPropertyWindow.shouldRender = false;
+    }
 
     private static boolean texturesLoaded = false;
 
@@ -98,7 +100,113 @@ public class SignEditorScreen {
     private static final int iconHeight = 512 - 128;
     private static final int iconWidth = 512 - 128;
 
+    private static final int INFO_POP_WIDTH = 1024;
+    private static final int INFO_POP_HEIGHT = 512;
+
     public static void showHomepage() {
+        String title = "MyWorld Traffic Addition - Sign Editor";
+        if (ImGui.begin(title, ImGuiWindowFlags.NoNavInputs)) {
+            float windowHeight = ImGui.getWindowHeight();
+            float windowWidth = ImGui.getWindowWidth();
+
+            renderTitle(windowWidth);
+            renderCenteredImage(windowHeight, windowWidth);
+            renderCheckDataButton(windowHeight, windowWidth);
+
+            if (ImGui.beginPopupModal("infoPop")) {
+                renderInfoPopup();
+                ImGui.endPopup();
+            }
+        }
+        ImGui.end();
+    }
+
+    private static void renderTitle(float windowWidth) {
+        String bigTitle = "MyWorld Traffic Addition - Sign Editor";
+        ImGui.spacing();
+        ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
+        ImUtil.centerHorizontal(windowWidth, imgui.calcTextSize(bigTitle).x);
+        ImGui.text(bigTitle);
+        ImGui.popFont();
+    }
+
+    private static void renderCenteredImage(float windowHeight, float windowWidth) {
+        ImUtil.center(windowHeight, windowWidth, iconHeight, iconWidth);
+        ImGui.image(iconTexture.getTextureId(), iconWidth, iconHeight);
+    }
+
+    private static void renderCheckDataButton(float windowHeight, float windowWidth) {
+        // Center this button between the bottom of the window and the icon
+        ImGui.setCursorPos((windowWidth - checkButtonWidth) / 2, (3 * windowHeight + iconHeight - 2 * checkButtonHeight) / 4);
+        if (ImGui.button("Check Data", checkButtonWidth, checkButtonHeight)) {
+            ImGui.openPopup("infoPop");
+        }
+    }
+
+    private static void renderInfoPopup() {
+        ImGui.setNextWindowSize(INFO_POP_WIDTH, INFO_POP_HEIGHT);
+        if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity) {
+            isIntegra = true;
+        }
+        if (!isIntegra) {
+            renderErrorPopup();
+        } else {
+            renderInfoPopupContent();
+        }
+    }
+
+    private static void renderErrorPopup() {
+        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.textColored(217, 62, 62, 255, "Error (Sign Loading): Block is not a CustomizableSignBlock!");
+        ImGui.popFont();
+        if (ImGui.button("Close")) {
+            ImGuiRenderer.showSignEditor = false;
+        }
+    }
+
+    private static void renderInfoPopupContent() {
+        if (signIsInit) {
+            isInitColors = ImUtil.Colors.green;
+        } else {
+            isInitColors = ImUtil.Colors.red;
+        }
+
+        String popUpTitle = "Please check and confirm this data!";
+        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImUtil.centerHorizontal(INFO_POP_WIDTH, imgui.calcTextSize(popUpTitle).x);
+        ImGui.text(popUpTitle);
+        ImGui.popFont();
+        ImGui.separator();
+
+        ImGui.text("Block Master Position: X(" + masterBlockPos.getX() + "), Y(" + masterBlockPos.getY() + "), Z(" + masterBlockPos.getZ() + ")");
+        ImGui.text("Height: " + ((CustomizableSignBlockEntity) world.getBlockEntity(masterBlockPos)).getHeight());
+        ImGui.text("Width: " + ((CustomizableSignBlockEntity) world.getBlockEntity(masterBlockPos)).getWidth());
+        ImGui.text("Is Initialized: ");
+        ImGui.sameLine();
+        ImGui.textColored(isInitColors.red, isInitColors.green, isInitColors.blue, isInitColors.alpha, signIsInit ? "True" : "False");
+        ImGui.separator();
+
+        if (!signIsInit) {
+            ImGui.beginDisabled();
+        }
+
+        if (ImGui.button("Confirm")) {
+            ImGui.closeCurrentPopup();
+            homepageActive = false;
+            renderPreview = true;
+        }
+
+        if (!signIsInit) {
+            ImGui.endDisabled();
+        }
+
+        ImGui.sameLine();
+        if (ImGui.button("Quit")) {
+            quit();
+        }
+    }
+
+    /*public static void showHomepage() {
         String title = "MyWorld Traffic Addition - Sign Editor";
         if (ImGui.begin(title, ImGuiWindowFlags.NoNavInputs)) {
 
@@ -120,7 +228,6 @@ public class SignEditorScreen {
             ImGui.image(iconTexture.getTextureId(), iconWidth, iconHeight);
 
             // Center Button "Check Data"
-            ImGui.setCursorPos((windowWidth - checkButtonWidth) / 2, ((windowHeight - cursorY) - checkButtonHeight) / 2 + cursorY - 10);
             if (ImGui.button("Check Data", checkButtonWidth, checkButtonHeight))
                 ImGui.openPopup("infoPop"); // Open Check Infos popup with id "infoPop"
 
@@ -182,19 +289,20 @@ public class SignEditorScreen {
             }
         }
         ImGui.end();
-    }
+    }*/
 
 
     public static void render() {
         if (homepageActive) showHomepage();
         if (renderPreview) renderMain();
-        if (showElementsWindow) ElementsWindow();
+        ElementsWindow.render();
+        ElementAddWindow.render();
+        ElementPropertyWindow.render();
     }
 
 
     public static boolean homepageActive = true;
     public static boolean renderPreview = false;
-    public static boolean showElementsWindow = false;
     private static boolean showStylePopup = false;
 
     public void openSignEditorScreen(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -204,7 +312,7 @@ public class SignEditorScreen {
 
         homepageActive = true;
         renderPreview = false;
-        showElementsWindow = false;
+        disposeChildWindows();
 
         selectedElement = null;
         signJson = new SignStyleJson();
@@ -277,7 +385,7 @@ public class SignEditorScreen {
 
     private static Texture currentTexture;
 
-    private static ImVec2 ratioedSignSize; // Initialized when screen is opened;
+    public static ImVec2 ratioedSignSize; // Initialized when screen is opened;
     private static float previewHeight = 1100;
     private static float previewWidth = 1100;
 
@@ -312,14 +420,14 @@ public class SignEditorScreen {
         }
 
         if (ImGui.beginMenu("View")) {
-            if (ImGui.menuItem("Toggle Element Window")) showElementsWindow = !showElementsWindow;
-            if (ImGui.menuItem("Toggle Element Properties Window")) ElementPropertyWindow.shouldRender = !ElementPropertyWindow.shouldRender;
+            if (ImGui.menuItem("Toggle Element Window")) ElementsWindow.toggle();
+            if (ImGui.menuItem("Toggle Element Properties Window")) ElementPropertyWindow.toggle();
 
             ImGui.endMenu();
         }
 
         if(ImGui.beginMenu("Elements")) {
-            if (ImGui.menuItem("Add Element...")) ElementAddWindow.shouldOpen = true;
+            if (ImGui.menuItem("Add Element...")) ElementAddWindow.open();
 
             ImGui.endMenu();
         }
@@ -331,18 +439,10 @@ public class SignEditorScreen {
         JsonPreviewPopUp.create();
         if (JsonPreviewPopUp.shouldOpen) JsonPreviewPopUp.open(signJson);
 
-        ElementAddWindow.create();
-        if (ElementAddWindow.shouldOpen) ElementAddWindow.open();
-
         if (showStylePopup) ImGui.openPopup("Choose Style Type");
 
         StylePopUp();
         ErrorPopUp();
-
-        // Handle whole new windows
-
-        if (showElementsWindow) ElementsWindow();
-        if (ElementPropertyWindow.shouldRender) ElementPropertyWindow.render();
 
         // Calculations for sign preview
 
@@ -365,7 +465,7 @@ public class SignEditorScreen {
 
     private static ImVec2 previewPos = new ImVec2();
 
-    private static ImageElement testElem = new ImageElement(0, 0, 250, 250, 1,"/ImGui/Icons/Lucky.jpg");
+    private static ImageElement testElem = new ImageElement(0, 0, 250, 250, 1, "/ImGui/SignRes/Icons/Other/Lucky.jpg");
     private static ImageElement testElem2 = new ImageElement(0, 0, 250, 250, 1, "/ImGui/Icons/text.png");
     private static boolean testElemIsInit = true;
 
@@ -426,37 +526,7 @@ public class SignEditorScreen {
     }
 
 
-    private static BaseElement selectedElement = null;
-
-    public static void ElementsWindow() {
-        ImGui.begin("Elements", ImGuiWindowFlags.NoNavInputs);
-
-        for (int i = 0; i < baseElementDrawOrder.size(); i++) {
-            BaseElement element = baseElementDrawOrder.get(i);
-            ElementEntry entry = new ElementEntry(element.name, element.getId(), element) {
-                @Override
-                public void moveEntryUp() {
-                    baseElementDrawOrder = ArrayTools.moveElementUpBy(baseElementDrawOrder, baseElementDrawOrder.indexOf(element), 1);
-                }
-
-                @Override
-                public void moveEntryDown() {
-                    baseElementDrawOrder = ArrayTools.moveElementDownBy(baseElementDrawOrder, baseElementDrawOrder.indexOf(element), 1);
-                }
-
-                @Override
-                public void elementSelectedAction() {
-                    selectedElement = element;
-                    ElementPropertyWindow.initVars(element, ratioedSignSize);
-                }
-            };
-            entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == baseElementDrawOrder.getFirst(), element == baseElementDrawOrder.getLast(), selectedElement, element); // Check if the element is first/last in the list because then there's nothing to move up/down
-            if (baseElementDrawOrder.getLast() != element) ImGui.separator();
-        }
-
-        ImGui.end();
-    }
-
+    public static BaseElement selectedElement = null;
 
     private static Folder currentCountryBG = new Folder("No Country Selected", "/");
     private static Folder oldBGStyle = null;

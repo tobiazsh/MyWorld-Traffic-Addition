@@ -29,7 +29,7 @@ public class FileSystem {
 		 * Description: Creates a list of folders in a folder from a path in the jar resources
 		 */
 		public static Folder listFolders(String path) throws IOException, URISyntaxException {
-			return crawlDirectory(path);
+			return crawlDirectory(path).removeFiles();
 		}
 
 		public static Folder crawlDirectory(String path) throws IOException, URISyntaxException {
@@ -49,11 +49,6 @@ public class FileSystem {
 			// Clean up the file system if created
 			if (fileSystem != null && fileSystem.isOpen()) {
 				fileSystem.close();
-			}
-
-			// Debug
-			for (DirectoryElement element : rootDir) {
-				System.out.println("Element Path: " + element.path + "     Element Name: " + element.name);
 			}
 
 			return rootDir;
@@ -113,6 +108,14 @@ public class FileSystem {
 			this.path = path;
 			this.name = name;
 		}
+
+		public boolean isFolder() {
+			return this instanceof Folder;
+		}
+
+		public boolean isFile() {
+			return this instanceof File;
+		}
 	}
 
 	public static class Folder extends DirectoryElement implements Iterable<DirectoryElement> {
@@ -132,11 +135,63 @@ public class FileSystem {
 
 			while (iterator.hasNext()) {
 				DirectoryElement element = iterator.next();
-				if (element instanceof File) iterator.remove(); // Remove file safely
-				else if (element instanceof Folder) ((Folder) element).removeFiles();
+				if (element.isFile()) iterator.remove(); // Remove file safely
+				else if (element.isFolder()) ((Folder) element).removeFiles();
 			}
 
 			return this;
+		}
+
+		public Folder removeFoldersCurrentDir() {
+			content.removeIf(DirectoryElement::isFolder);
+			return this;
+		}
+
+		// Concentrates all the files recursively from the folder and puts them in the root folder
+		public Folder concentrateFiles() {
+			// Use a list to hold the files to add to rootFolder
+			List<DirectoryElement> filesToMove = new ArrayList<>();
+
+			// Helper method to recursively collect files and empty folders
+			collectFilesRecursively(this, filesToMove);
+
+			// Add all collected files to the root folder
+			this.content.addAll(filesToMove);
+
+			// Optionally, clear the structure by removing all folders now that files are at the root
+			this.content.removeIf(DirectoryElement::isFolder);
+
+			return this;
+		}
+
+		// Recursive helper method to collect files from all subfolders
+		private void collectFilesRecursively(Folder folder, List<DirectoryElement> filesToMove) {
+			Iterator<DirectoryElement> iterator = folder.content.iterator();
+
+			while (iterator.hasNext()) {
+				DirectoryElement element = iterator.next();
+				if (element.isFile()) {
+					// Add files directly to the list
+					filesToMove.add(element);
+					iterator.remove(); // Remove the file from its original location
+				} else if (element.isFolder()) {
+					// Recursively collect files from subfolders
+					collectFilesRecursively((Folder) element, filesToMove);
+					iterator.remove(); // Remove the empty folder after files are collected
+				}
+			}
+		}
+
+		public int size() {
+			return content.size();
+		}
+
+		public void deleteObject(DirectoryElement element) {
+			content.remove(element);
+		}
+
+		public DirectoryElement at(int index) {
+			return content.get(index);
 		}
 
 		@Override

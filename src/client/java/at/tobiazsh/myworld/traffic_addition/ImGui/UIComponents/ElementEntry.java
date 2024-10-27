@@ -30,6 +30,7 @@ public abstract class ElementEntry {
 	private int texId;
 	private int previewSize = 50;
 	private static final int textIconId = Textures.smartRegisterTexture("/ImGui/Icons/text.png").getTextureId();
+	private static final int redXIcon = Textures.smartRegisterTexture("/ImGui/Icons/red_x.png").getTextureId();
 
 	private static final ImGui imgui = new ImGui();
 
@@ -63,9 +64,9 @@ public abstract class ElementEntry {
 	public float controlsWidth;
 	private final float entryHeight = 64;
 	private final float buttonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
-	private final float labelHeight = imgui.calcTextSize("TestButton").y;
+	public boolean removeMyself = false;
 
-	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, BaseElement selectedOption, BaseElement element) {
+	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, BaseElement selectedOption) {
 		float entryWidth = (windowWidth - (this.padding * 2));
 		controlsWidth = 0;
 
@@ -74,12 +75,12 @@ public abstract class ElementEntry {
 		ImGui.pushStyleVar(ImGuiStyleVar.ChildBorderSize, 2);
 		ImGui.pushStyleColor(ImGuiCol.Border, borderCol);
 
-		ImGui.beginChild("ELEMENT_ENTRY_" + element.id, entryWidth, entryHeight, isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+		ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.id, entryWidth, entryHeight, isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
 		// Selection Button
 		ImGui.setCursorPosX(this.padding * 2);
 		ImGui.setCursorPosY((entryHeight - imgui.calcTextSize("T").y) / 2 - framePadding);
-		if (ImGui.radioButton("##radioButton", Objects.equals(selectedOption, element))) elementSelectedAction();
+		if (ImGui.radioButton("##radioButton", Objects.equals(selectedOption, renderObject))) elementSelectedAction();
 
 		ImGui.sameLine();
 
@@ -98,7 +99,14 @@ public abstract class ElementEntry {
 		ImGui.sameLine();
 
 		ImGui.setCursorPosY((entryHeight - buttonSize) / 2 - framePadding); // Center Buttons
-		ImGui.setCursorPosX(entryWidth - buttonSize * 2 - padding * 2);
+		ImGui.setCursorPosX(entryWidth - buttonSize * 3 - padding * 3);
+
+		if (ImGui.imageButton(redXIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+			// Remove Element
+			removeMyself = true;
+		}
+
+		ImGui.sameLine();
 
 		if (disableUp) ImGui.beginDisabled(); // Disable Button
 

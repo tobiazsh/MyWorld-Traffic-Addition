@@ -101,6 +101,7 @@ public class ImageElement extends BaseElement{
 		this.elementTexture = texture;
 	}
 
+	// Always call after loadTexture() was called!
 	public void sizeAuto() {
 		if (elementTexture.isEmpty()) {
 			System.err.println("Error (Loading ImageElement size): Couldn't determine size because texture hasn't been initialized! Initialize with ImageElement.loadTexture()!");

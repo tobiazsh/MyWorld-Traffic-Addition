@@ -21,7 +21,7 @@ public class ElementPropertyWindow {
 	private static ImString currentElementName = new ImString("", 512);
 	private static float[] currentElementRotation = new float[]{};
 	private static BaseElement element;
-	private static ImGui imgui = new ImGui();
+	private static final ImGui imgui = new ImGui();
 	private static boolean relateSize = true;
 	private static ImVec2 ratioedSignSize = new ImVec2();
 
@@ -36,6 +36,8 @@ public class ElementPropertyWindow {
 	}
 
 	public static void render() {
+		if (!shouldRender) return;
+
 		if (ImGui.begin("Element Properties", ImGuiWindowFlags.NoNavInputs)) {
 
 			// If no Element is selected, display message
@@ -161,11 +163,15 @@ public class ElementPropertyWindow {
 
 			if (ImGui.dragFloat("##rotationDragger", currentElementRotation, 1.0f, 0, (float)359.99)) {
 				element.setRotation(currentElementRotation[0]);
-			};
+			}
 
 			// TODO: Make Picture rotatable
 		}
 
 		ImGui.end();
+	}
+
+	public static void toggle() {
+		shouldRender = !shouldRender;
 	}
 }
