@@ -12,7 +12,6 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.Color;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
@@ -34,10 +33,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson.deconstructStyleToArray;
-
 
 public class SignEditorScreen {
 
@@ -65,13 +60,10 @@ public class SignEditorScreen {
 
     private static Folder availableBGStyles = new Folder(null, null);
 
-    private static SignStyleJson signJson = new SignStyleJson();
-
-    private static List<String> previewTextures = new ArrayList<>();
-
+    public static SignStyleJson signJson = new SignStyleJson();
+    public static List<String> previewTextures = new ArrayList<>();
     public static List<BaseElement> baseElementDrawOrder = new ArrayList<>();
 
-    private static String resourcePathFolderAbsolute = FileSystem.normalizePath(MyWorldTrafficAddition.class.getResource("/myworld_traffic_addition.accesswidener").getPath());
 
     private static void quit() {
         ImGui.closeCurrentPopup();
@@ -206,100 +198,14 @@ public class SignEditorScreen {
         }
     }
 
-    /*public static void showHomepage() {
-        String title = "MyWorld Traffic Addition - Sign Editor";
-        if (ImGui.begin(title, ImGuiWindowFlags.NoNavInputs)) {
-
-            float windowHeight = ImGui.getWindowHeight();
-            float windowWidth = ImGui.getWindowWidth();
-
-            String bigTitle = "MyWorld Traffic Addition - Sign Editor";
-            ImGui.spacing();
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
-            ImUtil.centerHorizontal(windowWidth, imgui.calcTextSize(bigTitle).x);
-            ImGui.text(bigTitle);
-            ImGui.popFont();
-
-            // Center Image
-            ImUtil.center(windowHeight, windowWidth, iconHeight, iconWidth);
-
-            float cursorY = ImGui.getCursorPosY() + iconHeight;
-
-            ImGui.image(iconTexture.getTextureId(), iconWidth, iconHeight);
-
-            // Center Button "Check Data"
-            if (ImGui.button("Check Data", checkButtonWidth, checkButtonHeight))
-                ImGui.openPopup("infoPop"); // Open Check Infos popup with id "infoPop"
-
-            int infoPopWidth = 1024;
-            int infoPopHeight = 512;
-            ImGui.setNextWindowSize(infoPopWidth, infoPopHeight);
-            if (ImGui.beginPopupModal("infoPop")) {
-
-                if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity) isIntegra = true;
-                if (!isIntegra) {
-                    ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-                    ImGui.textColored(217, 62, 62, 255, "Error (Sign Loading): Block is not a CustomizableSignBlock!");
-                    ImGui.popFont();
-
-                    if (ImGui.button("Close")) {
-                        ImGuiRenderer.showSignEditor = false;
-                    }
-                }
-
-                if (signIsInit) isInitColors = ImUtil.Colors.green;
-                else isInitColors = ImUtil.Colors.red;
-
-                String popUpTitle = "Please check and confirm this data!";
-                ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-                ImUtil.centerHorizontal(infoPopWidth, imgui.calcTextSize(popUpTitle).x);
-                ImGui.text(popUpTitle);
-                ImGui.popFont();
-
-                ImGui.separator();
-
-                ImGui.text("Block Master Position: X(" + masterBlockPos.getX() + "), Y(" + masterBlockPos.getY() + "), Z(" + masterBlockPos.getZ() + ")");
-                ImGui.text("Height: " + ((CustomizableSignBlockEntity) world.getBlockEntity(masterBlockPos)).getHeight());
-                ImGui.text("Width: " + ((CustomizableSignBlockEntity) world.getBlockEntity(masterBlockPos)).getWidth());
-
-                ImGui.text("Is Initialized: ");
-                ImGui.sameLine();
-                ImGui.textColored(isInitColors.red, isInitColors.green, isInitColors.blue, isInitColors.alpha, signIsInit ? "True" : "False");
-
-                ImGui.separator();
-
-                if (!signIsInit) ImGui.beginDisabled(); // If Sign is not initialized yet, prevent continuation
-
-                if (ImGui.button("Confirm")) {
-                    ImGui.closeCurrentPopup();
-
-                    homepageActive = false;
-                    renderPreview = true;
-                }
-
-                if (!signIsInit) ImGui.endDisabled();
-
-                ImGui.sameLine();
-
-                if (ImGui.button("Quit")) {
-                    quit();
-                }
-
-                ImGui.endPopup();
-            }
-        }
-        ImGui.end();
-    }*/
-
-
     public static void render() {
         if (homepageActive) showHomepage();
         if (renderPreview) renderMain();
         ElementsWindow.render();
         ElementAddWindow.render();
         ElementPropertyWindow.render();
+        StylePopUp.render(countriesBG, customizableSignBlockEntity);
     }
-
 
     public static boolean homepageActive = true;
     public static boolean renderPreview = false;
@@ -414,7 +320,7 @@ public class SignEditorScreen {
         }
 
         if (ImGui.beginMenu("Styling")) {
-            if (ImGui.menuItem("Choose Style Type")) showStylePopup = true;
+            if (ImGui.menuItem("Choose Style Type")) StylePopUp.open();
 
             ImGui.endMenu();
         }
@@ -441,7 +347,6 @@ public class SignEditorScreen {
 
         if (showStylePopup) ImGui.openPopup("Choose Style Type");
 
-        StylePopUp();
         ErrorPopUp();
 
         // Calculations for sign preview
@@ -527,95 +432,6 @@ public class SignEditorScreen {
 
 
     public static BaseElement selectedElement = null;
-
-    private static Folder currentCountryBG = new Folder("No Country Selected", "/");
-    private static Folder oldBGStyle = null;
-    private static Folder currentBGStyle = new Folder("No Style Selected", "/ImGui/SignRes/Backgrounds/Austria/Normal"); // Default to Austria's Road Style
-    private static boolean styleSelected = false;
-    private static boolean applyButtonDisabled = true;
-
-    public static void StylePopUp() {
-        ImGui.setNextWindowSize(1000, 750);
-        if (ImGui.beginPopupModal("Choose Style Type")) {
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
-            ImGui.setCursorPosX((1000 - imgui.calcTextSize("Styling Settings").x) / 2);
-            ImGui.text("Styling Settings");
-            ImGui.popFont();
-
-            ImGui.separator();
-
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-            ImGui.text("Country");
-            ImGui.popFont();
-
-            if (ImGui.beginCombo("##country", currentCountryBG.name)) {
-                countriesBG.forEach(country -> {
-                    boolean isSelected = (Objects.equals(currentCountryBG.name, country.name));
-
-                    // If country is selected, search the country's folder for styles, which are also folders, and put them in a list
-                    if (ImGui.selectable(country.name, isSelected)) {
-                        currentCountryBG = (Folder) country;
-                        try {
-                            availableBGStyles = FileSystem.FromResource.listFolders(country.path);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    if (isSelected) ImGui.setItemDefaultFocus();
-                });
-
-                ImGui.endCombo();
-            }
-
-            ImGui.spacing();
-
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-            ImGui.text("Style");
-            ImGui.popFont();
-
-            if (ImGui.beginCombo("##style", currentBGStyle.name)) {
-
-                availableBGStyles.forEach(style -> {
-                    boolean isSelected = (Objects.equals(currentBGStyle.name, style.name));
-                    if (ImGui.selectable(style.name, isSelected)) {
-                        oldBGStyle = currentBGStyle;
-                        currentBGStyle = (Folder) style;
-                        styleSelected = true;
-                    }
-                });
-
-                ImGui.endCombo();
-            }
-
-            ImGui.spacing();
-
-            if (ImGui.button("Cancel")) {
-                styleSelected = false;
-                currentBGStyle = oldBGStyle;
-                showStylePopup = false;
-                ImGui.closeCurrentPopup();
-            }
-
-            ImGui.sameLine();
-
-			applyButtonDisabled = !styleSelected;
-
-            if (applyButtonDisabled) ImGui.beginDisabled();
-
-            if (ImGui.button("Apply")) {
-                styleSelected = false;
-                showStylePopup = false;
-                ImGui.closeCurrentPopup();
-
-                previewTextures = deconstructStyleToArray(signJson.setStyle(currentBGStyle.path, customizableSignBlockEntity));
-            }
-
-            if (applyButtonDisabled) ImGui.endDisabled();
-
-            ImGui.endPopup();
-        }
-    }
 
     public static void ErrorPopUp() {
         if (ImGui.beginPopupModal(currentErrorPopType)) {

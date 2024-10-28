@@ -25,7 +25,10 @@ public class ElementAddWindow {
 	public static String windowId = "Element Add Window";
 	private static FileSystem.Folder folder = null;
 
-	// Renders the element add window, including the elements to be added and the controls
+	/**
+	 * Renders the element add window if the "shouldRender" flag is set to true.
+	 * The window displays a list of elements that can be added to the sign editor.
+	 */
 	public static void render() {
 		if (shouldConfig) config();
 		if (!shouldRender) return;
@@ -65,12 +68,12 @@ public class ElementAddWindow {
 		}
 	}
 
+	/**
+	 * Configures the element add window by loading the icons from the resources folder.
+	 */
 	public static void config() {
 		try {
-			folder = FileSystem.FromResource.crawlDirectory("/ImGui/SignRes/Icons/");
-			folder = folder.concentrateFiles();
-
-			folder.forEach(element -> System.out.println(element.path));
+			folder = FileSystem.FromResource.listFiles("/ImGui/SignRes/Icons/");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -78,6 +81,9 @@ public class ElementAddWindow {
 		shouldConfig = false;
 	}
 
+	/**
+	 * Toggles the "shouldRender" boolean to show/hide the element add window
+	 */
 	public static void open() {
 		shouldRender = true;
 		shouldConfig = true;
@@ -92,6 +98,10 @@ public class ElementAddWindow {
 
 		private static final int elementIconBackgroundColor = ImGui.getColorU32(new ImVec4(54 / 255f, 50 / 255f, 50 / 255f, 255 / 255f));
 
+		/**
+		 * Adds an element to the sign editor canvas.
+		 * @param element The element to be added
+		 */
 		public static void addElement(ImageElement element) {
 			element.loadTexture();
 			element.sizeAuto();
@@ -99,7 +109,9 @@ public class ElementAddWindow {
 			shouldRender = false;
 		}
 
-		// Renders the element icon within a child window, including its texture, name, and path
+		/**
+		 * Renders the element icon.
+		 */
 		public void render() {
 			// Ensure texture is initialized
 			if (texture == null) {
@@ -182,11 +194,21 @@ public class ElementAddWindow {
 			return this;
 		}
 
+		/**
+		 * Resizes the preview of the element icon. 1.0f = 100%.
+		 * @param previewSize The new Size
+		 * @return ElementIcon
+		 */
 		public ElementIcon setPreviewSize(float previewSize) {
 			this.previewSize = previewSize;
 			return this;
 		}
 
+		/**
+		 * Sets the texture of the element icon.
+		 * @param path The path to the texture
+		 * @return The element icon
+		 */
 		public ElementIcon setTexture(String path) {
 			this.texture = Textures.smartRegisterTexture(path);
 			return this;

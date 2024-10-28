@@ -23,16 +23,52 @@ import java.util.List;
 public class FileSystem {
 	public static class FromResource {
 
-		/*
-		 * Input: String (root path)
-		 * Returns: List of Folders with both path and name
-		 * Description: Creates a list of folders in a folder from a path in the jar resources
+		/**
+		 * List all folders in the specified path
+		 * @param path Path to the resource
+		 * @return Folder
+		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
 		 */
 		public static Folder listFolders(String path) throws IOException, URISyntaxException {
-			return crawlDirectory(path).removeFiles();
+			Folder folder = crawlDirectory(path);
+			if (folder == null) return null; // If there aren't any folders in the currentFolder, return null to avoid NullPointerException
+			return folder.removeFiles();
 		}
 
-		public static Folder crawlDirectory(String path) throws IOException, URISyntaxException {
+		/**
+		 * List all files in the specified path
+		 * @param path Path to the resource
+		 * @return Folder
+		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+		 */
+		public static Folder listFiles(String path) throws IOException, URISyntaxException {
+			Folder folder = crawlDirectory(path);
+			if (folder == null) return null; // If there aren't any files in the currentFolder, return null to avoid NullPointerException
+			return folder.concentrateFiles();
+		}
+
+		/**
+		 * List all files and folders in the specified path
+		 * @param path Path to the resource
+		 * @return Folder
+		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+		 */
+		public static Folder listALl(String path) throws IOException, URISyntaxException {
+			return crawlDirectory(path);
+		}
+
+		/**
+		 * Crawl the directory structure from the specified path
+		 * @param path Path to the resource
+		 * @return Folder
+		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+		 */
+
+		private static Folder crawlDirectory(String path) throws IOException, URISyntaxException {
 			// Retrieve the resource URL and handle missing resource
 			URL resourceURL = MyWorldTrafficAdditionClient.class.getResource(path);
 			if (resourceURL == null) {
@@ -40,30 +76,56 @@ public class FileSystem {
 			}
 
 			URI uri = resourceURL.toURI();
-			java.nio.file.FileSystem fileSystem = initializeFileSystem(uri);
+			Folder rootDir = null;
 
-			Path resourcePath = Paths.get(uri);
-			Folder rootDir = new Folder(resourcePath.getFileName().toString(), path);
-			populateDirectory(rootDir, resourcePath, path);
+			try (java.nio.file.FileSystem fileSystem = initializeFileSystem(uri)) {
+				Path resourcePath = Paths.get(uri);
+				rootDir = new Folder(resourcePath.getFileName().toString(), path);
 
-			// Clean up the file system if created
-			if (fileSystem != null && fileSystem.isOpen()) {
-				fileSystem.close();
+				// Populate the directory structure
+				populateDirectory(rootDir, resourcePath, path);
+
+				// Clean up the file system if created
+				if (fileSystem != null && fileSystem.isOpen()) {
+					fileSystem.close();
+				}
+			} catch (ClosedFileSystemException e) {
+				// Handle or log the exception
 			}
 
 			return rootDir;
 		}
 
+		/**
+		 * Initialize the file system for JAR resources
+		 * @param uri URI of the resource
+		 * @return java.nio.file.FileSystem
+		 * @throws IOException Is thrown when an I/O error occurs while creating the file system
+		 */
+
 		private static java.nio.file.FileSystem initializeFileSystem(URI uri) throws IOException {
+			String uriStr = uri.toString();
+			String fileSystemPath = uriStr.split("!")[0];
+
 			if ("jar".equals(uri.getScheme())) {
 				try {
-					return FileSystems.getFileSystem(uri);
+					return FileSystems.getFileSystem(URI.create(fileSystemPath));
 				} catch (FileSystemNotFoundException e) {
-					return FileSystems.newFileSystem(uri, new java.util.HashMap<>());
+					System.out.println("Creating new file system for: " + fileSystemPath);
+					return FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>());
 				}
 			}
 			return null; // No file system needed for non-JAR resources
 		}
+
+		/**
+		 * Populate the directory structure from the specified path
+		 * @param rootDir Original directory
+		 * @param resourcePath Path to the resource
+		 * @param basePath Base path of the resource
+		 * @throws IOException IOException is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system.
+		 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
+		 */
 
 		private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
 			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
@@ -75,7 +137,7 @@ public class FileSystem {
 						entryPath = entryPath.concat("/");
 
 						// Recursively crawl the subdirectory with its full path
-						Folder subDir = crawlDirectory(entryPath);
+						Folder subDir = FromResource.crawlDirectory(entryPath);
 						rootDir.addContent(subDir);
 					} else {
 						rootDir.addContent(new File(fileName, entryPath));
@@ -83,21 +145,6 @@ public class FileSystem {
 				}
 			}
 		}
-	}
-
-	private static String handleWindowsPath(String str) {
-		if (str.startsWith("/") && str.contains(":")) {
-			str = str.substring(1);
-		}
-
-		return str;
-	}
-
-	public static String normalizePath(String str) {
-		str = str.replaceAll("\\\\", "/");
-		if (!str.startsWith("/")) str = "/".concat(str);
-		if(!str.endsWith("/")) str = str.concat("/");
-		return str;
 	}
 
 	public static class DirectoryElement {
@@ -109,10 +156,18 @@ public class FileSystem {
 			this.name = name;
 		}
 
+		/**
+		 * Check if the element is a currentFolder
+		 * @return boolean
+		 */
 		public boolean isFolder() {
 			return this instanceof Folder;
 		}
 
+		/**
+		 * Check if the element is a file
+		 * @return boolean
+		 */
 		public boolean isFile() {
 			return this instanceof File;
 		}
@@ -125,11 +180,17 @@ public class FileSystem {
 			super(name, path);
 		}
 
+		/**
+		 * Add content to the currentFolder
+		 * @param directoryElement Element to add
+		 */
 		public void addContent(DirectoryElement directoryElement) {
 			content.add(directoryElement);
 		}
 
-		// Remove Files from only the root directory
+		/**
+		 * Remove all files from the currentFolder
+		 */
 		public Folder removeFiles() {
 			Iterator<DirectoryElement> iterator = content.iterator();
 
@@ -142,12 +203,19 @@ public class FileSystem {
 			return this;
 		}
 
+		/**
+		 * Remove all folders from the current directory
+		 * @return Folder
+		 */
 		public Folder removeFoldersCurrentDir() {
 			content.removeIf(DirectoryElement::isFolder);
 			return this;
 		}
 
-		// Concentrates all the files recursively from the folder and puts them in the root folder
+		/**
+		 * Remove all folders from the entire directory structure
+		 * @return Folder
+		 */
 		public Folder concentrateFiles() {
 			// Use a list to hold the files to add to rootFolder
 			List<DirectoryElement> filesToMove = new ArrayList<>();
@@ -155,7 +223,7 @@ public class FileSystem {
 			// Helper method to recursively collect files and empty folders
 			collectFilesRecursively(this, filesToMove);
 
-			// Add all collected files to the root folder
+			// Add all collected files to the root currentFolder
 			this.content.addAll(filesToMove);
 
 			// Optionally, clear the structure by removing all folders now that files are at the root
@@ -164,20 +232,25 @@ public class FileSystem {
 			return this;
 		}
 
-		// Recursive helper method to collect files from all subfolders
-		private void collectFilesRecursively(Folder folder, List<DirectoryElement> filesToMove) {
-			Iterator<DirectoryElement> iterator = folder.content.iterator();
+		/**
+		 * Recursively collect files from subfolders
+		 * @param currentFolder The current folder being processed
+		 * @param filesToMoveList The list of files to move; Empty list when using method elsewhere
+		 */
+
+		private void collectFilesRecursively(Folder currentFolder, List<DirectoryElement> filesToMoveList) {
+			Iterator<DirectoryElement> iterator = currentFolder.content.iterator();
 
 			while (iterator.hasNext()) {
 				DirectoryElement element = iterator.next();
 				if (element.isFile()) {
 					// Add files directly to the list
-					filesToMove.add(element);
+					filesToMoveList.add(element);
 					iterator.remove(); // Remove the file from its original location
 				} else if (element.isFolder()) {
 					// Recursively collect files from subfolders
-					collectFilesRecursively((Folder) element, filesToMove);
-					iterator.remove(); // Remove the empty folder after files are collected
+					collectFilesRecursively((Folder) element, filesToMoveList);
+					iterator.remove(); // Remove the empty currentFolder after files are collected
 				}
 			}
 		}
