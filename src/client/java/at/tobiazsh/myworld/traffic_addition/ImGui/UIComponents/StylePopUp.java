@@ -16,7 +16,7 @@ public class StylePopUp {
     private static boolean shouldOpen = false;
     private static boolean applyButtonDisabled = true;
     private static boolean styleSelected = false;
-    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Style Selected", "/ImGui/SignRes/Backgrounds/Austria/Normal"); // Default to Austria's Road Style
+    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Style Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
     private static FileSystem.Folder oldBGStyle = null;
     private static FileSystem.Folder currentCountryBG = new FileSystem.Folder("No Country Selected", "/");
     private static final ImGui imgui = new ImGui();

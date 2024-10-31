@@ -102,10 +102,23 @@ public class CustomizableSignEditScreen extends Screen {
         currentYPosition += 30;
         usedHeight += 30;
 
+        // DEBUG START
+        ButtonWidget testButton = ButtonWidget.builder(Text.of("Test Directions Offset"), button -> {
+            System.out.println("Direction Offset North: X: " + Direction.NORTH.getOffsetX() + " | Y: " + Direction.NORTH.getOffsetY() + " | Z: " + Direction.NORTH.getOffsetZ());
+            System.out.println("Direction Offset East: X: " + Direction.EAST.getOffsetX() + " | Y: " + Direction.EAST.getOffsetY() + " | Z: " + Direction.EAST.getOffsetZ());
+            System.out.println("Direction Offset South: X: " + Direction.SOUTH.getOffsetX() + " | Y: " + Direction.SOUTH.getOffsetY() + " | Z: " + Direction.SOUTH.getOffsetZ());
+            System.out.println("Direction Offset West: X: " + Direction.WEST.getOffsetX() + " | Y: " + Direction.WEST.getOffsetY() + " | Z: " + Direction.WEST.getOffsetZ());
+        }).dimensions(margin, currentYPosition, 200, 20).build();
+        // DEBUG END
+
+        currentYPosition += 30;
+        usedHeight += 30;
+
         // Place last
         this.addDrawableChild(initButton);
         this.addDrawableChild(rotationWidget);
         this.addDrawableChild(drawEditorButton);
+        this.addDrawableChild(testButton); // DEBUG LINE
     }
 
     private void showEditorScreen() {
@@ -176,8 +189,9 @@ public class CustomizableSignEditScreen extends Screen {
         BlockPos currentRightPos = masterPos;
         while (world.getBlockEntity(currentUpPos) instanceof CustomizableSignBlockEntity) {
             while (world.getBlockEntity(currentRightPos) instanceof CustomizableSignBlockEntity) {
+                System.out.println("Current Right Pos: " + currentRightPos);
                 signPositions.add(currentRightPos);
-                currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING), currentRightPos);
+                currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING.getOpposite()), currentRightPos, 1);
             }
 
             currentUpPos = currentUpPos.up();
@@ -213,7 +227,7 @@ public class CustomizableSignEditScreen extends Screen {
         List<BlockPos> poles = new ArrayList<>();
 
         BlockPos highestSignPolePos = masterPos.up(signHeight - 1); // Highest Point of the sign. -1 because the first y position is already included and without it, it would go up by one too much.
-        highestSignPolePos = getBlockPosAtDirection(FACING.getOpposite(), highestSignPolePos); // Go one back to the sign poles
+        highestSignPolePos = getBlockPosAtDirection(FACING.getOpposite(), highestSignPolePos, 1); // Go one back to the sign poles
 
         // First checks column, then row. This way, even the poles that aren't directly connected to a sign get counted.
         BlockPos currentDownPos = highestSignPolePos;
@@ -224,7 +238,7 @@ public class CustomizableSignEditScreen extends Screen {
                 currentDownPos = currentDownPos.down();
             }
 
-            currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING), currentRightPos);
+            currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING.getOpposite()), currentRightPos, 1);
             currentDownPos = currentRightPos;
         }
 
@@ -238,7 +252,7 @@ public class CustomizableSignEditScreen extends Screen {
     // False = No Border
     // True = Yes Border
     private void setBorderTypes(BlockPos masterPos) {
-        Direction rightSide = getRightSideDirection(getFacing(masterPos, world));
+        Direction rightSide = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
         while (world.getBlockEntity(masterPos) instanceof CustomizableSignBlockEntity) {
 
@@ -254,7 +268,7 @@ public class CustomizableSignEditScreen extends Screen {
                 String modelPathX = CustomizableSignBlockEntity.getBorderName(bordersX.get(0), bordersX.get(1), bordersX.get(2), bordersX.get(3), "customizable_sign_block_border");
                 ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(posX, modelPathX));
 
-                posX = getBlockPosAtDirection(rightSide, posX);
+                posX = getBlockPosAtDirection(rightSide, posX, 1);
             }
 
             masterPos = masterPos.up();

@@ -16,6 +16,7 @@ import java.nio.channels.ReadableByteChannel;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
@@ -35,6 +36,8 @@ public class Texture {
 
 	public void loadTexture(String resourcePath) {
 		ByteBuffer imageData;
+
+		GL.createCapabilities();
 
 		try {
 			imageData = loadResourceToByteBuffer(resourcePath);

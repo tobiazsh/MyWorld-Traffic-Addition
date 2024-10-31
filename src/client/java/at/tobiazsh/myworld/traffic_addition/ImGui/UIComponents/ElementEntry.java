@@ -29,8 +29,8 @@ public abstract class ElementEntry {
 
 	private int texId;
 	private int previewSize = 50;
-	private static final int textIconId = Textures.smartRegisterTexture("/ImGui/Icons/text.png").getTextureId();
-	private static final int redXIcon = Textures.smartRegisterTexture("/ImGui/Icons/red_x.png").getTextureId();
+	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
+	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
 
 	private static final ImGui imgui = new ImGui();
 

@@ -40,7 +40,7 @@ public class ModCommands {
                     )
 
                     .then(CommandManager.literal("test")
-                        .then(CommandManager.literal("ImGui")
+                        .then(CommandManager.literal("assets/myworld_traffic_addition/textures/imgui")
                             .then(CommandManager.literal("ShowTestScreen").executes(context -> MainCommand(context, new int[]{1, 1, 0, 0})))
                         )
                     )

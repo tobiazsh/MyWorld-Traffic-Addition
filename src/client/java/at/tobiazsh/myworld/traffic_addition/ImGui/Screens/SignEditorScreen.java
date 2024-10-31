@@ -20,6 +20,7 @@ import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.SetCustomizableSignTexture;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.FileSystem.Folder;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.UpdateTextureVarsCustomizableSignBlockPayload;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.*;
@@ -48,7 +49,7 @@ public class SignEditorScreen {
 
     private static String currentErrorPopType = "";
     private static String currentErrorPopMsg = "";
-    private static String currentErrorPopIcon = "/ImGui/Icons/info.png";
+    private static String currentErrorPopIcon = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
 
     private static final MinecraftClient minecraftClient = MinecraftClient.getInstance();
     private static CustomizableSignBlockEntity customizableSignBlockEntity;
@@ -80,8 +81,8 @@ public class SignEditorScreen {
 
     public static void loadMainTextures() {
         if (texturesLoaded) return;
-        iconTexture = Textures.smartRegisterTexture("/ImGui/Icons/MWTASE.png");
-        noTexture = Textures.smartRegisterTexture("/ImGui/Icons/not-found.png");
+        iconTexture = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/MWTASE.png");
+        noTexture = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
         texturesLoaded = true;
     }
 
@@ -231,7 +232,7 @@ public class SignEditorScreen {
         // Initialisation
         initializeSize();
         try {
-            countriesBG = FileSystem.FromResource.listFolders("/ImGui/SignRes/Backgrounds/");
+            countriesBG = FileSystem.FromResource.listFolders("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -241,7 +242,7 @@ public class SignEditorScreen {
 
         previewTextures.clear();
         for (int i = 0; i < totalSignHeight * totalSignWidth; i++) {
-            previewTextures.add("/ImGui/Icons/not-found.png");
+            previewTextures.add("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
         }
 
         readFromSign(this.masterBlockPos);
@@ -370,8 +371,8 @@ public class SignEditorScreen {
 
     private static ImVec2 previewPos = new ImVec2();
 
-    private static ImageElement testElem = new ImageElement(0, 0, 250, 250, 1, "/ImGui/SignRes/Icons/Other/Lucky.jpg");
-    private static ImageElement testElem2 = new ImageElement(0, 0, 250, 250, 1, "/ImGui/Icons/text.png");
+    private static ImageElement testElem = new ImageElement(0, 0, 250, 250, 1, "/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/other/Lucky.jpg");
+    private static ImageElement testElem2 = new ImageElement(0, 0, 250, 250, 1, "/assets/myworld_traffic_addition/textures/imgui/icons/text.png");
     private static boolean testElemIsInit = true;
 
     public static void SignPreview(float totalSignWidthPixels, float totalSignHeightPixels, float factor) {
@@ -484,6 +485,7 @@ public class SignEditorScreen {
         }
 
         ClientPlayNetworking.send(new SetCustomizableSignTexture(pos, signJson.jsonString));
+        ClientPlayNetworking.send(new UpdateTextureVarsCustomizableSignBlockPayload(pos));
     }
 
     private static void readFromSign(BlockPos pos) {

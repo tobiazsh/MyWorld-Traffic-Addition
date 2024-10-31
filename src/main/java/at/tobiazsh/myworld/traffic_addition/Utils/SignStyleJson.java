@@ -56,7 +56,7 @@ public class SignStyleJson {
 		StringBuilder textureList = new StringBuilder();
 		World world = customizableSignBlockEntity.getWorld();
 
-		Direction rightSide = getRightSideDirection(getFacing(pos, world));
+		Direction rightSide = getRightSideDirection(getFacing(pos, world).getOpposite());
 
 		while(world.getBlockEntity(posY) instanceof CustomizableSignBlockEntity) {
 			while(world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) {
@@ -69,7 +69,7 @@ public class SignStyleJson {
 						.append(posX.getZ()).append(";")
 						.append(path).append(textureName).append(".png");
 
-				posX = getBlockPosAtDirection(rightSide, posX);
+				posX = getBlockPosAtDirection(rightSide, posX, 1);
 				if (world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) textureList.append("*");
 			}
 

@@ -73,7 +73,7 @@ public class ElementAddWindow {
 	 */
 	public static void config() {
 		try {
-			folder = FileSystem.FromResource.listFiles("/ImGui/SignRes/Icons/");
+			folder = FileSystem.FromResource.listFiles("/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

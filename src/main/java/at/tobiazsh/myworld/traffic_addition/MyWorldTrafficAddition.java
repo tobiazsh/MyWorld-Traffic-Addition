@@ -68,6 +68,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		PayloadTypeRegistry.playC2S().register(SetRotationCustomizableSignBlockPayload.Id, SetRotationCustomizableSignBlockPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(SetSizeCustomizableSignPayload.Id, SetSizeCustomizableSignPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(SetCustomizableSignTexture.Id, SetCustomizableSignTexture.CODEC);
+		PayloadTypeRegistry.playC2S().register(UpdateTextureVarsCustomizableSignBlockPayload.Id, UpdateTextureVarsCustomizableSignBlockPayload.CODEC);
 
 		ServerPlayNetworking.registerGlobalReceiver(SignPoleRotationPayload.Id, MyWorldTrafficAddition::handleSignPoleRotationPayloadReceived);
 		ServerPlayNetworking.registerGlobalReceiver(SignBlockTextureChangePayload.Id, MyWorldTrafficAddition::handleSignBlockTextureChange);
@@ -82,6 +83,20 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(SetRotationCustomizableSignBlockPayload.Id, MyWorldTrafficAddition::handleSetRotationCustomizableSignBlockPayload);
 		ServerPlayNetworking.registerGlobalReceiver(SetSizeCustomizableSignPayload.Id, MyWorldTrafficAddition::handleSetSizeCustomizableSignPayload);
 		ServerPlayNetworking.registerGlobalReceiver(SetCustomizableSignTexture.Id, MyWorldTrafficAddition::handleSetCustomizableSignTexture);
+		ServerPlayNetworking.registerGlobalReceiver(UpdateTextureVarsCustomizableSignBlockPayload.Id, MyWorldTrafficAddition::handleUpdateTextureVarsCustomizableSignBlockPayload);
+	}
+
+	private static void handleUpdateTextureVarsCustomizableSignBlockPayload(UpdateTextureVarsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
+		ServerPlayerEntity serverPlayer = ctx.player();
+		ServerWorld world = serverPlayer.getServerWorld();
+		BlockPos pos = payload.pos();
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+
+		if (blockEntity instanceof CustomizableSignBlockEntity customizableSignBlockEntity) {
+			world.getServer().execute(() -> {
+				customizableSignBlockEntity.updateTextureVars();
+			});
+		}
 	}
 
 	private static void handleSetCustomizableSignTexture(SetCustomizableSignTexture payload, ServerPlayNetworking.Context ctx) {

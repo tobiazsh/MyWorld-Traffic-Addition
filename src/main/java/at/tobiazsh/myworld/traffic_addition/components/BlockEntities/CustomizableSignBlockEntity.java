@@ -7,6 +7,9 @@ package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -41,6 +44,20 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private int rotation = 0;
     private int height = 1;
     private int width = 1;
+
+    // Texture variables
+    // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
+    public List<String> backgroundStylePieces = new ArrayList<>();
+    public List<BaseElement> elements = new ArrayList<>();
+
+    public void updateTextureVars() {
+        if (!isMaster) return;
+        if (signTextureJson == null || signTextureJson.isEmpty()) return;
+
+        backgroundStylePieces = SignStyleJson.deconstructStyleToArray(new SignStyleJson().convertStringToJson(signTextureJson)).reversed();
+        backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
+        elements = SignStyleJson.deconstructElementsToArray(new SignStyleJson().convertStringToJson(signTextureJson));
+    }
 
     public void setHeight(int height) {
         this.height = height;
@@ -185,6 +202,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         height = nbt.getInt("Height");
         isInitialized = nbt.getBoolean("IsInitialized");
         signTextureJson = nbt.getString("SignTexture");
+
+        updateTextureVars();
     }
 
     @Override
@@ -240,17 +259,17 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     public static List<Boolean> getBorderListBoundingBased(BlockPos masterPos, World world) {
         List<Boolean> borders = new ArrayList<>();
-        Direction NOT_FACING = getRightSideDirection(getFacing(masterPos, world));
+        Direction NOT_FACING = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
         if (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity) {
             borders.add(false);
         } else { borders.add(true); }
 
-        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING, masterPos)) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING, masterPos, 1)) instanceof CustomizableSignBlockEntity) {
             borders.add(false);
         } else { borders.add(true); }
 
-        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING.getOpposite(), masterPos)) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity) {
             borders.add(false);
         } else { borders.add(true); }
 
@@ -326,19 +345,21 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     public static Direction getRightSideDirection(Direction dir) {
         switch (dir) {
-            default -> { return Direction.WEST; }
-            case EAST -> { return Direction.NORTH; }
-            case SOUTH -> { return Direction.EAST; }
-            case WEST -> { return Direction.SOUTH; }
+            default -> { return Direction.EAST; }
+            case EAST -> { return Direction.SOUTH; }
+            case SOUTH -> { return Direction.WEST; }
+            case WEST -> { return Direction.NORTH; }
         }
     }
 
-    public static BlockPos getBlockPosAtDirection(Direction dir, BlockPos pos) {
+    public static BlockPos getBlockPosAtDirection(Direction dir, BlockPos pos, int offset) {
+        if (offset == 0) return pos;
+
         switch (dir) {
-            default -> { return pos.north(); }
-            case EAST -> { return pos.east(); }
-            case SOUTH -> { return pos.south(); }
-            case WEST -> { return pos.west(); }
+            default -> { return pos.north(offset); }
+            case EAST -> { return pos.east(offset); }
+            case SOUTH -> { return pos.south(offset); }
+            case WEST -> { return pos.west(offset); }
         }
     }
 }
