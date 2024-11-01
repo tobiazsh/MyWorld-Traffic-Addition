@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.IOException;
-
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
 
@@ -28,7 +26,7 @@ public class MinecraftClientMixin {
     private Window window;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void initImGui(CallbackInfo ci) throws IOException {
+    public void initImGui(CallbackInfo ci) {
         ImGuiImpl.create(window.getHandle());
     }
 

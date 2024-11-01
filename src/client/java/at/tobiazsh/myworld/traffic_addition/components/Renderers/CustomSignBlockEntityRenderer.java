@@ -10,11 +10,9 @@ package at.tobiazsh.myworld.traffic_addition.components.Renderers;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosExtended;
-import imgui.ImVec2;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -204,7 +202,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         // Coordinates of the master block
         BlockPos masterPos = csbe.getMasterPos();
 
-        BlockPosFloat offsetForward = new BlockPosFloat(0, 0, 0).offset(facing, 0.1f); // Elevate the background slightly so it doesn't clip with the sign
+        BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, 0.075f);
 
         matrices.push();
 
@@ -216,7 +214,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
                 matrices.push();
 
                 BlockPos renderPos = masterPos.up(i - 1);
-                renderPos = CustomizableSignBlockEntity.getBlockPosAtDirection(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), renderPos, j);
+                renderPos = CustomizableSignBlockEntity.getBlockPosAtDirection(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), renderPos, j - 1);
 
                 BlockPos offset = BlockPosExtended.getOffset(masterPos, renderPos);
                 offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1)); // The position of the texture
@@ -225,22 +223,25 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
                 RenderLayer renderLayer = RenderLayer.getEntityCutout(texture);
                 VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
-                matrices.translate(offset.getX(), offset.getY(), offset.getZ());
+                matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Position the texture
+                matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z); // Forward shift so it's visible and not rendered inside the other textures
 
+                // Turn to match the facing direction
+                matrices.translate(0.5, 0.5, 0.5);
+                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(facing.getOpposite())));
+                matrices.translate(-0.5, -0.5, -0.5);
+
+                // Position the vertices
                 vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
                 vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
                 vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
                 vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
 
-                currentListPos++;
+                currentListPos++; // Move to the next texture
 
                 matrices.pop();
             }
         }
-
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(facing.getOpposite())));
-        matrices.translate(-0.5, -0.5, -0.5);
 
         matrices.pop();
     }

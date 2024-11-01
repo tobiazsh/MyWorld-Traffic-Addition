@@ -21,10 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /*
-	@author Tobias Schweighofer
-	@owner Tobias Schweighofer
+	@author Tobias
+	@owner Tobias
 	@mod MyWorld Traffic Addition
-	@copyright 2024-2024 Tobias Schweighofer
 
 	You may modify this code and share with others but you may not make profit off of it and you must credit me if you share this code without any changes except for development purposes.
 

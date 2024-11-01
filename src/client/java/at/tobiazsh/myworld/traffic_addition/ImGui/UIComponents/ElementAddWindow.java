@@ -49,20 +49,20 @@ public class ElementAddWindow {
 			ImGui.separator();
 
 			// Begin a child window for the elements display
-			if (ImGui.beginChild("##elementsDisplay")) {
-				if (folder != null) {
-					folder.forEach(icon -> {
-						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
-						elementIcon.render();
+			ImGui.beginChild("##elementsDisplay");
 
-						if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
-							ImGui.sameLine();
-						}
-					});
-				}
+			if (folder != null) {
+				folder.forEach(icon -> {
+					ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
+					elementIcon.render();
 
-				ImGui.endChild();
+					if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
+						ImGui.sameLine();
+					}
+				});
 			}
+
+			ImGui.endChild();
 
 			ImGui.end();
 		}

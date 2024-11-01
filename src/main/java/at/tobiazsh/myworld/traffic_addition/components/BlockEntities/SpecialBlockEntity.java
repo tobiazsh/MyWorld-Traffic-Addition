@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -18,7 +19,7 @@ public class SpecialBlockEntity extends BlockEntity {
         SPECIAL_BLOCK_ENTITY = Registry.register(
                 Registries.BLOCK_ENTITY_TYPE,
                 Identifier.of(MyWorldTrafficAddition.MOD_ID, "special_block"),
-                BlockEntityType.Builder.create(SpecialBlockEntity::new, SPECIAL_BLOCK).build()
+                FabricBlockEntityTypeBuilder.create(SpecialBlockEntity::new, SPECIAL_BLOCK).build()
         );
     }
 

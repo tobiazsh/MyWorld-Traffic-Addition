@@ -17,21 +17,24 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class CustomizableSignBlock extends BlockWithEntity {
 
-    public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
     public static final MapCodec<CustomizableSignBlock> CODEC = createCodec(CustomizableSignBlock::new);
 
     // Check if there is a sign pole at any corner
@@ -102,7 +105,7 @@ public class CustomizableSignBlock extends BlockWithEntity {
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient() && ((CustomizableSignBlockEntity)(world.getBlockEntity(pos))).isMaster()) {
+        if (player.isSneaking() && !world.isClient() && ((CustomizableSignBlockEntity)(Objects.requireNonNull(world.getBlockEntity(pos)))).isMaster()) {
             MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayerEntity) player, pos);
 
             return ActionResult.SUCCESS;

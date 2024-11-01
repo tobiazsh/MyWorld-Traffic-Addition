@@ -20,8 +20,22 @@ public class BlockPosFloat {
         this(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public BlockPos toBlockPos() {
-        return new BlockPos((int) x, (int) y, (int) z);
+    /**
+     * Converts a BlockPosFloat to a BlockPos
+     * @param bpf The BlockPosFloat to convert
+     * @return The converted BlockPos
+     */
+    public static BlockPos toBlockPos(BlockPosFloat bpf) {
+        return new BlockPos((int) bpf.x, (int) bpf.y, (int) bpf.z);
+    }
+
+    /**
+     * Converts a BlockPos to a BlockPosFloat
+     * @param pos The BlockPos to convert
+     * @return The converted BlockPosFloat
+     */
+    public static BlockPosFloat fromBlockPos(BlockPos pos) {
+        return new BlockPosFloat(pos.getX(), pos.getY(), pos.getZ());
     }
 
     /**
@@ -54,7 +68,7 @@ public class BlockPosFloat {
     /**
      * Offsets the BlockPosFloat to a specific amount to south
      * @param amount The amount to offset to south
-     * @return
+     * @return BlockPosFloat
      */
     public BlockPosFloat south(float amount) {
         return this.offset(Direction.SOUTH, amount);
