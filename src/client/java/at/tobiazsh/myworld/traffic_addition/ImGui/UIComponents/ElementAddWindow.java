@@ -49,23 +49,21 @@ public class ElementAddWindow {
 			ImGui.separator();
 
 			// Begin a child window for the elements display
-			ImGui.beginChild("##elementsDisplay");
+			if (ImGui.beginChild("##elementsDisplay")) {
+				if (folder != null) {
+					folder.forEach(icon -> {
+						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
+						elementIcon.render();
 
-			if (folder != null) {
-				folder.forEach(icon -> {
-					ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
-					elementIcon.render();
-
-					if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
-						ImGui.sameLine();
-					}
-				});
+						if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
+							ImGui.sameLine();
+						}
+					});
+				}
 			}
-
 			ImGui.endChild();
-
-			ImGui.end();
 		}
+		ImGui.end();
 	}
 
 	/**
@@ -139,8 +137,8 @@ public class ElementAddWindow {
 						if (texture != null) {
 							ImGui.image(texture.getTextureId(), previewSize, previewSize);
 						}
-						ImGui.endChild();
 					}
+					ImGui.endChild();
 
 					ImGui.spacing();
 
@@ -155,17 +153,16 @@ public class ElementAddWindow {
 					ImGui.pushStyleColor(ImGuiCol.Text, ImGui.getColorU32(92 / 255f, 93 / 255f, 94 / 255f, 1.0f));
 					ImGui.textWrapped(path);
 					ImGui.popStyleColor();
-
-					ImGui.endChild();
 				}
+				ImGui.endChild();
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
 				if (ImGui.button("Add")) {
 					addElement(new ImageElement(1.0f, path));
 				}
 
-				ImGui.endChild();
 			}
+			ImGui.endChild();
 		}
 
 		public ElementIcon (String name, String path, float width, float height) {

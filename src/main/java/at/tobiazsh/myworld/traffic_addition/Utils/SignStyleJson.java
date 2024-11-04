@@ -98,16 +98,25 @@ public class SignStyleJson {
 			String elementName = element.name;
 			String elementSize = element.getWidth() + "x" + element.getHeight();
 			String elementPosition = element.getX() + ";" + element.getY();
+			float elementFactor = element.getFactor();
 			float elementRotation = element.getRotation();
+
+			elementName = elementName.isEmpty() || elementName.isBlank() ? "UNKNOWN" : elementName;
 
 			object.addProperty("Pos", position);
 			object.addProperty("Name", elementName);
 			object.addProperty("Size", elementSize);
 			object.addProperty("ElementPos", elementPosition);
 			object.addProperty("Rotation", elementRotation);
+			object.addProperty("Factor", elementFactor);
 
 			if (element instanceof ImageElement) {
 				elementType = ELEMENT_TYPE.IMAGE_ELEMENT;
+
+				if (((ImageElement) element).getResourcePath().isBlank() || ((ImageElement) element).getResourcePath().isEmpty()) {
+					return;
+				}
+
 				String elementTexture = ((ImageElement) element).getResourcePath();
 				object.addProperty("Texture", elementTexture);
 			} else if (element instanceof TextElement)  {
@@ -143,6 +152,8 @@ public class SignStyleJson {
 
 	public static List<String> deconstructStyleToArray(SignStyleJson signStyleJson) {
 		List<String> textures = new ArrayList<>();
+
+		if (!signStyleJson.json.has("Style")) return textures;
 		String constructedJson = signStyleJson.json.get("Style").toString();
 
 		// Step 1: Split by '*'
@@ -180,6 +191,7 @@ public class SignStyleJson {
 			String elemPosStr = elementObject.get("ElementPos").getAsString();
 			ELEMENT_TYPE elementType = ELEMENT_TYPE.values()[elementObject.get("ElementType").getAsInt()]; // Retrieve enumerator; Element Type
 			float rotation = elementObject.get("Rotation").getAsFloat();
+			float factor = elementObject.get("Factor").getAsFloat();
 
 			String[] pos = posStr.split(";");
 			BlockPos masterPos = new BlockPos(Integer.parseInt(pos[0]), Integer.parseInt(pos[1]), Integer.parseInt(pos[2]));
@@ -201,9 +213,11 @@ public class SignStyleJson {
 			} else if (elementType.equals(ELEMENT_TYPE.TEXT_ELEMENT)) {
 				element = new TextElement(x, y, width, height, 1);
 			}
-			
-			element.name = name;
+
+            assert element != null;
+            element.name = name;
 			element.setRotation(rotation);
+			element.setFactor(factor);
 			
 			elementsList.add(element);
 		}

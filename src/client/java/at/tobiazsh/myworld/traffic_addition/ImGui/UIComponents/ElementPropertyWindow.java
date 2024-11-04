@@ -24,6 +24,7 @@ public class ElementPropertyWindow {
 	private static final ImGui imgui = new ImGui();
 	private static boolean relateSize = true;
 	private static ImVec2 ratioedSignSize = new ImVec2();
+	private static float factor;
 
 	public static boolean shouldRender = false;
 
@@ -33,6 +34,7 @@ public class ElementPropertyWindow {
 		relateSize = true;
 		ElementPropertyWindow.element = element;
 		ElementPropertyWindow.ratioedSignSize = ratioedSignSize;
+		factor = element.getFactor();
 	}
 
 	public static void render() {
@@ -137,13 +139,13 @@ public class ElementPropertyWindow {
 
 			if (ImGui.button("Center Horizontally")) {
 				int index = baseElementDrawOrder.indexOf(element);
-				element.setX((ratioedSignSize.x - elemW[0]) / 4);
+				element.setX((ratioedSignSize.x - elemW[0]) / 2);
 				baseElementDrawOrder.set(index, element);
 			}
 
 			if (ImGui.button("Center Vertically")) {
 				int index = baseElementDrawOrder.indexOf(element);
-				element.setY((ratioedSignSize.y - elemH[0]) / 4);
+				element.setY((ratioedSignSize.y - elemH[0]) / 2);
 				baseElementDrawOrder.set(index, element);
 			}
 

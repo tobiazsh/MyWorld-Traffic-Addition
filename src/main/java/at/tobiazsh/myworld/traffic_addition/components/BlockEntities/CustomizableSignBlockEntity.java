@@ -9,6 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import net.minecraft.block.Block;
@@ -26,6 +27,7 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
 
@@ -57,6 +59,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         backgroundStylePieces = SignStyleJson.deconstructStyleToArray(new SignStyleJson().convertStringToJson(signTextureJson)).reversed();
         backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
         elements = SignStyleJson.deconstructElementsToArray(new SignStyleJson().convertStringToJson(signTextureJson));
+
+        elements.replaceAll(element -> {
+            if (element instanceof ImageElement) {
+                ((ImageElement) element).setResourcePath(((ImageElement)element).getResourcePath().replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
+            }
+
+            return element;
+        });
     }
 
     public void setHeight(int height) {
@@ -170,10 +180,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         this.masterPos = pos;
     }
 
-    @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-
+    private void nbtWrite(NbtCompound nbt) {
         nbt.putString("BorderModelPath", borderModelPath);
         nbt.putBoolean("IsMaster", isMaster);
         nbt.putString("MasterPos", constructMasterPosString(masterPos));
@@ -185,6 +192,13 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         nbt.putInt("Height", height);
         nbt.putBoolean("IsInitialized", isInitialized);
         nbt.putString("SignTexture", signTextureJson);
+    }
+
+    @Override
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
+
+        nbtWrite(nbt);
     }
 
     @Override
@@ -215,17 +229,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
         NbtCompound nbt = super.toInitialChunkDataNbt(registryLookup);
 
-        nbt.putString("BorderModelPath", borderModelPath);
-        nbt.putBoolean("IsMaster", isMaster);
-        nbt.putString("MasterPos", constructMasterPosString(masterPos));
-        nbt.putString("SignPolePositions", signPolePositions);
-        nbt.putBoolean("RenderingState", renderingState);
-        nbt.putString("SignPositions", signPositions);
-        nbt.putInt("Rotation", rotation);
-        nbt.putInt("Width", width);
-        nbt.putInt("Height", height);
-        nbt.putBoolean("IsInitialized", isInitialized);
-        nbt.putString("SignTexture", signTextureJson);
+        nbtWrite(nbt);
 
         return nbt;
     }

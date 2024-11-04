@@ -78,18 +78,14 @@ public class FileSystem {
 			URI uri = resourceURL.toURI();
 			Folder rootDir = null;
 
-			try (java.nio.file.FileSystem fileSystem = initializeFileSystem(uri)) {
+			try (CustomFileSystem fileSystem = initializeFileSystem(uri)) {
 				Path resourcePath = Paths.get(uri);
 				rootDir = new Folder(resourcePath.getFileName().toString(), path);
 
 				// Populate the directory structure
 				populateDirectory(rootDir, resourcePath, path);
 
-				// Clean up the file system if created
-				if (fileSystem != null && fileSystem.isOpen()) {
-					fileSystem.close();
-				}
-			} catch (ClosedFileSystemException e) {
+            } catch (Exception e) {
 				// Handle or log the exception
 			}
 
@@ -103,16 +99,16 @@ public class FileSystem {
 		 * @throws IOException Is thrown when an I/O error occurs while creating the file system
 		 */
 
-		private static java.nio.file.FileSystem initializeFileSystem(URI uri) throws IOException {
+		private static CustomFileSystem initializeFileSystem(URI uri) throws IOException {
 			String uriStr = uri.toString();
 			String fileSystemPath = uriStr.split("!")[0];
 
 			if ("jar".equals(uri.getScheme())) {
 				try {
-					return FileSystems.getFileSystem(URI.create(fileSystemPath));
+					return new CustomFileSystem((FileSystems.getFileSystem(URI.create(fileSystemPath))), false); // Not closing the filesystem avoid a ClosedFileSystemException in Minecraft
 				} catch (FileSystemNotFoundException e) {
 					System.out.println("Creating new file system for: " + fileSystemPath);
-					return FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>());
+					return new CustomFileSystem(FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>()), true); // But it should close it when it is opened just for this. Kinda like borrowing the value lol
 				}
 			}
 			return null; // No file system needed for non-JAR resources
@@ -143,6 +139,23 @@ public class FileSystem {
 						rootDir.addContent(new File(fileName, entryPath));
 					}
 				}
+			}
+		}
+	}
+
+	public static class CustomFileSystem implements AutoCloseable {
+		public java.nio.file.FileSystem filesystem;
+		public boolean shouldClose;
+
+		public CustomFileSystem(java.nio.file.FileSystem fs, boolean shouldClose) {
+			this.shouldClose = shouldClose;
+			this.filesystem = fs;
+		}
+
+		@Override
+		public void close() throws Exception {
+			if (shouldClose && filesystem.isOpen()) {
+				filesystem.close();
 			}
 		}
 	}

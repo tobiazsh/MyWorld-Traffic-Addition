@@ -13,7 +13,6 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.Color;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
@@ -371,21 +370,9 @@ public class SignEditorScreen {
 
     private static ImVec2 previewPos = new ImVec2();
 
-    private static ImageElement testElem = new ImageElement(0, 0, 250, 250, 1, "/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/other/Lucky.jpg");
-    private static ImageElement testElem2 = new ImageElement(0, 0, 250, 250, 1, "/assets/myworld_traffic_addition/textures/imgui/icons/text.png");
-    private static boolean testElemIsInit = true;
-
     public static void SignPreview(float totalSignWidthPixels, float totalSignHeightPixels, float factor) {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);  // Remove spacing between items
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);  // Remove padding inside the frame
-
-        if (!testElemIsInit) {
-            testElem.loadTexture();
-            testElem2.loadTexture();
-            baseElementDrawOrder.add(testElem);
-            baseElementDrawOrder.add(testElem2);
-            testElemIsInit = true;
-        }
 
         baseElementDrawOrder.forEach(texture -> texture.setFactor(factor));
 
@@ -417,13 +404,13 @@ public class SignEditorScreen {
         ImGui.endChild();
 
         for (int i = baseElementDrawOrder.size() - 1; i >= 0; i--) {
-            BaseElement texture = baseElementDrawOrder.get(i);
+            BaseElement element = baseElementDrawOrder.get(i);
 
             ImGui.setCursorPos(previewPos.x, previewPos.y);
-            ImGui.beginChild("OVERLAY_CANVAS_" + texture.getId(), totalSignWidthPixels, totalSignHeightPixels);
+            ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), totalSignWidthPixels, totalSignHeightPixels);
 
-            ImGui.setCursorPos(texture.getX(), texture.getY());
-            texture.renderImGui();
+            ImGui.setCursorPos(element.getX() / factor, element.getY() / factor);
+            element.renderImGui();
 
             ImGui.endChild();
         }

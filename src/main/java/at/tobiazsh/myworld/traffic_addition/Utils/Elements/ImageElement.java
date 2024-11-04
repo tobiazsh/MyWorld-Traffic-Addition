@@ -78,11 +78,6 @@ public class ImageElement extends BaseElement{
 		);
 	}
 
-	@Override
-	public void renderMinecraft() {
-
-	}
-
 	public void loadTexture() {
 		if (resourcePath.isEmpty()) {
 			System.err.println("Error (Loading texture on ImageElement): Couldn't load texture because resource path is empty!");
@@ -163,5 +158,10 @@ public class ImageElement extends BaseElement{
 
 	public String getResourcePath() {
 		return resourcePath;
+	}
+
+	public ImageElement setResourcePath(String resourcePath) {
+		this.resourcePath = resourcePath;
+		return this;
 	}
 }

@@ -7,7 +7,6 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
  * @author Tobias
  */
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +43,6 @@ public abstract class BaseElement {
 	}
 
 	public abstract void renderImGui(); // Abstract render method to be implemented by subclasses
-	public abstract void renderMinecraft();
 
 	public void setPosition(float x, float y) {
 		this.x = x;
@@ -133,6 +131,10 @@ public abstract class BaseElement {
 
 	public void setFactor(float factor) {
 		this.factor = factor;
+	}
+
+	public float getFactor() {
+		return factor;
 	}
 
 	public void setRotation(float angle) {

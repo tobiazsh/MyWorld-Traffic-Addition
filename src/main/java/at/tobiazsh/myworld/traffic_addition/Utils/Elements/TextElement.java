@@ -17,9 +17,4 @@ public class TextElement extends BaseElement{
 	public void renderImGui() {
 
 	}
-
-	@Override
-	public void renderMinecraft() {
-
-	}
 }
