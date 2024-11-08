@@ -216,6 +216,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         int currentListPos = 0;
         for (int i = height; i > 0; i--) {
             for (int j = width; j > 0; j--) {
+                if (currentListPos >= backgroundStylePieces.size()) break; // Prevent out of bounds crashes
 
                 matrices.push();
 

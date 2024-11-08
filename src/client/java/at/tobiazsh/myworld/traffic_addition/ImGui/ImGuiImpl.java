@@ -47,9 +47,9 @@ public class ImGuiImpl {
         final ImFontConfig fontConfig = new ImFontConfig();
 
         final short[] glyphRanges = rangesBuilder.buildRanges();
-        DejaVuSans = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/DejaVuSans.ttf"), 20, fontConfig, glyphRanges);
-        DejaVuSansBold = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/DejaVuSans-Bold.ttf"), 20, fontConfig, glyphRanges);
-        DejaVuSansBoldBig = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/DejaVuSans-Bold.ttf"), 30, fontConfig, glyphRanges);
+        DejaVuSans = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/dejavu_sans.ttf"), 20, fontConfig, glyphRanges);
+        DejaVuSansBold = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/dejavu_sans_bold.ttf"), 20, fontConfig, glyphRanges);
+        DejaVuSansBoldBig = io.getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/textures/imgui/fonts/dejavu_sans_bold.ttf"), 30, fontConfig, glyphRanges);
 
         io.getFonts().build();
         fontConfig.destroy();

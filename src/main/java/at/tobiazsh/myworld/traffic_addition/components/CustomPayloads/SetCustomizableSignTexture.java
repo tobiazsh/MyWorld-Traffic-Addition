@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
@@ -20,7 +20,7 @@ public record SetCustomizableSignTexture(BlockPos pos, String json) implements C
 
 	public static final CustomPayload.Id<SetCustomizableSignTexture> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "customizable_sign_block_sign_texture_change"));
 
-	public static final PacketCodec<PacketByteBuf, SetCustomizableSignTexture> CODEC = PacketCodec.tuple(
+	public static final PacketCodec<ByteBuf, SetCustomizableSignTexture> CODEC = PacketCodec.tuple(
 			BlockPos.PACKET_CODEC, SetCustomizableSignTexture::pos,
 			PacketCodecs.STRING, SetCustomizableSignTexture::json,
 			SetCustomizableSignTexture::new

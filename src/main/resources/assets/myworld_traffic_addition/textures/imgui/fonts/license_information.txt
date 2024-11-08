@@ -1,0 +1,40 @@
+PANEUROPA FONT
+All "Paneuropa" fonts are made by "Peter Wiegel" and downloaded from the font distribution website "FONTSPACE". All credits go to Peter Wiegel, the creator of the Paneuropa font. Paneuropa is licensed under the SIL Open Font License
+(https://openfontlicense.org/). These fonts are provided solely to enhance the user experience within this project repository as a basic selection of fonts and are not to be redistributed or used for other purposes.
+The license can be found on the FONTSPACE-Site of the font, which can be found here: https://www.fontspace.com/paneuropa--font-f7841
+
+
+-----
+
+
+DIN 1451 MITTELSCHRIFT FONT
+All "DIN 1451 Mittelschrift" Fonts are freely available for download on the font distribution site "https://www.1001fonts.com". All credits go to the creator of the DIN 1451 Mittelschrift font. DIN 1451 Mittelschrift is licensed
+under the SIL Open Font License (https://openfontlicense.org/) as stated on the download page of the font (https://www.1001fonts.com/alte-din-1451-mittelschrift-font.html). These fonts are provided solely
+to build a basic collection already-included fonts within this project repository, so users do not have to include them manually, and are not to be redistributed or used outside this project.
+
+
+-----
+
+
+GLISCOR GOTHIC FONT
+Font Name: Gliscor Gothic
+Font Author: Tom Oetken
+Source: DAFONT (https://www.dafont.com/gliscor-gothic.font)
+
+Usage Permission: The creator has provided written confirmation via email, allowing use and modifications of this font for inclusion in this project repository. The font is marked as "Free" on multiple reputable distribution sites and is
+used here to build a collection of basic, already-included fonts within this project repository.
+
+Modification Statement: Some modifications were made to the original font solely for project-specific purposes. No claims are made regarding ownership, redistribution, or modification rights beyond this scope.
+
+
+-----
+
+
+DROGOWASKAZ FONT
+Font name: Drogowskaz
+Font author: Emil Wojtacki
+Source: LACA (https://www.lacarchive.com/item/drogowskaz)
+
+License: Freeware for non-commercial use. Redistribution is allowed only in the original, unmodified form. Commercial use requires notifying the author (Emil Wojtacki). See the full license terms for details. [Source: https://www.ffonts.net/Drogowskaz.font in included license file]
+
+Disclaimer: The author assumes no responsibility for any consequences of using this font file.

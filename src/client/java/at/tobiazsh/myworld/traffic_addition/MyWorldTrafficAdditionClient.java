@@ -7,90 +7,130 @@ import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenCustom
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenSignPoleRotationScreenPayload;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.components.Renderers.*;
-import at.tobiazsh.myworld.traffic_addition.components.Screens.CustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.components.Screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.components.Screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.components.Screens.SignSelectionScreen;
+import at.tobiazsh.myworld.traffic_addition.components.Utils.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.components.Utils.RegistrableBlockEntityRender;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
 
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
-	public static CustomizableSignEditScreen customizableSignEditScreen;
+	public static CustomizableSignSettingScreen customizableSignSettingScreen;
+
+	private static List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
+	private static List<String> modelPaths = new ArrayList<>();
+	private static List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
 
 	@Override
 	public void onInitializeClient() {
-		BlockEntityRendererFactories.register(SPECIAL_BLOCK_ENTITY, SpecialBlockEntityRenderer::new);
-		BlockEntityRendererFactories.register(SIGN_POLE_BLOCK_ENTITY, SignPoleEntityRenderer::new);
-		BlockEntityRendererFactories.register(TRIANGULAR_SIGN_BLOCK_ENTITY, TriangularSignBlockEntityRenderer::new);
-		BlockEntityRendererFactories.register(UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK_ENTITY, UpsideDownTriangularSignBlockEntityRenderer::new);
-		BlockEntityRendererFactories.register(OCTAGONAL_SIGN_BLOCK_ENTITY, OctagonalSignBlockEntityRenderer::new);
-		BlockEntityRendererFactories.register(ROUND_SIGN_BLOCK_ENTITY, RoundSignBlockEntityRenderer::new);
-		BlockEntityRendererFactories.register(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, CustomSignBlockEntityRenderer::new);
+		addGlobalReceivers();
+		GlobalReceiverClient.bulkRegisterGlobalReceiversClient(globalReceiverClients);
 
-		ClientPlayNetworking.registerGlobalReceiver(OpenSignPoleRotationScreenPayload.Id, (payload, context) -> {
-			context.client().execute(() -> {
-				BlockPos pos = payload.pos();
-				MinecraftClient.getInstance().setScreen(new SignPoleRotationScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player));
-			});
-		});
+		addBlockEntityRenderers();
+		RegistrableBlockEntityRender.bulkRegisterBlockEntityRenderers(blockEntityRenderers);
 
-		ClientPlayNetworking.registerGlobalReceiver(OpenSignSelectionPayload.Id, ((payload, context) -> {
-			context.client().execute(() -> {
-				BlockPos pos = payload.pos();
-				MinecraftClient.getInstance().setScreen(new SignSelectionScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player, ModVars.getSignSelectionEnum(payload.selection_type())));
-			});
-		}));
+		addModelPaths();
+		registerNonBlockModels();
 
-		ClientPlayNetworking.registerGlobalReceiver(OpenCustomizableSignEditScreen.Id, (((payload, context) -> {
-			context.client().execute(() -> {
-				BlockPos pos = payload.pos();
-				customizableSignEditScreen = new CustomizableSignEditScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player);
-				MinecraftClient.getInstance().setScreen(customizableSignEditScreen);
-			});
-		})));
+		putBlockRenderLayers();
+	}
 
-		ClientPlayNetworking.registerGlobalReceiver(ShowDemoWindow.Id, ((payload, context) -> {
-			context.client().execute(() -> {
-				ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow;
-			});
-		}));
+	public static void putBlockRenderLayer(Block block, RenderLayer renderLayer) {
+		BlockRenderLayerMap.INSTANCE.putBlock(block, renderLayer);
+	}
 
-		ClientPlayNetworking.registerGlobalReceiver(ShowAboutWindow.Id, (payload, context) -> {
-			context.client().execute(() -> {
-				ImGuiRenderer.showAboutWindow = true;
-			});
-		});
+	private static Identifier genModId(String path) {
+		return Identifier.of(MyWorldTrafficAddition.MOD_ID, path);
+	}
 
-		BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.OCTAGONAL_SIGN_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.SIGN_HOLDER_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK, RenderLayer.getCutout());
+	private static void putBlockRenderLayers() {
+		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK, RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK, RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK, RenderLayer.getCutout());
+	}
 
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_all")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_top")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_bottom")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_left")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_right")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_top_bottom")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_left_right")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_top_left")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_top_right")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_bottom_left")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_bottom_right")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_not_right")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_not_left")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_not_top")));
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(Identifier.of(MyWorldTrafficAddition.MOD_ID, "block/customizable_sign_block_border_not_bottom")));
+	private static void registerNonBlockModel(Identifier id) {
+		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(id));
+	}
+
+	private static void registerNonBlockModels() {
+		modelPaths.forEach(path -> registerNonBlockModel(genModId(path)));
+	}
+
+	private static void addBlockEntityRenderers() {
+		blockEntityRenderers.addAll(Arrays.asList(
+				new RegistrableBlockEntityRender<>(SPECIAL_BLOCK_ENTITY, SpecialBlockEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(SIGN_POLE_BLOCK_ENTITY, SignPoleEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(TRIANGULAR_SIGN_BLOCK_ENTITY, TriangularSignBlockEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK_ENTITY, UpsideDownTriangularSignBlockEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(OCTAGONAL_SIGN_BLOCK_ENTITY, OctagonalSignBlockEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(ROUND_SIGN_BLOCK_ENTITY, RoundSignBlockEntityRenderer::new),
+				new RegistrableBlockEntityRender<>(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, CustomSignBlockEntityRenderer::new)
+		));
+	}
+
+	private static void addModelPaths() {
+		modelPaths.addAll(Arrays.asList(
+				"block/customizable_sign_block_border_all",
+				"block/customizable_sign_block_border_top",
+				"block/customizable_sign_block_border_bottom",
+				"block/customizable_sign_block_border_left",
+				"block/customizable_sign_block_border_right",
+				"block/customizable_sign_block_border_top_bottom",
+				"block/customizable_sign_block_border_left_right",
+				"block/customizable_sign_block_border_top_left",
+				"block/customizable_sign_block_border_top_right",
+				"block/customizable_sign_block_border_bottom_left",
+				"block/customizable_sign_block_border_bottom_right",
+				"block/customizable_sign_block_border_not_right",
+				"block/customizable_sign_block_border_not_left",
+				"block/customizable_sign_block_border_not_top",
+				"block/customizable_sign_block_border_not_bottom"
+		));
+	}
+
+	private static void addGlobalReceivers() {
+		globalReceiverClients.addAll(Arrays.asList(
+				new GlobalReceiverClient<>(OpenSignPoleRotationScreenPayload.Id, (payload) -> {
+					BlockPos pos = payload.pos();
+					MinecraftClient.getInstance().setScreen(new SignPoleRotationScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player));
+				}),
+
+				new GlobalReceiverClient<>(OpenSignSelectionPayload.Id, (payload) -> {
+					BlockPos pos = payload.pos();
+					MinecraftClient.getInstance().setScreen(new SignSelectionScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player, ModVars.getSignSelectionEnum(payload.selection_type())));
+				}),
+
+				new GlobalReceiverClient<>(OpenCustomizableSignEditScreen.Id, (payload) -> {
+					BlockPos pos = payload.pos();
+					customizableSignSettingScreen = new CustomizableSignSettingScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player);
+					MinecraftClient.getInstance().setScreen(customizableSignSettingScreen);
+				}),
+
+				new GlobalReceiverClient<>(ShowDemoWindow.Id,
+						(payload) -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow),
+
+				new GlobalReceiverClient<>(ShowAboutWindow.Id,
+						(payload) -> ImGuiRenderer.showAboutWindow = true)
+		));
 	}
 }

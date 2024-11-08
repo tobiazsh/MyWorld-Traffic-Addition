@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 public record SetRotationCustomizableSignBlockPayload(BlockPos pos, int rotation) implements CustomPayload {
     public static final CustomPayload.Id<SetRotationCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_rotation_customizable_sign_block_rotation"));
 
-    public static final PacketCodec<PacketByteBuf, SetRotationCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
+    public static final PacketCodec<ByteBuf, SetRotationCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetRotationCustomizableSignBlockPayload::pos,
             PacketCodecs.INTEGER, SetRotationCustomizableSignBlockPayload::rotation,
             SetRotationCustomizableSignBlockPayload::new

@@ -34,7 +34,7 @@ import java.util.List;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
 
 @Environment(EnvType.CLIENT)
-public class CustomizableSignEditScreen extends Screen {
+public class CustomizableSignSettingScreen extends Screen {
 
     World world;
     BlockPos pos;
@@ -55,7 +55,7 @@ public class CustomizableSignEditScreen extends Screen {
     private int signWidth = 1;
     private int signHeight = 1;
 
-    public CustomizableSignEditScreen(World world, BlockPos pos, PlayerEntity player) {
+    public CustomizableSignSettingScreen(World world, BlockPos pos, PlayerEntity player) {
         super(TITLE);
         this.world = world;
         this.pos = pos;
@@ -102,23 +102,10 @@ public class CustomizableSignEditScreen extends Screen {
         currentYPosition += 30;
         usedHeight += 30;
 
-        // DEBUG START
-        ButtonWidget testButton = ButtonWidget.builder(Text.of("Test Directions Offset"), button -> {
-            System.out.println("Direction Offset North: X: " + Direction.NORTH.getOffsetX() + " | Y: " + Direction.NORTH.getOffsetY() + " | Z: " + Direction.NORTH.getOffsetZ());
-            System.out.println("Direction Offset East: X: " + Direction.EAST.getOffsetX() + " | Y: " + Direction.EAST.getOffsetY() + " | Z: " + Direction.EAST.getOffsetZ());
-            System.out.println("Direction Offset South: X: " + Direction.SOUTH.getOffsetX() + " | Y: " + Direction.SOUTH.getOffsetY() + " | Z: " + Direction.SOUTH.getOffsetZ());
-            System.out.println("Direction Offset West: X: " + Direction.WEST.getOffsetX() + " | Y: " + Direction.WEST.getOffsetY() + " | Z: " + Direction.WEST.getOffsetZ());
-        }).dimensions(margin, currentYPosition, 200, 20).build();
-        // DEBUG END
-
-        currentYPosition += 30;
-        usedHeight += 30;
-
         // Place last
         this.addDrawableChild(initButton);
         this.addDrawableChild(rotationWidget);
         this.addDrawableChild(drawEditorButton);
-        this.addDrawableChild(testButton); // DEBUG LINE
     }
 
     private void showEditorScreen() {
@@ -135,8 +122,8 @@ public class CustomizableSignEditScreen extends Screen {
 
     private void reopen(boolean showChildren) {
         this.close();
-        CustomizableSignEditScreen screen = new CustomizableSignEditScreen(this.world, this.pos, this.player);
-        screen.showChildren = false;
+        CustomizableSignSettingScreen screen = new CustomizableSignSettingScreen(this.world, this.pos, this.player);
+        screen.showChildren = showChildren;
         MinecraftClient.getInstance().setScreen(screen);
     }
 

@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, String blockPosString) implements CustomPayload {
     public static final CustomPayload.Id<SetSignPositionsCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_sign_positions_customizable_sign_block_payload"));
 
-    public static final PacketCodec<PacketByteBuf, SetSignPositionsCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
+    public static final PacketCodec<ByteBuf, SetSignPositionsCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetSignPositionsCustomizableSignBlockPayload::pos,
             PacketCodecs.STRING, SetSignPositionsCustomizableSignBlockPayload::blockPosString,
             SetSignPositionsCustomizableSignBlockPayload::new

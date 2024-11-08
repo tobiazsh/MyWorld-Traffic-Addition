@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockC
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
@@ -17,7 +17,7 @@ import net.minecraft.util.Identifier;
 
 public record ShowDemoWindow(int i) implements CustomPayload {
     public static final CustomPayload.Id<ShowDemoWindow> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "show_demo_window_payload"));
-    public static final PacketCodec<PacketByteBuf, ShowDemoWindow> CODEC = PacketCodec.tuple(
+    public static final PacketCodec<ByteBuf, ShowDemoWindow> CODEC = PacketCodec.tuple(
             PacketCodecs.INTEGER, ShowDemoWindow::i
             ,ShowDemoWindow::new
     );

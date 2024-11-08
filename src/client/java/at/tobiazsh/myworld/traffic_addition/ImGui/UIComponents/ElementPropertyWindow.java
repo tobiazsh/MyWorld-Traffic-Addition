@@ -37,6 +37,8 @@ public class ElementPropertyWindow {
 		factor = element.getFactor();
 	}
 
+	// TODO: Clear when closing everything
+
 	public static void render() {
 		if (!shouldRender) return;
 
@@ -125,25 +127,29 @@ public class ElementPropertyWindow {
 			ImGui.text("Position");
 			ImGui.popFont();
 
-			if (ImGui.dragFloat("Horizontal", elemX, 1.0f, 0.0f, ratioedSignSize.x)) {
+			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
+			if (ImGui.dragFloat("X", elemX, 1.0f, 0.0f, ratioedSignSize.x - elemW[0])) {
 				int index = baseElementDrawOrder.indexOf(element);
 				element.setX(elemX[0]);
 				baseElementDrawOrder.set(index, element);
 			}
 
-			if (ImGui.dragFloat("Vertical", elemY, 1.0f, 0.0f, ratioedSignSize.y)) {
+			// Drag Float for the position of the element on the Y-Coordinate; Max is the sign's width minus the element's width to not exceed the bounds
+			if (ImGui.dragFloat("Y", elemY, 1.0f, 0.0f, ratioedSignSize.y - elemH[0])) {
 				int index = baseElementDrawOrder.indexOf(element);
 				element.setY(elemY[0]);
 				baseElementDrawOrder.set(index, element);
 			}
 
-			if (ImGui.button("Center Horizontally")) {
+			// Button that centers the current selected element on the X-Coordinate
+			if (ImGui.button("Center X")) {
 				int index = baseElementDrawOrder.indexOf(element);
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
 				baseElementDrawOrder.set(index, element);
 			}
 
-			if (ImGui.button("Center Vertically")) {
+			// Button that centers the current selected element on the Y-Coordinate
+			if (ImGui.button("Center Y")) {
 				int index = baseElementDrawOrder.indexOf(element);
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
 				baseElementDrawOrder.set(index, element);

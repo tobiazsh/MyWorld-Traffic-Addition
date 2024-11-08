@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.CustomPayloads;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.network.RegistryByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 public record SignBlockTextureChangePayload(BlockPos pos, String textureId) implements CustomPayload {
 
     public static final CustomPayload.Id<SignBlockTextureChangePayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID + ".sign_block_texture_change"));
-    public static final PacketCodec<RegistryByteBuf, SignBlockTextureChangePayload> CODEC = PacketCodec.tuple(
+    public static final PacketCodec<ByteBuf, SignBlockTextureChangePayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SignBlockTextureChangePayload::pos,
             PacketCodecs.STRING, SignBlockTextureChangePayload::textureId,
             SignBlockTextureChangePayload::new
