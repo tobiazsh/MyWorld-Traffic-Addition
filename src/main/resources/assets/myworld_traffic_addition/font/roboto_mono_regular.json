@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "myworld_traffic_addition:roboto_mono_regular.ttf",
+      "shift": [0, 0],
+      "size": 12,
+      "oversample": 20
+    }
+  ]
+}

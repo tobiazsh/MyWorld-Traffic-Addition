@@ -17,6 +17,8 @@
 
 My code may not be the most beautiful, but it works :D
 
+### ATTENTION: Axiom is conflicting with my mod since both use ImGui but different versions of it. I don't know the solution yet.
+
 <br />
 
 ## Building

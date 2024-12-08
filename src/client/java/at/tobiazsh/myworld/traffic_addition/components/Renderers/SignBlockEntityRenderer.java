@@ -229,4 +229,13 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         matrices.pop();
     }
+
+    public static int getFacingRotation(Direction FACING) {
+        switch (FACING) {
+            case SOUTH -> { return 180; }
+            case WEST -> { return 90; }
+            case EAST -> { return 270; }
+            default -> { return 0; }
+        }
+    }
 }

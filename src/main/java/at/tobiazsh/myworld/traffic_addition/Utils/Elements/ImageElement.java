@@ -16,22 +16,30 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
-import imgui.ImDrawList;
-import imgui.ImGui;
-import imgui.ImVec2;
-
-import static org.joml.Math.cos;
-import static org.joml.Math.sin;
 
 public class ImageElement extends BaseElement{
-	private Texture elementTexture = new Texture();
-	private String resourcePath;
-	private boolean texIsLoaded = false;
-	private ImVec2 p0, p1, p2, p3;
+	public Texture elementTexture = new Texture();
+	public String resourcePath;
+	public boolean texIsLoaded = false;
 
-	public ImageElement(float x, float y, float width, float height, float factor, String resourcePath) {
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, Texture texture) {
+		super(x, y, width, height, factor);
+		this.elementTexture = texture;
+		this.rotation = rotation;
+	}
+
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath) {
 		super(x, y, width, height, factor);
 		this.resourcePath = resourcePath;
+		this.rotation = rotation;
+	}
+
+	public ImageElement(float x, float y, float width, float height, float factor, Texture texture) {
+		this(x, y, width, height, factor, 0, texture);
+	}
+
+	public ImageElement(float x, float y, float width, float height, float factor, String resourcePath) {
+		this(x, y, width, height, factor, 0, resourcePath);
 	}
 
 	public ImageElement(float x, float y, float factor, String resourcePath) {
@@ -44,38 +52,6 @@ public class ImageElement extends BaseElement{
 
 	public ImageElement(float factor, String resourcePath) {
 		this(0, 0, 0, 0, factor, resourcePath);
-	}
-
-	@Override
-	public void renderImGui() {
-		ImDrawList drawList = ImGui.getWindowDrawList();
-
-		float windowPosX = ImGui.getCursorScreenPosX();
-		float windowPosY = ImGui.getCursorScreenPosY();
-
-		p0 = new ImVec2(windowPosX + this.x, windowPosY + this.y); // Top Left Vertices
-		p1 = new ImVec2(windowPosX + this.x + this.width, windowPosY + this.y); // Top Right Vertices
-		p2 = new ImVec2(windowPosX + this.x + this.width, windowPosY + this.y + this.height); // Bottom Right Vertices
-		p3 = new ImVec2(windowPosX + this.x, windowPosY + this.y + height); // Bottom Left Vertices
-
-		rotateTexture(rotation, windowPosX, windowPosY);
-
-		float uv0X = 0.0f, uv0Y = 0.0f;
-		float uv1X = 1.0f, uv1Y = 0.0f;
-		float uv2X = 1.0f, uv2Y = 1.0f;
-		float uv3X = 0.0f, uv3Y = 1.0f;
-
-		drawList.addImageQuad(
-				this.elementTexture.getTextureId(),
-				p0.x, p0.y,
-				p1.x, p1.y,
-				p2.x, p2.y,
-				p3.x, p3.y,
-				uv0X, uv0Y,
-				uv1X, uv1Y,
-				uv2X, uv2Y,
-				uv3X, uv3Y
-		);
 	}
 
 	public void loadTexture() {
@@ -119,41 +95,6 @@ public class ImageElement extends BaseElement{
 		width = w;
 
 		height = h;
-	}
-
-	// tl = top left; tr = top right; br = bottom right; bl = bottom left
-	public void setUV(ImVec2 p0tl, ImVec2 p1tr, ImVec2 p2br, ImVec2 p3bl) {
-		this.p0 = p0tl;
-		this.p1 = p1tr;
-		this.p2 = p2br;
-		this.p3 = p3bl;
-	}
-
-	public void rotateTexture(float angle, float windowPosX, float windowPosY){
-		if (!texIsLoaded) {
-			System.err.println("Error (Rotating Texture): Texture isn't loaded!");
-		}
-
-		// For efficiency
-		if (angle == 0) return;
-
-		ImVec2 center = new ImVec2(windowPosX + this.x + this.width / 2, windowPosY + this.y + this.height / 2);
-		float radians = (float) Math.toRadians(angle);
-
-		p0 = rotatePivot(p0, center, radians);
-		p1 = rotatePivot(p1, center, radians);
-		p2 = rotatePivot(p2, center, radians);
-		p3 = rotatePivot(p3, center, radians);
-	}
-
-	private ImVec2 rotatePivot(ImVec2 point, ImVec2 center, float radians) {
-		float cosA = cos(radians);
-		float sinA = sin(radians);
-
-		float newX = center.x + cosA * (point.x - center.x) - sinA * (point.y - center.y);
-		float newY = center.y + sinA * (point.x - center.x) + cosA * (point.y - center.y);
-
-		return new ImVec2(newX, newY);
 	}
 
 	public String getResourcePath() {

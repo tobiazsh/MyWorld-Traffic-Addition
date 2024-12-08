@@ -1,13 +1,13 @@
 {
-	"required": true,
-	"package": "at.tobiazsh.myworld.traffic_addition.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
+  "required": true,
+  "package": "at.tobiazsh.myworld.traffic_addition.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "client": [
 
-	],
-	"client": [
-	],
-	"injectors": {
-		"defaultRequire": 1
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

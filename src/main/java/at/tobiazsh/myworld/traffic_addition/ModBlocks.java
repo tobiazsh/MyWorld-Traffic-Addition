@@ -106,7 +106,6 @@ public class ModBlocks {
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.add(ModBlocks.BORDER_BLOCK.asItem());
-            itemGroup.add(ModBlocks.SPECIAL_BLOCK.asItem());
             itemGroup.add(ModBlocks.SIGN_POLE_BLOCK.asItem());
             itemGroup.add(ModBlocks.TRIANGULAR_SIGN_BLOCK.asItem());
             itemGroup.add(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.asItem());

@@ -7,18 +7,24 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Screens;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.UIComponents.*;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Windows.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.*;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.Color;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.*;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Color;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.ImageElementClient;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.SetCustomizableSignTexture;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utilities.FileSystem.Folder;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.UpdateTextureVarsCustomizableSignBlockPayload;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -33,6 +39,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
 
 public class SignEditorScreen {
 
@@ -63,11 +72,12 @@ public class SignEditorScreen {
     public static SignStyleJson signJson = new SignStyleJson();
     public static List<String> previewTextures = new ArrayList<>();
     public static List<BaseElement> baseElementDrawOrder = new ArrayList<>();
-
+    public static BaseElement selectedElement = null;
 
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
+        clearFontAtlas();
     }
 
     public static void disposeChildWindows() {
@@ -97,6 +107,7 @@ public class SignEditorScreen {
 
     public static void showHomepage() {
         String title = "MyWorld Traffic Addition - Sign Editor";
+        ImGui.pushFont(DejaVuSans);
         if (ImGui.begin(title, ImGuiWindowFlags.NoNavInputs)) {
             float windowHeight = ImGui.getWindowHeight();
             float windowWidth = ImGui.getWindowWidth();
@@ -111,6 +122,7 @@ public class SignEditorScreen {
             }
         }
         ImGui.end();
+        ImGui.popFont();
     }
 
     private static void renderTitle(float windowWidth) {
@@ -296,7 +308,7 @@ public class SignEditorScreen {
     private static float previewWidth = 1100;
 
     public static void renderMain(){
-
+        ImGui.pushFont(DejaVuSans);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         ImGui.beginMenuBar();
@@ -334,6 +346,7 @@ public class SignEditorScreen {
 
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...")) ElementAddWindow.open();
+            if (ImGui.menuItem("Add Text Element")) addTextElement();
 
             ImGui.endMenu();
         }
@@ -366,6 +379,7 @@ public class SignEditorScreen {
         SignPreview(totalSignWidthPixels, totalSignHeightPixels, factor);
 
         ImGui.end();
+        ImGui.popFont();
     }
 
     private static ImVec2 previewPos = new ImVec2();
@@ -404,13 +418,23 @@ public class SignEditorScreen {
         ImGui.endChild();
 
         for (int i = baseElementDrawOrder.size() - 1; i >= 0; i--) {
-            BaseElement element = baseElementDrawOrder.get(i);
+            BaseElement element = baseElementDrawOrder.get(i); // Get element to render
+
+            // If the BaseElement is neither a TextElement nor an ImageElement, it cannot be rendered and hence should be skipped
+            if (!(element instanceof ImageElement || element instanceof TextElement)) continue;
 
             ImGui.setCursorPos(previewPos.x, previewPos.y);
             ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), totalSignWidthPixels, totalSignHeightPixels);
 
+            // Set the cursor position to the position of the element
             ImGui.setCursorPos(element.getX() / factor, element.getY() / factor);
-            element.renderImGui();
+
+            // Render depending on the type of element
+            if (element instanceof ImageElement) {
+                ImageElementClient.fromImageElement((ImageElement) element).renderImGui();
+            } else if (element instanceof TextElement) {
+                TextElementClient.fromTextElement((TextElement) element).renderImGui();
+            }
 
             ImGui.endChild();
         }
@@ -418,8 +442,12 @@ public class SignEditorScreen {
         ImGui.popStyleVar(2);
     }
 
-
-    public static BaseElement selectedElement = null;
+    private static String defaultFontPath = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/dejavu_sans.ttf";
+    private static int defaultFontSize = 24;
+    private static String defaultText = "Lorem Ipsum";
+    private static void addTextElement() {
+        baseElementDrawOrder.add(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true));
+    }
 
     public static void ErrorPopUp() {
         if (ImGui.beginPopupModal(currentErrorPopType)) {
@@ -457,8 +485,8 @@ public class SignEditorScreen {
 
         ImGui.openPopup(currentErrorPopType);
     }
-
     // NOT recommended using; Icon should always stay the same.
+
     private static void changeErrorPopIcon(String resourcePath) {
         SignEditorScreen.currentErrorPopIcon = resourcePath;
     }

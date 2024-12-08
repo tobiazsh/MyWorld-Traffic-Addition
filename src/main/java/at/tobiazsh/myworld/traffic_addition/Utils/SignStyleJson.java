@@ -24,8 +24,8 @@ import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.Cust
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getFacing;
 
 public class SignStyleJson {
-	public String jsonString;
-	public JsonObject json = new JsonObject();
+	public String jsonString; // JSON as String
+	public JsonObject json = new JsonObject(); // JSON
 
 	private enum ELEMENT_TYPE{
 		NONE,
@@ -33,7 +33,7 @@ public class SignStyleJson {
 		TEXT_ELEMENT
 	}
 
-	public class ElementsContainer {
+	public static class ElementsContainer {
 		JsonArray Elements;
 
 		public ElementsContainer() {
@@ -45,7 +45,12 @@ public class SignStyleJson {
 		}
 	}
 
-	// Updates style of Sign. Changes have to be applied manually. path is the path to the style, customizableSignBlockEntity is needed to gather the correct borders
+	/**
+	 * Creates the JSON for the background of the sign for this instance of SignStyleJson
+	 * @param path The path to the style
+	 * @param customizableSignBlockEntity The CustomizableSignBlockEntity to gather the correct borders
+	 * @return The SignStyleJson object
+	 */
 	public SignStyleJson setStyle(String path, CustomizableSignBlockEntity customizableSignBlockEntity) {
 
 		if (json.has("Style")) json.remove("Style");
@@ -56,7 +61,8 @@ public class SignStyleJson {
 		StringBuilder textureList = new StringBuilder();
 		World world = customizableSignBlockEntity.getWorld();
 
-		Direction rightSide = getRightSideDirection(getFacing(pos, world).getOpposite());
+        assert world != null;
+        Direction rightSide = getRightSideDirection(getFacing(pos, world).getOpposite());
 
 		while(world.getBlockEntity(posY) instanceof CustomizableSignBlockEntity) {
 			while(world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) {
@@ -84,6 +90,12 @@ public class SignStyleJson {
 		return this;
 	}
 
+	/**
+	 * Sets the elements of this SignStyleJson object to the given list of BaseElements. Commonly used to store NBT data in the block.
+	 * @param elements The list of BaseElements to set
+	 * @param customizableSignBlockEntity The CustomizableSignBlockEntity to gather the correct position
+	 * @return The SignStyleJson object
+	 */
 	public SignStyleJson setElements(List<? extends BaseElement> elements, CustomizableSignBlockEntity customizableSignBlockEntity) {
 		BlockPos pos = customizableSignBlockEntity.getMasterPos();
 		String position = pos.getX() + ";" + pos.getY() + ";" + pos.getZ();
@@ -100,6 +112,7 @@ public class SignStyleJson {
 			String elementPosition = element.getX() + ";" + element.getY();
 			float elementFactor = element.getFactor();
 			float elementRotation = element.getRotation();
+			float[] color = element.getColor();
 
 			elementName = elementName.isEmpty() || elementName.isBlank() ? "UNKNOWN" : elementName;
 
@@ -109,6 +122,10 @@ public class SignStyleJson {
 			object.addProperty("ElementPos", elementPosition);
 			object.addProperty("Rotation", elementRotation);
 			object.addProperty("Factor", elementFactor);
+			object.addProperty("ColorR", color[0]);
+			object.addProperty("ColorG", color[1]);
+			object.addProperty("ColorB", color[2]);
+			object.addProperty("ColorA", color[3]);
 
 			if (element instanceof ImageElement) {
 				elementType = ELEMENT_TYPE.IMAGE_ELEMENT;
@@ -121,7 +138,18 @@ public class SignStyleJson {
 				object.addProperty("Texture", elementTexture);
 			} else if (element instanceof TextElement)  {
 				elementType = ELEMENT_TYPE.TEXT_ELEMENT;
-				// ...
+
+				if (((TextElement) element).getText().isBlank() || ((TextElement) element).getText().isEmpty() || ((TextElement) element).getFont() == null) {
+					return;
+				}
+
+				float fontSize = ((TextElement) element).getFont().getFontSize();
+				String fontPath = ((TextElement) element).getFont().getFontPath();
+				String text = ((TextElement) element).getText();
+
+				object.addProperty("FontSize", fontSize);
+				object.addProperty("FontPath", fontPath);
+				object.addProperty("Text", text);
 			}
 
 			object.addProperty("ElementType", elementType.ordinal());
@@ -144,12 +172,22 @@ public class SignStyleJson {
 		return this;
 	}
 
+	/**
+	 * Converts the JSON String to a JSON Object
+	 * @param jsonString The JSON String to convert
+	 * @return The SignStyleJson object
+	 */
 	public SignStyleJson convertStringToJson(String jsonString) {
 		json = JsonParser.parseString(jsonString).getAsJsonObject();
 		updateString();
 		return this;
 	}
 
+	/**
+	 * Deconstructs the background (style) of the sign from JSON to a list of textures
+	 * @param signStyleJson The SignStyleJson object to deconstruct
+	 * @return The JSON String
+	 */
 	public static List<String> deconstructStyleToArray(SignStyleJson signStyleJson) {
 		List<String> textures = new ArrayList<>();
 
@@ -167,9 +205,9 @@ public class SignStyleJson {
 			result[i] = segments[i].split(";");
 		}
 
-		for (int i = 0; i < result.length; i++) {
-			textures.add(result[i][3]);
-		}
+        for (String[] strings : result) {
+            textures.add(strings[3]);
+        }
 
 		// Just removing quote since they seem to be there and I don't really get why and this causes a crash since the last quote is left behind and included in the texture path?
 		textures.replaceAll(s -> s.replaceAll("\"", ""));
@@ -177,6 +215,11 @@ public class SignStyleJson {
 		return textures;
 	}
 
+	/**
+	 * Deconstructs the elements from the JSON to a list of BaseElements
+	 * @param signStyleJson The SignStyleJson object to deconstruct
+	 * @return A list of BaseElements
+	 */
 	public static List<BaseElement> deconstructElementsToArray(SignStyleJson signStyleJson) {
 		JsonArray elements = signStyleJson.json.getAsJsonArray("Elements");
 
@@ -192,6 +235,13 @@ public class SignStyleJson {
 			ELEMENT_TYPE elementType = ELEMENT_TYPE.values()[elementObject.get("ElementType").getAsInt()]; // Retrieve enumerator; Element Type
 			float rotation = elementObject.get("Rotation").getAsFloat();
 			float factor = elementObject.get("Factor").getAsFloat();
+
+			float[] color = new float[]{
+					elementObject.get("ColorR").getAsFloat(),
+					elementObject.get("ColorG").getAsFloat(),
+					elementObject.get("ColorB").getAsFloat(),
+					elementObject.get("ColorA").getAsFloat()
+			};
 
 			String[] pos = posStr.split(";");
 			BlockPos masterPos = new BlockPos(Integer.parseInt(pos[0]), Integer.parseInt(pos[1]), Integer.parseInt(pos[2]));
@@ -211,13 +261,18 @@ public class SignStyleJson {
 				element = new ImageElement(x, y, width, height, 1, texture);
 				((ImageElement) element).loadTexture();
 			} else if (elementType.equals(ELEMENT_TYPE.TEXT_ELEMENT)) {
-				element = new TextElement(x, y, width, height, 1);
+				String fontPath = elementObject.get("FontPath").getAsString();
+				String text = elementObject.get("Text").getAsString();
+				float fontSize = elementObject.get("FontSize").getAsFloat();
+
+				element = new TextElement(x, y, width, height, rotation, factor, new BasicFont(fontPath, fontSize), text, false);
 			}
 
             assert element != null;
             element.name = name;
 			element.setRotation(rotation);
 			element.setFactor(factor);
+			element.setColor(color);
 			
 			elementsList.add(element);
 		}

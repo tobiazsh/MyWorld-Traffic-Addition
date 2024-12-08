@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "myworld_traffic_addition:dejavu_sans_bold.ttf",
+      "shift": [0, 0],
+      "size": 12,
+      "oversample": 20
+    }
+  ]
+}

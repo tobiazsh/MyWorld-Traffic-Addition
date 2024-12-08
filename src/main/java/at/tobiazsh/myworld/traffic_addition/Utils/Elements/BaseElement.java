@@ -16,6 +16,7 @@ public abstract class BaseElement {
 	public String id, name;
 	public static Map<String, BaseElement> Ids = new HashMap<>();
 	private static int nextId = 0;
+	private float[] color = new float[]{1f, 1f, 1f, 1f};
 
 	public BaseElement(float x, float y, float width, float height, float factor) {
 		this.x = x;
@@ -41,8 +42,6 @@ public abstract class BaseElement {
 	public void setClicked(boolean clicked) {
 		this.clicked = clicked;
 	}
-
-	public abstract void renderImGui(); // Abstract render method to be implemented by subclasses
 
 	public void setPosition(float x, float y) {
 		this.x = x;
@@ -143,5 +142,21 @@ public abstract class BaseElement {
 
 	public float getRotation() {
 		return rotation;
+	}
+
+	/**
+	 * Sets the color of the element (0-255)
+	 * @param color The color to set
+	 */
+	public void setColor(float[] color) {
+		this.color = color;
+	}
+
+	/**
+	 * Returns the color of the element (0-1)
+	 * @return The color of the element normalized
+	 */
+	public float[] getColor() {
+		return new float[]{color[0], color[1], color[2], color[3]};
 	}
 }

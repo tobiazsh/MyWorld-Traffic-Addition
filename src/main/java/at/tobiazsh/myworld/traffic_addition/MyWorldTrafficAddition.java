@@ -112,4 +112,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
 	}
+
+	public static long calculateTicks(float millis) {
+		return (long) (millis / 50);
+	}
 }

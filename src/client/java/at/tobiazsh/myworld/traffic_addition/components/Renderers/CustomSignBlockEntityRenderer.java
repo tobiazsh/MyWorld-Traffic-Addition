@@ -8,7 +8,8 @@ package at.tobiazsh.myworld.traffic_addition.components.Renderers;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.Renderers.ElementClientRenderers;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.ImageElementClient;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
@@ -36,7 +37,7 @@ import net.minecraft.util.math.RotationAxis;
 
 import java.util.*;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Renderers.ElementClientRenderers.getFacingRotation;
+import static at.tobiazsh.myworld.traffic_addition.components.Renderers.SignBlockEntityRenderer.getFacingRotation;
 
 public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
 
@@ -45,6 +46,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
     private Direction direction;
     private String borderModelPath;
     private int rotation = 0;
+    private final MinecraftClient client = MinecraftClient.getInstance();
 
     public CustomSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
         bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
@@ -52,7 +54,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         borderModelPath = "block/customizable_sign_block_border_all"; // Standard border model
     }
 
-    // Render the master block sign block and the signs attached to it
+    // Render the sign block
     @Override
     public void render(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
 
@@ -84,6 +86,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         // Render the border for the master sign block
         renderBorder(entity, tickDelta, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(CustomizableSignBlock.FACING));
         renderTexture(entity, entity.getCachedState().get(CustomizableSignBlock.FACING), matrices, vertexConsumers, light, overlay);
+        renderText(matrices, vertexConsumers, light, overlay);
 
         // If the entity is master, render the other signs attached to it
         if (entity.isMaster()) {
@@ -197,7 +200,7 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         if (!csbe.isMaster() || !csbe.isInitialized()) return;
 
         renderTextureBackground(csbe, csbe.backgroundStylePieces, csbe.getHeight(), csbe.getWidth(), matrices, vertexConsumers, light, overlay, facing);
-        renderTextureElements(csbe, csbe.getHeight(), matrices, vertexConsumers, light, overlay, facing);
+        renderElements(csbe, csbe.getHeight(), matrices, vertexConsumers, light, overlay, facing);
     }
 
     // Render the background texture of the sign
@@ -254,15 +257,14 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
     }
 
     // Render the elements that were placed when the sign was edited
-    private void renderTextureElements(CustomizableSignBlockEntity csbe, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    private void renderElements(CustomizableSignBlockEntity csbe, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         List<BaseElement> elements = csbe.elements.reversed(); // Reverse so top most element gets rendered last
 
         elements.forEach(element -> {
             if (element instanceof ImageElement) {
-                ElementClientRenderers.ImageElementRenderer imageElementRenderer = new ElementClientRenderers.ImageElementRenderer();
-                imageElementRenderer.renderMinecraft((ImageElement) element, elements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing);
+                ImageElementClient.fromImageElement((ImageElement) element).renderMinecraft(element, elements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing);
             } else if (element instanceof TextElement) {
-
+                TextElementClient.fromTextElement((TextElement) element).renderMinecraft(element, elements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing);
             }
         });
     }
@@ -272,7 +274,16 @@ public class CustomSignBlockEntityRenderer implements BlockEntityRenderer<Custom
         // Code here ...
     }
 
-    // Get the rotation that has to be applied depending on the facing state of the sign
+    private String textToRender = "Hello, Fabric!";
+
+    // Test Rendering Text
+    private void renderText(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+        matrices.push();
+
+        //CustomFont.renderer.draw(textToRender, 0, 0, 0xFFFFFF, false, matrices.peek().getPositionMatrix(), vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, light);
+
+        matrices.pop();
+    }
 
 
     private void rotateSign(int rotationDegrees, MatrixStack matrices) {
