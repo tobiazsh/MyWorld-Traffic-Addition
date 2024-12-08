@@ -26,8 +26,6 @@ import static at.tobiazsh.myworld.traffic_addition.Utils.SmartPayload.bulkRegist
 /*
 	@author Tobias
 	@mod MyWorld Traffic Addition
-
-	You may modify this code and share with others but you may not make profit off of it and you must credit me if you share this code without any changes except for development purposes.
  */
 
 public class MyWorldTrafficAddition implements ModInitializer {
@@ -111,9 +109,5 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
-	}
-
-	public static long calculateTicks(float millis) {
-		return (long) (millis / 50);
 	}
 }
