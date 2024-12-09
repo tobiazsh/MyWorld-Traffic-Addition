@@ -420,10 +420,10 @@ public class SignEditorScreen {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);  // Remove spacing between items
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);  // Remove padding inside the frame
 
-        factor *= zoomScale;
+        //factor *= zoomScale;
 
-        float finalFactor = factor;
-        baseElementDrawOrder.forEach(texture -> texture.setFactor(finalFactor));
+        //float finalFactor = factor;
+        baseElementDrawOrder.forEach(texture -> texture.setFactor(factor));
 
         // Make Child that is as big as the sign in pixels
         ImGui.beginChild("##BottomToTopRenderer", totalSignWidthPixels, totalSignHeightPixels, false);
