@@ -32,7 +32,6 @@ import imgui.flag.*;
 import io.netty.util.internal.StringUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -40,8 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
-import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.*;
 
 public class SignEditorScreen {
 
@@ -53,21 +51,17 @@ public class SignEditorScreen {
     private static boolean isIntegra = false;
 
     private static Texture iconTexture = new Texture();
-    private static Texture noTexture = new Texture();
 
     private static String currentErrorPopType = "";
     private static String currentErrorPopMsg = "";
     private static String currentErrorPopIcon = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
 
-    private static final MinecraftClient minecraftClient = MinecraftClient.getInstance();
     private static CustomizableSignBlockEntity customizableSignBlockEntity;
 
     private static int totalSignWidth;
     private static int totalSignHeight;
 
     private static Color isInitColors; // Colors for boolean value "Is Initialized" field in infoPop
-
-    private static Folder availableBGStyles = new Folder(null, null);
 
     public static SignStyleJson signJson = new SignStyleJson();
     public static List<String> previewTextures = new ArrayList<>();
@@ -91,10 +85,8 @@ public class SignEditorScreen {
     public static void loadMainTextures() {
         if (texturesLoaded) return;
         iconTexture = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/MWTASE.png");
-        noTexture = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
         texturesLoaded = true;
     }
-
 
     private static final int checkButtonHeight = 128;
     private static final int checkButtonWidth = 256;
@@ -306,52 +298,17 @@ public class SignEditorScreen {
     public static ImVec2 ratioedSignSize; // Initialized when screen is opened;
     private static float previewHeight = 1100;
     private static float previewWidth = 1100;
+    private static float factor; // Factor for the size of the canvas
+    private static float zoomScale = 1.0f;
 
     public static void renderMain(){
         ImGui.pushFont(DejaVuSans);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
-        ImGui.beginMenuBar();
-        if (ImGui.beginMenu("File")) {
-            if (ImGui.menuItem("Save to Sign")) {
-                writeToSign(masterBlockPos, signJson);
-            }
+        factor = ratioedSignSize.y / totalSignHeight * zoomScale; // Size of each "sign" tile in pixels
 
-            if (ImGui.menuItem("Save to Sign & Quit")) {
-                writeToSign(masterBlockPos, signJson);
-                quit();
-            }
-
-            if (ImGui.menuItem("Show JSON")) JsonPreviewPopUp.shouldOpen = true;
-
-            if (ImGui.menuItem("Quit")) {
-                quit();
-            }
-
-            ImGui.endMenu();
-        }
-
-        if (ImGui.beginMenu("Styling")) {
-            if (ImGui.menuItem("Choose Style Type")) StylePopUp.open();
-
-            ImGui.endMenu();
-        }
-
-        if (ImGui.beginMenu("View")) {
-            if (ImGui.menuItem("Toggle Element Window")) ElementsWindow.toggle();
-            if (ImGui.menuItem("Toggle Element Properties Window")) ElementPropertyWindow.toggle();
-
-            ImGui.endMenu();
-        }
-
-        if(ImGui.beginMenu("Elements")) {
-            if (ImGui.menuItem("Add Element...")) ElementAddWindow.open();
-            if (ImGui.menuItem("Add Text Element")) addTextElement();
-
-            ImGui.endMenu();
-        }
-
-        ImGui.endMenuBar();
+        renderMenuBar();
+        handleHotKeys();
 
         // Handle popups
 
@@ -364,7 +321,6 @@ public class SignEditorScreen {
 
         // Calculations for sign preview
 
-        float factor = ratioedSignSize.y / totalSignHeight; // Size of each "sign" tile in pixels
         float totalSignWidthPixels = ratioedSignSize.x;
         float totalSignHeightPixels = ratioedSignSize.y;
 
@@ -382,13 +338,92 @@ public class SignEditorScreen {
         ImGui.popFont();
     }
 
+    private static void renderMenuBar() {
+        ImGui.beginMenuBar();
+        if (ImGui.beginMenu("File")) {
+            if (ImGui.menuItem("Save to Sign", "CTRL + S")) {
+                writeToSign(masterBlockPos, signJson);
+            }
+
+            if (ImGui.menuItem("Save to Sign & Quit", "CTRL + W")) {
+                writeToSign(masterBlockPos, signJson);
+                quit();
+            }
+
+            if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopUp.shouldOpen = true;
+
+            if (ImGui.menuItem("Quit", "CTRL + Q")) {
+                quit();
+            }
+
+            ImGui.endMenu();
+        }
+
+        if (ImGui.beginMenu("Styling")) {
+            if (ImGui.menuItem("Choose Style Type", "CTRL + G")) StylePopUp.open();
+
+            ImGui.endMenu();
+        }
+
+        if (ImGui.beginMenu("View")) {
+            if (ImGui.menuItem("Toggle Element Window", "CTRL + E")) ElementsWindow.toggle();
+            if (ImGui.menuItem("Toggle Element Properties Window", "CTRL + P")) ElementPropertyWindow.toggle();
+
+            ImGui.endMenu();
+        }
+
+        if(ImGui.beginMenu("Elements")) {
+            if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
+            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) addTextElement();
+            //if (ImGui.menuItem("Zoom Out", "CTRL + O")) zoomOut(0.05f); TODO: Implement Zooming
+            //if (ImGui.menuItem("Zoom In", "CTRL + I")) zoomIn(0.05f); TODO: Implement Zooming
+
+            ImGui.endMenu();
+        }
+
+        ImGui.endMenuBar();
+    }
+
+    private static void handleHotKeys() {
+        boolean ctrl = ImGui.isKeyDown(ImGuiKey.LeftCtrl) || ImGui.isKeyDown(ImGuiKey.RightCtrl);
+        boolean shift = ImGui.isKeyDown(ImGuiKey.LeftShift) || ImGui.isKeyDown(ImGuiKey.RightShift);
+
+        //if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) zoomIn(0.05f); TODO: Implement Zooming
+        //if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) zoomOut(0.05f); TODO: Implement Zooming
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) writeToSign(masterBlockPos, signJson);
+
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.W)) {
+            writeToSign(masterBlockPos, signJson);
+            quit();
+        }
+
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopUp.shouldOpen = true;
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.Q)) quit();
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) StylePopUp.open();
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle();
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle();
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open();
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) addTextElement();
+    }
+
+    private static void zoomOut(float amount) {
+        zoomScale = Math.max(0.1f, zoomScale - amount); // Prevent zooming out too much
+    }
+
+    private static void zoomIn(float amount) {
+        zoomScale = Math.min(10.0f, zoomScale + amount); // Prevent excessive zoom-in
+    }
+
     private static ImVec2 previewPos = new ImVec2();
 
     public static void SignPreview(float totalSignWidthPixels, float totalSignHeightPixels, float factor) {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);  // Remove spacing between items
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);  // Remove padding inside the frame
 
-        baseElementDrawOrder.forEach(texture -> texture.setFactor(factor));
+        factor *= zoomScale;
+
+        float finalFactor = factor;
+        baseElementDrawOrder.forEach(texture -> texture.setFactor(finalFactor));
 
         // Make Child that is as big as the sign in pixels
         ImGui.beginChild("##BottomToTopRenderer", totalSignWidthPixels, totalSignHeightPixels, false);
@@ -420,17 +455,18 @@ public class SignEditorScreen {
         for (int i = baseElementDrawOrder.size() - 1; i >= 0; i--) {
             BaseElement element = baseElementDrawOrder.get(i); // Get element to render
 
-            // If the BaseElement is neither a TextElement nor an ImageElement, it cannot be rendered and hence should be skipped
+            // Skip non-render-able elements
             if (!(element instanceof ImageElement || element instanceof TextElement)) continue;
 
             ImGui.setCursorPos(previewPos.x, previewPos.y);
             ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), totalSignWidthPixels, totalSignHeightPixels);
 
-            // Set the cursor position to the position of the element
+            // Scale position and dimensions
             ImGui.setCursorPos(element.getX() / factor, element.getY() / factor);
 
             // Render depending on the type of element
             if (element instanceof ImageElement) {
+                Textures.smartRegisterTexture(((ImageElement) element).getResourcePath()); // Register textures only on client side
                 ImageElementClient.fromImageElement((ImageElement) element).renderImGui();
             } else if (element instanceof TextElement) {
                 TextElementClient.fromTextElement((TextElement) element).renderImGui();
@@ -446,7 +482,7 @@ public class SignEditorScreen {
     private static int defaultFontSize = 24;
     private static String defaultText = "Lorem Ipsum";
     private static void addTextElement() {
-        baseElementDrawOrder.add(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true));
+        baseElementDrawOrder.addFirst(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true));
     }
 
     public static void ErrorPopUp() {

@@ -37,9 +37,10 @@ public class ElementPropertyWindow {
 	private static float[] color;
 
 	private static ImString textElementText = new ImString("", 1024);
+	private static ImString previousTextElementText = new ImString("", 1024);
 	private static ImFloat fontSize = new ImFloat(0);
 	private static ImString fontPath = new ImString("", 512);
-	private static final LinkedHashMap<String, String> availableFonts = new LinkedHashMap<>();
+	private static final LinkedHashMap<String, String> availableFonts = new LinkedHashMap<>(); // Path; Name
 	private static final List<String> availableFontNames = new ArrayList<>(); // Names of available fonts
 	private static final ImInt selectedFontIndex = new ImInt(0);
 	private static int previousSelectedFontIndex = 0;
@@ -52,7 +53,14 @@ public class ElementPropertyWindow {
 
 			String name = element.name.substring(0, element.name.lastIndexOf('.'));
 			availableFonts.put(element.path, name);
-			availableFontNames.add(name);
+
+			String[] nameParts = name.split("_");
+
+			for (int i = 0; i < nameParts.length; i++) {
+				nameParts[i] = nameParts[i].substring(0, 1).toUpperCase() + nameParts[i].substring(1);
+			}
+
+			availableFontNames.add(String.join(" ", nameParts));
 		}
 	}
 
@@ -224,7 +232,7 @@ public class ElementPropertyWindow {
 			ImGui.text("Color");
 			ImGui.popFont();
 
-			int alphaSettings = (element instanceof TextElement) ? ImGuiColorEditFlags.NoAlpha : ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf;
+			int alphaSettings = (element instanceof TextElement) ? ImGuiColorEditFlags.NoAlpha : ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
 
 			if (ImGui.colorPicker4("Color Picker", color, alphaSettings)) {
 				element.setColor(color);
@@ -239,12 +247,16 @@ public class ElementPropertyWindow {
 	private static void renderTextControls() {
 		ImGui.separator();
 
+		previousTextElementText = new ImString(textElementText.get());
+
 		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
 		ImGui.text("Text");
 		ImGui.popFont();
 		ImGui.inputText("##textElementTextEditInput", textElementText);
-		if (ImGui.button("Confirm##textElementText"))
+
+		if (!( textElementText.get().equals(previousTextElementText.get()))) {
 			((TextElement) element).setText(textElementText.get());
+		}
 
 		ImGui.spacing();
 

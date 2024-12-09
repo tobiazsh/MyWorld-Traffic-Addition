@@ -259,7 +259,6 @@ public class SignStyleJson {
 			if (elementType.equals(ELEMENT_TYPE.IMAGE_ELEMENT)) {
 				String texture = elementObject.get("Texture").getAsString();
 				element = new ImageElement(x, y, width, height, 1, texture);
-				((ImageElement) element).loadTexture();
 			} else if (elementType.equals(ELEMENT_TYPE.TEXT_ELEMENT)) {
 				String fontPath = elementObject.get("FontPath").getAsString();
 				String text = elementObject.get("Text").getAsString();

@@ -67,6 +67,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
             return element;
         });
+
     }
 
     public void setHeight(int height) {

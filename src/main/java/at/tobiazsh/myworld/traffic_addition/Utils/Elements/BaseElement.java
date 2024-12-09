@@ -70,12 +70,14 @@ public abstract class BaseElement {
 		this.height = height;
 	}
 
-	public void setWidth(float width) {
+	public BaseElement setWidth(float width) {
 		this.width = width;
+		return this;
 	}
 
-	public void setHeight(float height) {
+	public BaseElement setHeight(float height) {
 		this.height = height;
+		return this;
 	}
 
 	public float getWidth() {
@@ -120,12 +122,14 @@ public abstract class BaseElement {
 		}
 	}
 
-	public void scaleHeight(float pixels) {
-		this.height += pixels;
+	public BaseElement scaleHeight(float factor) {
+		this.height *= factor;
+		return this;
 	}
 
-	public void scaleWidth(float pixels) {
-		this.width += pixels;
+	public BaseElement scaleWidth(float factor) {
+		this.width *= factor;
+		return this;
 	}
 
 	public void setFactor(float factor) {

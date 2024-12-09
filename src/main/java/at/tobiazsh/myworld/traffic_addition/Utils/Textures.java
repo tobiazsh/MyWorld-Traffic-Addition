@@ -50,7 +50,7 @@ public class Textures {
 		return texture;
 	}
 
-	// Register Texture efficiently²; If already registered, return texture ID; A = Advanced
+	// Register Texture efficiently²; If already registered, return texture ID
 	public static Texture smartRegisterTexture(String resourcePath) {
 		if (textureRegistered(resourcePath)) {
 			return getTexture(resourcePath);
