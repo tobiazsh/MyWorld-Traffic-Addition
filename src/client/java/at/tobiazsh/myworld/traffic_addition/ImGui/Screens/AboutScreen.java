@@ -17,7 +17,7 @@ import imgui.flag.ImGuiWindowFlags;
 public class AboutScreen {
 
     public static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
-    public static String version = "0.31.0-beta";
+    public static String version = "0.32.0-beta";
     public static String author = "Tobiazsh (Tobias)";
     public static String description = "A Minecraft Mod for better roads in Minecraft";
     public static String[] other = {"Made in Austria", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"};
