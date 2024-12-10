@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 
 /*
@@ -17,7 +17,7 @@ import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.baseElementDrawOrder;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
 
 public class ElementAddWindow {
 	public static boolean shouldRender = false;
@@ -106,7 +106,7 @@ public class ElementAddWindow {
 		public static void addElement(ImageElement element) {
 			element.loadTexture();
 			element.sizeAuto();
-			baseElementDrawOrder.addFirst(element);
+			elementOrder.addFirst(element);
 			shouldRender = false;
 		}
 

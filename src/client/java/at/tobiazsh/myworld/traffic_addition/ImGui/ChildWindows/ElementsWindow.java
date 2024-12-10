@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ArrayTools;
@@ -9,7 +9,7 @@ import imgui.flag.ImGuiWindowFlags;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.*;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.*;
 
 public class ElementsWindow {
 
@@ -32,38 +32,38 @@ public class ElementsWindow {
 
         ImGui.pushFont(ImGuiImpl.DejaVuSans);
         if (ImGui.begin("Elements", ImGuiWindowFlags.NoNavInputs)) {
-            for (int i = 0; i < baseElementDrawOrder.size(); i++) {
-                BaseElement element = baseElementDrawOrder.get(i);
+            for (int i = 0; i < elementOrder.size(); i++) {
+                BaseElement element = elementOrder.get(i);
                 ElementEntry entry = new ElementEntry(element.name, element.getId(), element) {
                     @Override
                     public void moveEntryUp() {
-                        baseElementDrawOrder = ArrayTools.moveElementUpBy(baseElementDrawOrder, baseElementDrawOrder.indexOf(element), 1);
+                        elementOrder = ArrayTools.moveElementUpBy(elementOrder, elementOrder.indexOf(element), 1);
                     }
 
                     @Override
                     public void moveEntryDown() {
-                        baseElementDrawOrder = ArrayTools.moveElementDownBy(baseElementDrawOrder, baseElementDrawOrder.indexOf(element), 1);
+                        elementOrder = ArrayTools.moveElementDownBy(elementOrder, elementOrder.indexOf(element), 1);
                     }
 
                     @Override
                     public void elementSelectedAction() {
                         selectedElement = element;
-                        ElementPropertyWindow.initVars(element, ratioedSignSize);
+                        ElementPropertyWindow.initVars(element, signRatio);
                     }
                 };
 
-                entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == baseElementDrawOrder.getFirst(), element == baseElementDrawOrder.getLast(), selectedElement); // Check if the element is first/last in the list because then there's nothing to move up/down
+                entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == elementOrder.getFirst(), element == elementOrder.getLast(), selectedElement); // Check if the element is first/last in the list because then there's nothing to move up/down
 
                 if (entry.removeMyself) {
                     removeElementList.add(element);
                     entry.removeMyself = false;
                 }
 
-                if (baseElementDrawOrder.getLast() != element) ImGui.separator();
+                if (elementOrder.getLast() != element) ImGui.separator();
             }
 
             for (BaseElement element : removeElementList) {
-                baseElementDrawOrder.remove(element);
+                elementOrder.remove(element);
             }
         }
 

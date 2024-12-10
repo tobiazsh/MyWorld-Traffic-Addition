@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.components.Sliders;
+package at.tobiazsh.myworld.traffic_addition.components.Widgets;
 
 import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.Text;

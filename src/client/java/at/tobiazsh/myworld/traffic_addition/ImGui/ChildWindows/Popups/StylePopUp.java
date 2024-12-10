@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
@@ -7,9 +7,10 @@ import imgui.ImGui;
 
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.previewTextures;
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.signJson;
-import static at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson.deconstructStyleToArray;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.previewTextures;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.signJson;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.deconstructStyleToArray;
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class StylePopUp {
 
@@ -19,7 +20,6 @@ public class StylePopUp {
     private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Style Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
     private static FileSystem.Folder oldBGStyle = null;
     private static FileSystem.Folder currentCountryBG = new FileSystem.Folder("No Country Selected", "/");
-    private static final ImGui imgui = new ImGui();
     private static FileSystem.Folder availableBGStyles = new FileSystem.Folder(null, null);
 
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {

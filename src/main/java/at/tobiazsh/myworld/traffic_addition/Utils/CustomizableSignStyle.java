@@ -23,7 +23,7 @@ import java.util.List;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getFacing;
 
-public class SignStyleJson {
+public class CustomizableSignStyle {
 	public String jsonString; // JSON as String
 	public JsonObject json = new JsonObject(); // JSON
 
@@ -51,7 +51,7 @@ public class SignStyleJson {
 	 * @param customizableSignBlockEntity The CustomizableSignBlockEntity to gather the correct borders
 	 * @return The SignStyleJson object
 	 */
-	public SignStyleJson setStyle(String path, CustomizableSignBlockEntity customizableSignBlockEntity) {
+	public CustomizableSignStyle setStyle(String path, CustomizableSignBlockEntity customizableSignBlockEntity) {
 
 		if (json.has("Style")) json.remove("Style");
 
@@ -96,7 +96,7 @@ public class SignStyleJson {
 	 * @param customizableSignBlockEntity The CustomizableSignBlockEntity to gather the correct position
 	 * @return The SignStyleJson object
 	 */
-	public SignStyleJson setElements(List<? extends BaseElement> elements, CustomizableSignBlockEntity customizableSignBlockEntity) {
+	public CustomizableSignStyle setElements(List<? extends BaseElement> elements, CustomizableSignBlockEntity customizableSignBlockEntity) {
 		BlockPos pos = customizableSignBlockEntity.getMasterPos();
 		String position = pos.getX() + ";" + pos.getY() + ";" + pos.getZ();
 
@@ -177,7 +177,7 @@ public class SignStyleJson {
 	 * @param jsonString The JSON String to convert
 	 * @return The SignStyleJson object
 	 */
-	public SignStyleJson convertStringToJson(String jsonString) {
+	public CustomizableSignStyle convertStringToJson(String jsonString) {
 		json = JsonParser.parseString(jsonString).getAsJsonObject();
 		updateString();
 		return this;
@@ -185,14 +185,14 @@ public class SignStyleJson {
 
 	/**
 	 * Deconstructs the background (style) of the sign from JSON to a list of textures
-	 * @param signStyleJson The SignStyleJson object to deconstruct
+	 * @param customizableSignStyle The SignStyleJson object to deconstruct
 	 * @return The JSON String
 	 */
-	public static List<String> deconstructStyleToArray(SignStyleJson signStyleJson) {
+	public static List<String> deconstructStyleToArray(CustomizableSignStyle customizableSignStyle) {
 		List<String> textures = new ArrayList<>();
 
-		if (!signStyleJson.json.has("Style")) return textures;
-		String constructedJson = signStyleJson.json.get("Style").toString();
+		if (!customizableSignStyle.json.has("Style")) return textures;
+		String constructedJson = customizableSignStyle.json.get("Style").toString();
 
 		// Step 1: Split by '*'
 		String[] segments = constructedJson.split("\\*");
@@ -217,11 +217,11 @@ public class SignStyleJson {
 
 	/**
 	 * Deconstructs the elements from the JSON to a list of BaseElements
-	 * @param signStyleJson The SignStyleJson object to deconstruct
+	 * @param customizableSignStyle The SignStyleJson object to deconstruct
 	 * @return A list of BaseElements
 	 */
-	public static List<BaseElement> deconstructElementsToArray(SignStyleJson signStyleJson) {
-		JsonArray elements = signStyleJson.json.getAsJsonArray("Elements");
+	public static List<BaseElement> deconstructElementsToArray(CustomizableSignStyle customizableSignStyle) {
+		JsonArray elements = customizableSignStyle.json.getAsJsonArray("Elements");
 
 		List<BaseElement> elementsList = new ArrayList<>();
 

@@ -8,9 +8,9 @@ package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -56,9 +56,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         if (!isMaster) return;
         if (signTextureJson == null || signTextureJson.isEmpty()) return;
 
-        backgroundStylePieces = SignStyleJson.deconstructStyleToArray(new SignStyleJson().convertStringToJson(signTextureJson)).reversed();
+        backgroundStylePieces = CustomizableSignStyle.deconstructStyleToArray(new CustomizableSignStyle().convertStringToJson(signTextureJson)).reversed();
         backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
-        elements = SignStyleJson.deconstructElementsToArray(new SignStyleJson().convertStringToJson(signTextureJson));
+        elements = CustomizableSignStyle.deconstructElementsToArray(new CustomizableSignStyle().convertStringToJson(signTextureJson));
 
         elements.replaceAll(element -> {
             if (element instanceof ImageElement) {

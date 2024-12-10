@@ -1,8 +1,9 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements;
+package at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Color;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -18,31 +19,31 @@ import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager.registerFontAsync;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomMinecraftFont.getTextRendererByPath;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getRightSideDirection;
 import static at.tobiazsh.myworld.traffic_addition.components.Renderers.SignBlockEntityRenderer.getFacingRotation;
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class TextElementClient extends TextElement implements ClientElementRenderInterface {
 
-    private Future<ImGuiFont> fontFuture; // Future for the font
+    private final Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont font; // Font after future is done
-    private String currentFontPath; // Current font path; Ideally the same as ImGuiFont font
-    private float currentFontSize; // Current font size; Ideally the same as ImGuiFont font
 
-    private TextElement referenceElement; // Reference element for the text element
+    private final TextElement referenceElement; // Reference element for the text element
+
+    private static final String defaultFontPath = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/dejavu_sans.ttf";
+    private static final int defaultFontSize = 24;
+    private static final String defaultText = "Lorem Ipsum";
 
     public TextElementClient(float x, float y, float rotation, float factor, String fontPath, float fontSize, String text, TextElement referenceElement) {
         super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated());
         this.fontFuture = registerFontAsync(fontPath, fontSize);
         this.referenceElement = referenceElement;
-        this.currentFontPath = fontPath;
-        this.currentFontSize = fontSize;
     }
-
-    private static ImGui imgui = new ImGui();
 
     /**
      * Renders the text element in an ImGui Context.
@@ -174,6 +175,10 @@ public class TextElementClient extends TextElement implements ClientElementRende
         ImGui.popFont();
 
         return new ImVec2(width, height);
+    }
+
+    public static void add(List<BaseElement> drawables) {
+        drawables.addFirst(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true));
     }
 
     /**

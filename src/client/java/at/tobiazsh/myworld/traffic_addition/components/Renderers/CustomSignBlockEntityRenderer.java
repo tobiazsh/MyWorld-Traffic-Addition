@@ -8,8 +8,8 @@ package at.tobiazsh.myworld.traffic_addition.components.Renderers;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.ImageElementClient;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ImageElementClient;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;

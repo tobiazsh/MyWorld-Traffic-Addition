@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
 
 /*
@@ -9,16 +9,16 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.Utils.SignStyleJson;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import imgui.ImGui;
 
 public class JsonPreviewPopUp {
-	private static SignStyleJson currentStyle = new SignStyleJson();
+	private static CustomizableSignStyle currentStyle = new CustomizableSignStyle();
 
 	public static boolean shouldOpen = false;
 	public static String windowId = "JSON Preview";
 
-	public static void open(SignStyleJson style) {
+	public static void open(CustomizableSignStyle style) {
 		JsonPreviewPopUp.currentStyle = style;
 		shouldOpen = false;
 		ImGui.openPopup(windowId);

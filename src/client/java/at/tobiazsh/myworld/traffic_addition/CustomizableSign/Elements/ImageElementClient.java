@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Elements;
+package at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;

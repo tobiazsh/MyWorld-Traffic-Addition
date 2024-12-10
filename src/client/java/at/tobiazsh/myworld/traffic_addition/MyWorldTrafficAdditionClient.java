@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.components.Screens.SignPoleRotationS
 import at.tobiazsh.myworld.traffic_addition.components.Screens.SignSelectionScreen;
 import at.tobiazsh.myworld.traffic_addition.components.Utils.GlobalReceiverClient;
 import at.tobiazsh.myworld.traffic_addition.components.Utils.RegistrableBlockEntityRender;
+import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
@@ -37,6 +38,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	private static List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
 	private static List<String> modelPaths = new ArrayList<>();
 	private static List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
+
+	public static final ImGui imgui = new ImGui();
 
 	@Override
 	public void onInitializeClient() {

@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 
 /*
@@ -21,6 +21,8 @@ import imgui.flag.ImGuiWindowFlags;
 
 import java.util.Objects;
 
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+
 public abstract class ElementEntry {
 	private String name;
 	private String Id;
@@ -31,8 +33,6 @@ public abstract class ElementEntry {
 	private int previewSize = 50;
 	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
-
-	private static final ImGui imgui = new ImGui();
 
 	private ElementEntry(String name, String Id) {
 		this.name = name;

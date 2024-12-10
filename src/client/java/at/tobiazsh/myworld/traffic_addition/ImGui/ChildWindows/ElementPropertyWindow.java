@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
+package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 
 /*
@@ -24,13 +24,13 @@ import imgui.type.ImString;
 
 import java.util.*;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen.baseElementDrawOrder;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class ElementPropertyWindow {
 	private static ImString currentElementName = new ImString("", 512);
 	private static float[] currentElementRotation = new float[]{};
 	private static BaseElement element;
-	private static final ImGui imgui = new ImGui();
 	private static boolean relateSize = true;
 	private static ImVec2 ratioedSignSize = new ImVec2();
 	private static float factor;
@@ -125,9 +125,9 @@ public class ElementPropertyWindow {
 			ImGui.inputText("##nameInput", currentElementName);
 
 			if (ImGui.button("Confirm##name")) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 				element.name = currentElementName.get();
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			// SIZE
@@ -145,7 +145,7 @@ public class ElementPropertyWindow {
 			float aspectRatioH = elemW[0] / elemH[0];
 
 			if (ImGui.dragFloat("Width", elemW, 1.0f, 0.1f, ratioedSignSize.x)) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 
 				if (relateSize) {
 					elemH[0] = elemW[0] * aspectRatioW; // Adjust height based on new width
@@ -153,11 +153,11 @@ public class ElementPropertyWindow {
 				}
 
 				element.setWidth(elemW[0]);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			if (ImGui.dragFloat("Height", elemH, 1.0f, 0.1f, ratioedSignSize.y)) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 
 				if (relateSize) {
 					elemW[0] = elemH[0] * aspectRatioH; // Adjust height based on new width
@@ -165,7 +165,7 @@ public class ElementPropertyWindow {
 				}
 
 				element.setHeight(elemH[0]);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 
@@ -180,30 +180,30 @@ public class ElementPropertyWindow {
 
 			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
 			if (ImGui.dragFloat("X", elemX, 1.0f, 0.0f, ratioedSignSize.x - elemW[0])) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 				element.setX(elemX[0]);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			// Drag Float for the position of the element on the Y-Coordinate; Max is the sign's width minus the element's width to not exceed the bounds
 			if (ImGui.dragFloat("Y", elemY, 1.0f, 0.0f, ratioedSignSize.y - elemH[0])) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 				element.setY(elemY[0]);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			// Button that centers the current selected element on the X-Coordinate
 			if (ImGui.button("Center X")) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			// Button that centers the current selected element on the Y-Coordinate
 			if (ImGui.button("Center Y")) {
-				int index = baseElementDrawOrder.indexOf(element);
+				int index = elementOrder.indexOf(element);
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
-				baseElementDrawOrder.set(index, element);
+				elementOrder.set(index, element);
 			}
 
 			if (ImGui.button("Center...")) {

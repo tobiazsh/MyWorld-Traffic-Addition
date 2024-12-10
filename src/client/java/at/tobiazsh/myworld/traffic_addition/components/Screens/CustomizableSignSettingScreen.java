@@ -9,12 +9,12 @@ package at.tobiazsh.myworld.traffic_addition.components.Screens;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Screens.SignEditorScreen;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.*;
-import at.tobiazsh.myworld.traffic_addition.components.Sliders.DegreeSliderWidget;
+import at.tobiazsh.myworld.traffic_addition.components.Widgets.DegreeSliderWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -116,8 +116,8 @@ public class CustomizableSignSettingScreen extends Screen {
         reopen(false);
         this.clearAll();
 
-        SignEditorScreen screen = new SignEditorScreen();
-        screen.openSignEditorScreen(this.pos, this.world, isInitialized);
+        SignEditor screen = new SignEditor();
+        screen.open(this.pos, this.world, isInitialized);
     }
 
     private void reopen(boolean showChildren) {

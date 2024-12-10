@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.ImGui.Screens;
+package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
 
 
 /*
@@ -15,15 +15,14 @@ import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MODVER;
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
-public class AboutScreen {
+public class AboutWindow {
 
     public static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
     public static String author = "Tobiazsh (Tobias)";
     public static String description = "A Minecraft Mod for better roads in Minecraft";
     public static String[] other = {"Made in Austria", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"};
-
-    private static final ImGui imgui = new ImGui();
 
     public static void render() {
         ImGui.pushFont(ImGuiImpl.DejaVuSans);

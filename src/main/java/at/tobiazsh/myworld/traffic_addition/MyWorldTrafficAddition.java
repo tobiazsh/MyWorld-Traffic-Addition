@@ -34,11 +34,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static final String MOD_ID = "myworld_traffic_addition";
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v0.32.2-beta";
+	public static final String MODVER = "v0.32.3-beta";
 
-	private static List<SmartPayload<? extends CustomPayload>> smartPayloadsServer = new ArrayList<>();
-	private static List<SmartPayload<? extends CustomPayload>> smartPayloadsClient = new ArrayList<>();
-	private static List<SmartPayload<? extends CustomPayload>> smartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPayload>> smartPayloads = new ArrayList<>();
 
 	@Override
 	public void onInitialize() {
@@ -57,11 +57,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		// Register all payloads, no matter client or server
 		bulkRegisterPayloads(smartPayloads);
 
-		SmartPayload.bulkRegisterGlobalReceivers(smartPayloadsServer);
+		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 	}
 
 	private static void addSmartPayloadsServer() {
-		smartPayloadsServer.addAll(Arrays.asList(
+		serverSmartPayloads.addAll(Arrays.asList(
 
 				// Sign Poles
 				new SmartPayload<>(SignPoleRotationPayload.Id, SignPoleBlockActions::handleRotation, SignPoleRotationPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
@@ -86,7 +86,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	}
 
 	private static void addSmartPayloadsClient() {
-		smartPayloadsClient.addAll(Arrays.asList(
+		clientSmartPayloads.addAll(Arrays.asList(
 				new SmartPayload<>(OpenSignPoleRotationScreenPayload.Id, null, OpenSignPoleRotationScreenPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenSignSelectionPayload.Id, null, OpenSignSelectionPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenCustomizableSignEditScreen.Id, null, OpenCustomizableSignEditScreen.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
@@ -96,8 +96,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	}
 
 	private static void combineSmartPayloads() {
-		smartPayloads.addAll(smartPayloadsServer);
-		smartPayloads.addAll(smartPayloadsClient);
+		smartPayloads.addAll(serverSmartPayloads);
+		smartPayloads.addAll(clientSmartPayloads);
 	}
 
 	public static void sendOpenSignPoleRotationScreenPacket(ServerPlayerEntity player, BlockPos pos) {
