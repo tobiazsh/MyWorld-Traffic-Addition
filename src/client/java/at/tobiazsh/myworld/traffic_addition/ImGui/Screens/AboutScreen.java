@@ -14,10 +14,11 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MODVER;
+
 public class AboutScreen {
 
     public static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
-    public static String version = "0.32.1-beta";
     public static String author = "Tobiazsh (Tobias)";
     public static String description = "A Minecraft Mod for better roads in Minecraft";
     public static String[] other = {"Made in Austria", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"};
@@ -52,7 +53,7 @@ public class AboutScreen {
         ImGui.newLine();
 
         ImGui.text("Name: " + title);
-        ImGui.text("Version: " + version);
+        ImGui.text("Version: " + MODVER);
         ImGui.text("Author: " + author);
         ImGui.text("Description: " + description);
 

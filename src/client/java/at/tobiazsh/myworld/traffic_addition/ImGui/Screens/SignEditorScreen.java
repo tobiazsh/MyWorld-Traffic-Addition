@@ -462,11 +462,13 @@ public class SignEditorScreen {
             ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), totalSignWidthPixels, totalSignHeightPixels);
 
             // Scale position and dimensions
-            ImGui.setCursorPos(element.getX() / factor, element.getY() / factor);
+            float x = element.getX() / factor;
+            float y = element.getY() / factor;
+            ImGui.setCursorPos(x, y);
 
             // Render depending on the type of element
             if (element instanceof ImageElement) {
-                Textures.smartRegisterTexture(((ImageElement) element).getResourcePath()); // Register textures only on client side
+                if (!((ImageElement) element).texIsLoaded) ((ImageElement) element).loadTexture(); // Register textures only on client side and if texture is not loaded
                 ImageElementClient.fromImageElement((ImageElement) element).renderImGui();
             } else if (element instanceof TextElement) {
                 TextElementClient.fromTextElement((TextElement) element).renderImGui();

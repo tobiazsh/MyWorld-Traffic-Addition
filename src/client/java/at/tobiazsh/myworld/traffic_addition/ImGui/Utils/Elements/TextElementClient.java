@@ -114,7 +114,7 @@ public class TextElementClient extends TextElement implements ClientElementRende
                 .offset(getRightSideDirection(facing.getOpposite()), x)
                 .offset(Direction.UP, csbeHeight - 1)
                 .offset(Direction.DOWN, y)
-                .offset(Direction.DOWN, h * 0.5f * 0.5f); // Fix Up/Down alignment
+                .offset(Direction.DOWN, h * 0.35f); // Fix Up/Down alignment
 
         matrices.push();
 

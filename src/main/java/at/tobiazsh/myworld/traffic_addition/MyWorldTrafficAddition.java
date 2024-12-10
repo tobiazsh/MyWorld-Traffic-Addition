@@ -34,6 +34,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static final String MOD_ID = "myworld_traffic_addition";
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
+	public static final String MODVER = "v0.32.2-beta";
 
 	private static List<SmartPayload<? extends CustomPayload>> smartPayloadsServer = new ArrayList<>();
 	private static List<SmartPayload<? extends CustomPayload>> smartPayloadsClient = new ArrayList<>();
