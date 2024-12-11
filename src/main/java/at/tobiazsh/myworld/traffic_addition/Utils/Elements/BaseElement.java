@@ -14,9 +14,9 @@ public abstract class BaseElement {
 	protected float x, y, width, height, factor, rotation;
 	public boolean clicked = false;
 	public String id, name;
+	private float[] color = new float[]{1f, 1f, 1f, 1f};
 	public static Map<String, BaseElement> Ids = new HashMap<>();
 	private static int nextId = 0;
-	private float[] color = new float[]{1f, 1f, 1f, 1f};
 
 	public BaseElement(float x, float y, float width, float height, float factor) {
 		this.x = x;
@@ -25,6 +25,18 @@ public abstract class BaseElement {
 		this.height = height;
 		this.factor = factor;
 		registerId(this);
+	}
+
+	public BaseElement(float x, float y, float width, float height, float rotation, float factor, String id, float[] color, String name) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.factor = factor;
+		this.id = id;
+		this.color = color;
+		this.name = name;
+		this.rotation = rotation;
 	}
 
 	private String registerId(BaseElement element) {
@@ -96,8 +108,9 @@ public abstract class BaseElement {
 		return value / factor;
 	}
 
-	public void scalePercentSize(float percent) {
+	public BaseElement scalePercentSize(float percent) {
 		this.width = this.width + (this.width * (percent / 100));
+		return this;
 	}
 
 	public void scaleSize(float pixels, boolean scaleByHeight) {

@@ -50,6 +50,8 @@ public class SignEditor {
     public static List<String> backgroundTextures = new ArrayList<>();
     public static List<BaseElement> elementOrder = new ArrayList<>();
     public static BaseElement selectedElement = null;
+    private static Folder backgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
+    public static ImVec2 signRatio; // Initialized when screen is opened;
 
     private static void quit() {
         ImGui.closeCurrentPopup();
@@ -98,9 +100,7 @@ public class SignEditor {
             throw new RuntimeException(e);
         }
 
-        float previewHeight = 1100;
-        float previewWidth = 1100;
-        signRatio = createRatio(previewHeight, previewWidth, signWidthBlocks, signHeightBlocks);
+        signRatio = createRatio(SignPreview.previewMaxWidth, SignPreview.previewMaxHeight, signWidthBlocks, signHeightBlocks);
         elementOrder = new ArrayList<>();
 
         backgroundTextures.clear();
@@ -128,7 +128,7 @@ public class SignEditor {
         signWidthBlocks = blockEntity.getWidth();
     }
 
-    private static ImVec2 createRatio(float maxHeight, float maxWidth, float width, float height) {
+    private static ImVec2 createRatio(float maxWidth, float maxHeight, float width, float height) {
         float newWidth, newHeight;
 
         if (width > height) {
@@ -166,17 +166,12 @@ public class SignEditor {
         // ... More to come
     }
 
-    private static Folder backgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
-
-    public static ImVec2 signRatio; // Initialized when screen is opened;
-    private static float zoomScale = 1.0f;
-
     public static void renderMain(){
         ImGui.pushFont(DejaVuSans);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         // Factor for the size of the canvas
-        float factor = signRatio.y / signHeightBlocks * zoomScale; // Size of each "sign" tile in pixels
+        float factor = signRatio.y / signHeightBlocks; // Size of each "sign" tile in pixels
 
         renderMenuBar();
         handleHotKeys();
@@ -185,19 +180,14 @@ public class SignEditor {
         JsonPreviewPopUp.create();
         if (JsonPreviewPopUp.shouldOpen) JsonPreviewPopUp.open(signJson);
 
-        // Calculations for sign preview
-
-        float signWidthPixels = signRatio.x;
-        float signHeightPixels = signRatio.y;
-
-        float cursorAddToHeight = (ImGui.getWindowHeight() - signHeightPixels) / 2;
-        float cursorAddToWidth = (ImGui.getWindowWidth() - signWidthPixels) / 2;
+        // Position for the preview (in the middle)
+        float previewX = (ImGui.getWindowWidth() - signRatio.x * SignPreview.getZoom()) * 0.5f; // signRatio.x * getZoom() because the size of the sign changes with zoom
+        float previewY = (ImGui.getWindowHeight() - signRatio.y * SignPreview.getZoom()) * 0.5f; // -------//-------
 
         // Set the cursor position once, to the top-left of the entire centered grid
-        ImGui.setCursorPos(cursorAddToWidth, cursorAddToHeight);
-        ImVec2 previewPosition = ImGui.getCursorPos();
+        ImGui.setCursorPos(previewX, previewY);
 
-        SignPreview.render(signWidthPixels, signHeightPixels, signWidthBlocks, signHeightBlocks, factor, previewPosition, elementOrder, backgroundTextures);
+        SignPreview.render(signRatio.x, signRatio.y, signWidthBlocks, signHeightBlocks, factor, new ImVec2(previewX, previewY), elementOrder, backgroundTextures);
 
         ImGui.end();
         ImGui.popFont();
@@ -217,9 +207,7 @@ public class SignEditor {
 
             if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopUp.shouldOpen = true;
 
-            if (ImGui.menuItem("Quit", "CTRL + Q")) {
-                quit();
-            }
+            if (ImGui.menuItem("Quit", "CTRL + Q")) quit();
 
             ImGui.endMenu();
         }
@@ -246,8 +234,8 @@ public class SignEditor {
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.add(elementOrder);
-            //if (ImGui.menuItem("Zoom Out", "CTRL + O")) zoomOut(0.05f); TODO: Implement Zooming
-            //if (ImGui.menuItem("Zoom In", "CTRL + I")) zoomIn(0.05f); TODO: Implement Zooming
+            if (ImGui.menuItem("Zoom Out", "CTRL + O")) SignPreview.zoomOut();
+            if (ImGui.menuItem("Zoom In", "CTRL + I")) SignPreview.zoomIn();
 
             ImGui.endMenu();
         }
@@ -259,8 +247,8 @@ public class SignEditor {
         boolean ctrl = ImGui.isKeyDown(ImGuiKey.LeftCtrl) || ImGui.isKeyDown(ImGuiKey.RightCtrl);
         boolean shift = ImGui.isKeyDown(ImGuiKey.LeftShift) || ImGui.isKeyDown(ImGuiKey.RightShift);
 
-        //if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) zoomIn(0.05f); TODO: Implement Zooming
-        //if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) zoomOut(0.05f); TODO: Implement Zooming
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) SignPreview.zoomIn();
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) SignPreview.zoomOut();
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) SignOperation.Json.write(masterBlockPos, signJson, elementOrder, blockEntity);
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.W)) {
@@ -275,14 +263,6 @@ public class SignEditor {
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle();
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open();
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) TextElementClient.add(elementOrder);
-    }
-
-    private static void zoomOut(float amount) {
-        zoomScale = Math.max(0.1f, zoomScale - amount); // Prevent zooming out too much
-    }
-
-    private static void zoomIn(float amount) {
-        zoomScale = Math.min(10.0f, zoomScale + amount); // Prevent excessive zoom-in
     }
 
     private static void clearCanvas() {
