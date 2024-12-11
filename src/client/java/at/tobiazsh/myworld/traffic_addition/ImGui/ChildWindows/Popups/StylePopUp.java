@@ -7,10 +7,10 @@ import imgui.ImGui;
 
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.previewTextures;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.backgroundTextures;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.signJson;
-import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.deconstructStyleToArray;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.deconstructStyleToArray;
 
 public class StylePopUp {
 
@@ -96,7 +96,7 @@ public class StylePopUp {
                 styleSelected = false;
                 ImGui.closeCurrentPopup();
 
-                previewTextures = deconstructStyleToArray(signJson.setStyle(currentBGStyle.path, customizableSignBlockEntity));
+                backgroundTextures = deconstructStyleToArray(signJson.setStyle(currentBGStyle.path, customizableSignBlockEntity));
             }
 
             if (applyButtonDisabled) ImGui.endDisabled();

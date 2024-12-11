@@ -2,14 +2,13 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.Utils.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SpecialBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.*;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.Actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.Actions.SignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.Actions.SignPoleBlockActions;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockChange.ShowAboutWindow;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockChange.ShowDemoWindow;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.*;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -34,7 +33,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static final String MOD_ID = "myworld_traffic_addition";
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v0.32.3-beta";
+	public static final String MODVER = "v0.32.4-beta";
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();

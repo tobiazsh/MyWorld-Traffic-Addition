@@ -12,6 +12,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SignOperation {
@@ -30,8 +31,8 @@ public class SignOperation {
 
         public static class Reader {
 
-            private List<BaseElement> drawables;
-            private List<String> previewTextures;
+            private List<BaseElement> drawables = new ArrayList<>();
+            private List<String> backgroundTextures = new ArrayList<>();
 
             public void read(BlockPos pos, World world, CustomizableSignStyle json) {
                 BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -43,7 +44,7 @@ public class SignOperation {
 
                 json = json.convertStringToJson(jsonString);
 
-                if (json.json.has("Style")) this.previewTextures = CustomizableSignStyle.deconstructStyleToArray(json);
+                if (json.json.has("Style")) this.backgroundTextures = CustomizableSignStyle.deconstructStyleToArray(json);
                 if (json.json.has("Elements")) this.drawables = CustomizableSignStyle.deconstructElementsToArray(json);
             }
 
@@ -51,8 +52,8 @@ public class SignOperation {
                 return this.drawables;
             }
 
-            public List<String> getPreviewTextures() {
-                return this.previewTextures;
+            public List<String> getBackgroundTextures() {
+                return this.backgroundTextures;
             }
         }
     }

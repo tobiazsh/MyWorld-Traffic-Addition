@@ -7,22 +7,26 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.Windows;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.CustomizableSign.SignOperation;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.*;
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementAddWindow;
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementPropertyWindow;
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementsWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ConfirmationPopup;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.JsonPreviewPopUp;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.StylePopUp;
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.*;
-import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
 import imgui.ImGui;
 import imgui.ImVec2;
-import imgui.flag.*;
+import imgui.flag.ImGuiKey;
+import imgui.flag.ImGuiWindowFlags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +34,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.*;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
 
 public class SignEditor {
 
@@ -42,7 +47,7 @@ public class SignEditor {
     private static int signHeightBlocks;
     
     public static CustomizableSignStyle signJson = new CustomizableSignStyle();
-    public static List<String> previewTextures = new ArrayList<>();
+    public static List<String> backgroundTextures = new ArrayList<>();
     public static List<BaseElement> elementOrder = new ArrayList<>();
     public static BaseElement selectedElement = null;
 
@@ -98,10 +103,10 @@ public class SignEditor {
         signRatio = createRatio(previewHeight, previewWidth, signWidthBlocks, signHeightBlocks);
         elementOrder = new ArrayList<>();
 
-        previewTextures.clear();
-        for (int i = 0; i < signHeightBlocks * signWidthBlocks; i++) {
-            previewTextures.add("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
-        }
+        backgroundTextures.clear();
+
+        for (int i = 0; i < signHeightBlocks * signWidthBlocks; i++)
+            backgroundTextures.add("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
 
         readFromSign(world);
 
@@ -111,8 +116,11 @@ public class SignEditor {
     private static void readFromSign(World world) {
         SignOperation.Json.Reader reader = new SignOperation.Json.Reader();
         reader.read(masterBlockPos, world, signJson);
+
         elementOrder = reader.getDrawables();
-        previewTextures = reader.getPreviewTextures();
+
+        List<String> bgTex = reader.getBackgroundTextures();
+        if (!bgTex.isEmpty()) backgroundTextures = bgTex;
     }
 
     private static void getSignSize() {
@@ -189,7 +197,7 @@ public class SignEditor {
         ImGui.setCursorPos(cursorAddToWidth, cursorAddToHeight);
         ImVec2 previewPosition = ImGui.getCursorPos();
 
-        SignPreview.render(signWidthPixels, signHeightPixels, signWidthBlocks, signHeightBlocks, factor, previewPosition, elementOrder, previewTextures);
+        SignPreview.render(signWidthPixels, signHeightPixels, signWidthBlocks, signHeightBlocks, factor, previewPosition, elementOrder, backgroundTextures);
 
         ImGui.end();
         ImGui.popFont();
