@@ -21,7 +21,7 @@ public record SetRenderStateCustomizableSignBlockPayload(BlockPos pos, boolean r
 
     public static final PacketCodec<ByteBuf, SetRenderStateCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetRenderStateCustomizableSignBlockPayload::pos,
-            PacketCodecs.BOOL, SetRenderStateCustomizableSignBlockPayload::renderState,
+            PacketCodecs.BOOLEAN, SetRenderStateCustomizableSignBlockPayload::renderState,
             SetRenderStateCustomizableSignBlockPayload::new
     );
 

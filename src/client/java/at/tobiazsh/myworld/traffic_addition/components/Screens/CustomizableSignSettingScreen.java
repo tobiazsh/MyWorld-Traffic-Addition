@@ -176,7 +176,6 @@ public class CustomizableSignSettingScreen extends Screen {
         BlockPos currentRightPos = masterPos;
         while (world.getBlockEntity(currentUpPos) instanceof CustomizableSignBlockEntity) {
             while (world.getBlockEntity(currentRightPos) instanceof CustomizableSignBlockEntity) {
-                System.out.println("Current Right Pos: " + currentRightPos);
                 signPositions.add(currentRightPos);
                 currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING.getOpposite()), currentRightPos, 1);
             }

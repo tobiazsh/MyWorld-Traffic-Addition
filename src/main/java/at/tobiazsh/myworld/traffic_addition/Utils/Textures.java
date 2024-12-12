@@ -8,6 +8,8 @@ package at.tobiazsh.myworld.traffic_addition.Utils;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +22,7 @@ public class Textures {
 
 	public static Texture getTexture(String resourcePath) {
 		if (!textureRegistered(resourcePath)) {
-			System.err.println("Error (Texture Database; Retrieving Texture) Texture is not registered yet!");
+			MyWorldTrafficAddition.LOGGER.error("Error (Texture Database; Retrieving Texture) Texture is not registered yet!");
 			return new Texture();
 		}
 
@@ -29,7 +31,7 @@ public class Textures {
 
 	public static int getTextureId(String resourcePath) {
 		if (!textureRegistered(resourcePath)) {
-			System.err.println("Error (Texture Database; Retrieving Texture) Texture is not registered yet!");
+			MyWorldTrafficAddition.LOGGER.error("Error (Texture Database; Retrieving Texture) Texture is not registered yet!");
 			return 0;
 		}
 
@@ -41,7 +43,7 @@ public class Textures {
 		Texture texture = new Texture();
 
 		if (textureRegistered(resourcePath)) {
-			System.out.println("Warning (Registering Texture): Texture already registered! Ignoring command!");
+			MyWorldTrafficAddition.LOGGER.error("Warning (Registering Texture): Texture already registered! Ignoring command!");
 			return texture;
 		}
 

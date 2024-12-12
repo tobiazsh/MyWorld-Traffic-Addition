@@ -107,7 +107,6 @@ public class FileSystem {
 				try {
 					return new CustomFileSystem((FileSystems.getFileSystem(URI.create(fileSystemPath))), false); // Not closing the filesystem avoid a ClosedFileSystemException in Minecraft
 				} catch (FileSystemNotFoundException e) {
-					System.out.println("Creating new file system for: " + fileSystemPath);
 					return new CustomFileSystem(FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>()), true); // But it should close it when it is opened just for this. Kinda like borrowing the value lol
 				}
 			}

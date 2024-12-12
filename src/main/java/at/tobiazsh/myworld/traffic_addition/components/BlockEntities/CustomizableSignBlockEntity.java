@@ -27,7 +27,6 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
 
@@ -153,9 +152,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     public void setSignTextureJson(String json) {
         this.signTextureJson = json;
-
-        System.out.println("SignTexture" + json);
-
         updateGame();
     }
 

@@ -21,7 +21,7 @@ public record SetMasterCustomizableSignBlockPayload(BlockPos pos, Boolean should
     public static final CustomPayload.Id<SetMasterCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "customizable_sign_block_master_change"));
     public static final PacketCodec<ByteBuf, SetMasterCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetMasterCustomizableSignBlockPayload::pos,
-            PacketCodecs.BOOL, SetMasterCustomizableSignBlockPayload::shouldMaster,
+            PacketCodecs.BOOLEAN, SetMasterCustomizableSignBlockPayload::shouldMaster,
             BlockPos.PACKET_CODEC, SetMasterCustomizableSignBlockPayload::master,
             SetMasterCustomizableSignBlockPayload::new
     );

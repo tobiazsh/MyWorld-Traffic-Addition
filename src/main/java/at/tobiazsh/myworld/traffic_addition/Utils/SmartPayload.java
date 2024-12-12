@@ -11,7 +11,6 @@ import java.util.List;
 
 public class SmartPayload<T extends CustomPayload> {
 
-
     public enum RECEIVE_ENVIRONMENT {
         CLIENT,
         SERVER

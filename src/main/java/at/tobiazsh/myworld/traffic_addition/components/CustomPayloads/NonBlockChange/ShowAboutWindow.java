@@ -18,7 +18,7 @@ import net.minecraft.util.Identifier;
 public record ShowAboutWindow(boolean dummy) implements CustomPayload {
     public static CustomPayload.Id<ShowAboutWindow> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "show_about_window_payload"));
     public static PacketCodec<ByteBuf, ShowAboutWindow> CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOL, ShowAboutWindow::dummy,
+            PacketCodecs.BOOLEAN, ShowAboutWindow::dummy,
             ShowAboutWindow::new
     );
 
