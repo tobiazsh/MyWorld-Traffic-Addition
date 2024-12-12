@@ -44,6 +44,13 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+	// LWJGL restriction since macOS doesn't like ver 3.3.4 that imgui uses...
+	implementation(group: 'org.lwjgl', name: 'lwjgl-freetype', classifier: 'natives-macos-patch') {
+		version{
+			strictly "[3.3.3]"
+		}
+	}
+
 	// Dear ImGui Implementation
 	include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
 	include implementation("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}")
