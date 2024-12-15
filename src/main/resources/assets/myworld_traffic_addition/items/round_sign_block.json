@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "myworld_traffic_addition:block/round_sign_block"
+  }
+}
