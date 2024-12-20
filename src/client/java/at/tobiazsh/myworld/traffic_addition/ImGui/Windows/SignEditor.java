@@ -227,6 +227,8 @@ public class SignEditor {
         if (ImGui.beginMenu("View")) {
             if (ImGui.menuItem("Toggle Element Window", "CTRL + E")) ElementsWindow.toggle();
             if (ImGui.menuItem("Toggle Element Properties Window", "CTRL + P")) ElementPropertyWindow.toggle();
+            if (ImGui.menuItem("Zoom In", "CTRL + I")) SignPreview.zoomIn();
+            if (ImGui.menuItem("Zoom Out", "CTRL + O")) SignPreview.zoomOut();
 
             ImGui.endMenu();
         }
@@ -234,8 +236,6 @@ public class SignEditor {
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.add(elementOrder);
-            if (ImGui.menuItem("Zoom Out", "CTRL + O")) SignPreview.zoomOut();
-            if (ImGui.menuItem("Zoom In", "CTRL + I")) SignPreview.zoomIn();
 
             ImGui.endMenu();
         }
