@@ -105,4 +105,12 @@ public class ImageElement extends BaseElement{
 		this.resourcePath = resourcePath;
 		return this;
 	}
+
+	public ImageElement copy() {
+		ImageElement imageElement = new ImageElement(x, y, width, height, factor, rotation, elementTexture);
+		imageElement.setName(this.getName());
+		imageElement.setResourcePath(this.resourcePath);
+		imageElement.setColor(this.getColor());
+		return imageElement;
+	}
 }

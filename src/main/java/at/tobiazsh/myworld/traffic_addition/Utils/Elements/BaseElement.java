@@ -13,7 +13,7 @@ import java.util.Map;
 public abstract class BaseElement {
 	protected float x, y, width, height, factor, rotation;
 	public boolean clicked = false;
-	public String id, name;
+	protected String id, name;
 	private float[] color = new float[]{1f, 1f, 1f, 1f};
 	public static Map<String, BaseElement> Ids = new HashMap<>();
 	private static int nextId = 0;
@@ -145,6 +145,14 @@ public abstract class BaseElement {
 		return this;
 	}
 
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public void setFactor(float factor) {
 		this.factor = factor;
 	}
@@ -176,4 +184,6 @@ public abstract class BaseElement {
 	public float[] getColor() {
 		return new float[]{color[0], color[1], color[2], color[3]};
 	}
+
+	public abstract BaseElement copy();
 }

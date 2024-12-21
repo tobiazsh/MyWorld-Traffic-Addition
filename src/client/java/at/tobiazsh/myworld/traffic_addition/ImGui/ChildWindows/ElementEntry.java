@@ -8,6 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -21,7 +22,9 @@ import imgui.flag.ImGuiWindowFlags;
 
 import java.util.Objects;
 
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.toJson;
 
 public abstract class ElementEntry {
 	private String name;
@@ -33,6 +36,7 @@ public abstract class ElementEntry {
 	private int previewSize = 50;
 	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
+	private static final int otherIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/other.png").getTextureId();
 
 	private ElementEntry(String name, String Id) {
 		this.name = name;
@@ -67,6 +71,7 @@ public abstract class ElementEntry {
 	public boolean removeMyself = false;
 
 	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, BaseElement selectedOption) {
+
 		float entryWidth = (windowWidth - (this.padding * 2));
 		controlsWidth = 0;
 
@@ -75,7 +80,7 @@ public abstract class ElementEntry {
 		ImGui.pushStyleVar(ImGuiStyleVar.ChildBorderSize, 2);
 		ImGui.pushStyleColor(ImGuiCol.Border, borderCol);
 
-		ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.id, entryWidth, entryHeight, isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+		ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.getId(), entryWidth, entryHeight, isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
 		// Selection Button
 		ImGui.setCursorPosX(this.padding * 2);
@@ -99,7 +104,15 @@ public abstract class ElementEntry {
 		ImGui.sameLine();
 
 		ImGui.setCursorPosY((entryHeight - buttonSize) / 2 - framePadding); // Center Buttons
-		ImGui.setCursorPosX(entryWidth - buttonSize * 3 - padding * 3);
+		ImGui.setCursorPosX(entryWidth - buttonSize * 4 - padding * 4);
+
+		contextualMenu();
+		if (ImGui.imageButton(otherIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+			// Open Element Properties
+			ImGui.openPopup("ElementEntryContextMenu##" + renderObject.getId());
+		}
+
+		ImGui.sameLine();
 
 		if (ImGui.imageButton(redXIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
 			// Remove Element
@@ -127,5 +140,30 @@ public abstract class ElementEntry {
 
 		ImGui.popStyleColor();
 		ImGui.popStyleVar();
+	}
+
+	private void contextualMenu() {
+		if (ImGui.beginPopupContextItem("ElementEntryContextMenu##" + renderObject.getId())) {
+
+			if (ImGui.button("Copy")) {
+				Clipboard.setCopiedElement(renderObject);
+				ImGui.closeCurrentPopup();
+			}
+
+			if (ImGui.button("Cut")) {
+				Clipboard.setCopiedElement(renderObject);
+				removeMyself = true;
+				ImGui.closeCurrentPopup();
+			}
+
+			if (ImGui.button("Duplicate")) {
+				BaseElement copiedElement = renderObject.copy();
+				copiedElement.setName(renderObject.getName());
+				copiedElement.setColor(renderObject.getColor());
+				elementOrder.addFirst(copiedElement);
+			}
+
+			ImGui.endPopup();
+		}
 	}
 }

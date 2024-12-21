@@ -69,7 +69,7 @@ public class ElementPropertyWindow {
 	public static boolean shouldRender = false;
 
 	public static void initVars(BaseElement element, ImVec2 ratioedSignSize) {
-		ElementPropertyWindow.currentElementName = new ImString(element.name, 512);
+		ElementPropertyWindow.currentElementName = new ImString(element.getName(), 512);
 		ElementPropertyWindow.currentElementRotation = new float[]{element.getRotation()};
 		relateSize = true;
 		ElementPropertyWindow.element = element;
@@ -126,7 +126,7 @@ public class ElementPropertyWindow {
 
 			if (ImGui.button("Confirm##name")) {
 				int index = elementOrder.indexOf(element);
-				element.name = currentElementName.get();
+				element.setName(currentElementName.get());
 				elementOrder.set(index, element);
 			}
 

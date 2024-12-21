@@ -34,7 +34,7 @@ public class ElementsWindow {
         if (ImGui.begin("Elements", ImGuiWindowFlags.NoNavInputs)) {
             for (int i = 0; i < elementOrder.size(); i++) {
                 BaseElement element = elementOrder.get(i);
-                ElementEntry entry = new ElementEntry(element.name, element.getId(), element) {
+                ElementEntry entry = new ElementEntry(element.getName(), element.getId(), element) {
                     @Override
                     public void moveEntryUp() {
                         elementOrder = ArrayTools.moveElementUpBy(elementOrder, elementOrder.indexOf(element), 1);

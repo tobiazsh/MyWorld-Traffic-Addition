@@ -44,4 +44,11 @@ public class TextElement extends BaseElement {
 	public BasicFont getFont() {
 		return this.font;
 	}
+
+	public TextElement copy() {
+		TextElement textElement = new TextElement(x, y, width, height, rotation, factor, font, text, false);
+		textElement.setName(this.getName());
+		textElement.setColor(this.getColor());
+		return textElement;
+	}
 }

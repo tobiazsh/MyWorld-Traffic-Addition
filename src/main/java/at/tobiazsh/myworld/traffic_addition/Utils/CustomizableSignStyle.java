@@ -8,6 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.Utils;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -97,65 +98,9 @@ public class CustomizableSignStyle {
 	 * @return The SignStyleJson object
 	 */
 	public CustomizableSignStyle setElements(List<? extends BaseElement> elements, CustomizableSignBlockEntity customizableSignBlockEntity) {
-		BlockPos pos = customizableSignBlockEntity.getMasterPos();
-		String position = pos.getX() + ";" + pos.getY() + ";" + pos.getZ();
-
 		ElementsContainer container = new ElementsContainer();
 
-		elements.forEach(element -> {
-			JsonObject object = new JsonObject();
-
-			ELEMENT_TYPE elementType = ELEMENT_TYPE.NONE;
-
-			String elementName = element.name;
-			String elementSize = element.getWidth() + "x" + element.getHeight();
-			String elementPosition = element.getX() + ";" + element.getY();
-			float elementFactor = element.getFactor();
-			float elementRotation = element.getRotation();
-			float[] color = element.getColor();
-
-			elementName = elementName.isEmpty() || elementName.isBlank() ? "UNKNOWN" : elementName;
-
-			object.addProperty("Pos", position);
-			object.addProperty("Name", elementName);
-			object.addProperty("Size", elementSize);
-			object.addProperty("ElementPos", elementPosition);
-			object.addProperty("Rotation", elementRotation);
-			object.addProperty("Factor", elementFactor);
-			object.addProperty("ColorR", color[0]);
-			object.addProperty("ColorG", color[1]);
-			object.addProperty("ColorB", color[2]);
-			object.addProperty("ColorA", color[3]);
-
-			if (element instanceof ImageElement) {
-				elementType = ELEMENT_TYPE.IMAGE_ELEMENT;
-
-				if (((ImageElement) element).getResourcePath().isBlank() || ((ImageElement) element).getResourcePath().isEmpty()) {
-					return;
-				}
-
-				String elementTexture = ((ImageElement) element).getResourcePath();
-				object.addProperty("Texture", elementTexture);
-			} else if (element instanceof TextElement)  {
-				elementType = ELEMENT_TYPE.TEXT_ELEMENT;
-
-				if (((TextElement) element).getText().isBlank() || ((TextElement) element).getText().isEmpty() || ((TextElement) element).getFont() == null) {
-					return;
-				}
-
-				float fontSize = ((TextElement) element).getFont().getFontSize();
-				String fontPath = ((TextElement) element).getFont().getFontPath();
-				String text = ((TextElement) element).getText();
-
-				object.addProperty("FontSize", fontSize);
-				object.addProperty("FontPath", fontPath);
-				object.addProperty("Text", text);
-			}
-
-			object.addProperty("ElementType", elementType.ordinal());
-
-			container.addElement(object);
-		});
+		elements.forEach(element -> container.addElement(toJson(element)));
 
 		Gson gson = new GsonBuilder().create();
 
@@ -227,56 +172,105 @@ public class CustomizableSignStyle {
 
 		for (JsonElement elementElement : elements) {
 			JsonObject elementObject = elementElement.getAsJsonObject();
-
-			String posStr = elementObject.get("Pos").getAsString();
-			String name = elementObject.get("Name").getAsString();
-			String sizeStr = elementObject.get("Size").getAsString();
-			String elemPosStr = elementObject.get("ElementPos").getAsString();
-			ELEMENT_TYPE elementType = ELEMENT_TYPE.values()[elementObject.get("ElementType").getAsInt()]; // Retrieve enumerator; Element Type
-			float rotation = elementObject.get("Rotation").getAsFloat();
-			float factor = elementObject.get("Factor").getAsFloat();
-
-			float[] color = new float[]{
-					elementObject.get("ColorR").getAsFloat(),
-					elementObject.get("ColorG").getAsFloat(),
-					elementObject.get("ColorB").getAsFloat(),
-					elementObject.get("ColorA").getAsFloat()
-			};
-
-			String[] pos = posStr.split(";");
-			BlockPos masterPos = new BlockPos(Integer.parseInt(pos[0]), Integer.parseInt(pos[1]), Integer.parseInt(pos[2]));
-
-			String[] size = sizeStr.split("x");
-			float width = Float.parseFloat(size[0]);
-			float height = Float.parseFloat(size[1]);
-
-			String[] elemPos = elemPosStr.split(";");
-			float x = Float.parseFloat(elemPos[0]);
-			float y = Float.parseFloat(elemPos[1]);
-
-			BaseElement element = null;
-
-			if (elementType.equals(ELEMENT_TYPE.IMAGE_ELEMENT)) {
-				String texture = elementObject.get("Texture").getAsString();
-				element = new ImageElement(x, y, width, height, 1, texture);
-			} else if (elementType.equals(ELEMENT_TYPE.TEXT_ELEMENT)) {
-				String fontPath = elementObject.get("FontPath").getAsString();
-				String text = elementObject.get("Text").getAsString();
-				float fontSize = elementObject.get("FontSize").getAsFloat();
-
-				element = new TextElement(x, y, width, height, rotation, factor, new BasicFont(fontPath, fontSize), text, false);
-			}
-
-            assert element != null;
-            element.name = name;
-			element.setRotation(rotation);
-			element.setFactor(factor);
-			element.setColor(color);
-			
-			elementsList.add(element);
+			elementsList.add(fromJson(elementObject));
 		}
 
 		return elementsList;
+	}
+
+	/**
+	 * Converts an element of the type BaseElement to a JSON Object
+	 * @param element The BaseElement to convert
+	 * @return The JSON Object
+	 */
+	public static JsonObject toJson(BaseElement element) {
+		JsonObject object = new JsonObject();
+
+		JsonArray elementPosition = new JsonArray();
+		for (float v : new float[]{element.getX(), element.getY()}) elementPosition.add(v);
+		object.add("ElementPosition", elementPosition); // X, Y
+
+		JsonArray color = new JsonArray();
+		for (float v : element.getColor()) color.add(v);
+		object.add("Color", color); // R, G, B, A
+
+		JsonArray size = new JsonArray();
+		for (float v : new float[]{element.getWidth(), element.getHeight()}) size.add(v);
+		object.add("Size", size); // X, Y
+
+		object.addProperty("Rotation", element.getRotation());
+		object.addProperty("Factor", element.getFactor());
+		object.addProperty("Name", element.getName());
+
+		if (element instanceof ImageElement) {
+			object.addProperty("ElementType", ELEMENT_TYPE.IMAGE_ELEMENT.ordinal());
+			object.addProperty("Texture", ((ImageElement) element).getResourcePath());
+		} else if (element instanceof TextElement) {
+			object.addProperty("ElementType", ELEMENT_TYPE.TEXT_ELEMENT.ordinal());
+			object.addProperty("Text", ((TextElement) element).getText());
+			object.addProperty("FontPath", ((TextElement) element).getFont().getFontPath());
+			object.addProperty("FontSize", ((TextElement) element).getFont().getFontSize());
+		}
+
+		return object;
+	}
+
+	/**
+	 * Converts a JSON Object to an element of the type BaseElement
+	 * @param object The JSON Object to convert
+	 * @return The converted BaseElement
+	 */
+	public static BaseElement fromJson(JsonObject object) {
+		BaseElement element;
+
+		JsonArray elementPosJson = object.getAsJsonArray("ElementPosition");
+		float[] elementPos = new float[]{elementPosJson.get(0).getAsFloat(), elementPosJson.get(1).getAsFloat()}; // X, Y
+
+		JsonArray colorJson = object.getAsJsonArray("Color");
+		float[] color = new float[]{colorJson.get(0).getAsFloat(), colorJson.get(1).getAsFloat(), colorJson.get(2).getAsFloat(), colorJson.get(3).getAsFloat()}; // R, G, B, A
+
+		JsonArray sizeJson = object.getAsJsonArray("Size");
+		float[] size = new float[]{sizeJson.get(0).getAsFloat(), sizeJson.get(1).getAsFloat()}; // Width, Height
+
+		float rotation = object.get("Rotation").getAsFloat();
+		float factor = object.get("Factor").getAsFloat();
+		ELEMENT_TYPE type = ELEMENT_TYPE.values()[object.get("ElementType").getAsInt()];
+		String name = object.get("Name").getAsString();
+
+		if (type == ELEMENT_TYPE.IMAGE_ELEMENT) {
+
+			element = new ImageElement(
+					elementPos[0],
+					elementPos[1],
+					size[0], size[1],
+					factor,
+					rotation,
+					object.get("Texture").getAsString()
+			);
+
+		} else if (type == ELEMENT_TYPE.TEXT_ELEMENT) {
+
+			element = new TextElement(
+					elementPos[0],
+					elementPos[1],
+					size[0],
+					size[1],
+					rotation,
+					factor,
+					new BasicFont(object.get("FontPath").getAsString(), object.get("FontSize").getAsFloat()),
+					object.get("Text").getAsString(),
+					false
+			);
+
+		} else {
+			MyWorldTrafficAddition.LOGGER.error("Error: Couldn't deconstruct elements to JSON! Element type is invalid.");
+			return null;
+		}
+
+		element.setName(name);
+		element.setColor(color);
+
+		return element;
 	}
 
 	private void updateString() {

@@ -18,6 +18,7 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.JsonPrevie
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.StylePopUp;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
+import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
@@ -121,6 +122,11 @@ public class SignEditor {
 
         List<String> bgTex = reader.getBackgroundTextures();
         if (!bgTex.isEmpty()) backgroundTextures = bgTex;
+    }
+
+    private static void updateFromJson() {
+        elementOrder = CustomizableSignStyle.deconstructElementsToArray(signJson);
+        backgroundTextures = CustomizableSignStyle.deconstructStyleToArray(signJson);
     }
 
     private static void getSignSize() {
@@ -227,6 +233,12 @@ public class SignEditor {
         if (ImGui.beginMenu("View")) {
             if (ImGui.menuItem("Toggle Element Window", "CTRL + E")) ElementsWindow.toggle();
             if (ImGui.menuItem("Toggle Element Properties Window", "CTRL + P")) ElementPropertyWindow.toggle();
+
+            if (ImGui.menuItem("Toggle Element and Properties Windows")) { // Useful since normally you'd want to have both windows open
+                ElementsWindow.toggle();
+                ElementPropertyWindow.toggle();
+            }
+
             if (ImGui.menuItem("Zoom In", "CTRL + I")) SignPreview.zoomIn();
             if (ImGui.menuItem("Zoom Out", "CTRL + O")) SignPreview.zoomOut();
 
@@ -236,6 +248,25 @@ public class SignEditor {
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.add(elementOrder);
+
+            ImGui.endMenu();
+        }
+
+        if (ImGui.beginMenu("Clipboard")) {
+            if (ImGui.menuItem("Copy Sign"))
+                if (!signJson.json.isEmpty()) Clipboard.setCopiedSign(signJson);
+
+            if (ImGui.menuItem("Paste Sign"))
+                if (Clipboard.getCopiedSign() != null && !Clipboard.getCopiedSign().json.isEmpty()) {
+                    signJson = Clipboard.getCopiedSign();
+                    updateFromJson();
+                }
+
+            ImGui.separator();
+
+            if (ImGui.menuItem("Paste Element"))
+                if (Clipboard.getCopiedElement() != null)
+                    elementOrder.addFirst(Clipboard.getCopiedElement());
 
             ImGui.endMenu();
         }
