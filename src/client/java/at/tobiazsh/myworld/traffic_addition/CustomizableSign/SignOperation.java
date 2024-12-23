@@ -17,8 +17,9 @@ import java.util.List;
 
 public class SignOperation {
     public static class Json {
-        public static void write(BlockPos pos, CustomizableSignStyle signJson, List<BaseElement> drawables, CustomizableSignBlockEntity blockEntity) {
-            signJson = signJson.setElements(drawables, blockEntity);
+
+        public static void write(BlockPos pos, CustomizableSignStyle signJson, List<BaseElement> drawables) {
+            signJson = signJson.setElements(drawables);
 
             if (StringUtil.isNullOrEmpty(signJson.jsonString)) {
                 ErrorPopup.open("Error", "Couldn't write to Sign: Current JSON is Empty! It seems like nothing has been edited!", ()->{});
@@ -33,8 +34,9 @@ public class SignOperation {
 
             private List<BaseElement> drawables = new ArrayList<>();
             private List<String> backgroundTextures = new ArrayList<>();
+            CustomizableSignStyle json = new CustomizableSignStyle();
 
-            public void read(BlockPos pos, World world, CustomizableSignStyle json) {
+            public void readFromBlock(BlockPos pos, World world) {
                 BlockEntity blockEntity = world.getBlockEntity(pos);
 
                 if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // Return nothing; No BlockEntity found
@@ -42,8 +44,14 @@ public class SignOperation {
                 String jsonString = ((CustomizableSignBlockEntity) blockEntity).getSignTextureJson();
                 if (StringUtil.isNullOrEmpty(jsonString)) return;
 
-                json = json.convertStringToJson(jsonString);
+                CustomizableSignStyle json = new CustomizableSignStyle();
+                json.setJsonString(jsonString);
 
+                readFromJson(json);
+                this.json = json;
+            }
+
+            public void readFromJson(CustomizableSignStyle json) {
                 if (json.json.has("Style")) this.backgroundTextures = CustomizableSignStyle.deconstructStyleToArray(json);
                 if (json.json.has("Elements")) this.drawables = CustomizableSignStyle.deconstructElementsToArray(json);
             }
@@ -54,6 +62,10 @@ public class SignOperation {
 
             public List<String> getBackgroundTextures() {
                 return this.backgroundTextures;
+            }
+
+            public CustomizableSignStyle getJson() {
+                return this.json;
             }
         }
     }

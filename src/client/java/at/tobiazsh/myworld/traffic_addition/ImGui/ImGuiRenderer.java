@@ -9,8 +9,8 @@ package at.tobiazsh.myworld.traffic_addition.ImGui;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Windows.AboutWindow;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor;
+import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.AboutWindow;
+import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
 import imgui.ImGui;
 
 public class ImGuiRenderer {

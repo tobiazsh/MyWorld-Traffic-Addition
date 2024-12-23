@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.components.Screens;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor;
+import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;

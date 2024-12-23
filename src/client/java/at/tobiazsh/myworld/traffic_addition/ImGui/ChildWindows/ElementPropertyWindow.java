@@ -9,6 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
+import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
@@ -24,7 +25,7 @@ import imgui.type.ImString;
 
 import java.util.*;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.elementOrder;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class ElementPropertyWindow {
@@ -128,6 +129,7 @@ public class ElementPropertyWindow {
 				int index = elementOrder.indexOf(element);
 				element.setName(currentElementName.get());
 				elementOrder.set(index, element);
+				SignEditor.addUndo();
 			}
 
 			// SIZE
@@ -156,6 +158,8 @@ public class ElementPropertyWindow {
 				elementOrder.set(index, element);
 			}
 
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
 			if (ImGui.dragFloat("Height", elemH, 1.0f, 0.1f, ratioedSignSize.y)) {
 				int index = elementOrder.indexOf(element);
 
@@ -168,6 +172,7 @@ public class ElementPropertyWindow {
 				elementOrder.set(index, element);
 			}
 
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// POSITIONING
 
@@ -180,10 +185,12 @@ public class ElementPropertyWindow {
 
 			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
 			if (ImGui.dragFloat("X", elemX, 1.0f, 0.0f, ratioedSignSize.x - elemW[0])) {
-				int index = elementOrder.indexOf(element);
+				int index = elementOrder.indexOf(findElementById(element.getId(), elementOrder));
 				element.setX(elemX[0]);
 				elementOrder.set(index, element);
 			}
+
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Drag Float for the position of the element on the Y-Coordinate; Max is the sign's width minus the element's width to not exceed the bounds
 			if (ImGui.dragFloat("Y", elemY, 1.0f, 0.0f, ratioedSignSize.y - elemH[0])) {
@@ -192,11 +199,14 @@ public class ElementPropertyWindow {
 				elementOrder.set(index, element);
 			}
 
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
 			// Button that centers the current selected element on the X-Coordinate
 			if (ImGui.button("Center X")) {
 				int index = elementOrder.indexOf(element);
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
 				elementOrder.set(index, element);
+				SignEditor.addUndo();
 			}
 
 			// Button that centers the current selected element on the Y-Coordinate
@@ -204,6 +214,7 @@ public class ElementPropertyWindow {
 				int index = elementOrder.indexOf(element);
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
 				elementOrder.set(index, element);
+				SignEditor.addUndo();
 			}
 
 			if (ImGui.button("Center...")) {
@@ -223,6 +234,8 @@ public class ElementPropertyWindow {
 				element.setRotation(currentElementRotation[0]);
 			}
 
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
 			// COLOR
 
 			ImGui.separator();
@@ -237,6 +250,8 @@ public class ElementPropertyWindow {
 			if (ImGui.colorPicker4("Color Picker", color, alphaSettings)) {
 				element.setColor(color);
 			}
+
+			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			if (!isImage) renderTextControls();
 		}
@@ -254,7 +269,9 @@ public class ElementPropertyWindow {
 		ImGui.popFont();
 		ImGui.inputText("##textElementTextEditInput", textElementText);
 
-		if (!( textElementText.get().equals(previousTextElementText.get()))) {
+		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
+		if (!(textElementText.get().equals(previousTextElementText.get()))) {
 			((TextElement) element).setText(textElementText.get());
 		}
 
@@ -267,6 +284,8 @@ public class ElementPropertyWindow {
 		if (ImGui.button("Confirm##fontSize"))
 			((TextElement) element).getFont().setFontSize(fontSize.get());
 
+		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
 		ImGui.spacing();
 
 		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
@@ -276,6 +295,8 @@ public class ElementPropertyWindow {
 		previousSelectedFontIndex = selectedFontIndex.get();
 		ImGui.combo("##fontInput", selectedFontIndex, availableFontNames.toArray(new String[0]));
 
+		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
+
 		if (previousSelectedFontIndex != selectedFontIndex.get())
 			((TextElement) element).getFont().setFontPath(LinkedHashMapTool.getKeyAtIndex(availableFonts, selectedFontIndex.get()));
 
@@ -283,11 +304,20 @@ public class ElementPropertyWindow {
 		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
 		ImGui.text("Size Extended");
 		ImGui.popFont();
-		if (ImGui.button("Normalize Size"))
+		if (ImGui.button("Normalize Size")) {
 			((TextElement) element).setWidthCalculated(false);
+			SignEditor.addUndo();
+		}
 	}
 
 	public static void toggle() {
 		shouldRender = !shouldRender;
+	}
+
+	private static BaseElement findElementById(String id, List<BaseElement> list) {
+		return list.stream()
+				.filter(element -> element.getId().equals(id))
+				.findFirst()
+				.orElse(null);
 	}
 }

@@ -9,7 +9,7 @@ import imgui.flag.ImGuiWindowFlags;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.*;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.*;
 
 public class ElementsWindow {
 

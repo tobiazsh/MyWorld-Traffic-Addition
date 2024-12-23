@@ -7,17 +7,17 @@ import imgui.ImGui;
 
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.backgroundTextures;
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.signJson;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.backgroundTextures;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.signJson;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.deconstructStyleToArray;
 
-public class StylePopUp {
+public class BackgroundSelectorPopUp {
 
     private static boolean shouldOpen = false;
     private static boolean applyButtonDisabled = true;
     private static boolean styleSelected = false;
-    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Style Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
+    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
     private static FileSystem.Folder oldBGStyle = null;
     private static FileSystem.Folder currentCountryBG = new FileSystem.Folder("No Country Selected", "/");
     private static FileSystem.Folder availableBGStyles = new FileSystem.Folder(null, null);
@@ -25,10 +25,10 @@ public class StylePopUp {
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);
         ImGui.pushFont(ImGuiImpl.DejaVuSans);
-        if (ImGui.beginPopupModal("Choose Style Type")) {
+        if (ImGui.beginPopupModal("Choose Background")) {
             ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
-            ImGui.setCursorPosX((1000 - imgui.calcTextSize("Styling Settings").x) / 2);
-            ImGui.text("Styling Settings");
+            ImGui.setCursorPosX((1000 - imgui.calcTextSize("Background Settings").x) / 2);
+            ImGui.text("Background Settings");
             ImGui.popFont();
 
             ImGui.separator();
@@ -61,10 +61,10 @@ public class StylePopUp {
             ImGui.spacing();
 
             ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-            ImGui.text("Style");
+            ImGui.text("Background");
             ImGui.popFont();
 
-            if (ImGui.beginCombo("##style", currentBGStyle.name)) {
+            if (ImGui.beginCombo("##background", currentBGStyle.name)) {
 
                 availableBGStyles.forEach(style -> {
                     boolean isSelected = (Objects.equals(currentBGStyle.name, style.name));
@@ -105,7 +105,7 @@ public class StylePopUp {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup("Choose Style Type");
+            ImGui.openPopup("Choose Background");
             shouldOpen = false;
         }
 

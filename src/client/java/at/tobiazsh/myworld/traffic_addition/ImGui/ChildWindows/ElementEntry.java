@@ -22,9 +22,8 @@ import imgui.flag.ImGuiWindowFlags;
 
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.elementOrder;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
-import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.toJson;
 
 public abstract class ElementEntry {
 	private String name;

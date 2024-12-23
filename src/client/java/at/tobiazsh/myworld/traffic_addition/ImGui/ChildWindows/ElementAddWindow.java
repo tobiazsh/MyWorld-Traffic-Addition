@@ -17,7 +17,7 @@ import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.Windows.SignEditor.elementOrder;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.elementOrder;
 
 public class ElementAddWindow {
 	public static boolean shouldRender = false;

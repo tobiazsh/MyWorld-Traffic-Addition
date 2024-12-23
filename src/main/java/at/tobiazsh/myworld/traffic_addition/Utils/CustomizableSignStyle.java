@@ -46,6 +46,16 @@ public class CustomizableSignStyle {
 		}
 	}
 
+	public void setJsonString(String string) {
+		jsonString = string;
+		json = JsonParser.parseString(string).getAsJsonObject();
+	}
+
+	public void setJson(CustomizableSignStyle style) {
+		json = style.json;
+		updateString();
+	}
+
 	/**
 	 * Creates the JSON for the background of the sign for this instance of SignStyleJson
 	 * @param path The path to the style
@@ -94,10 +104,9 @@ public class CustomizableSignStyle {
 	/**
 	 * Sets the elements of this SignStyleJson object to the given list of BaseElements. Commonly used to store NBT data in the block.
 	 * @param elements The list of BaseElements to set
-	 * @param customizableSignBlockEntity The CustomizableSignBlockEntity to gather the correct position
 	 * @return The SignStyleJson object
 	 */
-	public CustomizableSignStyle setElements(List<? extends BaseElement> elements, CustomizableSignBlockEntity customizableSignBlockEntity) {
+	public CustomizableSignStyle setElements(List<? extends BaseElement> elements) {
 		ElementsContainer container = new ElementsContainer();
 
 		elements.forEach(element -> container.addElement(toJson(element)));
@@ -201,6 +210,7 @@ public class CustomizableSignStyle {
 		object.addProperty("Rotation", element.getRotation());
 		object.addProperty("Factor", element.getFactor());
 		object.addProperty("Name", element.getName());
+		object.addProperty("Id", element.getId());
 
 		if (element instanceof ImageElement) {
 			object.addProperty("ElementType", ELEMENT_TYPE.IMAGE_ELEMENT.ordinal());
@@ -237,6 +247,7 @@ public class CustomizableSignStyle {
 		ELEMENT_TYPE type = ELEMENT_TYPE.values()[object.get("ElementType").getAsInt()];
 		String name = object.get("Name").getAsString();
 
+
 		if (type == ELEMENT_TYPE.IMAGE_ELEMENT) {
 
 			element = new ImageElement(
@@ -269,6 +280,13 @@ public class CustomizableSignStyle {
 
 		element.setName(name);
 		element.setColor(color);
+
+		if (object.has("Id")) {
+			String idStr = object.get("Id").getAsString();
+			int id = Integer.parseInt(idStr.substring(idStr.lastIndexOf("_") + 1));
+			element.setCustomId(id);
+		}
+
 
 		return element;
 	}

@@ -41,14 +41,34 @@ public abstract class BaseElement {
 
 	private String registerId(BaseElement element) {
 		this.id = "ELEMENT_" + nextId;
+
+		while (idExists(id)) {
+			this.id = "ELEMENT_" + nextId;
+			nextId++;
+		}
+
 		Ids.put(id, element);
 		nextId++;
 		this.name = id;
 		return id;
 	}
 
+	private static boolean idExists(String id) {
+		return Ids.containsKey(id);
+	}
+
 	public String getId() {
 		return id;
+	}
+
+	/**
+	 * Sets the custom id of the element. NOT RECOMMENDED
+	 * @param id The custom id
+	 */
+	public void setCustomId(int id) {
+		Ids.remove(this.id);
+		this.id = "ELEMENT_" + id;
+		Ids.put(this.id, this);
 	}
 
 	public void setClicked(boolean clicked) {
