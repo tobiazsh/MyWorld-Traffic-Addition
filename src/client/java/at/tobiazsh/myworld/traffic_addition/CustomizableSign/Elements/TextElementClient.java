@@ -44,6 +44,7 @@ public class TextElementClient extends TextElement implements ClientElementRende
         this.fontFuture = registerFontAsync(fontPath, fontSize);
         super.font = new BasicFont(fontPath, fontSize);
         this.referenceElement = referenceElement;
+        this.color = referenceElement.getColor();
     }
 
     /**
