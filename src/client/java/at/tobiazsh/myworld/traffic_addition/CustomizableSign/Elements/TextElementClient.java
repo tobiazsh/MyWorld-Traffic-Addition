@@ -31,7 +31,7 @@ import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.
 public class TextElementClient extends TextElement implements ClientElementRenderInterface {
 
     private final Future<ImGuiFont> fontFuture; // Future for the font
-    private ImGuiFont font; // Font after future is done
+    private ImGuiFont imGuiFont; // Font after future is done
 
     private final TextElement referenceElement; // Reference element for the text element
 
@@ -40,8 +40,9 @@ public class TextElementClient extends TextElement implements ClientElementRende
     private static final String defaultText = "Lorem Ipsum";
 
     public TextElementClient(float x, float y, float rotation, float factor, String fontPath, float fontSize, String text, TextElement referenceElement) {
-        super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated());
+        super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated(), referenceElement.getParentId());
         this.fontFuture = registerFontAsync(fontPath, fontSize);
+        super.font = new BasicFont(fontPath, fontSize);
         this.referenceElement = referenceElement;
     }
 
@@ -51,51 +52,47 @@ public class TextElementClient extends TextElement implements ClientElementRende
     @Override
     public void renderImGui() {
 
-        if (font == null && fontFuture.isDone()) {
+        if (imGuiFont == null && fontFuture.isDone()) {
             try {
-                font = fontFuture.get();
+                imGuiFont = fontFuture.get();
             } catch (Exception e) {
                 MyWorldTrafficAddition.LOGGER.error("Font is null but async task was completed! Exception produced: {}", e.getMessage());
             }
         }
 
-        if (font == null) {
+        if (imGuiFont == null) {
             MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
             return;
         }
 
         // Implement basically everything else
 
-        ImGui.pushFont(this.font.font);
+        ImGui.pushFont(this.imGuiFont.font);
 
         if (!this.referenceElement.isWidthCalculated()) {
-            float width = calculateTextSize(this.font.font, this.getText()).x;
-            float height = calculateTextSize(this.font.font, this.getText()).y;
+            float width = calculateTextSize(this.imGuiFont.font, this.getText()).x;
+            float height = calculateTextSize(this.imGuiFont.font, this.getText()).y;
             this.referenceElement.setWidth(width);
             this.referenceElement.setHeight(height);
             this.referenceElement.setWidthCalculated(true);
         }
 
         float[] color = referenceElement.getColor();
-        this.font.renderText(ImGui.getWindowDrawList(), this.getText(), new ImVec2(x, y), new ImVec2(this.width, this.height), rotation, new ImVec4(color[0], color[1], color[2], color[3]));
+        this.imGuiFont.renderText(ImGui.getWindowDrawList(), this.getText(), new ImVec2(x, y), new ImVec2(this.width, this.height), rotation, new ImVec4(color[0], color[1], color[2], color[3]));
         ImGui.popFont();
     }
 
     @Override
-    public void renderMinecraft(BaseElement element, int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-        if (!(element instanceof TextElement)) {
-            MyWorldTrafficAddition.LOGGER.error("Element provided in renderMinecraft() Method is not a TextElement!");
-            return;
-        }
+    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
-        float w = element.calcBlocks(element.getWidth());
-        float h = element.calcBlocks(element.getHeight());
-        float x = element.calcBlocks(element.getX());
-        float y = element.calcBlocks(element.getY());
-        float rotation = element.getRotation();
-        float[] color = element.getColor();
+        float w = this.calcBlocks(getWidth());
+        float h = this.calcBlocks(getHeight());
+        float x = this.calcBlocks(getX());
+        float y = this.calcBlocks(getY());
+        float rotation = this.getRotation();
+        float[] color = this.getColor();
 
-        TextRenderer textRenderer = getTextRendererByPath(((TextElement) element).getFont().getFontPath());
+        TextRenderer textRenderer = getTextRendererByPath(this.getFont().getFontPath());
 
         if (textRenderer == null) {
             MyWorldTrafficAddition.LOGGER.error("TextRenderer is null! Can't render text!");
@@ -109,7 +106,7 @@ public class TextElementClient extends TextElement implements ClientElementRende
         float effectiveWidthScale = w * scaleX;
         float effectiveHeightScale = h * scaleY;
 
-        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.005f));
+        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.0027f));
         BlockPosFloat renderPos = new BlockPosFloat(0, 0, 0)
                 .offset(facing.getOpposite(), 1)
                 .offset(getRightSideDirection(facing.getOpposite()), x)
@@ -177,8 +174,8 @@ public class TextElementClient extends TextElement implements ClientElementRende
         return new ImVec2(width, height);
     }
 
-    public static void add(List<BaseElement> drawables) {
-        drawables.addFirst(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true));
+    public static void createNew(List<BaseElement> drawables) {
+        drawables.addFirst(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true, "MAIN"));
     }
 
     /**

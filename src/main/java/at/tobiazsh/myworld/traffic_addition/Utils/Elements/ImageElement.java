@@ -16,42 +16,43 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
+import com.google.gson.JsonObject;
 
-public class ImageElement extends BaseElement{
+public class ImageElement extends BaseElement {
 	public Texture elementTexture = new Texture();
 	public String resourcePath;
 	public boolean texIsLoaded = false;
 
-	public ImageElement(float x, float y, float width, float height, float factor, float rotation, Texture texture) {
-		super(x, y, width, height, factor);
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId) {
+		super(x, y, width, height, factor, parentId);
 		this.elementTexture = texture;
 		this.rotation = rotation;
 	}
 
-	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath) {
-		super(x, y, width, height, factor);
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath, String parentId) {
+		super(x, y, width, height, factor, parentId);
 		this.resourcePath = resourcePath;
 		this.rotation = rotation;
 	}
 
-	public ImageElement(float x, float y, float width, float height, float factor, Texture texture) {
-		this(x, y, width, height, factor, 0, texture);
+	public ImageElement(float x, float y, float width, float height, float factor, Texture texture, String parentId) {
+		this(x, y, width, height, factor, 0, texture, parentId);
 	}
 
-	public ImageElement(float x, float y, float width, float height, float factor, String resourcePath) {
-		this(x, y, width, height, factor, 0, resourcePath);
+	public ImageElement(float x, float y, float width, float height, float factor, String resourcePath, String parentId) {
+		this(x, y, width, height, factor, 0, resourcePath, parentId);
 	}
 
-	public ImageElement(float x, float y, float factor, String resourcePath) {
-		this(x, y, 0, 0, factor, resourcePath);
+	public ImageElement(float x, float y, float factor, String resourcePath, String parentId) {
+		this(x, y, 0, 0, factor, resourcePath, parentId);
 	}
 
-	public ImageElement(float x, float y, String resourcePath) {
-		this(x, y, 0, 0, 0, resourcePath);
+	public ImageElement(float x, float y, String resourcePath, String parentId) {
+		this(x, y, 0, 0, 0, resourcePath, parentId);
 	}
 
-	public ImageElement(float factor, String resourcePath) {
-		this(0, 0, 0, 0, factor, resourcePath);
+	public ImageElement(float factor, String resourcePath, String parentId) {
+		this(0, 0, 0, 0, factor, resourcePath, parentId);
 	}
 
 	public void loadTexture() {
@@ -68,7 +69,7 @@ public class ImageElement extends BaseElement{
 		return elementTexture;
 	}
 
-	public void setExplicitTexture(Texture texture) {
+	public void setCustomTexture(Texture texture) {
 		this.elementTexture = texture;
 	}
 
@@ -107,10 +108,20 @@ public class ImageElement extends BaseElement{
 	}
 
 	public ImageElement copy() {
-		ImageElement imageElement = new ImageElement(x, y, width, height, factor, rotation, elementTexture);
+		ImageElement imageElement = new ImageElement(x, y, width, height, factor, rotation, elementTexture, parentId);
 		imageElement.setName(this.getName());
 		imageElement.setResourcePath(this.resourcePath);
 		imageElement.setColor(this.getColor());
 		return imageElement;
+	}
+
+	@Override
+	public JsonObject toJson() {
+		JsonObject object = super.getJson();
+
+		object.addProperty("ElementType", ELEMENT_TYPE.IMAGE_ELEMENT.ordinal());
+		object.addProperty("Texture", this.resourcePath);
+
+		return object;
 	}
 }

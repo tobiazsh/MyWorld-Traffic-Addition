@@ -213,8 +213,8 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         }
     }
 
-    private void renderSignHolder(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, Direction direction1) {
-        BakedModel model = bakedModelMgr.getModel(new ModelIdentifier(Identifier.of(MyWorldTrafficAddition.MOD_ID, "sign_holder_block"), "facing=" + direction1.getName()));
+    private void renderSignHolder(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay, Direction facing) {
+        BakedModel model = bakedModelMgr.getModel(new ModelIdentifier(Identifier.of(MyWorldTrafficAddition.MOD_ID, "sign_holder_block"), "facing=" + facing.getName()));
 
         matrices.push();
 

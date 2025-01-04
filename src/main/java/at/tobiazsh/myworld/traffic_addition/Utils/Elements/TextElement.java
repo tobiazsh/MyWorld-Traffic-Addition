@@ -9,18 +9,18 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 
 
 import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
+import com.google.gson.JsonObject;
 
 public class TextElement extends BaseElement {
-	private BasicFont font;
-	private String text;
+	protected BasicFont font;
+	protected String text;
 
-	private boolean widthIsCalculated = false;
+	private boolean widthIsCalculated;
 
-	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth) {
-		super(x, y, width, height, factor);
+	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, String parentId) {
+		super(x, y, width, height, factor, rotation, parentId);
 		this.font = font;
 		this.text = text;
-		this.rotation = rotation;
 		this.widthIsCalculated = !shouldCalculateWidth;
 		this.setColor(new float[]{0, 0, 0, 1});
 	}
@@ -46,9 +46,21 @@ public class TextElement extends BaseElement {
 	}
 
 	public TextElement copy() {
-		TextElement textElement = new TextElement(x, y, width, height, rotation, factor, font, text, false);
+		TextElement textElement = new TextElement(x, y, width, height, rotation, factor, font, text, false, parentId);
 		textElement.setName(this.getName());
 		textElement.setColor(this.getColor());
 		return textElement;
+	}
+
+	@Override
+	public JsonObject toJson() {
+		JsonObject object = super.getJson();
+
+		object.addProperty("ElementType", ELEMENT_TYPE.TEXT_ELEMENT.ordinal());
+		object.addProperty("Text", text);
+		object.addProperty("FontPath", font.getFontPath());
+		object.addProperty("FontSize", font.getFontSize());
+
+		return object;
 	}
 }

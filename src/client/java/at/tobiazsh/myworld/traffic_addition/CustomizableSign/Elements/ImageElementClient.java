@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
@@ -23,20 +22,20 @@ import static at.tobiazsh.myworld.traffic_addition.components.Renderers.SignBloc
 
 public class ImageElementClient extends ImageElement implements ClientElementRenderInterface {
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, Texture texture) {
-        super(x, y, width, height, factor, rotation, texture);
+    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId) {
+        super(x, y, width, height, factor, rotation, texture, parentId);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, String path) {
-        super(x, y, width, height, factor, rotation, path);
+    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, String path, String parentId) {
+        super(x, y, width, height, factor, rotation, path, parentId);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, Texture texture) {
-        this(x, y, width, height, factor, 0, texture);
+    public ImageElementClient(float x, float y, float width, float height, float factor, Texture texture, String parentId) {
+        this(x, y, width, height, factor, 0, texture, parentId);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, String path) {
-        this(x, y, width, height, factor, 0, path);
+    public ImageElementClient(float x, float y, float width, float height, float factor, String path, String parentId) {
+        this(x, y, width, height, factor, 0, path, parentId);
     }
 
     private ImVec2 p0, p1, p2, p3;
@@ -46,6 +45,13 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      */
     public void renderImGui() {
         ImDrawList drawList = ImGui.getWindowDrawList();
+
+        if (this.getTexture() == null) {
+            MyWorldTrafficAddition.LOGGER.error("Texture is null for ImageElement!");
+            return;
+        }
+
+        if (!this.texIsLoaded) this.loadTexture();
 
         ImVec2 windowPos = new ImVec2(ImGui.getCursorScreenPosX(), ImGui.getCursorScreenPosY());
         float[] color = this.getColor();
@@ -78,7 +84,6 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
 
     /**
      * Renders an ImageElement in Minecraft
-     * @param element Element to render
      * @param indexInList Index of the element in the list; For layering purposes
      * @param csbeHeight Height of the CustomizableSignBlockEntity
      * @param matrices MatrixStack
@@ -88,21 +93,16 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      * @param facing Direction the element should face
      */
     @Override
-    public void renderMinecraft(BaseElement element, int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
-        if (!(element instanceof ImageElement)) {
-            MyWorldTrafficAddition.LOGGER.error("Element provided in renderMinecraft() Method is not an ImageElement!");
-            return;
-        }
+        float w = this.calcBlocks(getWidth());
+        float h = this.calcBlocks(getHeight());
+        float x = this.calcBlocks(getX());
+        float y = this.calcBlocks(getY());
+        float rotation = this.getRotation();
+        float[] color = this.getColor();
 
-        float w = element.calcBlocks(element.getWidth());
-        float h = element.calcBlocks(element.getHeight());
-        float x = element.calcBlocks(element.getX());
-        float y = element.calcBlocks(element.getY());
-        float rotation = element.getRotation();
-        float[] color = element.getColor();
-
-        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.005f));
+        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.0027f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
@@ -112,7 +112,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
         // Bind texture to vertices
-        Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, ((ImageElement) element).getResourcePath());
+        Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath());
         RenderLayer renderLayer = RenderLayer.getEntityTranslucent(texture);
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
@@ -201,7 +201,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      * @return The ImageElementClient object
      */
     public static ImageElementClient fromImageElement(ImageElement element) {
-        ImageElementClient img = new ImageElementClient(element.getX(), element.getY(), element.getWidth(), element.getHeight(), element.getFactor(), element.getRotation(), element.getTexture());
+        ImageElementClient img = new ImageElementClient(element.getX(), element.getY(), element.getWidth(), element.getHeight(), element.getFactor(), element.getRotation(), element.getResourcePath(), element.getParentId());
         img.setColor(element.getColor());
         return img;
     }

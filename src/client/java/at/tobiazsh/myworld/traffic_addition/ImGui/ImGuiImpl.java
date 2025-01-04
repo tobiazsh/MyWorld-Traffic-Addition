@@ -79,6 +79,7 @@ public class ImGuiImpl {
 
     public static boolean fontsNeedRebuild = false;
 
+    // I have no fucking clue on how many hours this steaming piece of shit has wasted me... Just wanted to state that here
     public static void uploadFontTexture() {
         // Retrieve font texture data from ImGui
         ImGuiIO io = ImGui.getIO();

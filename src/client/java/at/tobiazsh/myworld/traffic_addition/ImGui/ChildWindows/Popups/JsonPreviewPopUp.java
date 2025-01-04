@@ -8,8 +8,9 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import imgui.ImGui;
 
 public class JsonPreviewPopUp {
@@ -17,35 +18,38 @@ public class JsonPreviewPopUp {
 
 	public static boolean shouldOpen = false;
 	public static String windowId = "JSON Preview";
+	private static String json;
 
 	public static void open(CustomizableSignStyle style) {
 		JsonPreviewPopUp.currentStyle = style;
 		shouldOpen = false;
 		ImGui.openPopup(windowId);
+
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		json = gson.toJson(style.json);
 	}
 
 	public static void create() {
-		ImGui.setNextWindowSize(750, 500);
 		if (ImGui.beginPopupModal(windowId)) {
-
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-			ImGui.text("Current JSON Data");
-			ImGui.popFont();
-
-			ImGui.separator();
-
-			ImGui.beginChild("JsonDisplayer", 750, 300);
-
-			if (currentStyle.json == null) ImGui.text("Currently no JSON Data available");
-			else ImGui.textWrapped(currentStyle.json.toString());
-			ImGui.endChild();
-
-			ImGui.separator();
 
 			if (ImGui.button("Close")) {
 				shouldOpen = false;
 				ImGui.closeCurrentPopup();
 			}
+
+			ImGui.sameLine();
+
+			if (ImGui.button("Copy to Clipboard")) {
+				ImGui.setClipboardText(json);
+			}
+
+			ImGui.separator();
+
+			ImGui.beginChild("##jsonDisplayer", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
+
+			if (currentStyle.json == null) ImGui.text("Currently no JSON Data available");
+			else ImGui.textWrapped(json);
+			ImGui.endChild();
 
 			ImGui.endPopup();
 		}

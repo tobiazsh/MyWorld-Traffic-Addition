@@ -8,10 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.Utils;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import com.google.gson.*;
 import net.minecraft.util.math.BlockPos;
@@ -21,6 +18,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.fromJson;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getFacing;
 
@@ -28,11 +26,6 @@ public class CustomizableSignStyle {
 	public String jsonString; // JSON as String
 	public JsonObject json = new JsonObject(); // JSON
 
-	private enum ELEMENT_TYPE{
-		NONE,
-		IMAGE_ELEMENT,
-		TEXT_ELEMENT
-	}
 
 	public static class ElementsContainer {
 		JsonArray Elements;
@@ -109,7 +102,7 @@ public class CustomizableSignStyle {
 	public CustomizableSignStyle setElements(List<? extends BaseElement> elements) {
 		ElementsContainer container = new ElementsContainer();
 
-		elements.forEach(element -> container.addElement(toJson(element)));
+		elements.forEach(element -> container.addElement(element.toJson()));
 
 		Gson gson = new GsonBuilder().create();
 
@@ -185,110 +178,6 @@ public class CustomizableSignStyle {
 		}
 
 		return elementsList;
-	}
-
-	/**
-	 * Converts an element of the type BaseElement to a JSON Object
-	 * @param element The BaseElement to convert
-	 * @return The JSON Object
-	 */
-	public static JsonObject toJson(BaseElement element) {
-		JsonObject object = new JsonObject();
-
-		JsonArray elementPosition = new JsonArray();
-		for (float v : new float[]{element.getX(), element.getY()}) elementPosition.add(v);
-		object.add("ElementPosition", elementPosition); // X, Y
-
-		JsonArray color = new JsonArray();
-		for (float v : element.getColor()) color.add(v);
-		object.add("Color", color); // R, G, B, A
-
-		JsonArray size = new JsonArray();
-		for (float v : new float[]{element.getWidth(), element.getHeight()}) size.add(v);
-		object.add("Size", size); // X, Y
-
-		object.addProperty("Rotation", element.getRotation());
-		object.addProperty("Factor", element.getFactor());
-		object.addProperty("Name", element.getName());
-		object.addProperty("Id", element.getId());
-
-		if (element instanceof ImageElement) {
-			object.addProperty("ElementType", ELEMENT_TYPE.IMAGE_ELEMENT.ordinal());
-			object.addProperty("Texture", ((ImageElement) element).getResourcePath());
-		} else if (element instanceof TextElement) {
-			object.addProperty("ElementType", ELEMENT_TYPE.TEXT_ELEMENT.ordinal());
-			object.addProperty("Text", ((TextElement) element).getText());
-			object.addProperty("FontPath", ((TextElement) element).getFont().getFontPath());
-			object.addProperty("FontSize", ((TextElement) element).getFont().getFontSize());
-		}
-
-		return object;
-	}
-
-	/**
-	 * Converts a JSON Object to an element of the type BaseElement
-	 * @param object The JSON Object to convert
-	 * @return The converted BaseElement
-	 */
-	public static BaseElement fromJson(JsonObject object) {
-		BaseElement element;
-
-		JsonArray elementPosJson = object.getAsJsonArray("ElementPosition");
-		float[] elementPos = new float[]{elementPosJson.get(0).getAsFloat(), elementPosJson.get(1).getAsFloat()}; // X, Y
-
-		JsonArray colorJson = object.getAsJsonArray("Color");
-		float[] color = new float[]{colorJson.get(0).getAsFloat(), colorJson.get(1).getAsFloat(), colorJson.get(2).getAsFloat(), colorJson.get(3).getAsFloat()}; // R, G, B, A
-
-		JsonArray sizeJson = object.getAsJsonArray("Size");
-		float[] size = new float[]{sizeJson.get(0).getAsFloat(), sizeJson.get(1).getAsFloat()}; // Width, Height
-
-		float rotation = object.get("Rotation").getAsFloat();
-		float factor = object.get("Factor").getAsFloat();
-		ELEMENT_TYPE type = ELEMENT_TYPE.values()[object.get("ElementType").getAsInt()];
-		String name = object.get("Name").getAsString();
-
-
-		if (type == ELEMENT_TYPE.IMAGE_ELEMENT) {
-
-			element = new ImageElement(
-					elementPos[0],
-					elementPos[1],
-					size[0], size[1],
-					factor,
-					rotation,
-					object.get("Texture").getAsString()
-			);
-
-		} else if (type == ELEMENT_TYPE.TEXT_ELEMENT) {
-
-			element = new TextElement(
-					elementPos[0],
-					elementPos[1],
-					size[0],
-					size[1],
-					rotation,
-					factor,
-					new BasicFont(object.get("FontPath").getAsString(), object.get("FontSize").getAsFloat()),
-					object.get("Text").getAsString(),
-					false
-			);
-
-		} else {
-			MyWorldTrafficAddition.LOGGER.error("Error: Couldn't deconstruct elements to JSON! Element type is invalid.");
-			return null;
-		}
-
-		element.setName(name);
-		element.setColor(color);
-
-		if (object.has("Id")) {
-			String idStr = object.get("Id").getAsString();
-			int id = Integer.parseInt(idStr.substring(idStr.lastIndexOf("_") + 1));
-			element.setCustomId(id);
-		}
-
-
-		return element;
 	}
 
 	private void updateString() {

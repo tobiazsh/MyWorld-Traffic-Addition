@@ -3,10 +3,10 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.*;
@@ -19,11 +19,6 @@ public class ElementsWindow {
     public static boolean shouldRender = false;
 
     /**
-     * List of elements to be removed
-     */
-    public static List<BaseElement> removeElementList = new ArrayList<>();
-
-    /**
      * Renders the elements window if the "shouldRender" flag is set to true.
      * The window displays a list of elements and provides controls for each element.
      */
@@ -34,7 +29,7 @@ public class ElementsWindow {
         if (ImGui.begin("Elements", ImGuiWindowFlags.NoNavInputs)) {
             for (int i = 0; i < elementOrder.size(); i++) {
                 BaseElement element = elementOrder.get(i);
-                ElementEntry entry = new ElementEntry(element.getName(), element.getId(), element) {
+                ElementEntry entry = new ElementEntry(element.getName(), element.getId(), element, elementOrder, "MAIN") {
                     @Override
                     public void moveEntryUp() {
                         elementOrder = ArrayTools.moveElementUpBy(elementOrder, elementOrder.indexOf(element), 1);
@@ -48,27 +43,20 @@ public class ElementsWindow {
                     @Override
                     public void elementSelectedAction() {
                         selectedElement = element;
-                        ElementPropertyWindow.initVars(element, signRatio);
+                        ElementPropertyWindow.initVars(element, elementOrder, signRatio);
                     }
                 };
 
                 entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == elementOrder.getFirst(), element == elementOrder.getLast(), selectedElement); // Check if the element is first/last in the list because then there's nothing to move up/down
 
-                if (entry.removeMyself) {
-                    removeElementList.add(element);
-                    entry.removeMyself = false;
-                }
-
                 if (elementOrder.getLast() != element) ImGui.separator();
-            }
-
-            for (BaseElement element : removeElementList) {
-                elementOrder.remove(element);
             }
         }
 
         ImGui.end();
         ImGui.popFont();
+
+        removeElements();
     }
 
     /**
@@ -76,5 +64,28 @@ public class ElementsWindow {
      */
     public static void toggle() {
         shouldRender = !shouldRender;
+    }
+
+    private static void removeElements() {
+        removeRemovableElementsList(elementOrder);
+        removeRemovableElementsGroups(elementOrder);
+    }
+
+    private static void removeRemovableElementsList(List<BaseElement> elements) {
+        elements.removeIf(BaseElement::shouldRemove);
+    }
+
+    private static void removeRemovableElementsGroups(List<BaseElement> elements) {
+        elements.forEach(element -> {
+            if (element instanceof GroupElement) {
+                elements.forEach(insideElement -> {
+                    if (insideElement instanceof GroupElement) {
+                        removeRemovableElementsGroups(((GroupElement) insideElement).getElements());
+                    }
+
+                    ((GroupElement) element).getElements().removeIf(BaseElement::shouldRemove);
+                });
+            }
+        });
     }
 }

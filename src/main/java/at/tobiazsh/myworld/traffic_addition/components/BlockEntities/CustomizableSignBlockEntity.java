@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import net.minecraft.block.Block;
@@ -24,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -31,6 +33,10 @@ import java.util.*;
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
 
 public class CustomizableSignBlockEntity extends BlockEntity {
+
+    // "I can do this better"-*rewrites whole json logic*-counter: ~3 times (I've stopped counting)
+
+    private int width = 1;
 
     private boolean isMaster = true;
     private boolean renderingState = true;
@@ -44,7 +50,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private int rotation = 0;
     private int height = 1;
-    private int width = 1;
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
@@ -59,6 +64,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
         elements = CustomizableSignStyle.deconstructElementsToArray(new CustomizableSignStyle().convertStringToJson(signTextureJson));
 
+        elements = resolveGroupElements(elements);
+
         elements.replaceAll(element -> {
             if (element instanceof ImageElement) {
                 ((ImageElement) element).setResourcePath(((ImageElement)element).getResourcePath().replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
@@ -66,7 +73,22 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
             return element;
         });
+    }
 
+    private List<BaseElement> resolveGroupElements(List<BaseElement> elements) {
+        List<BaseElement> resolvedElements = new ArrayList<>();
+
+        elements.stream()
+                .filter(element -> element instanceof GroupElement)
+                .forEach(element -> {
+                    List<BaseElement> elementsInGroup = ((GroupElement) element).getElements();
+                    elementsInGroup = resolveGroupElements(elementsInGroup);
+                    resolvedElements.addAll(elementsInGroup);
+                });
+
+        resolvedElements.addAll(elements.stream().filter(element -> !(element instanceof GroupElement)).toList());
+
+        return resolvedElements;
     }
 
     public void setHeight(int height) {
@@ -344,6 +366,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         }
     }
 
+    @Contract(pure = true)
     public static Direction getRightSideDirection(Direction dir) {
         switch (dir) {
             default -> { return Direction.EAST; }

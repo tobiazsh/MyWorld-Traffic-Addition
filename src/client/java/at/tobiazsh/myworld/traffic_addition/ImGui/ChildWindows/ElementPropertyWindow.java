@@ -25,17 +25,19 @@ import imgui.type.ImString;
 
 import java.util.*;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.elementOrder;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class ElementPropertyWindow {
+
 	private static ImString currentElementName = new ImString("", 512);
 	private static float[] currentElementRotation = new float[]{};
-	private static BaseElement element;
-	private static boolean relateSize = true;
-	private static ImVec2 ratioedSignSize = new ImVec2();
 	private static float factor;
 	private static float[] color;
+	private static BaseElement element;
+	private static List<BaseElement> elementList; // The list where BaseElement element is in
+
+	private static boolean relateSize = true;
+	private static ImVec2 ratioedSignSize = new ImVec2();
 
 	private static ImString textElementText = new ImString("", 1024);
 	private static ImString previousTextElementText = new ImString("", 1024);
@@ -43,6 +45,7 @@ public class ElementPropertyWindow {
 	private static ImString fontPath = new ImString("", 512);
 	private static final LinkedHashMap<String, String> availableFonts = new LinkedHashMap<>(); // Path; Name
 	private static final List<String> availableFontNames = new ArrayList<>(); // Names of available fonts
+
 	private static final ImInt selectedFontIndex = new ImInt(0);
 	private static int previousSelectedFontIndex = 0;
 
@@ -69,11 +72,12 @@ public class ElementPropertyWindow {
 
 	public static boolean shouldRender = false;
 
-	public static void initVars(BaseElement element, ImVec2 ratioedSignSize) {
+	public static void initVars(BaseElement element, List<BaseElement> elementList, ImVec2 ratioedSignSize) {
 		ElementPropertyWindow.currentElementName = new ImString(element.getName(), 512);
 		ElementPropertyWindow.currentElementRotation = new float[]{element.getRotation()};
 		relateSize = true;
 		ElementPropertyWindow.element = element;
+		ElementPropertyWindow.elementList = elementList;
 		ElementPropertyWindow.ratioedSignSize = ratioedSignSize;
 		factor = element.getFactor();
 		color = element.getColor();
@@ -126,9 +130,9 @@ public class ElementPropertyWindow {
 			ImGui.inputText("##nameInput", currentElementName);
 
 			if (ImGui.button("Confirm##name")) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 				element.setName(currentElementName.get());
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 
@@ -147,7 +151,7 @@ public class ElementPropertyWindow {
 			float aspectRatioH = elemW[0] / elemH[0];
 
 			if (ImGui.dragFloat("Width", elemW, 1.0f, 0.1f, ratioedSignSize.x)) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 
 				if (relateSize) {
 					elemH[0] = elemW[0] * aspectRatioW; // Adjust height based on new width
@@ -155,13 +159,13 @@ public class ElementPropertyWindow {
 				}
 
 				element.setWidth(elemW[0]);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			if (ImGui.dragFloat("Height", elemH, 1.0f, 0.1f, ratioedSignSize.y)) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 
 				if (relateSize) {
 					elemW[0] = elemH[0] * aspectRatioH; // Adjust height based on new width
@@ -169,7 +173,7 @@ public class ElementPropertyWindow {
 				}
 
 				element.setHeight(elemH[0]);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
@@ -185,35 +189,35 @@ public class ElementPropertyWindow {
 
 			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
 			if (ImGui.dragFloat("X", elemX, 1.0f, 0.0f, ratioedSignSize.x - elemW[0])) {
-				int index = elementOrder.indexOf(findElementById(element.getId(), elementOrder));
+				int index = elementList.indexOf(findElementById(element.getId(), elementList));
 				element.setX(elemX[0]);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Drag Float for the position of the element on the Y-Coordinate; Max is the sign's width minus the element's width to not exceed the bounds
 			if (ImGui.dragFloat("Y", elemY, 1.0f, 0.0f, ratioedSignSize.y - elemH[0])) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 				element.setY(elemY[0]);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Button that centers the current selected element on the X-Coordinate
 			if (ImGui.button("Center X")) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 
 			// Button that centers the current selected element on the Y-Coordinate
 			if (ImGui.button("Center Y")) {
-				int index = elementOrder.indexOf(element);
+				int index = elementList.indexOf(element);
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
-				elementOrder.set(index, element);
+				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 

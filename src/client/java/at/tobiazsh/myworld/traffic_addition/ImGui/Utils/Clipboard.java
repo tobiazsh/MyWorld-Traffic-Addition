@@ -25,6 +25,7 @@ public class Clipboard {
     }
 
     public static BaseElement getCopiedElement() {
+        if (copiedElement == null) return null;
         return copiedElement.copy();
     }
 

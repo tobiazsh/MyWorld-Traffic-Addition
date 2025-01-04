@@ -284,7 +284,7 @@ public class SignEditor {
 
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
-            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.add(elementOrder);
+            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.createNew(elementOrder);
 
             ImGui.endMenu();
         }
@@ -372,7 +372,7 @@ public class SignEditor {
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle(); // Element Properties Toggle
 
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open(); // Add Element Open
-        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) TextElementClient.add(elementOrder); // Add Text Element
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) TextElementClient.createNew(elementOrder); // Add Text Element
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.U)) undo(); // Undo
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.U)) redo(); // Redo

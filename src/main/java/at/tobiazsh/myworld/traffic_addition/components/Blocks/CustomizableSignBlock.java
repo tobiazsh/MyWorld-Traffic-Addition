@@ -30,8 +30,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 public class CustomizableSignBlock extends BlockWithEntity {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
@@ -105,8 +103,14 @@ public class CustomizableSignBlock extends BlockWithEntity {
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient() && ((CustomizableSignBlockEntity)(Objects.requireNonNull(world.getBlockEntity(pos)))).isMaster()) {
-            MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayerEntity) player, pos);
+        if (player.isSneaking() && !world.isClient()) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+
+            if (!(blockEntity instanceof CustomizableSignBlockEntity)) {
+                return ActionResult.FAIL;
+            }
+
+            MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayerEntity) player, ((CustomizableSignBlockEntity) blockEntity).getMasterPos());
 
             return ActionResult.SUCCESS;
         }

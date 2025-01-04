@@ -52,14 +52,35 @@ public class ElementAddWindow {
 			// Begin a child window for the elements display
 			if (ImGui.beginChild("##elementsDisplay")) {
 				if (folder != null) {
-					folder.forEach(icon -> {
+
+					float availableWidth = ImGui.getWindowWidth();
+					float usedWidth = 0; // Track how much width is used on the current line
+
+					for (int i=0; i < folder.size(); i++) {
+						FileSystem.DirectoryElement icon = folder.at(i);
 						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
 						elementIcon.render();
 
-						if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
+						float iconWidth = elementIcon.width + 10; // Add 10 to account for the spacing between icons
+
+						// If the icon fits on the current line, render it
+						if (usedWidth + iconWidth > availableWidth) {
+							ImGui.newLine();
+							usedWidth = 0;
+						} else {
 							ImGui.sameLine();
 						}
-					});
+
+						usedWidth += iconWidth;
+					}
+//					folder.forEach(icon -> {
+//						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
+//						elementIcon.render();
+//
+//						if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
+//							ImGui.sameLine();
+//						}
+//					});
 				}
 			}
 			ImGui.endChild();
@@ -91,11 +112,12 @@ public class ElementAddWindow {
 	}
 
 	public static class ElementIcon {
-		public String name;
-		public String path;
+		public String name, path;
 		public ImVec2 pos = new ImVec2(0, 0);
 		private float width, height, previewSize;
 		private Texture texture = null;
+		public static float defaultWidth = 230f;
+		public static float defaultHeight = 325f;
 
 		private static final int elementIconBackgroundColor = ImGui.getColorU32(new ImVec4(54 / 255f, 50 / 255f, 50 / 255f, 255 / 255f));
 
@@ -161,7 +183,7 @@ public class ElementAddWindow {
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
 				if (ImGui.button("Add")) {
-					addElement(new ImageElement(1.0f, path));
+					addElement(new ImageElement(1.0f, path, "MAIN"));
 				}
 
 			}
@@ -178,7 +200,7 @@ public class ElementAddWindow {
 		}
 
 		public ElementIcon (String name, String path) {
-			this(name, path, 230f, 325f);
+			this(name, path, defaultWidth, defaultHeight);
 		}
 
 		public ElementIcon (String name, String path, float size) {

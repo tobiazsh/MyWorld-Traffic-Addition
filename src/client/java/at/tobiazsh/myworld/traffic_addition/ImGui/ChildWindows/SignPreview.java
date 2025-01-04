@@ -1,8 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.GroupElementClient;
 import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
@@ -73,32 +75,41 @@ public class SignPreview {
                 BaseElement element = drawables.get(i); // Get element to render
 
                 // Skip non-render-able elements
-                if (!(element instanceof ImageElement || element instanceof TextElement)) continue;
+                if (!(element instanceof ImageElement || element instanceof TextElement || element instanceof GroupElement)) continue;
 
                 ImGui.setCursorPos(position.x, position.y);
                 ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), signWidthPixels * zoomFactor, signHeightPixels  * zoomFactor, false, ImGuiWindowFlags.NoScrollbar);
 
                 // Render depending on the type of element
-                if (element instanceof ImageElement) {
-                    if (!((ImageElement) element).texIsLoaded)
-                        ((ImageElement) element).loadTexture(); // Register textures only on client side and if texture is not loaded
-
-                    ImageElementClient imgElem = ImageElementClient.fromImageElement((ImageElement) element);
-                    imgElem.setSize(imgElem.getWidth() * zoomFactor, imgElem.getHeight() * zoomFactor);
-                    imgElem.setPosition(imgElem.getX() * zoomFactor, imgElem.getY() * zoomFactor);
-                    imgElem.renderImGui();
-                } else if (element instanceof TextElement) {
-                    TextElementClient txtElem = TextElementClient.fromTextElement((TextElement) element);
-                    txtElem.setSize(txtElem.getWidth() * zoomFactor, txtElem.getHeight() * zoomFactor);
-                    txtElem.setPosition(txtElem.getX() * zoomFactor, txtElem.getY() * zoomFactor);
-                    txtElem.renderImGui();
-                }
+                renderElement(element);
 
                 ImGui.endChild();
             }
         }
 
         ImGui.popStyleVar(2);
+    }
+
+    public static void renderElement(BaseElement element) {
+        if (element instanceof ImageElement) {
+            if (!((ImageElement) element).texIsLoaded)
+                ((ImageElement) element).loadTexture(); // Register textures only on client side and if texture is not loaded
+
+            ImageElementClient imgElem = ImageElementClient.fromImageElement((ImageElement) element);
+            imgElem.setSize(imgElem.getWidth() * zoomFactor, imgElem.getHeight() * zoomFactor);
+            imgElem.setPosition(imgElem.getX() * zoomFactor, imgElem.getY() * zoomFactor);
+            imgElem.renderImGui();
+        } else if (element instanceof TextElement) {
+            TextElementClient txtElem = TextElementClient.fromTextElement((TextElement) element);
+            txtElem.setSize(txtElem.getWidth() * zoomFactor, txtElem.getHeight() * zoomFactor);
+            txtElem.setPosition(txtElem.getX() * zoomFactor, txtElem.getY() * zoomFactor);
+            txtElem.renderImGui();
+        } else if (element instanceof GroupElement) {
+            GroupElementClient grpElem = GroupElementClient.fromGroupElement((GroupElement) element);
+            grpElem.setSize(grpElem.getWidth() * zoomFactor, grpElem.getHeight() * zoomFactor);
+            grpElem.setPosition(grpElem.getX() * zoomFactor, grpElem.getY() * zoomFactor);
+            grpElem.renderImGui();
+        }
     }
 
     /**
