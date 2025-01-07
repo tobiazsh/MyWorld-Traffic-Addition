@@ -18,7 +18,10 @@ My code may not be the most beautiful, but it works :D
 ### ATTENTION: Axiom is conflicting with my mod since both use ImGui but different versions of it. I don't know the solution yet.
 
 ## Demonstration
-![2024-12-08_17 28 39](https://github.com/user-attachments/assets/9c297936-fa8a-42ac-ac0e-db318fc98575) Example Customizable Sign
+![2024-12-08_17 28 39](https://github.com/user-attachments/assets/9c297936-fa8a-42ac-ac0e-db318fc98575)
+![2025-01-05_21 27 48](https://github.com/user-attachments/assets/d5d62c3b-828a-4a4a-895a-b7e0d6ed76bb)
+![2025-01-05_21 34 37](https://github.com/user-attachments/assets/268a0ed7-486e-4ed1-afc3-c9dbd7949985)
+Example Customizable Sign
 
 <br />
 
