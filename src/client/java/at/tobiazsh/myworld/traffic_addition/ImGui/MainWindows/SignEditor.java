@@ -21,6 +21,7 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
@@ -75,7 +76,7 @@ public class SignEditor {
         ElementAddWindow.render();
         ElementPropertyWindow.render();
         BackgroundSelectorPopUp.render(backgrounds, blockEntity);
-}
+    }
 
     public static void setSignJson(CustomizableSignStyle json) {
         signJson = json;
@@ -229,9 +230,8 @@ public class SignEditor {
     private static void renderMenuBar() {
         ImGui.beginMenuBar();
         if (ImGui.beginMenu("File")) {
-            if (ImGui.menuItem("Save to Sign", "CTRL + S")) {
+            if (ImGui.menuItem("Save to Sign", "CTRL + S"))
                 SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder);
-            }
 
             if (ImGui.menuItem("Save to Sign & Quit", "CTRL + W")) {
                 SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder);
@@ -241,6 +241,16 @@ public class SignEditor {
             if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopUp.shouldOpen = true;
 
             if (ImGui.menuItem("Quit", "CTRL + Q")) quit();
+
+//            ImGui.separator();
+//
+//            if (ImGui.menuItem("Open...")) {
+//
+//            }
+//
+//            if (ImGui.menuItem("Save...")) {
+//
+//            }
 
             ImGui.separator();
 

@@ -221,6 +221,7 @@ public class GroupElement extends BaseElement {
     @Override
     public void onPaste() {
         elements.forEach(element -> element.setFactor(currentElementFactor));
+        elements.stream().filter(element -> element instanceof GroupElement).forEach(BaseElement::onPaste); // Recursively do the same thing
         setBounds();
     }
 }
