@@ -73,14 +73,6 @@ public class ElementAddWindow {
 
 						usedWidth += iconWidth;
 					}
-//					folder.forEach(icon -> {
-//						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
-//						elementIcon.render();
-//
-//						if (ImGui.getCursorPosX() + elementIcon.width + 10 < ImGui.getContentRegionMaxX()) {
-//							ImGui.sameLine();
-//						}
-//					});
 				}
 			}
 			ImGui.endChild();

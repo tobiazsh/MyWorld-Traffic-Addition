@@ -217,4 +217,10 @@ public class GroupElement extends BaseElement {
 
         return object;
     }
+
+    @Override
+    public void onPaste() {
+        elements.forEach(element -> element.setFactor(currentElementFactor));
+        setBounds();
+    }
 }

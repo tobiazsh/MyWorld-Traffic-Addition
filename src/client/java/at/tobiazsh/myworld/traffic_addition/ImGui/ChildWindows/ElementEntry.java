@@ -209,6 +209,7 @@ public abstract class ElementEntry {
 					parentParentElement.addElement(renderObject);
 					parentElement.removeElement(renderObject);
 				} else { // Only happens with "null" is returned and that means the parent is the main element list
+					renderObject.setParentId("MAIN");
 					elementOrder.add(parentElement.getElements().indexOf(renderObject), renderObject);
 					parentElement.removeElement(renderObject);
 				}

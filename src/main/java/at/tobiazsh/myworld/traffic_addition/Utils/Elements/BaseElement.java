@@ -25,6 +25,7 @@ public abstract class BaseElement {
 	protected boolean remove = false; // Flag indicating whether the element should be removed
 	public static Map<String, BaseElement> Ids = new HashMap<>();
 	private static int nextId = 0;
+	public static float currentElementFactor;
 
 	public enum ELEMENT_TYPE {
 		NONE,
@@ -400,4 +401,8 @@ public abstract class BaseElement {
 	 */
 	public abstract JsonObject toJson();
 
+	/**
+	 * Executes an action when the element is pasted
+	 */
+	public void onPaste(){}
 }

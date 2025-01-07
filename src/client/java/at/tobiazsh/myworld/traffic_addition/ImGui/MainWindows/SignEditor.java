@@ -37,6 +37,7 @@ import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
+import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.currentElementFactor;
 
 public class SignEditor {
 
@@ -153,6 +154,7 @@ public class SignEditor {
             backgroundTextures.add("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
 
         readFromSign(world);
+        calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
 
         ImGuiRenderer.showSignEditor = true;
     }
@@ -204,9 +206,6 @@ public class SignEditor {
         ImGui.pushFont(DejaVuSans);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
-        // Factor for the size of the canvas
-        float factor = signRatio.y / signHeightBlocks; // Size of each "sign" tile in pixels
-
         renderMenuBar();
         handleHotKeys();
         handlePopUps();
@@ -221,7 +220,7 @@ public class SignEditor {
         // Set the cursor position once, to the top-left of the entire centered grid
         ImGui.setCursorPos(previewX, previewY);
 
-        SignPreview.render(signRatio.x, signRatio.y, signWidthBlocks, signHeightBlocks, factor, new ImVec2(previewX, previewY), elementOrder, backgroundTextures);
+        SignPreview.render(signRatio.x, signRatio.y, signWidthBlocks, signHeightBlocks, currentElementFactor, new ImVec2(previewX, previewY), elementOrder, backgroundTextures);
 
         ImGui.end();
         ImGui.popFont();
@@ -295,7 +294,7 @@ public class SignEditor {
 
             ImGui.separator();
 
-            if (ImGui.menuItem("Paste Element", "CTRL + V")) pasteElement();
+            if (ImGui.menuItem("Paste Element", "CTRL + SHIFT + V")) pasteElement();
 
             ImGui.endMenu();
         }
@@ -310,10 +309,16 @@ public class SignEditor {
         ImGui.endMenuBar();
     }
 
+    public static void calcFactor() {
+        currentElementFactor = signRatio.y / signHeightBlocks;
+    }
+
     private static void pasteElement() {
         if (Clipboard.getCopiedElement() == null) return; // Can't paste if empty
 
-        elementOrder.addFirst(Clipboard.getCopiedElement());
+        BaseElement elementToPaste = Clipboard.getCopiedElement();
+        elementToPaste.onPaste();
+        elementOrder.addFirst(elementToPaste);
     }
 
     private static void copySign() {
