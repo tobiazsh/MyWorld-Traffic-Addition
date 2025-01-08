@@ -8,9 +8,7 @@ import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.Customizabl
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -102,7 +100,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         float rotation = this.getRotation();
         float[] color = this.getColor();
 
-        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.0027f));
+        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
@@ -114,6 +112,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         // Bind texture to vertices
         Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath());
         RenderLayer renderLayer = RenderLayer.getEntityTranslucent(texture);
+
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
