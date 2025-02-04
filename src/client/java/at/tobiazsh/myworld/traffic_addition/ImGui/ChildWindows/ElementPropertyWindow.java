@@ -10,7 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -249,7 +249,7 @@ public class ElementPropertyWindow {
 			ImGui.text("Color");
 			ImGui.popFont();
 
-			int alphaSettings = (element instanceof TextElement) ? ImGuiColorEditFlags.NoAlpha : ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
+			int alphaSettings = (element instanceof TextElement) ? ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf : ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
 
 			if (ImGui.colorPicker4("Color Picker", color, alphaSettings)) {
 				element.setColor(color);

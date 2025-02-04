@@ -1,10 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -16,7 +18,7 @@ import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImUtil.rotatePivot;
-import static at.tobiazsh.myworld.traffic_addition.components.Renderers.SignBlockEntityRenderer.getFacingRotation;
+import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 
 public class ImageElementClient extends ImageElement implements ClientElementRenderInterface {
 
@@ -100,7 +102,8 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         float rotation = this.getRotation();
         float[] color = this.getColor();
 
-        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.001f));
+        float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
+        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementRenderInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
@@ -111,7 +114,9 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
 
         // Bind texture to vertices
         Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath());
-        RenderLayer renderLayer = RenderLayer.getEntityTranslucent(texture);
+
+        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture); // Custom Render Layer to prevent z-fighting
+        RenderLayer renderLayer = imageLayering.buildRenderLayer();
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
@@ -129,7 +134,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
 
         // Top left
         vertexConsumer.vertex(positionMatrix, 0 , 0, 0)
-                .texture(0, 1)
+                    .texture(0, 1)
                 .color(color[0], color[1], color[2], color[3])
                 .light(light)
                 .overlay(overlay)

@@ -8,7 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ArrayTools;
+import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;

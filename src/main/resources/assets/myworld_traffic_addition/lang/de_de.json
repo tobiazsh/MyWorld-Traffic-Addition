@@ -27,7 +27,8 @@
 
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Zum Master ernennen und konfigurieren",
 
-  "commands.myworld_traffic_addition.main_command.root": "Dies ist der Haupt-Command der MyWorld Traffic Addition Mod. Hiermit kannst du verschiedenste Dinge einrichten und ausführen, aber sei dennoch Vorsichtig!",
+  "commands.myworld_traffic_addition.main_command.root": "Dies ist der Haupt-Command der MyWorld Traffic Addition Mod. Hiermit kannst du verschiedenste Dinge einrichten und ausführen, aber sei Vorsichtig!",
+  "commands.myworld_traffic_addition.main_command.dev.set": "%s für %s auf %s gesetzt!",
 
   "screen.signs.settings.section.myworld_traffic_addition.aut": "Österreich (Österreich)",
   "screen.signs.settings.section.myworld_traffic_addition.slo": "Slowenien (Slovenija)",
@@ -97,7 +98,6 @@
   "screen.signs.settings.section.myworld_traffic_addition.texture.yield": "Vorrang geben",
 
   "screen.signs.settings.section.myworld_traffic_addition.texture.stop": "Stopp",
-  "commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!",
   "screen.signs.settings.section.myworld_traffic_addition.texture.cyclists_track": "Fahrradweg",
   "screen.signs.settings.section.myworld_traffic_addition.texture.cyclists_track_end": "Ende des Fahrradweges",
   "screen.signs.settings.section.myworld_traffic_addition.texture.left_only": "Linksabbiegen vorgeschrieben",

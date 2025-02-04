@@ -19,9 +19,8 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.Background
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem.Folder;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
@@ -197,19 +196,12 @@ public class SignEditor {
         return new ImVec2(newWidth, newHeight);
     }
 
-    private static void handlePopUps() {
-        ConfirmationPopup.render();
-
-        // ... More to come
-    }
-
     public static void renderMain(){
         ImGui.pushFont(DejaVuSans);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
         handleHotKeys();
-        handlePopUps();
 
         JsonPreviewPopUp.create();
         if (JsonPreviewPopUp.shouldOpen) JsonPreviewPopUp.open(getSignJson());
@@ -312,6 +304,10 @@ public class SignEditor {
         if (showDebug) if (ImGui.beginMenu("Debug")) {
 
             if (ImGui.menuItem("Update Json")) updateToJson();
+
+            if (ImGui.menuItem("Toggle Snap to Window")) {
+                ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
+            }
 
             ImGui.endMenu();
         }

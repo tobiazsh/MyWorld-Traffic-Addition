@@ -86,7 +86,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
                     resolvedElements.addAll(elementsInGroup);
                 });
 
-        resolvedElements.addAll(elements.stream().filter(element -> !(element instanceof GroupElement)).toList());
+        elements.reversed().stream().filter(element -> !(element instanceof GroupElement)).forEach(resolvedElements::addFirst);
 
         return resolvedElements;
     }
@@ -354,25 +354,25 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 	}
 
     public static Direction getFacing(BlockPos masterPos, World world) {
-        return world.getBlockEntity(masterPos).getCachedState().get(CustomizableSignBlock.FACING);
+        return Objects.requireNonNull(world.getBlockEntity(masterPos)).getCachedState().get(CustomizableSignBlock.FACING);
     }
 
     public static BlockPos getCheckPos(Direction dir, BlockPos masterPos) {
         switch (dir) {
-            default -> { return masterPos.west(); }
             case EAST -> { return masterPos.north(); }
             case SOUTH -> { return masterPos.east(); }
             case WEST -> { return masterPos.south(); }
+            default -> { return masterPos.west(); }
         }
     }
 
     @Contract(pure = true)
     public static Direction getRightSideDirection(Direction dir) {
         switch (dir) {
-            default -> { return Direction.EAST; }
             case EAST -> { return Direction.SOUTH; }
             case SOUTH -> { return Direction.WEST; }
             case WEST -> { return Direction.NORTH; }
+            default -> { return Direction.EAST; }
         }
     }
 
@@ -380,10 +380,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         if (offset == 0) return pos;
 
         switch (dir) {
-            default -> { return pos.north(offset); }
             case EAST -> { return pos.east(offset); }
             case SOUTH -> { return pos.south(offset); }
             case WEST -> { return pos.west(offset); }
+            default -> { return pos.north(offset); }
         }
     }
 }

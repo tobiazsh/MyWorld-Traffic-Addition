@@ -17,7 +17,7 @@ public class Color {
 	public short blue = 255;
 	public short alpha = 255;
 
-	private static Map<float[], Integer> hexCache = new HashMap<>();
+	private static final Map<float[], Integer> hexCache = new HashMap<>();
 
 	public void setColors(int r, int g, int b, int a) {
 		checkValues(r, g, b, a);
@@ -28,20 +28,28 @@ public class Color {
 		alpha = (short) a;
 	}
 
-	public static int toHexRGB(float[] rgba) {
-		if (rgba.length != 3) {
-			System.err.println("Error (Colors): RGBA array must have a length of 3!");
+	/**
+	 * Returns the color as hex in the format of AARRGGBB
+	 * @param rgba The RGBA values as an array of floats
+	 * @return The color as an integer in hex format (AARRGGBB)
+	 */
+	public static int toHexARGB(float[] rgba) {
+		if (rgba.length != 4) {
+			System.err.println("Error (Colors): RGBA array must have a length of 4!");
 			return 0;
 		}
 
 		if (colorIsInCache(rgba))
 			return getCacheColHex(rgba);
 
+		String a = normalizeHexLength(Integer.toHexString((int) (rgba[3] * 255)));
 		String r = normalizeHexLength(Integer.toHexString((int) (rgba[0] * 255)));
 		String g = normalizeHexLength(Integer.toHexString((int) (rgba[1] * 255)));
 		String b = normalizeHexLength(Integer.toHexString((int) (rgba[2] * 255)));
 
-		int hex = Integer.parseInt(r + g + b, 16);
+		String argbHex = a + r + g + b;
+
+		int hex = (int) Long.parseLong(argbHex, 16);
 		putHexCache(rgba, hex); // Cache the color since I assume it takes a lot of resources to convert
 
 		return hex;

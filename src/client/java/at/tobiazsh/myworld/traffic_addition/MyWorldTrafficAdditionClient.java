@@ -1,17 +1,18 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockChange.ShowAboutWindow;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.NonBlockChange.ShowDemoWindow;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenCustomizableSignEditScreen;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenSignPoleRotationScreenPayload;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.OpenSignSelectionPayload;
-import at.tobiazsh.myworld.traffic_addition.components.Renderers.*;
-import at.tobiazsh.myworld.traffic_addition.components.Screens.CustomizableSignSettingScreen;
-import at.tobiazsh.myworld.traffic_addition.components.Screens.SignPoleRotationScreen;
-import at.tobiazsh.myworld.traffic_addition.components.Screens.SignSelectionScreen;
-import at.tobiazsh.myworld.traffic_addition.components.Utils.GlobalReceiverClient;
-import at.tobiazsh.myworld.traffic_addition.components.Utils.RegistrableBlockEntityRender;
+import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.*;
+import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceControl;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenSignSelectionPayload;
+import at.tobiazsh.myworld.traffic_addition.Screens.CustomizableSignSettingScreen;
+import at.tobiazsh.myworld.traffic_addition.Screens.SignPoleRotationScreen;
+import at.tobiazsh.myworld.traffic_addition.Screens.SignSelectionScreen;
+import at.tobiazsh.myworld.traffic_addition.Utils.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.Utils.RegistrableBlockEntityRender;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -53,6 +54,12 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		registerNonBlockModels();
 
 		putBlockRenderLayers();
+
+		loadPreferences();
+	}
+
+	private static void loadPreferences() {
+		PreferenceControl.loadGameplayPreferences();
 	}
 
 	public static void putBlockRenderLayer(Block block, RenderLayer renderLayer) {
@@ -87,7 +94,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 				new RegistrableBlockEntityRender<>(UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK_ENTITY, UpsideDownTriangularSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(OCTAGONAL_SIGN_BLOCK_ENTITY, OctagonalSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(ROUND_SIGN_BLOCK_ENTITY, RoundSignBlockEntityRenderer::new),
-				new RegistrableBlockEntityRender<>(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, CustomSignBlockEntityRenderer::new)
+				new RegistrableBlockEntityRender<>(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, CustomizableSignBlockEntityRenderer::new)
 		));
 	}
 
@@ -129,11 +136,13 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 					MinecraftClient.getInstance().setScreen(customizableSignSettingScreen);
 				}),
 
-				new GlobalReceiverClient<>(ShowDemoWindow.Id,
-						(payload) -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow),
-
-				new GlobalReceiverClient<>(ShowAboutWindow.Id,
-						(payload) -> ImGuiRenderer.showAboutWindow = true)
+				new GlobalReceiverClient<>(ShowImGuiWindow.Id, (payload -> {
+					switch (ModVars.ImGuiWindowIds.values()[payload.windowId()]) {
+						case ABOUT -> ImGuiRenderer.showAboutWindow = true;
+						case DEMO -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow;
+						case PREF -> PreferencesWindow.open();
+					}
+				}))
 		));
 	}
 }

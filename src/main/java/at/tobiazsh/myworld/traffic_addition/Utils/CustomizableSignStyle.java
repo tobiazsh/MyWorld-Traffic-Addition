@@ -20,7 +20,6 @@ import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.fromJson;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
-import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getFacing;
 
 public class CustomizableSignStyle {
 	public String jsonString; // JSON as String

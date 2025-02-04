@@ -3,29 +3,30 @@ package at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Color;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.Rendering.CustomTextRenderer;
 import imgui.ImFont;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager.registerFontAsync;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomMinecraftFont.getTextRendererByPath;
 import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getRightSideDirection;
-import static at.tobiazsh.myworld.traffic_addition.components.Renderers.SignBlockEntityRenderer.getFacingRotation;
+import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
 public class TextElementClient extends TextElement implements ClientElementRenderInterface {
@@ -93,7 +94,7 @@ public class TextElementClient extends TextElement implements ClientElementRende
         float rotation = this.getRotation();
         float[] color = this.getColor();
 
-        TextRenderer textRenderer = getTextRendererByPath(this.getFont().getFontPath());
+        CustomTextRenderer textRenderer = (CustomTextRenderer) getTextRendererByPath(this.getFont().getFontPath());
 
         if (textRenderer == null) {
             MyWorldTrafficAddition.LOGGER.error("TextRenderer is null! Can't render text!");
@@ -107,7 +108,8 @@ public class TextElementClient extends TextElement implements ClientElementRende
         float effectiveWidthScale = w * scaleX;
         float effectiveHeightScale = h * scaleY;
 
-        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, zOffset + ((indexInList + 1) * 0.0027f));
+        float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
+        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementRenderInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, 0, 0)
                 .offset(facing.getOpposite(), 1)
                 .offset(getRightSideDirection(facing.getOpposite()), x)
@@ -143,12 +145,12 @@ public class TextElementClient extends TextElement implements ClientElementRende
 
         textRenderer.draw(
                 this.getText(),
-                0,0,
-                Color.toHexRGB(Arrays.copyOf(color, 3)), // Remove alpha as it's not supported apparently
+                0,0, zOffset,
+                Color.toHexARGB(color),
                 false,
                 positionMatrix,
                 vertexConsumers,
-                TextRenderer.TextLayerType.NORMAL,
+                CustomRenderLayer.TextLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_INTENSITY,
                 0,
                 light
         );

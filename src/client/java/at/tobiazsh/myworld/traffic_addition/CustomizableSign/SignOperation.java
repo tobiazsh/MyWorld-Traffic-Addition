@@ -4,8 +4,8 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.SetCustomizableSignTexture;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.UpdateTextureVarsCustomizableSignBlockPayload;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.SetCustomizableSignTexture;
+import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.UpdateTextureVarsCustomizableSignBlockPayload;
 import io.netty.util.internal.StringUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;

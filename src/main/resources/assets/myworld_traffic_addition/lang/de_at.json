@@ -28,6 +28,7 @@
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Zum Master mochn und eistölln",
 
   "commands.myworld_traffic_addition.main_command.root": "Deis is da Haupt-Command va da MyWorld Traffic Addition Mod. Mit dem kounnst vülle Dinge eistölln und a vülle Sochn ausfühan, oba sei Vorsichtig!",
+  "commands.myworld_traffic_addition.main_command.dev.set": "%s fia %s va %s g'seitzt!",
 
   "screen.signs.settings.section.myworld_traffic_addition.aut": "Östarraich (Österreich)",
   "screen.signs.settings.section.myworld_traffic_addition.slo": "Slowenien (Slovenija)",
@@ -97,7 +98,6 @@
   "screen.signs.settings.section.myworld_traffic_addition.texture.yield": "Vorrong gebn",
 
   "screen.signs.settings.section.myworld_traffic_addition.texture.stop": "Stopp",
-  "commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!",
   "screen.signs.settings.section.myworld_traffic_addition.texture.cyclists_track": "Fohrradl Weg",
   "screen.signs.settings.section.myworld_traffic_addition.texture.cyclists_track_end": "Ende vam Fohrradl Weg",
 

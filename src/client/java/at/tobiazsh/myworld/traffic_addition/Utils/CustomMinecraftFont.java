@@ -1,19 +1,17 @@
 package at.tobiazsh.myworld.traffic_addition.Utils;
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Rendering.CustomTextRenderer;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.FontManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomMinecraftFont extends BasicFont {
@@ -49,7 +47,7 @@ public class CustomMinecraftFont extends BasicFont {
         FontManagerAccessor fma = ((FontManagerAccessor) ((MinecraftClientAccessor) client).getFontManager());
         AtomicBoolean d = new AtomicBoolean(false);
 
-        TextRenderer tr = new TextRenderer(id -> {
+        TextRenderer tr = new CustomTextRenderer(id -> {
             FontStorage storage = fma.getFontStorages().getOrDefault(Identifier.of(MyWorldTrafficAddition.MOD_ID, fontPath), fma.getFontStorages().getOrDefault(Identifier.of("default"), fma.getMissingStorage()));
             if (storage == fma.getFontStorages().get(Identifier.of("default"))) {
                 d.set(true);
@@ -65,11 +63,6 @@ public class CustomMinecraftFont extends BasicFont {
 
         return tr;
     }
-
-    // Q: Am I dumb?
-    // A: Yes, you are.
-    // Q: That's not nice. I am sad not :(
-    // A: I am sorry, I didn't mean to hurt your feelings. I am sure you are a very smart person.
 
     /**
      * Will load all fonts the program has found in /assets/mod_id/font/

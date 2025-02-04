@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 
 public interface ClientElementRenderInterface {
-    float zOffset = 0.1f;
+    float zOffset = 0.08f;
 
     void renderImGui();
     void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing);
