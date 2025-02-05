@@ -43,3 +43,4 @@ replay_*.log
 /src/client/java/at/tobiazsh/myworld/traffic_addition/components/Renderers/._TriangularSignBlockRenderer.java
 
 /run/
+/src/main/resources/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/aut/arrow.ai
