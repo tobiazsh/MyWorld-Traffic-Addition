@@ -78,15 +78,17 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private List<BaseElement> resolveGroupElements(List<BaseElement> elements) {
         List<BaseElement> resolvedElements = new ArrayList<>();
 
-        elements.stream()
-                .filter(element -> element instanceof GroupElement)
-                .forEach(element -> {
-                    List<BaseElement> elementsInGroup = ((GroupElement) element).getElements();
-                    elementsInGroup = resolveGroupElements(elementsInGroup);
-                    resolvedElements.addAll(elementsInGroup);
-                });
-
-        elements.reversed().stream().filter(element -> !(element instanceof GroupElement)).forEach(resolvedElements::addFirst);
+        for (BaseElement element : elements) {
+            if (element instanceof GroupElement) {
+                // Recursively resolve group elements
+                List<BaseElement> elementsInGroup = ((GroupElement) element).getElements();
+                List<BaseElement> resolvedGroupElements = resolveGroupElements(elementsInGroup);
+                resolvedElements.addAll(resolvedGroupElements);
+            } else {
+                // Add non-group elements directly
+                resolvedElements.add(element);
+            }
+        }
 
         return resolvedElements;
     }
@@ -327,7 +329,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         blockPoses = List.of(blockPosListString.split("%"));
 
         for (String blockPos : blockPoses) {
-            List<String> blockCoordinates = new ArrayList<>();
+            List<String> blockCoordinates;
 
             blockCoordinates = List.of(blockPos.split("\\?"));
 
