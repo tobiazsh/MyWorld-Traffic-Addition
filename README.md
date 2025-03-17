@@ -1,6 +1,6 @@
 # MyWorld Traffic Addition
 
-### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>NEWEST MINECRAFT VERSION: 1.21.4<br>
+### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.4<br>
 
 ### **Current features:**
  - Place signs and rotate
@@ -56,8 +56,8 @@ fonts themselves.
 For **Spain, Mexico, USA, Portugal: *Highway Gothic*** by Tom Oetken<br>--<br>
 For **Germany, Czech Republic: *DIN 1451 Mittelschrift*** by Peter Wiegel (SIL OFL)<br>--<br>
 For **Austria, Slovakia: *Paneuropa*** by Peter Wiegel (SIL OFL)<br>--<br>
-For **Poland: *Dragowskaz*** by Emil Wojtacki<br>--<br>
-For **Slovenia, Croatia, Serbia, Montenegro, Bulgaria, Romania: *Gliscor Gothic*** by Tom Oetken<br>(MODIFIED by me; I got the permission to from Tom Oetken)<br>--<br>
+For **Poland: *Drogowskaz*** by Emil Wojtacki<br>--<br>
+~~For **Slovenia, Croatia, Serbia, Montenegro, Bulgaria, Romania: *Gliscor Gothic*** by Tom Oetken~~ **Removed for now** ~~<br>(MODIFIED by me; I got the permission to from Tom Oetken)~~<br>--<br>
 **For Your own made up country there are a few neutral fonts included: *Roboto (Mono), Funnel Sans and Deja Vu Sans* !**
 
 You can always add more fonts yourself by just opening the .jar with a zipping program and adding the .ttf file under `assets/myworld_traffic_addition/textures/imgui/fonts/` **BUT**
@@ -67,27 +67,19 @@ I try to add a good selection of fonts that fit for many countries, but I can't 
 mod for every font that's being used on road signage world wide (Italy as example; they have privated their font used in road signage, but it's similar to Arial)
 
 ## License
-This project is licensed under the **GNU LESSER GENERAL PUBLIC LICENSE v3.0** - see the [LICENSE](LICENSE) file for details
+This project is licensed under the **Attribution-NonCommercial 4.0 International** - see the [LICENSE](LICENSE) file for details
 
 ### In short:
-**YOU MAY:**
-- Use the software for any purpose, including commercial use
-- Modify the software to suit your needs
-- Distribute the software (either original or modified) to others
-- Link the software to proprietary software, as long as you follow the rules of the license
-- Combine LGPL software with other code without making the entire program open-source
+**You are free to:**<br>
+✅ Use, modify, and share this mod for non-commercial purposes.<br>
+✅ Redistribute it as long as you credit "Tobias S." or "Tobiazsh" somewhere, even in small text. (See below)*<br>
+✅ Modify and distribute your own versions under the same non-commercial terms.<br>
 
-**BUT, YOU MUST:**
-- Release the modified source code if you change the software, and make it available to others
-- Provide a copy of the LGPL license when distributing the software (modified or not)
-- Allow users to replace or modify the LGPL library if you're using it in your program (especially if you statically link it)
-- Share the source code or provide a way for users to replace the LGPL library with a modified version
-- Follow the LGPL rules for the LGPL part of your software, even if you combine it with proprietary software
+**You may NOT:**<br>
+❌ Use this mod for commercial purposes (including selling, paywalls, or monetization).<br>
+❌ Redistribute it without proper credit.<br>
 
-**YOU MAY NOT:**
-- Use the software in a way that violates the license, such as not sharing modified versions when required
-- Distribute the software in a way that prevents users from modifying the LGPL library, especially if it's statically linked
-- Use the software and claim ownership or remove the original author’s credits
+*While not required, I’d really appreciate it if you included a link to any of my social media when sharing or redistributing this mod. Links are on [my GitHub Profile](https://github.com/tobiazsh).
 
-<br /><br />
+<br><br>
 ***Made with ❤️ in Austria***

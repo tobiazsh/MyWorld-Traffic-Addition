@@ -87,7 +87,7 @@ public class ElementAddWindow {
 	 */
 	public static void config() {
 		try {
-			folder = FileSystem.FromResource.listFiles("/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/").concentrateFileType("PNG");
+			folder = FileSystem.listFilesRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/", true).concentrateFileType("PNG");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

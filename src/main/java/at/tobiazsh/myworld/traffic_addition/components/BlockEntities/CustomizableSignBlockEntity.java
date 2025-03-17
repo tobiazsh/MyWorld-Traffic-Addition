@@ -8,9 +8,8 @@ package at.tobiazsh.myworld.traffic_addition.components.BlockEntities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.components.Blocks.CustomizableSignBlock;
 import net.minecraft.block.Block;
@@ -34,13 +33,12 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE
 
 public class CustomizableSignBlockEntity extends BlockEntity {
 
-    // "I can do this better"-*rewrites whole json logic*-counter: ~3 times (I've stopped counting)
-
     private int width = 1;
 
     private boolean isMaster = true;
-    private boolean renderingState = true;
+    private boolean isRendered = true;
     private boolean isInitialized = false;
+    private boolean updateBackgroundTexture = false;
 
     private String borderModelPath = "customizable_sign_block_border_all";
     private BlockPos masterPos;
@@ -59,12 +57,12 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public void updateTextureVars() {
         if (!isMaster) return;
         if (signTextureJson == null || signTextureJson.isEmpty()) return;
+        if (this.world == null) return;
 
-        backgroundStylePieces = CustomizableSignStyle.deconstructStyleToArray(new CustomizableSignStyle().convertStringToJson(signTextureJson)).reversed();
-        backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
-        elements = CustomizableSignStyle.deconstructElementsToArray(new CustomizableSignStyle().convertStringToJson(signTextureJson));
+        setUpdateBackgroundTexture(true);
 
-        elements = resolveGroupElements(elements);
+        elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
+        elements = BaseElement.unpackList(elements);
 
         elements.replaceAll(element -> {
             if (element instanceof ImageElement) {
@@ -74,6 +72,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             return element;
         });
     }
+
+
+
+/*
+    RESERVE IF NEW LOGIC THROWS BUGS (Should be pretty stable though)
 
     private List<BaseElement> resolveGroupElements(List<BaseElement> elements) {
         List<BaseElement> resolvedElements = new ArrayList<>();
@@ -92,6 +95,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         return resolvedElements;
     }
+*/
 
     public void setHeight(int height) {
         this.height = height;
@@ -139,11 +143,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
     public boolean isRendering() {
-        return renderingState;
+        return isRendered;
     }
 
-    public void setRenderingState(boolean render) {
-        renderingState = render;
+    public void setRendered(boolean render) {
+        isRendered = render;
         updateGame();
     }
 
@@ -206,12 +210,25 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         nbt.putBoolean("IsMaster", isMaster);
         nbt.putString("MasterPos", constructMasterPosString(masterPos));
         nbt.putString("SignPolePositions", signPolePositions);
-        nbt.putBoolean("RenderingState", renderingState);
+        nbt.putBoolean("RenderingState", isRendered);
         nbt.putString("SignPositions", signPositions);
         nbt.putInt("Rotation", rotation);
         nbt.putInt("Width", width);
         nbt.putInt("Height", height);
         nbt.putBoolean("IsInitialized", isInitialized);
+
+        // TODO: REMOVE IN AUGUST 2025
+        if (!signTextureJson.isBlank()) {
+            CustomizableSignData signData = new CustomizableSignData();
+            signData.setJsonString(signTextureJson);
+
+            if (CustomizableSignData.styleMatchesOldVersion(signData)) {
+                CustomizableSignData.updateToNewVersion(signData);
+                this.signTextureJson = signData.jsonString;
+            }
+        }
+        // REMOVE IN AUGUST 2025 END
+
         nbt.putString("SignTexture", signTextureJson);
     }
 
@@ -230,7 +247,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         isMaster = nbt.getBoolean("IsMaster");
         masterPos = deconstructMasterPosString(nbt.getString("MasterPos"));
         signPolePositions = nbt.getString("SignPolePositions");
-        renderingState = nbt.getBoolean("RenderingState");
+        isRendered = nbt.getBoolean("RenderingState");
         signPositions = nbt.getString("SignPositions");
         rotation = nbt.getInt("Rotation");
         width = nbt.getInt("Width");
@@ -284,23 +301,23 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     public static List<Boolean> getBorderListBoundingBased(BlockPos masterPos, World world) {
         List<Boolean> borders = new ArrayList<>();
-        Direction NOT_FACING = getRightSideDirection(getFacing(masterPos, world).getOpposite());
+        Direction rightSideDirection = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
-        if (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity)
             borders.add(false);
-        } else { borders.add(true); }
+        else borders.add(true);
 
-        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING, masterPos, 1)) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1)) instanceof CustomizableSignBlockEntity)
             borders.add(false);
-        } else { borders.add(true); }
+        else borders.add(true);
 
-        if (world.getBlockEntity(getBlockPosAtDirection(NOT_FACING.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity)
             borders.add(false);
-        } else { borders.add(true); }
+        else borders.add(true);
 
-        if (world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity) {
+        if (world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity)
             borders.add(false);
-        } else { borders.add(true); }
+        else borders.add(true);
 
         return borders;
     }
@@ -355,9 +372,26 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 		isInitialized = initialized;
 	}
 
-    public static Direction getFacing(BlockPos masterPos, World world) {
-        return Objects.requireNonNull(world.getBlockEntity(masterPos)).getCachedState().get(CustomizableSignBlock.FACING);
+    public boolean shouldUpdateBackgroundTexture() {
+        return updateBackgroundTexture;
     }
+
+    public void setUpdateBackgroundTexture(boolean var) {
+        this.updateBackgroundTexture = var;
+    }
+
+    public static Direction getFacing(BlockPos pos, World world) {
+        return world.getBlockState(pos).get(CustomizableSignBlock.FACING);
+    }
+
+    public static Direction getFacing(BlockEntity entity) {
+        return entity.getCachedState().get(CustomizableSignBlock.FACING);
+    }
+
+    public Direction getFacing() {
+        return this.getCachedState().get(CustomizableSignBlock.FACING);
+    }
+
 
     public static BlockPos getCheckPos(Direction dir, BlockPos masterPos) {
         switch (dir) {

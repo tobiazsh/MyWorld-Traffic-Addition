@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.ImGui.Utils;
 
-import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 
 import java.util.ArrayList;
@@ -8,15 +8,15 @@ import java.util.List;
 
 public class Clipboard {
     private static BaseElement copiedElement = null;
-    private static CustomizableSignStyle copiedSign = null;
-    private static final List<CustomizableSignStyle> undoStack = new ArrayList<>();
-    private static final List<CustomizableSignStyle> redoStack = new ArrayList<>();
+    private static CustomizableSignData copiedSign = null;
+    private static final List<CustomizableSignData> undoStack = new ArrayList<>();
+    private static final List<CustomizableSignData> redoStack = new ArrayList<>();
 
-    public static void setCopiedSign(CustomizableSignStyle sign) {
+    public static void setCopiedSign(CustomizableSignData sign) {
         copiedSign = sign;
     }
 
-    public static CustomizableSignStyle getCopiedSign() {
+    public static CustomizableSignData getCopiedSign() {
         return copiedSign;
     }
 
@@ -29,22 +29,22 @@ public class Clipboard {
         return copiedElement.copy();
     }
 
-    public static void pushUndoStack(CustomizableSignStyle sign) {
+    public static void pushUndoStack(CustomizableSignData sign) {
         if (undoStack.size() > 50) undoStack.removeFirst();
         undoStack.add(sign);
     }
 
-    public static void pushRedoStack(CustomizableSignStyle sign) {
+    public static void pushRedoStack(CustomizableSignData sign) {
         if (redoStack.size() > 50) undoStack.removeFirst();
         redoStack.add(sign);
     }
 
-    public static CustomizableSignStyle popUndoStack() {
+    public static CustomizableSignData popUndoStack() {
         if (undoStack.isEmpty()) return null;
         return undoStack.removeLast();
     }
 
-    public static CustomizableSignStyle popRedoStack() {
+    public static CustomizableSignData popRedoStack() {
         if (redoStack.isEmpty()) return null;
         return redoStack.removeLast();
     }

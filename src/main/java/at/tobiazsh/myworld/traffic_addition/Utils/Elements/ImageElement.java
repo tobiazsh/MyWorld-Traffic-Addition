@@ -23,6 +23,11 @@ public class ImageElement extends BaseElement {
 	public String resourcePath;
 	public boolean texIsLoaded = false;
 
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId, String id) {
+		this(x, y, width, height, factor, rotation, texture, parentId);
+		this.id	= id;
+	}
+
 	public ImageElement(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId) {
 		super(x, y, width, height, factor, parentId);
 		this.elementTexture = texture;
@@ -31,6 +36,12 @@ public class ImageElement extends BaseElement {
 
 	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath, String parentId) {
 		super(x, y, width, height, factor, parentId);
+		this.resourcePath = resourcePath;
+		this.rotation = rotation;
+	}
+
+	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath, String parentId, String id) {
+		super(x, y, width, height, factor, parentId, id);
 		this.resourcePath = resourcePath;
 		this.rotation = rotation;
 	}
@@ -123,5 +134,15 @@ public class ImageElement extends BaseElement {
 		object.addProperty("Texture", this.resourcePath);
 
 		return object;
+	}
+
+	@Override
+	public void onImport() {
+		this.regenerateId();
+	}
+
+	@Override
+	public void onPaste() {
+		this.regenerateId();
 	}
 }

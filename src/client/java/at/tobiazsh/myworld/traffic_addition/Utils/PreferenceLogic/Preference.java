@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.Utils;
+package at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import com.google.gson.JsonObject;

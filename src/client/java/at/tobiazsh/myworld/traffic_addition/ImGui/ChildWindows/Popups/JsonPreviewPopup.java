@@ -8,20 +8,20 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import imgui.ImGui;
 
-public class JsonPreviewPopUp {
-	private static CustomizableSignStyle currentStyle = new CustomizableSignStyle();
+public class JsonPreviewPopup {
+	private static CustomizableSignData currentStyle = new CustomizableSignData();
 
 	public static boolean shouldOpen = false;
 	public static String windowId = "JSON Preview";
 	private static String json;
 
-	public static void open(CustomizableSignStyle style) {
-		JsonPreviewPopUp.currentStyle = style;
+	public static void open(CustomizableSignData style) {
+		JsonPreviewPopup.currentStyle = style;
 		shouldOpen = false;
 		ImGui.openPopup(windowId);
 

@@ -5,7 +5,6 @@ import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import imgui.ImGui;
-import imgui.flag.ImGuiWindowFlags;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class ElementsWindow {
         if (!shouldRender) return;
 
         ImGui.pushFont(ImGuiImpl.DejaVuSans);
-        if (ImGui.begin("Elements", ImGuiWindowFlags.NoNavInputs)) {
+        if (ImGui.begin("Elements")) {
             for (int i = 0; i < elementOrder.size(); i++) {
                 BaseElement element = elementOrder.get(i);
                 ElementEntry entry = new ElementEntry(element.getName(), element.getId(), element, elementOrder, "MAIN") {
@@ -76,16 +75,14 @@ public class ElementsWindow {
     }
 
     private static void removeRemovableElementsGroups(List<BaseElement> elements) {
-        elements.forEach(element -> {
-            if (element instanceof GroupElement) {
-                elements.forEach(insideElement -> {
-                    if (insideElement instanceof GroupElement) {
-                        removeRemovableElementsGroups(((GroupElement) insideElement).getElements());
-                    }
+        elements.stream().filter(element -> element instanceof GroupElement).forEach(element -> {
+            elements.forEach(insideElement -> {
 
-                    ((GroupElement) element).getElements().removeIf(BaseElement::shouldRemove);
-                });
-            }
+                if (insideElement instanceof GroupElement)
+                    removeRemovableElementsGroups(((GroupElement) insideElement).getElements());
+
+                ((GroupElement) element).getElements().removeIf(BaseElement::shouldRemove);
+            });
         });
     }
 }

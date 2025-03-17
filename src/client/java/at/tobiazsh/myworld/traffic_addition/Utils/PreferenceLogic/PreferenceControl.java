@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.Utils;
+package at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic;
 
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer;

@@ -56,7 +56,7 @@ public class CustomizableSignBlockActions {
         boolean renderState = payload.renderState();
 
         if (defaults.world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity customizableSignBlockEntity)
-            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setRenderingState(renderState));
+            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setRendered(renderState));
     }
 
     public static void handleSetSignPositions(SetSignPositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {

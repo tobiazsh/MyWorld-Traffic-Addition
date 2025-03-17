@@ -8,7 +8,6 @@ package at.tobiazsh.myworld.traffic_addition.ImGui;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ConfirmationPopup;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.AboutWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
@@ -33,7 +32,7 @@ public class ImGuiRenderer {
             ImGui.pushFont(ImGuiImpl.DejaVuSans); // Use default font
 
             ErrorPopup.render(); // Render error popup
-            ConfirmationPopup.render(); // Render confirmation popup
+            //ConfirmationPopup.render(); // Render confirmation popup
 
             if (showDemoWindow) { ImGui.showDemoWindow(); ImGui.showAboutWindow(); } // If demo window should be shown, do so
             if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so

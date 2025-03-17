@@ -62,10 +62,10 @@ public class Texture {
 
 		ByteBuffer image = stbi_load_from_memory(imageData, width, height, channels, 0);
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // ESPECIALLY IMPORTANT
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); // ESPECIALLY IMPORTANT
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0); // ESPECIALLY IMPORTANT
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0); // ESPECIALLY IMPORTANT
 
 		h = height.get(0);
 		w = width.get(0);
@@ -118,6 +118,12 @@ public class Texture {
 		return buffer;
 	}
 
+	/**
+	 * @deprecated Won't be supported in newer versions. Do not use! Migrate!
+	 * @param resourcePath resource path
+	 * @return Texture ID
+	 */
+	@Deprecated
 	public static int quickLoad(String resourcePath) {
 		ByteBuffer imageData;
 

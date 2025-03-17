@@ -116,8 +116,7 @@ public class CustomizableSignSettingScreen extends Screen {
         reopen(false);
         this.clearAll();
 
-        SignEditor screen = new SignEditor();
-        screen.open(this.pos, this.world, isInitialized);
+        SignEditor.open(this.pos, this.world, isInitialized);
     }
 
     private void reopen(boolean showChildren) {

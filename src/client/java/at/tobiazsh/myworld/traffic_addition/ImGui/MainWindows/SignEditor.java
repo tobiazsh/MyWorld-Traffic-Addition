@@ -12,18 +12,18 @@ import at.tobiazsh.myworld.traffic_addition.CustomizableSign.SignOperation;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementsWindow;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ConfirmationPopup;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.JsonPreviewPopUp;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.BackgroundSelectorPopUp;
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem.Folder;
-import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
+import com.google.gson.*;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiKey;
@@ -37,7 +37,10 @@ import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getPrettyJson;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.updateToNewVersion;
 import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.currentElementFactor;
+import static at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves.createSavesDirIfNonExistent;
 
 public class SignEditor {
 
@@ -48,7 +51,7 @@ public class SignEditor {
     private static int signWidthBlocks;
     private static int signHeightBlocks;
     
-    public static CustomizableSignStyle signJson = new CustomizableSignStyle();
+    public static CustomizableSignData signJson = new CustomizableSignData();
     public static List<String> backgroundTextures = new ArrayList<>();
     public static String backgroundTexturePath;
     public static List<BaseElement> elementOrder = new ArrayList<>();
@@ -74,14 +77,16 @@ public class SignEditor {
         ElementsWindow.render();
         ElementAddWindow.render();
         ElementPropertyWindow.render();
-        BackgroundSelectorPopUp.render(backgrounds, blockEntity);
+        BackgroundSelectorPopup.render(backgrounds, blockEntity);
+        ConfirmationPopup.render();
+        FileDialogPopup.render();
     }
 
-    public static void setSignJson(CustomizableSignStyle json) {
+    public static void setSignJson(CustomizableSignData json) {
         signJson = json;
     }
 
-    public static CustomizableSignStyle getSignJson() {
+    public static CustomizableSignData getSignJson() {
         return signJson;
     }
 
@@ -98,20 +103,21 @@ public class SignEditor {
     }
 
     private static void updateFromJson() {
-        elementOrder = CustomizableSignStyle.deconstructElementsToArray(getSignJson());
-        backgroundTextures = CustomizableSignStyle.deconstructStyleToArray(getSignJson());
+        elementOrder = CustomizableSignData.deconstructElementsToArray(getSignJson());
+        backgroundTextures = CustomizableSignData.getBackgroundTexturePathList(getSignJson(), blockEntity);
     }
 
     private static void updateToJson() {
-        CustomizableSignStyle json = new CustomizableSignStyle();
+        CustomizableSignData json = new CustomizableSignData();
 
         if (backgroundTextures.isEmpty()) backgroundTexturePath = null;
         else backgroundTexturePath = backgroundTextures.getFirst().substring(0, backgroundTextures.getFirst().lastIndexOf("/") + 1);
 
-        json.setStyle(backgroundTexturePath, blockEntity);
+        json.setStyle(backgroundTexturePath);
         json.setElements(elementOrder);
 
         setSignJson(json);
+        BaseElement.setCurrentSignData(signJson, elementOrder);
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -125,7 +131,7 @@ public class SignEditor {
         disposeChildWindows();
 
         selectedElement = null;
-        setSignJson(new CustomizableSignStyle());
+        setSignJson(new CustomizableSignData());
 
         if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity csbe) blockEntity = csbe;
         else {
@@ -136,7 +142,7 @@ public class SignEditor {
 
         // List all available backgrounds
         try {
-            backgrounds = FileSystem.FromResource.listFolders("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/");
+            backgrounds = FileSystem.listFoldersRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/", true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -149,9 +155,6 @@ public class SignEditor {
 
         Clipboard.clearUndoStack();
         Clipboard.clearRedoStack();
-
-        for (int i = 0; i < signHeightBlocks * signWidthBlocks; i++)
-            backgroundTextures.add("/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png");
 
         readFromSign(world);
         calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
@@ -203,8 +206,8 @@ public class SignEditor {
         renderMenuBar();
         handleHotKeys();
 
-        JsonPreviewPopUp.create();
-        if (JsonPreviewPopUp.shouldOpen) JsonPreviewPopUp.open(getSignJson());
+        JsonPreviewPopup.create();
+        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(getSignJson());
 
         // Position for the preview (in the middle)
         float previewX = (ImGui.getWindowWidth() - signRatio.x * SignPreview.getZoom()) * 0.5f; // signRatio.x * getZoom() because the size of the sign changes with zoom
@@ -230,19 +233,14 @@ public class SignEditor {
                 quit();
             }
 
-            if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopUp.shouldOpen = true;
+            if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopup.shouldOpen = true;
 
             if (ImGui.menuItem("Quit", "CTRL + Q")) quit();
 
-//            ImGui.separator();
-//
-//            if (ImGui.menuItem("Open...")) {
-//
-//            }
-//
-//            if (ImGui.menuItem("Save...")) {
-//
-//            }
+            ImGui.separator();
+
+            if (ImGui.menuItem("Import...")) importSign();
+            if (ImGui.menuItem("Export...")) exportSign();
 
             ImGui.separator();
 
@@ -262,8 +260,8 @@ public class SignEditor {
             ImGui.endMenu();
         }
 
-        if (ImGui.beginMenu("Styling")) {
-            if (ImGui.menuItem("Choose Style Type", "CTRL + G")) BackgroundSelectorPopUp.open();
+        if (ImGui.beginMenu("Background")) {
+            if (ImGui.menuItem("Choose Background", "CTRL + G")) BackgroundSelectorPopup.open();
 
             ImGui.endMenu();
         }
@@ -287,6 +285,10 @@ public class SignEditor {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.createNew(elementOrder);
 
+            ImGui.separator();
+
+            if (ImGui.menuItem("Import Element...")) importElement();
+
             ImGui.endMenu();
         }
 
@@ -309,6 +311,15 @@ public class SignEditor {
                 ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
             }
 
+            if (ImGui.menuItem("Create saves folder")) {
+                createSavesDirIfNonExistent();
+            }
+
+            if (ImGui.menuItem("Convert to new syntax")) {
+                CustomizableSignData style = signJson;
+                updateToNewVersion(style);
+            }
+
             ImGui.endMenu();
         }
 
@@ -320,11 +331,13 @@ public class SignEditor {
     }
 
     private static void pasteElement() {
-        if (Clipboard.getCopiedElement() == null) return; // Can't paste if empty
-
         BaseElement elementToPaste = Clipboard.getCopiedElement();
+
+        if (elementToPaste == null) return; // Can't paste if empty
+
         elementToPaste.onPaste();
         elementOrder.addFirst(elementToPaste);
+        updateToJson();
     }
 
     private static void copySign() {
@@ -337,7 +350,6 @@ public class SignEditor {
         if (Clipboard.getCopiedSign() == null || Clipboard.getCopiedSign().json.isEmpty()) return; // Can't paste if empty
 
         setSignJson(Clipboard.getCopiedSign());
-        updateFromJson();
     }
 
     public static void addUndo() {
@@ -376,8 +388,8 @@ public class SignEditor {
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.Q)) quit(); // Quit
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) BackgroundSelectorPopUp.open(); // Background Selector Open
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopUp.shouldOpen = true; // Open Json Preview
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) BackgroundSelectorPopup.open(); // Background Selector Open
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopup.shouldOpen = true; // Open Json Preview
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle(); // Element Window Toggle
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle(); // Element Properties Toggle
@@ -388,12 +400,62 @@ public class SignEditor {
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.U)) undo(); // Undo
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.U)) redo(); // Redo
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.V)) pasteElement(); // Paste Element
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.V)) pasteElement(); // Paste Element
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.H)) pasteSign(); // Paste Sign
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.C)) copySign(); // Copy Sign
     }
 
     private static void clearCanvas() {
-        ConfirmationPopup.show("Are you sure you want to clear the canvas?", "All of your current elements will be removed! This action cannot be undone!", elementOrder::clear, ()->{});
+        ConfirmationPopup.show("Are you sure you want to clear the canvas?", "All of your current elements will be removed! This action cannot be undone!", (confirmed) -> {
+            if (confirmed) elementOrder.clear();
+        });
+    }
+
+    private static void exportSign() {
+        createSavesDirIfNonExistent();
+
+        FileDialogPopup.setData(getPrettyJson(signJson.jsonString));
+
+        FileDialogPopup.open(
+                Saves.getSignSaveDir(),
+                FileDialogPopup.FileDialogType.SAVE,
+                (path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
+                "MWTACSIGN", "JSON"
+        );
+    }
+
+    private static void importSign() {
+        createSavesDirIfNonExistent();
+
+        FileDialogPopup.open(Saves.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+            CustomizableSignData style = new CustomizableSignData();
+            style.setJson(FileDialogPopup.getData());
+            setSignJson(style);
+            updateFromJson();
+            updateToJson();
+
+            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
+        }, "MWTACSIGN", "JSON");
+    }
+
+    private static void importElement() {
+        createSavesDirIfNonExistent();
+
+        FileDialogPopup.open(Saves.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+            JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
+            BaseElement element = BaseElement.fromJson(elementObj);
+
+            if (element == null) {
+                MyWorldTrafficAddition.LOGGER.error("Importing element failed! Path: {}", path.toString());
+            }
+
+            element.onImport();
+
+            elementOrder.addFirst(element);
+            updateToJson();
+
+            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
+        });
+
     }
 }

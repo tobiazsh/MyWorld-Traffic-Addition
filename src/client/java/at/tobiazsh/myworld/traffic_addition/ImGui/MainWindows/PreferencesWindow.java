@@ -5,10 +5,11 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.LRUCache;
-import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceControl;
+import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiWindowFlags;
+
+import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImGuiTools.*;
 
 public class PreferencesWindow {
 
@@ -59,19 +60,10 @@ public class PreferencesWindow {
 
         if (ImGui.menuItem("Back to MENU")) currentPage = CURRENT_PAGE.MENU;
 
-        if (ImGui.beginMenu("Window")) {
+        if (ImGui.menuItem("Exit")) dispose();
 
-            if (ImGui.menuItem("Exit")) dispose();
-
-            ImGui.endMenu();
-        }
-
-        if (ImGui.beginMenu("Settings")) {
-            if (ImGui.menuItem("Apply")) apply();
-            if (ImGui.menuItem("Default Values")) defaultValues();
-
-            ImGui.endMenu();
-        }
+        if (ImGui.menuItem("Apply")) apply();
+        if (ImGui.menuItem("Default Values")) defaultValues();
 
         ImGui.endMenuBar();
     }
@@ -164,11 +156,14 @@ public class PreferencesWindow {
             ImGui.popFont();
 
             LRUCache.getRegisteredCaches().forEach((s, cache) -> {
-                if (ImGui.button(s.replaceAll("_", " ")))
-                    ConfirmationPopup.show("Do you really want to clear the cache?", "This action cannot be undone", () -> {
+                if (ImGui.button(s.replaceAll("_", " "))) {
+                    ConfirmationPopup.show("Do you really want to clear the cache?", "This action cannot be undone", (confirmed) -> {
+                        if (!confirmed) return;
+
                         LRUCache.clearCache(s);
                         ImGui.closeCurrentPopup();
-                    }, () -> {});
+                    });
+                }
             });
 
             ImGui.endPopup();
@@ -183,18 +178,10 @@ public class PreferencesWindow {
         ImGui.text(description);
     }
 
-    private static void drawLineMaxX() {
-        ImGui.sameLine();
-        ImGui.getWindowDrawList().addRect(
-                new ImVec2(ImGui.getCursorScreenPos().x, ImGui.getCursorScreenPos().y + (float) ImGui.getFontSize() / 2),
-                new ImVec2(ImGui.getCursorScreenPos().x + ImGui.getContentRegionAvailX(), ImGui.getCursorScreenPos().y + (float) ImGui.getFontSize() / 2 + 1),
-                0xFFFFFFFF, 0, 0, 1
-        );
-        ImGui.newLine();
-    }
-
     private static void dispose() {
-        ConfirmationPopup.show("Do you really want to exit?", "All unsaved changes will be gone!", () -> PreferencesWindow.show = false, () -> {});
+        ConfirmationPopup.show("Do you really want to exit?", "All unsaved changes will be gone!", (confirmed) -> {
+            if (confirmed) PreferencesWindow.show = false;
+        });
     }
 
     private static String convertEnumToTitle(CURRENT_PAGE page) {

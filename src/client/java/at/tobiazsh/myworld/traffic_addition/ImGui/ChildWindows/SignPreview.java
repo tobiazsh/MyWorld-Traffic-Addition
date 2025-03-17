@@ -18,12 +18,6 @@ import java.util.List;
 
 public class SignPreview {
 
-    // Use these for resetting the zoom to it's original value + the methods below
-    public static final float DEFAULT_ZOOM = 1.0f;
-    public static final float DEFAULT_ZOOM_SPEED = 0.05f;
-    public static final float DEFAULT_ZOOM_MIN = 0.5f;
-    public static final float DEFAULT_ZOOM_MAX = 3.0f;
-
     private static float zoomFactor = 1.0f;
     private static float zoomSpeed = 0.05f;
     private static float zoomMin = 0.5f;
@@ -45,28 +39,29 @@ public class SignPreview {
         ImGui.beginChild("##BottomToTopRenderer", signWidthPixels * zoomFactor, signHeightPixels  * zoomFactor, false, ImGuiWindowFlags.NoScrollbar);
 
         // Render from bottom to top and from left to right
-        if (!backgroundTextures.isEmpty()) {
-            float currentY = ImGui.getCursorPosY() + (signHeightBlocks - 1) * factor; // Set to the position of bottom
-            int previewPosition = 0;
-            for (int i = signHeightBlocks - 1; i >= 0; i--) {
-                ImGui.setCursorPosY(currentY);
+        float currentY = ImGui.getCursorPosY() + (signHeightBlocks - 1) * factor; // Set to the position of bottom
+        int previewPosition = 0;
+        for (int i = signHeightBlocks - 1; i >= 0; i--) {
+            ImGui.setCursorPosY(currentY);
 
-                for (int j = 0; j < signWidthBlocks; j++) {
+            for (int j = 0; j < signWidthBlocks; j++) {
 
-                    Texture currentTexture = Textures.smartRegisterTexture(backgroundTextures.get(previewPosition));
-                    ImGui.image(currentTexture.getTextureId(), factor, factor);
+                String texturePath = backgroundTextures.isEmpty() ? "/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png" : backgroundTextures.get(previewPosition);
 
-                    // If the current position is smaller than the sign's height minus one, stay in row
-                    if (j < signWidthBlocks - 1) {
-                        ImGui.sameLine();
-                    }
+                Texture currentTexture = Textures.smartRegisterTexture(texturePath);
+                ImGui.image(currentTexture.getTextureId(), factor, factor);
 
-                    previewPosition++;
+                // If the current position is smaller than the sign's height minus one, stay in row
+                if (j < signWidthBlocks - 1) {
+                    ImGui.sameLine();
                 }
 
-                currentY -= factor; // Decrease by factor to start next line
+                previewPosition++;
             }
+
+            currentY -= factor; // Decrease by factor to start next line
         }
+
 
         ImGui.endChild();
 

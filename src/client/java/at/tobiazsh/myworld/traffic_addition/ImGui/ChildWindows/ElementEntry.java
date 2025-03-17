@@ -8,12 +8,15 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.FileDialogPopup;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves;
 import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -27,6 +30,7 @@ import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
 	private String name;
@@ -82,7 +86,6 @@ public abstract class ElementEntry {
 		// Base element content rendering
 		renderBaseElementContent(framePadding, selectedOption);
 
-
 		// Expand Button for GroupElements
 		if (renderObject instanceof GroupElement) {
 			ImGui.sameLine();
@@ -124,7 +127,8 @@ public abstract class ElementEntry {
 				entry.render(windowWidth - (previewSize + padding * 4), padding,
 						element == ((GroupElement) renderObject).getElements().getFirst(),
 						element == ((GroupElement) renderObject).getElements().getLast(),
-						selectedOption);
+						selectedOption
+				);
 			}
 
 			ImGui.unindent(previewSize + padding * 4);
@@ -194,6 +198,8 @@ public abstract class ElementEntry {
 				elementList.addFirst(copiedElement);
 			}
 
+			if (ImGui.button("Export...")) exportElement();
+
 			int indexInList = elementList.indexOf(renderObject);
 
 			renderGroupControls(indexInList);
@@ -203,14 +209,16 @@ public abstract class ElementEntry {
 	}
 
 	private void renderGroupControls(int indexInList) {
-		if (BaseElement.getElementById(renderObject.getParentId()) instanceof GroupElement parentElement) {
+
+		if (BaseElement.getElementById(renderObject.getParentId()) instanceof GroupElement parentElement) { // Only show if element is inside a Group / has a parent
 			if (ImGui.button("Remove from Group")) {
-				if (BaseElement.getElementById(parentElement.getParentId()) instanceof GroupElement parentParentElement) {
-					parentParentElement.addElement(renderObject);
-					parentElement.removeElement(renderObject);
-				} else { // Only happens with "null" is returned and that means the parent is the main element list
-					renderObject.setParentId("MAIN");
-					elementOrder.add(parentElement.getElements().indexOf(renderObject), renderObject);
+				if (BaseElement.getElementById(parentElement.getParentId()) instanceof GroupElement parentParentElement) { // If parent has another parent, execute this instead
+					parentParentElement.addElement(renderObject); // Add the element to be removed to the parent of the parent
+					parentElement.removeElement(renderObject); // Remove element from parent
+				} else { // Only happens when null is returned and that means the parent is the main element and it isn't enclosed by anything else
+					renderObject.setParentId("MAIN"); // Set to main since parent does not exist and element is now in root folder
+
+					elementOrder.add(elementOrder.indexOf(parentElement), renderObject);
 					parentElement.removeElement(renderObject);
 				}
 			}
@@ -234,12 +242,17 @@ public abstract class ElementEntry {
 			}
 		}
 
-		if (!(renderObject instanceof GroupElement)) return;
+		if (!(renderObject instanceof GroupElement)) return; // Render the following only when the renderObject is a GroupElement
 
 		// "Ungroup" button. Only active on GroupElements
 		if (ImGui.button("Ungroup")) {
-			elementList.addAll(elementList.indexOf(renderObject) + 1, ((GroupElement) renderObject).getElements());
-			elementList.remove(renderObject);
+			String newParentId = Objects.equals(renderObject.getParentId(), "MAIN") ? "MAIN" : renderObject.getParentId(); // If the group element isn't enclosed by any other group, give the children "MAIN" as parent id, otherwise give the id of the enclosing element, that encloses the group element
+
+			List<BaseElement> elements = ((GroupElement) renderObject).getElements();
+			elements.forEach(element -> element.setParentId(newParentId)); // Give children new parent id
+
+			elementList.addAll(elementList.indexOf(renderObject) + 1, elements); // Index +1 because renderObject is the Group and GroupIndex + 1 is the first child index
+			elementList.remove(renderObject); // Remove Group Element from element list
 		}
 	}
 
@@ -298,5 +311,18 @@ public abstract class ElementEntry {
 				ElementPropertyWindow.initVars(element, grpElement.getElements(), signRatio);
 			}
 		};
+	}
+
+	private void exportElement() {
+		Saves.createSavesDirIfNonExistent();
+
+		FileDialogPopup.setData(getPrettyJson(renderObject.toJson().toString()));
+
+		FileDialogPopup.open(
+				Saves.getElementSaveDir(),
+				FileDialogPopup.FileDialogType.SAVE,
+				(path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
+				"MWTACSELEMENT", "JSON"
+		);
 	}
 }

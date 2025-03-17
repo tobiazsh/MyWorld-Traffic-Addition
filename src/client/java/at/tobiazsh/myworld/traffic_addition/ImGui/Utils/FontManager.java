@@ -80,7 +80,7 @@ public class FontManager {
 
     static {
         try {
-            availableFonts = Objects.requireNonNull(FileSystem.FromResource.listFiles("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/")).removeFoldersCurrentDir().concentrateFileType("TTF");
+            availableFonts = Objects.requireNonNull(FileSystem.listFilesRecursive("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/", true)).removeFoldersCurrentDir().concentrateFileType("TTF");
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -152,7 +152,14 @@ public class FontManager {
         fontConfig.setOversampleH(2);
 
         for (ImGuiFont font : fontCache.values()) {
-            font.font = fontAtlas.addFontFromMemoryTTF(ImGuiImpl.loadFromResource(font.getFontPath()), font.getFontSize(), fontConfig, defaultGlyphRanges);
+            byte[] fontBytes = ImGuiImpl.loadFromResource(font.getFontPath());
+
+            if (fontBytes == null) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load font ({}) from resource! Maybe file doesn't exist? Using default font!", font.getFontPath());
+                fontBytes = ImGuiImpl.loadFromResource(defaultFontPath);
+            }
+
+            font.font = fontAtlas.addFontFromMemoryTTF(fontBytes, font.getFontSize(), fontConfig, defaultGlyphRanges);
         }
     }
 
@@ -173,7 +180,14 @@ public class FontManager {
                     fontConfig.setOversampleV(2);
                     fontConfig.setOversampleH(2);
 
-                    ImFont font = ImGui.getIO().getFonts().addFontFromMemoryTTF(ImGuiImpl.loadFromResource(request.getPath()), request.getFontSize(), fontConfig, defaultGlyphRanges);
+                    byte[] fontBytes = ImGuiImpl.loadFromResource(request.getPath());
+
+                    if (fontBytes == null) {
+                        MyWorldTrafficAddition.LOGGER.error("Failed to load font ({}) from resource! Maybe file doesn't exist? Using default font!", request.getPath());
+                        fontBytes = ImGuiImpl.loadFromResource(defaultFontPath);
+                    }
+
+                    ImFont font = ImGui.getIO().getFonts().addFontFromMemoryTTF(fontBytes, request.getFontSize(), fontConfig, defaultGlyphRanges);
                     ImGuiFont imGuiFont = new ImGuiFont(request.getPath(), font, request.getFontSize());
                     fontCache.put(request.getKey(), imGuiFont);
                     request.complete(imGuiFont);

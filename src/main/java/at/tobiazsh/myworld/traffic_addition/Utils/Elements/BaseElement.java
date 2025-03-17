@@ -9,12 +9,12 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class BaseElement {
 
@@ -24,7 +24,8 @@ public abstract class BaseElement {
 	public boolean clicked = false;
 	protected boolean remove = false; // Flag indicating whether the element should be removed
 	public static Map<String, BaseElement> Ids = new HashMap<>();
-	private static int nextId = 0;
+	private static CustomizableSignData currentSignData;
+	private static int nextId;
 	public static float currentElementFactor;
 
 	public enum ELEMENT_TYPE {
@@ -34,54 +35,96 @@ public abstract class BaseElement {
 		GROUP_ELEMENT
 	}
 
-	public BaseElement(float x, float y, float width, float height, float factor, String parentId) {
+	private BaseElement(float x, float y, float width, float height, float factor) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.factor = factor;
+	}
+
+	// THIS ONE
+	public BaseElement(float x, float y, float width, float height, float factor, String parentId) {
+		this(x, y, width, height, factor);
 		this.parentId = parentId;
-		registerId(this);
+		registerId();
+		generateName();
+	}
+
+	public BaseElement(float x, float y, float width, float height, float factor, String parentId, String id) {
+		this(x, y, width, height, factor);
+		this.parentId = parentId;
+		this.id = id;
+		generateName();
 	}
 
 	public BaseElement(float x, float y, float width, float height, float factor, float rotation, String parentId) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.factor = factor;
+		this(x, y, width, height, factor, parentId);
 		this.rotation = rotation;
-		this.parentId = parentId;
-		registerId(this);
+		registerId();
+	}
+
+	public BaseElement(float x, float y, float width, float height, float factor, float rotation, String parentId, String id) {
+		this(x, y, width, height, factor, parentId, id);
+		this.rotation = rotation;
 	}
 
 	public BaseElement(float x, float y, float width, float height, float rotation, float factor, float[] color, String name, String parentId) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.factor = factor;
+		this(x, y, width, height, factor, parentId);
 		this.color = color;
 		this.name = name;
 		this.rotation = rotation;
-		this.parentId = parentId;
-		registerId(this);
+		registerId();
 	}
 
-	public BaseElement(float x, float y, float width, float height, float rotation, float factor, String id, float[] color, String name, String parentId) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.factor = factor;
+	public BaseElement(float x, float y, float width, float height, float rotation, float factor, float[] color, String name, String parentId, String id) {
+		this(x, y, width, height, factor);
+		this.color = color;
+		this.name = name;
+		this.rotation = rotation;
 		this.id = id;
-		this.color = color;
-		this.name = name;
-		this.rotation = rotation;
 		this.parentId = parentId;
 	}
 
-	private String registerId(BaseElement element) {
+	public static void setCurrentSignData(CustomizableSignData signData, List<BaseElement> drawables) {
+		currentSignData = signData;
+
+		Ids.clear();
+		nextId = readInElements(drawables);
+		nextId++;
+	}
+
+	/**
+	 * Reads in elements of a list and assigns it their ID
+	 * @param elements List of elements
+	 * @return Highest ID found
+	 */
+	private static int readInElements(List<BaseElement> elements) {
+		int highestId = 0;
+		for (BaseElement element : elements) {
+			int id;
+
+			if (element instanceof GroupElement) {
+				id = readInElements(((GroupElement) element).getElements());
+
+				if (id > highestId)
+					highestId = id;
+			}
+
+			String idStr = element.getId();
+
+			Ids.put(idStr, element);
+
+			id = Integer.parseInt(element.getId().replaceAll("ELEMENT_", ""));
+
+			if (id > highestId)
+				highestId = id;
+		}
+
+		return highestId;
+	}
+
+	private void registerId() {
 		this.id = "ELEMENT_" + nextId;
 
 		while (idExists(id)) {
@@ -89,10 +132,8 @@ public abstract class BaseElement {
 			nextId++;
 		}
 
-		Ids.put(id, element);
+		Ids.put(id, this);
 		nextId++;
-		this.name = id;
-		return id;
 	}
 
 	public static BaseElement getElementById(String id) {
@@ -109,13 +150,22 @@ public abstract class BaseElement {
 	}
 
 	/**
-	 * Sets the custom id of the element. NOT RECOMMENDED
+	 * Sets the custom id of the element. NOT RECOMMENDED! Only exists to provide as much freedom as possible! TRULY only use if necessary!
 	 * @param id The custom id
 	 */
 	public void setCustomId(int id) {
 		Ids.remove(this.id);
 		this.id = "ELEMENT_" + id;
 		Ids.put(this.id, this);
+	}
+
+	public void regenerateId() {
+		Ids.remove(this.getId());
+		registerId();
+	}
+
+	private void generateName() {
+		this.name = "New Element";
 	}
 
 	public void removeMe() {
@@ -320,6 +370,16 @@ public abstract class BaseElement {
 		float rotation = object.get("Rotation").getAsFloat();
 		float factor = object.get("Factor").getAsFloat();
 		String name = object.get("Name").getAsString();
+
+		JsonElement idObj = object.get("Id");
+
+		if (idObj == null) {
+			MyWorldTrafficAddition.LOGGER.error("Couldn't read element with name {} from JSON because it has no ID!", name);
+			return null;
+		}
+
+		String id = object.get("Id").getAsString();
+
 		ELEMENT_TYPE type = ELEMENT_TYPE.values()[object.get("ElementType").getAsInt()];
 
 		if (type == ELEMENT_TYPE.IMAGE_ELEMENT) {
@@ -329,7 +389,8 @@ public abstract class BaseElement {
 					factor,
 					rotation,
 					object.get("Texture").getAsString(),
-					"MAIN"
+					"MAIN",
+					id
 			);
 		} else if (type == ELEMENT_TYPE.TEXT_ELEMENT) {
 			element = new TextElement(
@@ -340,27 +401,35 @@ public abstract class BaseElement {
 
 					new BasicFont(
 							object.get("FontPath").getAsString(),
-							object.get("FontSize").getAsFloat()),
+							object.get("FontSize").getAsFloat()
+					),
 
 					object.get("Text").getAsString(),
 					false,
-					"MAIN"
+					"MAIN",
+					id
 			);
 		} else if (type == ELEMENT_TYPE.GROUP_ELEMENT) {
 			element = new GroupElement(
 					elementPosition[0], elementPosition[1],
 					size[0], size[1],
 					rotation,
-					object.get("Id").getAsString(),
 					name,
-					"MAIN"
+					"MAIN",
+					id
 			);
 
 			JsonArray elementsArray = object.getAsJsonArray("Elements");
 			for (int i = 0; i < elementsArray.size(); i++) {
 				JsonObject elementObject = elementsArray.get(i).getAsJsonObject();
-				BaseElement element1 = fromJson(elementObject);
-				((GroupElement) element).addElement(element1);
+				BaseElement childElement = fromJson(elementObject);
+
+				if (childElement == null) {
+					MyWorldTrafficAddition.LOGGER.error("Couldn't recognize ChildElement with name {} from GroupElement with ID {} because it could not be read from JSON! It is likely that no ID for this element has been found and thus couldn't target the right element!", elementObject.get("Name").getAsString(), id);
+					continue;
+				}
+
+				((GroupElement) element).addElement(childElement);
 			}
 
 			((GroupElement) element).setChildrenParentElementId();
@@ -368,13 +437,6 @@ public abstract class BaseElement {
 		} else {
 			MyWorldTrafficAddition.LOGGER.error("Error: Couldn't deconstruct elements to JSON! Element type is invalid.");
 			return null;
-		}
-
-		// Migration from old codebase (old codebase didn't have the id stored; introduced because of undo/redo)
-		if (object.has("Id")) {
-			String idStr = object.get("Id").getAsString();
-			int id = Integer.parseInt(idStr.substring(idStr.lastIndexOf("_") + 1));
-			element.setCustomId(id);
 		}
 
 		// Migration from old codebase (old codebase didn't have the parent id stored; introduced because of ungrouping)
@@ -388,6 +450,25 @@ public abstract class BaseElement {
 
 		return element;
 	}
+
+	/**
+	 * Unpacks all elements recursively. Kinda like a zip file
+	 * @param elements The list of all elements
+	 * @return The unpacked elements
+	 */
+	public static List<BaseElement> unpackList(List<BaseElement> elements) {
+		List<BaseElement> resolvedElements = new ArrayList<>();
+
+		for (BaseElement element : elements) {
+			if (element instanceof GroupElement)
+				resolvedElements.addAll(((GroupElement) element).unpackAll());
+			else
+				resolvedElements.add(element);
+		}
+
+		return resolvedElements;
+	}
+
 
 	/**
 	 * Copies the element
@@ -405,4 +486,9 @@ public abstract class BaseElement {
 	 * Executes an action when the element is pasted
 	 */
 	public void onPaste(){}
+
+	/**
+	 * Executes an action when the element is imported
+	 */
+	public void onImport() {}
 }

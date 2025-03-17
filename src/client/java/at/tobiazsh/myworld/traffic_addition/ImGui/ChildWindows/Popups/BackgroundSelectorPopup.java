@@ -10,9 +10,9 @@ import java.util.Objects;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.backgroundTextures;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.signJson;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
-import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle.deconstructStyleToArray;
+import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getBackgroundTexturePathList;
 
-public class BackgroundSelectorPopUp {
+public class BackgroundSelectorPopup {
 
     private static boolean shouldOpen = false;
     private static boolean applyButtonDisabled = true;
@@ -46,7 +46,7 @@ public class BackgroundSelectorPopUp {
                         currentCountryBG = (FileSystem.Folder) country;
 
                         try {
-                            availableBGStyles = FileSystem.FromResource.listFolders(country.path);
+                            availableBGStyles = FileSystem.listFoldersRecursive(country.path, true);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -96,7 +96,7 @@ public class BackgroundSelectorPopUp {
                 styleSelected = false;
                 ImGui.closeCurrentPopup();
 
-                backgroundTextures = deconstructStyleToArray(signJson.setStyle(currentBGStyle.path, customizableSignBlockEntity));
+                backgroundTextures = getBackgroundTexturePathList(signJson.setStyle(currentBGStyle.path), customizableSignBlockEntity);
             }
 
             if (applyButtonDisabled) ImGui.endDisabled();

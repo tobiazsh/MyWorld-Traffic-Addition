@@ -40,8 +40,8 @@ public class TextElementClient extends TextElement implements ClientElementRende
     private static final int defaultFontSize = 24;
     private static final String defaultText = "Lorem Ipsum";
 
-    public TextElementClient(float x, float y, float rotation, float factor, String fontPath, float fontSize, String text, TextElement referenceElement) {
-        super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated(), referenceElement.getParentId());
+    public TextElementClient(float x, float y, float rotation, float factor, String fontPath, float fontSize, String text, TextElement referenceElement, String id) {
+        super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated(), referenceElement.getParentId(), id);
         this.fontFuture = registerFontAsync(fontPath, fontSize);
         super.font = new BasicFont(fontPath, fontSize);
         this.referenceElement = referenceElement;
@@ -187,6 +187,6 @@ public class TextElementClient extends TextElement implements ClientElementRende
      * @return The created TextElementClient object
      */
     public static TextElementClient fromTextElement(TextElement textElement) {
-        return new TextElementClient(textElement.getX(), textElement.getY(), textElement.getRotation(), textElement.getFactor(), textElement.getFont().getFontPath(), textElement.getFont().getFontSize(), textElement.getText(), textElement);
+        return new TextElementClient(textElement.getX(), textElement.getY(), textElement.getRotation(), textElement.getFactor(), textElement.getFont().getFontPath(), textElement.getFont().getFontSize(), textElement.getText(), textElement, textElement.getId());
     }
 }

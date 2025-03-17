@@ -38,6 +38,8 @@ public class ImGuiImpl {
     public static ImFont DejaVuSansBold = null;
     public static ImFont DejaVuSansBoldBig = null;
 
+    public static String defaultFontPath = "/assets/myworld_traffic_addition/font/dejavu_sans.ttf";
+
     public static ImFontAtlas fontAtlas;
 
     public static void create(final long handle) {
@@ -72,9 +74,18 @@ public class ImGuiImpl {
 
         short[] glyphRanges = glyphRangesBuilder.buildRanges();
 
-        DejaVuSans = ImGui.getIO().getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans.ttf"), 20, fontConfig, glyphRanges);
-        DejaVuSansBold = ImGui.getIO().getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf"), 20, fontConfig, glyphRanges);
-        DejaVuSansBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf"), 40, fontConfig, glyphRanges);
+        byte[] dejaVuSansBytes = loadFromResource(defaultFontPath);
+        byte[] dejaVuSansBoldBytes = loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf");
+        byte[] dejaVuSansBoldBigBytes = loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf");
+
+        if (dejaVuSansBytes == null || dejaVuSansBoldBytes == null || dejaVuSansBoldBigBytes == null) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to load default fonts (DejaVuSans, DejaVuSansBold, DejaVuSansBoldBig) from resource!");
+            throw new RuntimeException("Failed to load default fonts (DejaVuSans, DejaVuSansBold, DejaVuSansBoldBig) from resource! Maybe files do not exist!");
+        }
+
+        DejaVuSans = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBytes, 20, fontConfig, glyphRanges);
+        DejaVuSansBold = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBoldBytes, 20, fontConfig, glyphRanges);
+        DejaVuSansBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBoldBigBytes, 40, fontConfig, glyphRanges);
     }
 
     public static boolean fontsNeedRebuild = false;
@@ -173,9 +184,14 @@ public class ImGuiImpl {
 
     public static byte[] loadFromResource(String name) {
         try {
-            return Files.readAllBytes(Paths.get(MyWorldTrafficAdditionClient.class.getResource(name).toURI()));
+            java.net.URL resource = MyWorldTrafficAdditionClient.class.getResource(name);
+            if (resource == null) {
+                return null;
+            }
+            return Files.readAllBytes(Paths.get(resource.toURI()));
         } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
+
 }

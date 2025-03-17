@@ -8,8 +8,8 @@ import net.minecraft.util.math.Direction;
 
 public class GroupElementClient extends GroupElement implements ClientElementRenderInterface {
 
-    public GroupElementClient(float x, float y, float width, float height, float rotation) {
-        super(x, y, width, height, rotation, null);
+    public GroupElementClient(float x, float y, float width, float height, float rotation, String id, String parentId) {
+        super(x, y, width, height, rotation, null, parentId, id);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class GroupElementClient extends GroupElement implements ClientElementRen
     }
 
     public static GroupElementClient fromGroupElement(GroupElement groupElement) {
-        GroupElementClient groupElementClient = new GroupElementClient(groupElement.getX(), groupElement.getY(), groupElement.getWidth(), groupElement.getHeight(), groupElement.getRotation());
+        GroupElementClient groupElementClient = new GroupElementClient(groupElement.getX(), groupElement.getY(), groupElement.getWidth(), groupElement.getHeight(), groupElement.getRotation(), groupElement.getId(), groupElement.getParentId());
         groupElementClient.setElements(groupElement.getElements());
         groupElementClient.setColor(groupElement.getColor());
         return groupElementClient;

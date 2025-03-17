@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.*;
-import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceControl;
+import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;

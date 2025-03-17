@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ImageEleme
 import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
@@ -50,11 +51,18 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     private String borderModelPath;
     private int rotation = 0;
 
+    private static RenderLayer borderRenderLayer;
+
     public static float zOffsetRenderLayer = 3f;
     public static final float zOffsetRenderLayerDefault = 3f;
 
     public static float elementDistancingRenderLayer = 0.75f;
     public static final float elementDistancingRenderLayerDefault = 0.75f;
+
+    static {
+        CustomRenderLayer.ModelLayering modelLayering = new CustomRenderLayer.ModelLayering(zOffsetRenderLayer, CustomRenderLayer.ModelLayering.LayeringType.CUTOUT_Z_OFFSET_BACKWARD);
+        borderRenderLayer = modelLayering.buildRenderLayer();
+    }
 
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
         bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
@@ -63,9 +71,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     }
 
     private List<BlockPos> getSignPositions(CustomizableSignBlockEntity entity) {
-        List<BlockPos> signPositions = new ArrayList<>();
         String constructedSignPositions = entity.getSignPositions();
-        if(constructedSignPositions.isEmpty()) return signPositions;
+        if(constructedSignPositions.isEmpty()) return new ArrayList<>();
         return CustomizableSignBlockEntity.deconstructBlockPosListString(constructedSignPositions);
     }
 
@@ -177,7 +184,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(FACING)));
         matrices.translate(-0.5, -0.5, -0.5);
 
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
+        VertexConsumer consumer = vertexConsumers.getBuffer(borderRenderLayer);
         blockRenderManager.getModelRenderer().render(matrices.peek(), consumer, entity.getCachedState(), model, 1.0f, 1.0f, 1.0f, light, overlay); // Rendering occurs here
 
         matrices.pop();
@@ -241,6 +248,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     // Render the background texture of the sign
     private void renderTextureBackground(CustomizableSignBlockEntity csbe, List<String> backgroundStylePieces, int height, int width, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         // If there's nothing to render, exit
+        if (csbe.shouldUpdateBackgroundTexture()) {
+            csbe.backgroundStylePieces = CustomizableSignData.getBackgroundTexturePathList(new CustomizableSignData().setJson(csbe.getSignTextureJson()), csbe).reversed();
+            csbe.backgroundStylePieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
+            csbe.setUpdateBackgroundTexture(false);
+        }
+
         if (backgroundStylePieces.isEmpty()) return;
 
         // Coordinates of the master block

@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -11,16 +12,12 @@ public class GroupElement extends BaseElement {
     private List<BaseElement> elements = new CopyOnWriteArrayList<>();
     private boolean expanded = false;
 
-    public GroupElement(float x, float y, float width, float height, String parentId) {
-        super(x, y, width, height, 1, parentId);
-    }
-
     public GroupElement(float x, float y, float width, float height, float rotation, String parentId) {
         super(x, y, width, height, 1, rotation, parentId);
     }
 
-    public GroupElement(float x, float y, float width, float height, float rotation, String id, String name, String parentId) {
-        super(x, y, width, height, rotation, 1, id, new float[]{255, 255, 255, 255}, name, parentId);
+    public GroupElement(float x, float y, float width, float height, float rotation, String name, String parentId, String id) {
+        super(x, y, width, height, rotation, 1, new float[]{255, 255, 255, 255}, name, parentId, id);
     }
 
     public GroupElement(float x, float y, float width, float height, float rotation, String name, String parentId) {
@@ -125,6 +122,38 @@ public class GroupElement extends BaseElement {
         this.elements.forEach(element -> element.setParentId(this.id));
     }
 
+    /**
+     * Returns a list of all children inside combined into one list. Recursively resolves other GroupElements too.
+     * @return List of all children
+     */
+    public List<BaseElement> unpackAll() {
+        List<BaseElement> baseElements = new ArrayList<>();
+
+        for (BaseElement element : elements) {
+            if (!(element instanceof GroupElement)) {
+                baseElements.add(element);
+                continue;
+            }
+
+            List<BaseElement> resolvedElements = ((GroupElement) element).unpackAll();
+            baseElements.addAll(resolvedElements);
+        }
+
+        return baseElements;
+    }
+
+    public void reassignIds() {
+        this.regenerateId();
+
+        for(BaseElement element : getElements()) {
+            if (element instanceof GroupElement)
+                reassignIds();
+            else {
+                element.regenerateId();
+            }
+        }
+    }
+
     @Override
     public BaseElement setWidth(float width) {
         float oldWidth = super.getWidth();
@@ -223,5 +252,11 @@ public class GroupElement extends BaseElement {
         elements.forEach(element -> element.setFactor(currentElementFactor));
         elements.stream().filter(element -> element instanceof GroupElement).forEach(BaseElement::onPaste); // Recursively do the same thing
         setBounds();
+        reassignIds();
+    }
+
+    @Override
+    public void onImport() {
+        reassignIds();
     }
 }

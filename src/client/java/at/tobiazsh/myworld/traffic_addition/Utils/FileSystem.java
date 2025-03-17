@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -21,124 +22,206 @@ import java.util.Iterator;
 import java.util.List;
 
 public class FileSystem {
-	public static class FromResource {
 
-		/**
-		 * List all folders in the specified path
-		 * @param path Path to the resource
-		 * @return Folder
-		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
-		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
-		 */
-		public static Folder listFolders(String path) throws IOException, URISyntaxException {
-			Folder folder = crawlDirectory(path);
-			if (folder == null) return null; // If there aren't any folders in the currentFolder, return null to avoid NullPointerException
-			return folder.removeFiles();
-		}
+	/**
+	 * Non-recursively list the contents of the specified folder
+	 * @param path Path to the resource
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder containing only the direct contents of the specified path
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listAll(String path, boolean fromResource) throws IOException, URISyntaxException {
+		URL url;
 
-		/**
-		 * List all files in the specified path
-		 * @param path Path to the resource
-		 * @return Folder
-		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
-		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
-		 */
-		public static Folder listFiles(String path) throws IOException, URISyntaxException {
-			Folder folder = crawlDirectory(path);
-			if (folder == null) return null; // If there aren't any files in the currentFolder, return null to avoid NullPointerException
-			return folder.concentrateFiles();
-		}
-
-		/**
-		 * List all files and folders in the specified path
-		 * @param path Path to the resource
-		 * @return Folder
-		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
-		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
-		 */
-		public static Folder listALl(String path) throws IOException, URISyntaxException {
-			return crawlDirectory(path);
-		}
-
-
-
-		/**
-		 * Crawl the directory structure from the specified path
-		 * @param path Path to the resource
-		 * @return Folder
-		 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
-		 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
-		 */
-
-		private static Folder crawlDirectory(String path) throws IOException, URISyntaxException {
+		if (fromResource) {
 			// Retrieve the resource URL and handle missing resource
-			URL resourceURL = MyWorldTrafficAdditionClient.class.getResource(path);
-			if (resourceURL == null) {
-				throw new IllegalArgumentException("Error: Specified path not found - " + path);
-			}
-
-			URI uri = resourceURL.toURI();
-			Folder rootDir = null;
-
-			try (CustomFileSystem fileSystem = initializeFileSystem(uri)) {
-				Path resourcePath = Paths.get(uri);
-				rootDir = new Folder(resourcePath.getFileName().toString(), path);
-
-				// Populate the directory structure
-				populateDirectory(rootDir, resourcePath, path);
-
-            } catch (Exception e) {
-				// Handle or log the exception
-			}
-
-			return rootDir;
+			url = MyWorldTrafficAdditionClient.class.getResource(path);
+		} else {
+			Path p = Path.of(path);
+			url = p.toUri().toURL();
 		}
 
-		/**
-		 * Initialize the file system for JAR resources
-		 * @param uri URI of the resource
-		 * @return java.nio.file.FileSystem
-		 * @throws IOException Is thrown when an I/O error occurs while creating the file system
-		 */
-
-		private static CustomFileSystem initializeFileSystem(URI uri) throws IOException {
-			String uriStr = uri.toString();
-			String fileSystemPath = uriStr.split("!")[0];
-
-			if ("jar".equals(uri.getScheme())) {
-				try {
-					return new CustomFileSystem((FileSystems.getFileSystem(URI.create(fileSystemPath))), false); // Not closing the filesystem avoid a ClosedFileSystemException in Minecraft
-				} catch (FileSystemNotFoundException e) {
-					return new CustomFileSystem(FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>()), true); // But it should close it when it is opened just for this. Kinda like borrowing the value lol
-				}
-			}
-			return null; // No file system needed for non-JAR resources
+		if (url == null) {
+			throw new IllegalArgumentException("Error: Specified path not found - " + path);
 		}
 
-		/**
-		 * Populate the directory structure from the specified path
-		 * @param rootDir Original directory
-		 * @param resourcePath Path to the resource
-		 * @param basePath Base path of the resource
-		 * @throws IOException IOException is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system.
-		 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
-		 */
+		URI uri = url.toURI();
+		Folder rootDir = null;
 
-		private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
-			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
+		try (CustomFileSystem ignored = initializeFileSystem(uri)) {
+			Path newPath = Paths.get(uri);
+			String folderName = newPath.getFileName() != null ? newPath.getFileName().toString() : newPath.toString();
+			rootDir = new Folder(folderName, path);
+
+			// Populate the directory structure non-recursively
+			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(newPath)) {
 				for (Path entry : directoryStream) {
-					String entryPath = basePath + entry.getFileName();
+					String entryPath = path + entry.getFileName();
 					String fileName = entry.getFileName().toString();
 
 					if (Files.isDirectory(entry)) {
 						entryPath = entryPath.concat("/");
-
-						// Recursively crawl the subdirectory with its full path
-						Folder subDir = FromResource.crawlDirectory(entryPath);
-						rootDir.addContent(subDir);
+						rootDir.addContent(new Folder(fileName, entryPath));
 					} else {
 						rootDir.addContent(new File(fileName, entryPath).initFileType());
 					}
+				}
+			}
+		} catch (Exception e) {
+			// Handle or log the exception
+			e.printStackTrace();
+		}
+
+		return rootDir;
+	}
+
+	/**
+	 * List all folders in the specified path (non-recursively)
+	 * @param path The path to the directory
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder with the content from that directory
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listFolders(String path, boolean fromResource) throws IOException, URISyntaxException {
+		return listAll(path, fromResource).removeFiles();
+	}
+
+	/**
+	 * List all files in the specified path (non-recursively)
+	 * @param path Path to the directory
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder with the content from that directory
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listFiles(String path, boolean fromResource) throws IOException, URISyntaxException {
+		return listAll(path, fromResource).removeFoldersCurrentDir();
+	}
+
+	/**
+	 * List all folders in the specified path
+	 * @param path Path to the resource
+	 * @return Folder
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listFoldersRecursive(String path, boolean fromResource) throws IOException, URISyntaxException {
+		Folder folder = crawlDirectory(path, fromResource);
+		if (folder == null) return null; // If there aren't any folders in the currentFolder, return null to avoid NullPointerException
+		return folder.removeFiles();
+	}
+
+	/**
+	 * List all files in the specified path recursively
+	 * @param path Path to the resource.
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listFilesRecursive(String path, boolean fromResource) throws IOException, URISyntaxException {
+		Folder folder = crawlDirectory(path, fromResource);
+		if (folder == null) return null; // If there aren't any files in the currentFolder, return null to avoid NullPointerException
+		return folder.concentrateFiles();
+	}
+
+	/**
+	 * List all files and folders in the specified path
+	 * @param path Path to the resource.
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder
+	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+	public static Folder listAllRecursive(String path, boolean fromResource) throws IOException, URISyntaxException {
+		return crawlDirectory(path, fromResource);
+	}
+
+	/**
+	 * Crawl the directory structure from the specified path
+	 * @param path Path to the resource
+	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 * @return Folder
+	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
+	 */
+
+	private static Folder crawlDirectory(String path, boolean fromResource) throws URISyntaxException, MalformedURLException {
+		URL url;
+
+		if (fromResource) {
+			// Retrieve the resource URL and handle missing resource
+			url = MyWorldTrafficAdditionClient.class.getResource(path);
+		} else {
+			url = Path.of(path).toUri().toURL();
+		}
+
+		if (url == null) {
+			throw new IllegalArgumentException("Error: Specified path not found - " + path);
+		}
+
+		URI uri = url.toURI();
+		Folder rootDir = null;
+
+		try (CustomFileSystem ignored = initializeFileSystem(uri)) {
+			Path newPath = Paths.get(uri);
+			rootDir = new Folder(newPath.getFileName().toString(), path);
+
+			// Populate the directory structure
+			populateDirectory(rootDir, newPath, path);
+		} catch (Exception e) {
+			// Handle or log the exception
+			e.printStackTrace();
+		}
+
+		return rootDir;
+	}
+
+	/**
+	 * Initialize the file system for JAR resources
+	 * @param uri URI of the resource
+	 * @return java.nio.file.FileSystem
+	 * @throws IOException Is thrown when an I/O error occurs while creating the file system
+	 */
+
+	private static CustomFileSystem initializeFileSystem(URI uri) throws IOException {
+		String uriStr = uri.toString();
+		String fileSystemPath = uriStr.split("!")[0];
+
+		if ("jar".equals(uri.getScheme())) {
+			try {
+				return new CustomFileSystem((FileSystems.getFileSystem(URI.create(fileSystemPath))), false); // Not closing the filesystem avoid a ClosedFileSystemException in Minecraft
+			} catch (FileSystemNotFoundException e) {
+				return new CustomFileSystem(FileSystems.newFileSystem(URI.create(fileSystemPath), new java.util.HashMap<>()), true); // But it should close it when it is opened just for this. Kinda like borrowing the value lol
+			}
+		}
+		return null; // No file system needed for non-JAR resources
+	}
+
+	/**
+	 * Populate the directory structure from the specified path
+	 * @param rootDir Original directory
+	 * @param resourcePath Path to the resource
+	 * @param basePath Base path of the resource
+	 * @throws IOException IOException is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system.
+	 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
+	 */
+
+	private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
+			for (Path entry : directoryStream) {
+				String entryPath = basePath + entry.getFileName();
+				String fileName = entry.getFileName().toString();
+
+				if (Files.isDirectory(entry)) {
+					entryPath = entryPath.concat("/");
+
+					// Recursively crawl the subdirectory with its full path
+					Folder subDir = crawlDirectory(entryPath, true);
+					rootDir.addContent(subDir);
+				} else {
+					rootDir.addContent(new File(fileName, entryPath).initFileType());
 				}
 			}
 		}
@@ -184,6 +267,30 @@ public class FileSystem {
 		 */
 		public boolean isFile() {
 			return this instanceof File;
+		}
+
+		/**
+		 * Get the size of the element.
+		 * @return Size of the element. 0 if it is a folder.
+		 */
+		public long getSize() {
+			if (isFile()) {
+				java.io.File file = new java.io.File(path);
+				return file.length();
+			}
+
+			else return 0;
+		}
+
+		/**
+		 * Get file extension
+		 * @return File extension. Empty string if it is a folder.
+		 */
+		public String getFileExtension() {
+			if (isFile()) {
+				return ((File) this).getFileType();
+			}
+			return "";
 		}
 	}
 

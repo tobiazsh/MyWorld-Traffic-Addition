@@ -22,20 +22,20 @@ import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlock
 
 public class ImageElementClient extends ImageElement implements ClientElementRenderInterface {
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId) {
-        super(x, y, width, height, factor, rotation, texture, parentId);
+    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId, String id) {
+        super(x, y, width, height, factor, rotation, texture, parentId, id);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, String path, String parentId) {
-        super(x, y, width, height, factor, rotation, path, parentId);
+    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, String path, String parentId, String id) {
+        super(x, y, width, height, factor, rotation, path, parentId, id);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, Texture texture, String parentId) {
-        this(x, y, width, height, factor, 0, texture, parentId);
+    public ImageElementClient(float x, float y, float width, float height, float factor, Texture texture, String parentId, String id) {
+        this(x, y, width, height, factor, 0, texture, parentId, id);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, String path, String parentId) {
-        this(x, y, width, height, factor, 0, path, parentId);
+    public ImageElementClient(float x, float y, float width, float height, float factor, String path, String parentId, String id) {
+        this(x, y, width, height, factor, 0, path, parentId, id);
     }
 
     private ImVec2 p0, p1, p2, p3;
@@ -205,7 +205,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      * @return The ImageElementClient object
      */
     public static ImageElementClient fromImageElement(ImageElement element) {
-        ImageElementClient img = new ImageElementClient(element.getX(), element.getY(), element.getWidth(), element.getHeight(), element.getFactor(), element.getRotation(), element.getResourcePath(), element.getParentId());
+        ImageElementClient img = new ImageElementClient(element.getX(), element.getY(), element.getWidth(), element.getHeight(), element.getFactor(), element.getRotation(), element.getResourcePath(), element.getParentId(), element.getId());
         img.setColor(element.getColor());
         return img;
     }

@@ -240,4 +240,44 @@ public class CustomRenderLayer {
         }
 
     }
+
+    // ------------------ Model Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static class ModelLayering {
+
+        private final float zOffset;
+        private final LayeringType layeringType;
+
+        public ModelLayering(float zOffset, ModelLayering.LayeringType layeringType) {
+            this.zOffset = zOffset;
+            this.layeringType = layeringType;
+        }
+
+        private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
+                zOff -> RenderLayer.of(
+                        "cutout_z_offset_backward",
+                        VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
+                        VertexFormat.DrawMode.QUADS,
+                        786432,
+                        true,
+                        false,
+                        RenderLayer.MultiPhaseParameters.builder()
+                                .lightmap(ENABLE_LIGHTMAP)
+                                .program(CUTOUT_PROGRAM)
+                                .layering(Layering.getRenderPhaseZLayeringBackward(zOff))
+                                .texture(BLOCK_ATLAS_TEXTURE)
+                                .build(true)
+                )
+        );
+
+        public RenderLayer buildRenderLayer() {
+            return switch (this.layeringType) {
+                case CUTOUT_Z_OFFSET_BACKWARD -> CUTOUT_Z_OFFSET_BACKWARD.apply(this.zOffset);
+            };
+        }
+
+        public enum LayeringType {
+            CUTOUT_Z_OFFSET_BACKWARD
+        }
+    }
 }

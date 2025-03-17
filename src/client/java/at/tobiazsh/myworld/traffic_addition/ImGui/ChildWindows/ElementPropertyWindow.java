@@ -93,8 +93,6 @@ public class ElementPropertyWindow {
 		}
 	}
 
-	// TODO: Clear when closing everything
-
 	public static void render() {
 		if (!shouldRender) return;
 
@@ -249,7 +247,7 @@ public class ElementPropertyWindow {
 			ImGui.text("Color");
 			ImGui.popFont();
 
-			int alphaSettings = (element instanceof TextElement) ? ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf : ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
+			int alphaSettings = ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
 
 			if (ImGui.colorPicker4("Color Picker", color, alphaSettings)) {
 				element.setColor(color);

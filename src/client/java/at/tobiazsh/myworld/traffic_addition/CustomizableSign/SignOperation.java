@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.CustomizableSign;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.ErrorPopup;
-import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignStyle;
+import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.SetCustomizableSignTexture;
@@ -18,7 +18,7 @@ import java.util.List;
 public class SignOperation {
     public static class Json {
 
-        public static void write(BlockPos pos, CustomizableSignStyle signJson, List<BaseElement> drawables) {
+        public static void write(BlockPos pos, CustomizableSignData signJson, List<BaseElement> drawables) {
             signJson = signJson.setElements(drawables);
 
             if (StringUtil.isNullOrEmpty(signJson.jsonString)) {
@@ -34,7 +34,7 @@ public class SignOperation {
 
             private List<BaseElement> drawables = new ArrayList<>();
             private List<String> backgroundTextures = new ArrayList<>();
-            CustomizableSignStyle json = new CustomizableSignStyle();
+            CustomizableSignData json = new CustomizableSignData();
 
             public void readFromBlock(BlockPos pos, World world) {
                 BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -44,16 +44,16 @@ public class SignOperation {
                 String jsonString = ((CustomizableSignBlockEntity) blockEntity).getSignTextureJson();
                 if (StringUtil.isNullOrEmpty(jsonString)) return;
 
-                CustomizableSignStyle json = new CustomizableSignStyle();
+                CustomizableSignData json = new CustomizableSignData();
                 json.setJsonString(jsonString);
 
-                readFromJson(json);
+                readFromJson(json, (CustomizableSignBlockEntity) blockEntity);
                 this.json = json;
             }
 
-            public void readFromJson(CustomizableSignStyle json) {
-                if (json.json.has("Style")) this.backgroundTextures = CustomizableSignStyle.deconstructStyleToArray(json);
-                if (json.json.has("Elements")) this.drawables = CustomizableSignStyle.deconstructElementsToArray(json);
+            public void readFromJson(CustomizableSignData json, CustomizableSignBlockEntity blockEntity) {
+                if (json.json.has("Style")) this.backgroundTextures = CustomizableSignData.getBackgroundTexturePathList(json, blockEntity);
+                if (json.json.has("Elements")) this.drawables = CustomizableSignData.deconstructElementsToArray(json);
             }
 
             public List<BaseElement> getDrawables() {
@@ -64,7 +64,7 @@ public class SignOperation {
                 return this.backgroundTextures;
             }
 
-            public CustomizableSignStyle getJson() {
+            public CustomizableSignData getJson() {
                 return this.json;
             }
         }

@@ -17,6 +17,14 @@ public class TextElement extends BaseElement {
 
 	private boolean widthIsCalculated;
 
+	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, String parentId, String id) {
+		super(x, y, width, height, factor, rotation, parentId, id);
+		this.font = font;
+		this.text = text;
+		this.widthIsCalculated = !shouldCalculateWidth;
+		this.setColor(new float[]{0, 0, 0, 1});
+	}
+
 	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, String parentId) {
 		super(x, y, width, height, factor, rotation, parentId);
 		this.font = font;
@@ -24,6 +32,7 @@ public class TextElement extends BaseElement {
 		this.widthIsCalculated = !shouldCalculateWidth;
 		this.setColor(new float[]{0, 0, 0, 1});
 	}
+
 
 	public boolean isWidthCalculated() {
 		return this.widthIsCalculated;
@@ -62,5 +71,15 @@ public class TextElement extends BaseElement {
 		object.addProperty("FontSize", font.getFontSize());
 
 		return object;
+	}
+
+	@Override
+	public void onImport() {
+		this.regenerateId();
+	}
+
+	@Override
+	public void onPaste() {
+		this.regenerateId();
 	}
 }
