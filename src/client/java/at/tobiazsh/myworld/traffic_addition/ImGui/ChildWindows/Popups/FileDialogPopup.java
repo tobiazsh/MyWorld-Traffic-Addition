@@ -304,7 +304,7 @@ public class FileDialogPopup {
 
     private static void refresh() {
         try {
-            directoryContent = FileSystem.listAll(currentPath.toAbsolutePath() + "\\", false);
+            directoryContent = FileSystem.listAll(currentPath.toAbsolutePath() + File.separator, false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
