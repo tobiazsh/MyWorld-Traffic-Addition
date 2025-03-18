@@ -9,8 +9,8 @@ package at.tobiazsh.myworld.traffic_addition.Rendering.Renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.UpsideDownTriangularSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.UpsideDownTriangularSignBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

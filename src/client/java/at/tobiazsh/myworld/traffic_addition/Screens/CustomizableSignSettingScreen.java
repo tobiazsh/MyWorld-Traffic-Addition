@@ -11,9 +11,9 @@ package at.tobiazsh.myworld.traffic_addition.Screens;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.*;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.*;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -31,7 +31,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
+import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity.*;
 
 @Environment(EnvType.CLIENT)
 public class CustomizableSignSettingScreen extends Screen {

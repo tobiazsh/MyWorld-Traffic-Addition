@@ -1,8 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.Screens;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.SignPoleRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.SignPoleRotationPayload;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

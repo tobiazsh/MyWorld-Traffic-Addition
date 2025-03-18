@@ -2,12 +2,14 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.Networking.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.Networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.*;
 import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ShowImGuiWindow;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.OpenSignSelectionPayload;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.Screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.Screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.Screens.SignSelectionScreen;
@@ -30,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
-import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
+import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
 
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
@@ -142,7 +144,14 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 						case DEMO -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow;
 						case PREF -> PreferencesWindow.open();
 					}
-				}))
+				})),
+
+				new GlobalReceiverClient<>(ChunkedDataPayload.Id, (payload) -> {
+					CustomClientNetworking.getInstance().processChunkedPayload(
+							payload,
+							(protocolId, data, handler) -> MinecraftClient.getInstance().execute(() -> handler.accept(data))
+					);
+				})
 		));
 	}
 }

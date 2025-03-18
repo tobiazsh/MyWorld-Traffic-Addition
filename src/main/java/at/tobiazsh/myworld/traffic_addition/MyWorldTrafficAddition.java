@@ -1,16 +1,20 @@
 package at.tobiazsh.myworld.traffic_addition;
 
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Networking.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.Networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.Utils.SmartPayload;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SpecialBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ServerActions.CustomizableSignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ServerActions.SignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ServerActions.SignPoleBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.*;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SpecialBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.CustomizableSignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.SignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.SignPoleBlockActions;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.*;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +36,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static final String MOD_ID = "myworld_traffic_addition";
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.2.0";
+	public static final String MODVER = "v1.2.1";
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
@@ -54,6 +58,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Register all payloads, no matter client or server
 		bulkRegisterPayloads(smartPayloads);
+		registerCustomProtocols();
 
 		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 	}
@@ -78,8 +83,15 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(SetRenderStateCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRenderState, SetRenderStateCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SetRotationCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRotation, SetRotationCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SetSizeCustomizableSignPayload.Id, CustomizableSignBlockActions::handleSetSize, SetSizeCustomizableSignPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetCustomizableSignTexture.Id, CustomizableSignBlockActions::handleSetCustomTexture, SetCustomizableSignTexture.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(UpdateTextureVarsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleUpdateTextureVariables, UpdateTextureVarsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER)
+				new SmartPayload<>(UpdateTextureVarsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleUpdateTextureVariables, UpdateTextureVarsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
+
+				// OTHER
+                new SmartPayload<>(ChunkedDataPayload.Id, (payload, context) -> {
+                    CustomServerNetworking.getInstance().processChunkedPayload(
+                            payload,
+                            (protocolId, data, handler) -> context.server().execute(() -> handler.accept(context.player(), data))
+                    );
+                }, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER)
 		));
 	}
 
@@ -88,7 +100,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(OpenSignPoleRotationScreenPayload.Id, null, OpenSignPoleRotationScreenPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenSignSelectionPayload.Id, null, OpenSignSelectionPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenCustomizableSignEditScreen.Id, null, OpenCustomizableSignEditScreen.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
-				new SmartPayload<>(ShowImGuiWindow.Id, null, ShowImGuiWindow.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
+				new SmartPayload<>(ShowImGuiWindow.Id, null, ShowImGuiWindow.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
+				new SmartPayload<>(ChunkedDataPayload.Id, null, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
 		));
 	}
 
@@ -107,5 +120,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
+	}
+
+	private static void registerCustomProtocols() {
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), (player, data) -> CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player));
 	}
 }

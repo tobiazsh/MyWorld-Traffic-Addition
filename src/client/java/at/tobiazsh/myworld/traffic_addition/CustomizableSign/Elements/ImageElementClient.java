@@ -5,7 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSign
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
 import imgui.ImDrawList;
 import imgui.ImGui;

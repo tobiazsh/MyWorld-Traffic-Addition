@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.Rendering.Renderers;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignPoleBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

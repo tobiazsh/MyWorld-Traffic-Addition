@@ -9,11 +9,11 @@ package at.tobiazsh.myworld.traffic_addition.Rendering.Renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.Blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.SignBlockBackstepCoordsChange;
-import at.tobiazsh.myworld.traffic_addition.components.CustomPayloads.BlockModification.SignBlockRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.Blocks.SignBlock;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.SignBlockBackstepCoordsChange;
+import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.SignBlockRotationPayload;
 import at.tobiazsh.myworld.traffic_addition.Utils.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import imgui.ImGui;
 
 import java.util.Objects;

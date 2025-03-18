@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.Rendering.Renderers;
 
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.SpecialBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SpecialBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

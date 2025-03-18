@@ -10,7 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.Utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import com.google.gson.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.fromJson;
-import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.*;
+import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity.*;
 
 public class CustomizableSignData {
 	public String jsonString; // JSON as String

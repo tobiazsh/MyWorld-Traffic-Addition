@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager.registerFontAsync;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomMinecraftFont.getTextRendererByPath;
-import static at.tobiazsh.myworld.traffic_addition.components.BlockEntities.CustomizableSignBlockEntity.getRightSideDirection;
+import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity.getRightSideDirection;
 import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
