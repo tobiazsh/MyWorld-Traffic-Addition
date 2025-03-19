@@ -350,6 +350,8 @@ public class SignEditor {
         if (Clipboard.getCopiedSign() == null || Clipboard.getCopiedSign().json.isEmpty()) return; // Can't paste if empty
 
         setSignJson(Clipboard.getCopiedSign());
+        updateFromJson();
+        updateToJson();
     }
 
     public static void addUndo() {
@@ -428,11 +430,15 @@ public class SignEditor {
         createSavesDirIfNonExistent();
 
         FileDialogPopup.open(Saves.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+            if (path == null || path.toString().isBlank()) return;
+
             CustomizableSignData style = new CustomizableSignData();
             style.setJson(FileDialogPopup.getData());
             setSignJson(style);
             updateFromJson();
             updateToJson();
+
+            elementOrder.forEach(element -> element.setFactor(currentElementFactor)); // For proportions
 
             MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
         }, "MWTACSIGN", "JSON");
@@ -450,6 +456,7 @@ public class SignEditor {
             }
 
             element.onImport();
+            element.setFactor(currentElementFactor);
 
             elementOrder.addFirst(element);
             updateToJson();

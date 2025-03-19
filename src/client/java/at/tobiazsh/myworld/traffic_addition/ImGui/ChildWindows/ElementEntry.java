@@ -230,15 +230,15 @@ public abstract class ElementEntry {
 					((GroupElement) elementList.get(indexInList + 1)).addElement(renderObject.copy());
 					renderObject.removeMe();
 				}
-			} else {
-				if (ImGui.button("Group with below")) {
-					GroupElement groupElement = new GroupElement(0, 0, 0, 0, 0, parentId);
-					groupElement.addElement(renderObject.copy());
-					groupElement.addElement(elementList.get(indexInList + 1));
-					elementList.add(indexInList, groupElement);
-					elementList.remove(indexInList + 2); // + 2 because: (Index 1 = New GroupElement) <-- We're here (at indexInList)! (Index 2 = This element) (Index 3 = Element to group with and remove)
-					renderObject.removeMe();
-				}
+			}
+
+			if (ImGui.button("Group with below")) {
+				GroupElement groupElement = new GroupElement(0, 0, 0, 0, 0, parentId);
+				groupElement.addElement(renderObject.copy());
+				groupElement.addElement(elementList.get(indexInList + 1));
+				elementList.add(indexInList, groupElement);
+				elementList.remove(indexInList + 2); // + 2 because: (Index 1 = New GroupElement) <-- We're here (at indexInList)! (Index 2 = This element) (Index 3 = Element to group with and remove)
+				renderObject.removeMe();
 			}
 		}
 

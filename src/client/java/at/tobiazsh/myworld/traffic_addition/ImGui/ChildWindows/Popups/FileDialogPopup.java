@@ -7,9 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiKey;
-import imgui.flag.ImGuiWindowFlags;
+import imgui.flag.*;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 
@@ -20,7 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,9 +93,17 @@ public class FileDialogPopup {
             FileSystem.DirectoryElement element = directoryContent.at(i);
             boolean isSelected = selectedIndex == i;
 
+            BasicFileAttributes attr = null;
+
+            try {
+                attr = Files.readAttributes(currentPath.resolve(element.name), BasicFileAttributes.class);
+            } catch (IOException e) {
+                if (element.isFile()) MyWorldTrafficAddition.LOGGER.error("Couldn't find file attributes for file {}!", currentPath.resolve(element.name));
+            }
+
             FileView.DetailedViewBar bar = new FileView.DetailedViewBar(
                     element.name,
-                    LocalDate.now(), LocalDate.now(),
+                    attr == null, attr.creationTime(), attr.lastModifiedTime(),
                     element.getSize(),
                     element.getFileExtension(),
                     "##vB" + i,
@@ -175,22 +181,35 @@ public class FileDialogPopup {
         ImGui.indent(ImGui.getStyle().getItemSpacingX());
         ImGui.columns(4, "##InteractionBarAlignment", false);
 
+        // Button "Save" or "Open"
         ImGui.setColumnWidth(0, 100);
-        if (!allowConfirm) ImGui.beginDisabled();
-        if (ImGui.button((type == FileDialogType.SAVE) ? "SAVE" : "OPEN", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) confirm();
-        if (!allowConfirm) ImGui.endDisabled();
+        if (!allowConfirm) ImGui.beginDisabled(); // Disable button if no file is selected or if the file name is empty
+
+        ImGui.pushStyleColor(ImGuiCol.Button, new ImVec4(0.43f, 0.65f, 0.345f, 1f)); // Background
+        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, new ImVec4(0.61f, 0.93f, 0.5f, 1f)); // Background on Hover
+        ImGui.pushStyleColor(ImGuiCol.ButtonActive, new ImVec4(0.43f, 0.65f, 0.345f, 1f)); // Background on Click
+
+        if (ImGui.button((type == FileDialogType.SAVE) ? "Save" : "Open", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) confirm(); // Button "Save" or "Open"
+
+        ImGui.popStyleColor(3);
+
+        if (!allowConfirm) ImGui.endDisabled(); // End disabling button if no file is selected or if the file name is empty
+
         ImGui.nextColumn();
 
+        // Cancel button
         ImGui.setColumnWidth(1, 100);
-        if (ImGui.button("Cancel", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) close();
+        if (ImGui.button("Cancel", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) cancel();
         ImGui.nextColumn();
 
+        // File extension selection
         ImGui.setColumnWidth(2, 200);
         ImGui.pushItemWidth(-Float.MIN_VALUE);
         ImGui.combo("##FileExtensionType", selectedExtension, extensions);
         ImGui.popItemWidth();
         ImGui.nextColumn();
 
+        // File name input
         ImGui.pushItemWidth(-Float.MIN_VALUE);
         ImGui.inputText("##FileNameInput", fileName);
 
@@ -241,6 +260,7 @@ public class FileDialogPopup {
         write(fileData, filePath);
 
         MyWorldTrafficAddition.LOGGER.debug("Created directories and file as well as wrote to file {} successfully!", filePath);
+        flush();
     }
 
     // Writes to the file, if save is specified
@@ -290,11 +310,24 @@ public class FileDialogPopup {
     }
 
     // "CANCEL"
+    public static void cancel() {
+        flush();
+        close();
+    }
+
+    // Closes the popup
     private static void close() {
         shouldOpen = false;
         shouldRender = false;
         isWaitingOnInput = false;
         ImGui.closeCurrentPopup();
+    }
+
+    private static void flush() {
+        filePath = Path.of("");
+        fileData = null;
+        fileName.set("");
+        selectedIndex = -1;
     }
 
     // Sets the current dir to the parent
@@ -333,7 +366,6 @@ public class FileDialogPopup {
         FileDialogPopup.shouldOpen = true;
         FileDialogPopup.isWaitingOnInput = true;
         FileDialogPopup.type = type;
-        selectedIndex = -1;
 
         List<String> ext = new ArrayList<>(Arrays.stream(extensions).toList());
         ext.add(baseExtension);

@@ -8,7 +8,9 @@ import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiSelectableFlags;
 
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class FileView {
@@ -16,24 +18,25 @@ public class FileView {
     public static class DetailedViewBar {
 
         private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        private boolean selected = false; // Track selection state
+        private final boolean selected; // Track selection state
         private float regionWidth;
-        private float barHeight;
-        private String filename;
-        private LocalDate creationDate;
-        private LocalDate lastModified;
-        private long size;
-        private String type;
-        private ImVec4 barColor;
-        private ImVec4 selectedColor;
-        private ImVec4 textColor;
+        private final float barHeight;
+        private final String filename;
+        private final LocalDate creationDate;
+        private final LocalDate lastModified;
+        private final long size;
+        private final String type;
+        private final ImVec4 barColor;
+        private final ImVec4 selectedColor;
+        private final ImVec4 textColor;
         private boolean autoWidth = false;
         private final String barId;
-        public final boolean isFolder;
+        public boolean isFolder;
+        public boolean skipDates;
 
         public DetailedViewBar(
                 String filename,
-                LocalDate creationDate, LocalDate lastModified,
+                boolean skipDates, FileTime creationDate, FileTime lastModified,
                 long size,
                 String type,
                 String barId,
@@ -43,7 +46,7 @@ public class FileView {
         ) {
             this(
                     filename,
-                    creationDate, lastModified,
+                    skipDates, creationDate, lastModified,
                     size,
                     type,
                     barId,
@@ -55,7 +58,7 @@ public class FileView {
 
         public DetailedViewBar(
                 String filename,
-                LocalDate creationDate, LocalDate lastModified,
+                boolean skipDates, FileTime creationDate, FileTime lastModified,
                 long size,
                 String type,
                 String barId,
@@ -66,8 +69,6 @@ public class FileView {
             this.barHeight = barHeight;
             this.regionWidth = regionWidth;
             this.filename = filename;
-            this.creationDate = creationDate;
-            this.lastModified = lastModified;
             this.size = size;
             this.type = type;
             this.barColor = barColor;
@@ -76,6 +77,16 @@ public class FileView {
             this.barId = barId;
             this.isFolder = isFolder;
             this.selected = selected;
+
+            this.skipDates = skipDates;
+
+            if (skipDates) {
+                this.creationDate = null;
+                this.lastModified = null;
+            } else {
+                this.creationDate = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                this.lastModified = lastModified.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            }
 
             if (regionWidth == -1)
                 this.autoWidth = true;
@@ -135,12 +146,14 @@ public class FileView {
 
             // Creation Date
             ImGui.setColumnWidth(1, 150);
-            ImGui.text(formatter.format(creationDate));
+            if (!skipDates) ImGui.text(formatter.format(creationDate));
+            else ImGui.text("Not Available");
             ImGui.nextColumn();
 
             // Last Modified
             ImGui.setColumnWidth(2, 150);
-            ImGui.text(formatter.format(lastModified));
+            if (!skipDates) ImGui.text(formatter.format(lastModified));
+            else ImGui.text("Not Available");
             ImGui.nextColumn();
 
             // Size

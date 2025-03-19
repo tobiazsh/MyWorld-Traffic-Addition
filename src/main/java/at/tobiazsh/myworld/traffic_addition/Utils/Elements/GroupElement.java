@@ -66,6 +66,13 @@ public class GroupElement extends BaseElement {
         setChildrenParentElementId();
     }
 
+    @Override
+    public void setFactor(float factor) {
+        super.setFactor(factor);
+        elements.forEach(element -> element.setFactor(factor));
+        calculateBounds();
+    }
+
     public float[] calculateBounds() {
         float minX = 0;
         float minY = 0;

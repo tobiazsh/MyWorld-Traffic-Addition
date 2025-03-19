@@ -483,12 +483,12 @@ public abstract class BaseElement {
 	public abstract JsonObject toJson();
 
 	/**
-	 * Executes an action when the element is pasted
+	 * Executes an action when the element is pasted (must be called in the method associated with pasting!)
 	 */
 	public void onPaste(){}
 
 	/**
-	 * Executes an action when the element is imported
+	 * Executes an action when the element is imported (must be called in the method associated with importing!)
 	 */
 	public void onImport() {}
 }
