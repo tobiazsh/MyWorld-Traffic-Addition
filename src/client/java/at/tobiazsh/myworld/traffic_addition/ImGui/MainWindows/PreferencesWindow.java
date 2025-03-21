@@ -9,7 +9,12 @@ import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceCont
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
+import java.util.Objects;
+
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImGuiTools.*;
+import static at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer.defaultImageCacheSize;
+import static at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer.defaultTextCacheSize;
+import static at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl.gameplayPreference;
 
 public class PreferencesWindow {
 
@@ -19,6 +24,8 @@ public class PreferencesWindow {
     // CUSTOMIZABLE SIGN
     private static float[] viewDistanceCustomizableSigns = {0};
     private static float[] elementDistancingCustomizableSigns = {0};
+    private static int[] imageRenderLayerCacheSize = {0};
+    private static int[] textRenderLayerCacheSize = {0};
 
     // SIGN
     private static float[] viewDistanceSigns = {0};
@@ -35,6 +42,16 @@ public class PreferencesWindow {
         viewDistanceCustomizableSigns[0] = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer * 128;
         elementDistancingCustomizableSigns[0] = CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
 
+        imageRenderLayerCacheSize[0] = Objects.requireNonNullElse(
+            gameplayPreference.getInt("textRenderLayerCacheSize"),
+            defaultImageCacheSize
+        );
+
+        textRenderLayerCacheSize[0] = Objects.requireNonNullElse(
+                gameplayPreference.getInt("imageRenderLayerCacheSize"),
+                defaultTextCacheSize
+        );
+
         // SIGN
         viewDistanceSigns[0] = SignBlockEntityRenderer.zOffsetRenderLayer * 128;
     }
@@ -43,6 +60,8 @@ public class PreferencesWindow {
         ImGui.begin("Preferences", ImGuiWindowFlags.MenuBar);
 
         menuBar();
+
+        ConfirmationPopup.render();
 
         switch (currentPage) {
             case MENU -> menu();
@@ -147,6 +166,32 @@ public class PreferencesWindow {
         );
 
         if (ImGui.button("Clear Cache...")) ImGui.openPopup("Clear Cache");
+
+        ImGui.separator();
+
+        drawTitleAndDescription(
+                "Image RenderLayer Cache Size",
+                "The amount of RenderLayers stored in the LRU Cache. Each Element in the Sign Editor is it's own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa."
+        );
+
+        ImGui.dragInt("##imageRenderLayerCacheSize", imageRenderLayerCacheSize, 1, 1, 512);
+
+        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.text("If you change this value, you need to restart the game for it to take effect.");
+        ImGui.popFont();
+
+        ImGui.separator();
+
+        drawTitleAndDescription(
+                "Text RenderLayer Cache Size",
+                "The amount of RenderLayers stored in the LRU Cache. Each TextElement in the Sign Editor is it's own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa."
+        );
+
+        ImGui.dragInt("##textRenderLayerCacheSize", textRenderLayerCacheSize, 1, 1, 512);
+
+        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.text("If you change this value, you need to restart the game for it to take effect.");
+        ImGui.popFont();
     }
 
     private static void drawClearCachePage() {
@@ -175,7 +220,7 @@ public class PreferencesWindow {
         ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
         ImGui.text(title);
         ImGui.popFont();
-        ImGui.text(description);
+        ImGui.textWrapped(description);
     }
 
     private static void dispose() {
@@ -193,8 +238,11 @@ public class PreferencesWindow {
         CustomizableSignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceCustomizableSigns[0] / 128;
         CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer = elementDistancingCustomizableSigns[0];
 
-        PreferenceControl.gameplayPreference.saveToDisk("viewDistanceCustomizableSigns", viewDistanceCustomizableSigns[0] / 128);
-        PreferenceControl.gameplayPreference.saveToDisk("elementDistancingCustomizableSigns", elementDistancingCustomizableSigns[0]);
+        gameplayPreference.saveToDisk("viewDistanceCustomizableSigns", viewDistanceCustomizableSigns[0] / 128);
+        gameplayPreference.saveToDisk("elementDistancingCustomizableSigns", elementDistancingCustomizableSigns[0]);
+
+        gameplayPreference.saveToDisk("imageRenderLayerCacheSize", imageRenderLayerCacheSize[0]);
+        gameplayPreference.saveToDisk("textRenderLayerCacheSize", textRenderLayerCacheSize[0]);
 
         // SIGN
         SignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceSigns[0] / 128;
@@ -206,6 +254,9 @@ public class PreferencesWindow {
         // CUSTOMIZABLE SIGN
         viewDistanceCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};
         elementDistancingCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault};
+
+        imageRenderLayerCacheSize = new int[]{defaultImageCacheSize};
+        textRenderLayerCacheSize = new int[]{defaultTextCacheSize};
 
         // SIGN
         viewDistanceSigns = new float[]{SignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};

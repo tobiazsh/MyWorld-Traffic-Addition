@@ -17,10 +17,11 @@ public class BackgroundSelectorPopup {
     private static boolean shouldOpen = false;
     private static boolean applyButtonDisabled = true;
     private static boolean styleSelected = false;
-    private static FileSystem.Folder currentBGStyle = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
-    private static FileSystem.Folder oldBGStyle = null;
-    private static FileSystem.Folder currentCountryBG = new FileSystem.Folder("No Country Selected", "/");
-    private static FileSystem.Folder availableBGStyles = new FileSystem.Folder(null, null);
+    private static FileSystem.Folder currentBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
+    private final static FileSystem.Folder defaultBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal");
+    private static FileSystem.Folder oldBackground = null;
+    private static FileSystem.Folder selectedCountry = new FileSystem.Folder("No Country Selected", "/");
+    private static FileSystem.Folder availableBackgrounds = new FileSystem.Folder(null, null);
 
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);
@@ -37,16 +38,16 @@ public class BackgroundSelectorPopup {
             ImGui.text("Country");
             ImGui.popFont();
 
-            if (ImGui.beginCombo("##country", currentCountryBG.name)) {
+            if (ImGui.beginCombo("##country", selectedCountry.name)) {
                 countriesBG.forEach(country -> {
-                    boolean isSelected = (Objects.equals(currentCountryBG.name, country.name));
+                    boolean isSelected = (Objects.equals(selectedCountry.name, country.name));
 
                     // If country is selected, search the country's folder for styles, which are also folders, and put them in a list
                     if (ImGui.selectable(country.name, isSelected)) {
-                        currentCountryBG = (FileSystem.Folder) country;
+                        selectedCountry = (FileSystem.Folder) country;
 
                         try {
-                            availableBGStyles = FileSystem.listFoldersRecursive(country.path, true);
+                            availableBackgrounds = FileSystem.listFoldersRecursive(country.path, true);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -64,13 +65,13 @@ public class BackgroundSelectorPopup {
             ImGui.text("Background");
             ImGui.popFont();
 
-            if (ImGui.beginCombo("##background", currentBGStyle.name)) {
+            if (ImGui.beginCombo("##background", currentBackground.name)) {
 
-                availableBGStyles.forEach(style -> {
-                    boolean isSelected = (Objects.equals(currentBGStyle.name, style.name));
+                availableBackgrounds.forEach(style -> {
+                    boolean isSelected = (Objects.equals(currentBackground.name, style.name));
                     if (ImGui.selectable(style.name, isSelected)) {
-                        oldBGStyle = currentBGStyle;
-                        currentBGStyle = (FileSystem.Folder) style;
+                        oldBackground = currentBackground;
+                        currentBackground = (FileSystem.Folder) style;
                         styleSelected = true;
                     }
                 });
@@ -82,7 +83,7 @@ public class BackgroundSelectorPopup {
 
             if (ImGui.button("Cancel")) {
                 styleSelected = false;
-                currentBGStyle = oldBGStyle;
+                currentBackground = Objects.requireNonNullElse(oldBackground, defaultBackground); // If there wasn't a background beforehand, select the default one.
                 ImGui.closeCurrentPopup();
             }
 
@@ -96,7 +97,7 @@ public class BackgroundSelectorPopup {
                 styleSelected = false;
                 ImGui.closeCurrentPopup();
 
-                backgroundTextures = getBackgroundTexturePathList(signJson.setStyle(currentBGStyle.path), customizableSignBlockEntity);
+                backgroundTextures = getBackgroundTexturePathList(signJson.setStyle(currentBackground.path), customizableSignBlockEntity);
             }
 
             if (applyButtonDisabled) ImGui.endDisabled();

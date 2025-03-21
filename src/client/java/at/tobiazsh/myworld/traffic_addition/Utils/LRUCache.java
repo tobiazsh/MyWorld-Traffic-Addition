@@ -43,7 +43,9 @@ public class LRUCache <C> { // LRU = Least Recently Used
             cache.addFirst(exisisting);
         } else { // Add new item on first place if not already existing
             cache.addFirst(new CacheItem<>(item));
-            if (cache.size() > capacity) cache.removeLast(); // Remove last item (least accessed) if capacity is reached
+            if (cache.size() > capacity) {
+                cache.removeLast(); // Remove last item (least accessed) if capacity is reached
+            }
         }
     }
 
@@ -91,7 +93,6 @@ public class LRUCache <C> { // LRU = Least Recently Used
     }
 
     public static class CacheItem <O> {
-
         O val;
 
         CacheItem(O val) {

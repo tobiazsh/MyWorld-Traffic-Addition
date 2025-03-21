@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl.gameplayPreference;
 import static net.minecraft.client.render.RenderPhase.*;
 
 /**
@@ -22,8 +23,24 @@ import static net.minecraft.client.render.RenderPhase.*;
  */
 public class CustomRenderLayer {
 
-    public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>("BUILT_TEXT_LAYERING", 50); // Stores all the built text render layers of all fonts
-    public static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>("BUILT_IMAGE_LAYERING", 100); // Stores all the built image render layers of all textures
+    public static final int defaultImageCacheSize = 200;
+    public static final int defaultTextCacheSize = 100;
+
+    public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
+        "BUILT_TEXT_LAYERING",
+        Objects.requireNonNullElse(
+            gameplayPreference.getInt("textRenderLayerCacheSize"),
+            defaultTextCacheSize
+        )
+    ); // Stores all the built text render layers of all fonts
+
+    public static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
+        "BUILT_IMAGE_LAYERING",
+        Objects.requireNonNullElse(
+                gameplayPreference.getInt("imageRenderLayerCacheSize"),
+                defaultImageCacheSize
+        )
+    ); // Stores all the built image render layers of all textures
 
     // ------------------ GENERAL Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
