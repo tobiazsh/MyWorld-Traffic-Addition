@@ -1,6 +1,7 @@
-	plugins {
+plugins {
 	id 'fabric-loom' version '1.9-SNAPSHOT'
 	id 'maven-publish'
+	id "com.gradleup.shadow" version "8.3.0"
 }
 
 version = project.mod_version
@@ -35,6 +36,10 @@ loom {
 	accessWidenerPath = file("src/main/resources/myworld_traffic_addition.accesswidener")
 }
 
+shadowJar {
+	relocate "org.lwjgl.stb", "at.tobias.myworld_traffic_addition.lwjgl.stb"
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -45,11 +50,12 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// LWJGL restriction since macOS doesn't like ver 3.3.4 that imgui uses...
-	implementation(group: 'org.lwjgl', name: 'lwjgl-freetype', classifier: 'natives-macos-patch') {
-		version{
-			strictly "[3.3.3]"
-		}
-	}
+	//implementation(group: 'org.lwjgl', name: 'lwjgl-freetype', classifier: 'natives-macos-patch') {
+	//	version{
+	//		strictly "[3.3.3]"
+	//	}
+	//}
+	// Deleted for now since I ain't working on macOS for now
 
 	// Dear ImGui Implementation
 	include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")

@@ -1,11 +1,12 @@
-package at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic;
+package at.tobiazsh.myworld.traffic_addition.Utils;
 
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer;
+import at.tobiazsh.myworld.traffic_addition.Utils.Preference.Preference;
 
 import java.util.Objects;
 
-public class PreferenceControl {
+public class ClientPreferences {
 
     public static final Preference gameplayPreference = new Preference("myworld_traffic_addition/gameplay_config.json");
 

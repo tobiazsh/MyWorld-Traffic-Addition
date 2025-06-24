@@ -15,7 +15,7 @@ public class ConfirmationPopup {
 
     public static void render() {
         if (ImGui.beginPopupModal("Warning##Popup")) {
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+            ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text(text);
             ImGui.popFont();
             ImGui.text(information);

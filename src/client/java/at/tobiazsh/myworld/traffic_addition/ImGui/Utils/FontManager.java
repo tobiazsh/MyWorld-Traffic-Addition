@@ -140,7 +140,7 @@ public class FontManager {
         // Notify the renderer (OpenGL) to create the font texture
         ImGuiImpl.imGuiImplGl3.createFontsTexture();
 
-        ImGui.getIO().setFontDefault(DejaVuSans);
+        ImGui.getIO().setFontDefault(Roboto);
     }
 
     /**
@@ -192,7 +192,7 @@ public class FontManager {
                     fontCache.put(request.getKey(), imGuiFont);
                     request.complete(imGuiFont);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    MyWorldTrafficAddition.LOGGER.error("Failed to register font {} with size {}: {}", request.getPath(), request.getFontSize(), e.getMessage());
                 }
             }
 

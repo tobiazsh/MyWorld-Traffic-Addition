@@ -11,6 +11,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.Utils.CommonImages;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
@@ -34,11 +35,13 @@ public class ImGuiImpl {
     private final static ImGuiImplGlfw imGuiImplGlfw = new ImGuiImplGlfw();
     public final static ImGuiImplGl3 imGuiImplGl3 = new ImGuiImplGl3();
 
-    public static ImFont DejaVuSans = null;
-    public static ImFont DejaVuSansBold = null;
-    public static ImFont DejaVuSansBoldBig = null;
+    public static ImFont Roboto = null;
+    public static ImFont RobotoBold = null;
+    public static ImFont RobotoBoldBig = null;
+    public static ImFont RobotoBoldMedium = null;
 
-    public static String defaultFontPath = "/assets/myworld_traffic_addition/font/dejavu_sans.ttf";
+    public static String defaultFontPath = "/assets/myworld_traffic_addition/font/roboto_regular.ttf";
+    public static String defaultFontBoldPath = "/assets/myworld_traffic_addition/font/roboto_bold.ttf";
 
     public static ImFontAtlas fontAtlas;
 
@@ -54,7 +57,10 @@ public class ImGuiImpl {
 
         // Load fonts
         registerDefaultFonts();
-        ImGui.getIO().setFontDefault(DejaVuSans);
+        ImGui.getIO().setFontDefault(Roboto);
+
+        // Load other stuff
+        CommonImages.loadTextures();
 
         fontAtlas.build();
 
@@ -74,18 +80,18 @@ public class ImGuiImpl {
 
         short[] glyphRanges = glyphRangesBuilder.buildRanges();
 
-        byte[] dejaVuSansBytes = loadFromResource(defaultFontPath);
-        byte[] dejaVuSansBoldBytes = loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf");
-        byte[] dejaVuSansBoldBigBytes = loadFromResource("/assets/myworld_traffic_addition/font/dejavu_sans_bold.ttf");
+        byte[] defaultFontBytes = loadFromResource(defaultFontPath);
+        byte[] defaultFontBoldBytes = loadFromResource(defaultFontBoldPath);
 
-        if (dejaVuSansBytes == null || dejaVuSansBoldBytes == null || dejaVuSansBoldBigBytes == null) {
+        if (defaultFontBytes == null || defaultFontBoldBytes == null) {
             MyWorldTrafficAddition.LOGGER.error("Failed to load default fonts (DejaVuSans, DejaVuSansBold, DejaVuSansBoldBig) from resource!");
             throw new RuntimeException("Failed to load default fonts (DejaVuSans, DejaVuSansBold, DejaVuSansBoldBig) from resource! Maybe files do not exist!");
         }
 
-        DejaVuSans = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBytes, 20, fontConfig, glyphRanges);
-        DejaVuSansBold = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBoldBytes, 20, fontConfig, glyphRanges);
-        DejaVuSansBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(dejaVuSansBoldBigBytes, 40, fontConfig, glyphRanges);
+        Roboto = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBytes, 20, fontConfig, glyphRanges);
+        RobotoBold = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 20, fontConfig, glyphRanges);
+        RobotoBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 40, fontConfig, glyphRanges);
+        RobotoBoldMedium = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 30, fontConfig, glyphRanges);
     }
 
     public static boolean fontsNeedRebuild = false;

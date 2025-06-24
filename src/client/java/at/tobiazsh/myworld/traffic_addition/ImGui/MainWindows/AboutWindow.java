@@ -25,7 +25,7 @@ public class AboutWindow {
     public static String[] other = {"Made in Austria", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"};
 
     public static void render() {
-        ImGui.pushFont(ImGuiImpl.DejaVuSans);
+        ImGui.pushFont(ImGuiImpl.Roboto);
         ImGui.begin("About " + title, ImGuiWindowFlags.MenuBar);
 
         if (ImGui.beginMenuBar()) {
@@ -39,7 +39,7 @@ public class AboutWindow {
         }
 
         ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
+        ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
 
         float titleWidth = imgui.calcTextSize(title).x;
         float windowWidth = ImGui.getWindowWidth();
@@ -47,7 +47,7 @@ public class AboutWindow {
         ImGui.text(title);
 
         ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.DejaVuSans);
+        ImGui.pushFont(ImGuiImpl.Roboto);
 
         ImGui.newLine();
 
@@ -68,7 +68,7 @@ public class AboutWindow {
         ImGui.newLine();
 
         ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.pushFont(ImGuiImpl.RobotoBold);
 
         ImGui.text("THANK YOU FOR DOWNLOADING <3!");
 

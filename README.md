@@ -6,7 +6,7 @@
  - Place signs and rotate
  - Apply different textures to sign
  - A variety of 4 different sign shapes (more to come)
- - Customizable signs, although not, but almost, fully functional yet
+ - Customizable signs
  - MyWorld Traffic Addition Sign Editor *
  - Sign poles
  - A few debug commands
@@ -16,6 +16,9 @@
 My code may not be the most beautiful, but it works :D
 
 ### ATTENTION: Axiom is conflicting with my mod since both use ImGui but different versions of it. I don't know the solution yet.
+
+### WARNINGS:
+- **User experience is slightly restricted when used on a cracked Minecraft Account/Server. This is NOT by choice of the developer, but rather a technical issue (although you should buy the actual game since it's totally worth it!). If you want to, you can read more about it in the docs: PLACEHOLDER**
 
 ## Demonstration
 ![2024-12-08_17 28 39](https://github.com/user-attachments/assets/9c297936-fa8a-42ac-ac0e-db318fc98575)

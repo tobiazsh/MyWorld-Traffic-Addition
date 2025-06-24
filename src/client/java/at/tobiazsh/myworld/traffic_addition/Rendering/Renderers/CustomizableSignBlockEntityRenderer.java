@@ -8,14 +8,10 @@ package at.tobiazsh.myworld.traffic_addition.Rendering.Renderers;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ImageElementClient;
-import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Components.Blocks.CustomizableSignBlock;
@@ -40,7 +36,7 @@ import net.minecraft.util.math.RotationAxis;
 
 import java.util.*;
 
-import static at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementRenderInterface.zOffset;
+import static at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementInterface.zOffset;
 import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
@@ -58,6 +54,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     public static float elementDistancingRenderLayer = 0.75f;
     public static final float elementDistancingRenderLayerDefault = 0.75f;
+
+    private static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements = new HashMap<>();
 
     static {
         CustomRenderLayer.ModelLayering modelLayering = new CustomRenderLayer.ModelLayering(zOffsetRenderLayer, CustomRenderLayer.ModelLayering.LayeringType.CUTOUT_Z_OFFSET_BACKWARD);
@@ -312,17 +310,18 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render the elements that were placed when the sign was edited
     private void renderElements(CustomizableSignBlockEntity csbe, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-        List<BaseElement> elements = csbe.elements.reversed(); // Reverse so top most element gets rendered last
+        if (csbe.elements.isEmpty()) return; // If there are no elements, exit
+        if (csbe.hasUpdateOccured()) {
+            elements.put(csbe, csbe.elements.reversed().stream().map(ClientElementFactory::toClientElement).toList()); // Reverse so top most element gets rendered last
+            csbe.setUpdateOccurred(false); // Reset the update flag
+        }
 
-        elements.forEach(element -> renderElement(element, elements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing));
+        List<ClientElementInterface> renderedElements = elements.get(csbe);
+        renderedElements.forEach(element -> renderElement(element, renderedElements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing));
     }
 
-    public static void renderElement(BaseElement element, int index, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-        if (element instanceof ImageElement) {
-            ImageElementClient.fromImageElement((ImageElement) element).renderMinecraft(index, height, matrices, vertexConsumers, light, overlay, facing);
-        } else if (element instanceof TextElement) {
-            TextElementClient.fromTextElement((TextElement) element).renderMinecraft(index, height, matrices, vertexConsumers, light, overlay, facing);
-        }
+    public static void renderElement(ClientElementInterface element, int index, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+        element.renderMinecraft(index, height, matrices, vertexConsumers, light, overlay, facing);
     }
 
 
@@ -371,4 +370,5 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
         matrices.translate(-0.5, -0.5, -0.5);
     }
+
 }

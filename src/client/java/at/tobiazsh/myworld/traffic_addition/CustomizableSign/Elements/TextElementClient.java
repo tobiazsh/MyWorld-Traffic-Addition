@@ -6,7 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.Rendering.CustomTextRenderer;
@@ -18,9 +18,11 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
+
 import org.joml.Matrix4f;
 
-import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager.registerFontAsync;
@@ -29,32 +31,49 @@ import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.Cust
 import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 
-public class TextElementClient extends TextElement implements ClientElementRenderInterface {
+public class TextElementClient extends TextElement implements ClientElementInterface {
 
-    private final Future<ImGuiFont> fontFuture; // Future for the font
+    private Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont imGuiFont; // Font after future is done
-
-    private final TextElement referenceElement; // Reference element for the text element
 
     private static final String defaultFontPath = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/dejavu_sans.ttf";
     private static final int defaultFontSize = 24;
     private static final String defaultText = "Lorem Ipsum";
 
-    public TextElementClient(float x, float y, float rotation, float factor, String fontPath, float fontSize, String text, TextElement referenceElement, String id) {
-        super(x, y, referenceElement.getWidth(), referenceElement.getHeight(), rotation, factor, null, text, referenceElement.isWidthCalculated(), referenceElement.getParentId(), id);
-        this.fontFuture = registerFontAsync(fontPath, fontSize);
-        super.font = new BasicFont(fontPath, fontSize);
-        this.referenceElement = referenceElement;
-        this.color = referenceElement.getColor();
+    public TextElementClient(
+            float x, float y,
+            float width, float height,
+            float rotation,
+            float factor,
+            boolean shouldCalculateWidth,
+            BasicFont font,
+            String text,
+            UUID id, UUID parentId
+    ) {
+        super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, parentId, id);
+        this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize());
+        this.font = font;
     }
 
     /**
      * Renders the text element in an ImGui Context.
      */
     @Override
-    public void renderImGui() {
+    public void renderImGui(float scale) {
 
-        if (imGuiFont == null && fontFuture.isDone()) {
+        // Without font, no text :)
+        if (imGuiFont == null && !fontFuture.isDone()) {
+            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
+            return;
+        }
+
+        // For better readability, so I don't have to compact everything in one bracelet
+        boolean isImGuiFontNull = (imGuiFont == null);
+        boolean doFontPathsMatch = !isImGuiFontNull && Objects.equals(font.getFontPath(), imGuiFont.getFontPath());
+        boolean doFontSizesMatch = !isImGuiFontNull && (imGuiFont.getFontSize() == font.getFontSize());
+
+        // Check font for updates/new fonts
+        if (isImGuiFontNull || !doFontPathsMatch || !doFontSizesMatch) {
             try {
                 imGuiFont = fontFuture.get();
             } catch (Exception e) {
@@ -62,25 +81,27 @@ public class TextElementClient extends TextElement implements ClientElementRende
             }
         }
 
-        if (imGuiFont == null) {
-            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
-            return;
-        }
-
-        // Implement basically everything else
-
         ImGui.pushFont(this.imGuiFont.font);
 
-        if (!this.referenceElement.isWidthCalculated()) {
+        if (!this.isWidthCalculated()) {
             float width = calculateTextSize(this.imGuiFont.font, this.getText()).x;
             float height = calculateTextSize(this.imGuiFont.font, this.getText()).y;
-            this.referenceElement.setWidth(width);
-            this.referenceElement.setHeight(height);
-            this.referenceElement.setWidthCalculated(true);
+            this.setWidth(width);
+            this.setHeight(height);
+            this.setWidthCalculated(true);
         }
 
-        float[] color = referenceElement.getColor();
-        this.imGuiFont.renderText(ImGui.getWindowDrawList(), this.getText(), new ImVec2(x, y), new ImVec2(this.width, this.height), rotation, new ImVec4(color[0], color[1], color[2], color[3]));
+        float[] color = getColor();
+
+        this.imGuiFont.renderText(
+                ImGui.getWindowDrawList(),
+                this.getText(),
+                new ImVec2(x * scale, y * scale),
+                new ImVec2(width * scale, height * scale),
+                rotation,
+                new ImVec4(color[0], color[1], color[2], color[3])
+        );
+
         ImGui.popFont();
     }
 
@@ -109,7 +130,7 @@ public class TextElementClient extends TextElement implements ClientElementRende
         float effectiveHeightScale = h * scaleY;
 
         float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
-        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementRenderInterface.zOffset + ((indexInList + 1) * 0.00001f));
+        BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, 0, 0)
                 .offset(facing.getOpposite(), 1)
                 .offset(getRightSideDirection(facing.getOpposite()), x)
@@ -177,16 +198,53 @@ public class TextElementClient extends TextElement implements ClientElementRende
         return new ImVec2(width, height);
     }
 
-    public static void createNew(List<BaseElement> drawables) {
-        drawables.addFirst(new TextElement(0, 0,0,0, 0, 1, new BasicFont(defaultFontPath, defaultFontSize), defaultText, true, "MAIN"));
+    public static TextElementClient createNew() {
+        return new TextElementClient(
+                0, 0,
+                0,0,
+                0,
+                1,
+                true,
+                new BasicFont(defaultFontPath, defaultFontSize),
+                defaultText,
+                null, // Null, so it registers itself automatically
+                BaseElementInterface.MAIN_CANVAS_ID
+        );
     }
 
-    /**
-     * Creates a new TextElementClient object from a TextElement object
-     * @param textElement The TextElement object to create the TextElementClient object from
-     * @return The created TextElementClient object
-     */
-    public static TextElementClient fromTextElement(TextElement textElement) {
-        return new TextElementClient(textElement.getX(), textElement.getY(), textElement.getRotation(), textElement.getFactor(), textElement.getFont().getFontPath(), textElement.getFont().getFontSize(), textElement.getText(), textElement, textElement.getId());
+    @Override
+    public void onPaste() {
+        // ClientElementManager.getInstance().registerElement(this);
+    }
+
+    @Override
+    public void onImport() {
+        // ClientElementManager.getInstance().registerElement(this);
+    }
+
+    @Override
+    public ClientElementInterface copy() {
+        TextElementClient copy = new TextElementClient(
+                this.getX(), this.getY(),
+                this.getWidth(), this.getHeight(),
+                this.getRotation(),
+                this.getFactor(),
+                false,
+                this.getFont(),
+                this.getText(),
+                null,
+                this.getParentId()
+        );
+
+        copy.setName(this.getName());
+        copy.setColor(this.getColor());
+
+        return copy;
+    }
+
+    @Override
+    public void setFont(BasicFont font) {
+        super.setFont(font);
+        this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
     }
 }

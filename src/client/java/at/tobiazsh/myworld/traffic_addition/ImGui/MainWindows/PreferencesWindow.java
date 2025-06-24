@@ -5,7 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.LRUCache;
-import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl;
+import at.tobiazsh.myworld.traffic_addition.Utils.ClientPreferences;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImGuiTools.*;
 import static at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer.defaultImageCacheSize;
 import static at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer.defaultTextCacheSize;
-import static at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.Utils.ClientPreferences.gameplayPreference;
 
 public class PreferencesWindow {
 
@@ -176,7 +176,7 @@ public class PreferencesWindow {
 
         ImGui.dragInt("##imageRenderLayerCacheSize", imageRenderLayerCacheSize, 1, 1, 512);
 
-        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.pushFont(ImGuiImpl.RobotoBold);
         ImGui.text("If you change this value, you need to restart the game for it to take effect.");
         ImGui.popFont();
 
@@ -189,14 +189,14 @@ public class PreferencesWindow {
 
         ImGui.dragInt("##textRenderLayerCacheSize", textRenderLayerCacheSize, 1, 1, 512);
 
-        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.pushFont(ImGuiImpl.RobotoBold);
         ImGui.text("If you change this value, you need to restart the game for it to take effect.");
         ImGui.popFont();
     }
 
     private static void drawClearCachePage() {
         if (ImGui.beginPopupModal("Clear Cache")) {
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+            ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text("Clear cache for ...");
             ImGui.popFont();
 
@@ -217,7 +217,7 @@ public class PreferencesWindow {
     }
 
     private static void drawTitleAndDescription(String title, String description) {
-        ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+        ImGui.pushFont(ImGuiImpl.RobotoBold);
         ImGui.text(title);
         ImGui.popFont();
         ImGui.textWrapped(description);
@@ -247,7 +247,7 @@ public class PreferencesWindow {
         // SIGN
         SignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceSigns[0] / 128;
 
-        PreferenceControl.gameplayPreference.saveToDisk("viewDistanceSigns", viewDistanceSigns[0] / 128);
+        ClientPreferences.gameplayPreference.saveToDisk("viewDistanceSigns", viewDistanceSigns[0] / 128);
     }
 
     private static void defaultValues() {

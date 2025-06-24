@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.Utils;
+package at.tobiazsh.myworld.traffic_addition.Utils.Texturing;
 
 
 /*
@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.Utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class Textures {
 			return texture;
 		}
 
-		texture.loadTexture(resourcePath);
+		texture.loadTexturePath(resourcePath);
 		loadedTextures.put(resourcePath, texture);
 		return texture;
 	}
@@ -59,8 +60,13 @@ public class Textures {
 		}
 
 		Texture texture = new Texture();
-		texture.loadTexture(resourcePath);
+		texture.loadTexturePath(resourcePath);
 		loadedTextures.put(resourcePath, texture);
 		return texture;
+	}
+
+	public static Texture registerRawData(ByteBuffer rawData, int width, int height, int channels) {
+		Texture texture = new Texture();
+		return texture.loadRawPixelData(rawData, width, height, channels);
 	}
 }

@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
@@ -7,15 +8,12 @@ import imgui.ImGui;
 
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.backgroundTextures;
-import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.signJson;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getBackgroundTexturePathList;
 
 public class BackgroundSelectorPopup {
 
     private static boolean shouldOpen = false;
-    private static boolean applyButtonDisabled = true;
     private static boolean styleSelected = false;
     private static FileSystem.Folder currentBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
     private final static FileSystem.Folder defaultBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal");
@@ -25,16 +23,16 @@ public class BackgroundSelectorPopup {
 
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);
-        ImGui.pushFont(ImGuiImpl.DejaVuSans);
+        ImGui.pushFont(ImGuiImpl.Roboto);
         if (ImGui.beginPopupModal("Choose Background")) {
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBoldBig);
+            ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
             ImGui.setCursorPosX((1000 - imgui.calcTextSize("Background Settings").x) / 2);
             ImGui.text("Background Settings");
             ImGui.popFont();
 
             ImGui.separator();
 
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+            ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text("Country");
             ImGui.popFont();
 
@@ -61,7 +59,7 @@ public class BackgroundSelectorPopup {
 
             ImGui.spacing();
 
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+            ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text("Background");
             ImGui.popFont();
 
@@ -89,7 +87,7 @@ public class BackgroundSelectorPopup {
 
             ImGui.sameLine();
 
-            applyButtonDisabled = !styleSelected;
+            boolean applyButtonDisabled = !styleSelected;
 
             if (applyButtonDisabled) ImGui.beginDisabled();
 
@@ -97,7 +95,8 @@ public class BackgroundSelectorPopup {
                 styleSelected = false;
                 ImGui.closeCurrentPopup();
 
-                backgroundTextures = getBackgroundTexturePathList(signJson.setStyle(currentBackground.path), customizableSignBlockEntity);
+                ClientElementManager.getInstance().rawData.setStyle(currentBackground.path);
+                ClientElementManager.getInstance().setBackgroundTextures(getBackgroundTexturePathList(ClientElementManager.getInstance().rawData, customizableSignBlockEntity));
             }
 
             if (applyButtonDisabled) ImGui.endDisabled();

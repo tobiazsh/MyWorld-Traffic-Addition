@@ -11,28 +11,21 @@ package at.tobiazsh.myworld.traffic_addition.Utils.Elements;
 import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import com.google.gson.JsonObject;
 
+import java.util.UUID;
+
 public class TextElement extends BaseElement {
 	protected BasicFont font;
 	protected String text;
 
-	private boolean widthIsCalculated;
+	protected boolean widthIsCalculated;
 
-	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, String parentId, String id) {
+	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, UUID parentId, UUID id) {
 		super(x, y, width, height, factor, rotation, parentId, id);
 		this.font = font;
 		this.text = text;
 		this.widthIsCalculated = !shouldCalculateWidth;
 		this.setColor(new float[]{0, 0, 0, 1});
 	}
-
-	public TextElement(float x, float y, float width, float height, float rotation, float factor, BasicFont font, String text, boolean shouldCalculateWidth, String parentId) {
-		super(x, y, width, height, factor, rotation, parentId);
-		this.font = font;
-		this.text = text;
-		this.widthIsCalculated = !shouldCalculateWidth;
-		this.setColor(new float[]{0, 0, 0, 1});
-	}
-
 
 	public boolean isWidthCalculated() {
 		return this.widthIsCalculated;
@@ -54,11 +47,8 @@ public class TextElement extends BaseElement {
 		return this.font;
 	}
 
-	public TextElement copy() {
-		TextElement textElement = new TextElement(x, y, width, height, rotation, factor, font, text, false, parentId);
-		textElement.setName(this.getName());
-		textElement.setColor(this.getColor());
-		return textElement;
+	public void setFont(BasicFont font) {
+		this.font = font;
 	}
 
 	@Override
@@ -71,15 +61,5 @@ public class TextElement extends BaseElement {
 		object.addProperty("FontSize", font.getFontSize());
 
 		return object;
-	}
-
-	@Override
-	public void onImport() {
-		this.regenerateId();
-	}
-
-	@Override
-	public void onPaste() {
-		this.regenerateId();
 	}
 }

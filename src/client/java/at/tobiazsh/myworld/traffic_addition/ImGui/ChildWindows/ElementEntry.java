@@ -8,16 +8,14 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.*;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.FileDialogPopup;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves;
-import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
+import at.tobiazsh.myworld.traffic_addition.Utils.Saves;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Textures;
+import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
@@ -27,44 +25,52 @@ import imgui.flag.ImGuiWindowFlags;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
-	private String name;
-	private String Id;
-	private BaseElement renderObject;
-	private List<BaseElement> elementList;
-	private String parentId;
-	private boolean isClicked = false;
+	private final String name;
+	private ClientElementInterface renderObject;
+	private UUID parentId;
 
-	private int texId;
-	private int previewSize = 50;
+    private int texId;
+	private final int previewSize = 50;
 	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 	private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
 	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
 	private static final int otherIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/other.png").getTextureId();
 
-	private ElementEntry(String name, String Id) {
+	private ElementEntry(String name) {
 		this.name = name;
-		this.Id = Id;
 	}
 
-	public ElementEntry(String name, String Id, BaseElement element, List<BaseElement> elementList, String parentId) {
-		this(name, Id);
+	public ElementEntry(ClientElementInterface element, UUID parentId) {
+		this(element.getName());
 		renderObject = element;
-		this.elementList = elementList;
 		this.parentId = parentId;
 
-		if (element instanceof ImageElement) this.texId = ((ImageElement) element).getTexture().getTextureId();
-		if (element instanceof TextElement); // Create TextElement
-	}
+		if (element instanceof ImageElementClient) this.texId = ((ImageElementClient) element).getTexture().getTextureId();
+    }
 
 	public abstract void moveEntryUp();
 	public abstract void moveEntryDown();
 	public abstract void elementSelectedAction();
+
+	// List actions
+	public abstract ClientElementInterface getElement(int i);
+	public abstract void addElementFirst(ClientElementInterface element);
+	public abstract int indexOfElement(ClientElementInterface element);
+	public abstract int sizeOfList();
+	public abstract void addElement(ClientElementInterface element);
+	public abstract void addElement(int index, ClientElementInterface element);
+	public abstract void addAllElements(List<ClientElementInterface> elements);
+	public abstract void addAllElements(int index, List<ClientElementInterface> elements);
+	public abstract void removeElement(ClientElementInterface element);
+	public abstract void removeElement(int index);
+	public abstract void deleteElement(ClientElementInterface element);
 
 	private final int borderCol = ImGui.colorConvertFloat4ToU32(222, 224, 226, 255);
 	public float padding = 10;
@@ -72,7 +78,7 @@ public abstract class ElementEntry {
 	private final float entryHeight = 64;
 	private final float buttonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
 
-	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, BaseElement selectedOption) {
+	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, ClientElementInterface selectedOption) {
 		float entryWidth = (windowWidth - (this.padding * 2));
 		controlsWidth = 0;
 		float framePadding = ImGui.getStyle().getFramePadding().y;
@@ -81,24 +87,25 @@ public abstract class ElementEntry {
 		ImGui.pushStyleColor(ImGuiCol.Border, borderCol);
 
 		// Main entry container
-		ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.getId(), entryWidth, entryHeight + (renderObject instanceof GroupElement && ((GroupElement) renderObject).isExpanded() ? getGroupContentHeight((GroupElement)renderObject) : 0), isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+        boolean isClicked = false;
+        ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.getId(), entryWidth, entryHeight + (renderObject instanceof GroupElementClient && ((GroupElementClient) renderObject).isExpanded() ? getGroupContentHeight((GroupElementClient) renderObject) : 0), isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
 		// Base element content rendering
 		renderBaseElementContent(framePadding, selectedOption);
 
 		// Expand Button for GroupElements
-		if (renderObject instanceof GroupElement) {
+		if (renderObject instanceof GroupElementClient) {
 			ImGui.sameLine();
 			ImGui.dummy(new ImVec2(10.0f, 0.0f));
 			ImGui.sameLine();
 			ImGui.setCursorPosY((entryHeight - buttonSize) / 2 - ImGui.getStyle().getFramePadding().y); // Center Button Y
-			if (((GroupElement) renderObject).isExpanded()) {
+			if (((GroupElementClient) renderObject).isExpanded()) {
 				if (ImGui.arrowButton("##expand", ImGuiDir.Up)) {
-					((GroupElement) renderObject).setExpanded(false);
+					((GroupElementClient) renderObject).setExpanded(false);
 				}
 			} else {
 				if (ImGui.arrowButton("##expand", ImGuiDir.Down)) {
-					((GroupElement) renderObject).setExpanded(true);
+					((GroupElementClient) renderObject).setExpanded(true);
 				}
 			}
 		}
@@ -114,7 +121,7 @@ public abstract class ElementEntry {
 		renderControlButtons(entryWidth, buttonSize, padding, disableUp, disableDown);
 
 		// Group Tree (or Group Content, idc how you call it)
-		if (renderObject instanceof GroupElement && ((GroupElement) renderObject).isExpanded()) {
+		if (renderObject instanceof GroupElementClient && ((GroupElementClient) renderObject).isExpanded()) {
 			// Add spacing for the tree content
 			ImGui.dummy(0, 10);
 
@@ -122,11 +129,11 @@ public abstract class ElementEntry {
 			ImGui.indent(previewSize + padding * 4);
 
 			// Render each child element
-			for (BaseElement element : ((GroupElement) renderObject).getElements()) {
-				ElementEntry entry = createChildElementEntry(element, (GroupElement) renderObject);
+			for (ClientElementInterface element : ((GroupElementClient) renderObject).getClientElements()) {
+				ElementEntry entry = createChildElementEntry(element, (GroupElementClient) renderObject);
 				entry.render(windowWidth - (previewSize + padding * 4), padding,
-						element == ((GroupElement) renderObject).getElements().getFirst(),
-						element == ((GroupElement) renderObject).getElements().getLast(),
+						element == ((GroupElementClient) renderObject).getClientElements().getFirst(),
+						element == ((GroupElementClient) renderObject).getClientElements().getLast(),
 						selectedOption
 				);
 			}
@@ -156,7 +163,7 @@ public abstract class ElementEntry {
 
 		// Delete button
 		if (ImGui.imageButton(redXIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
-			renderObject.removeMe();
+			deleteElement(renderObject);
 		}
 
 		ImGui.sameLine();
@@ -181,26 +188,24 @@ public abstract class ElementEntry {
 		if (ImGui.beginPopupContextItem("ElementEntryContextMenu##" + renderObject.getId())) {
 
 			if (ImGui.button("Copy")) {
-				Clipboard.setCopiedElement(renderObject);
+				Clipboard.getInstance().setCopiedElement(renderObject.copy());
 				ImGui.closeCurrentPopup();
 			}
 
 			if (ImGui.button("Cut")) {
-				Clipboard.setCopiedElement(renderObject);
-				renderObject.removeMe();
+				Clipboard.getInstance().setCopiedElement(renderObject.copy());
+				deleteElement(renderObject);
 				ImGui.closeCurrentPopup();
 			}
 
 			if (ImGui.button("Duplicate")) {
-				BaseElement copiedElement = renderObject.copy();
-				copiedElement.setName(renderObject.getName());
-				copiedElement.setColor(renderObject.getColor());
-				elementList.addFirst(copiedElement);
+				ClientElementInterface copiedElement = renderObject.copy();
+				addElementFirst(copiedElement);
 			}
 
 			if (ImGui.button("Export...")) exportElement();
 
-			int indexInList = elementList.indexOf(renderObject);
+			int indexInList = indexOfElement(renderObject);
 
 			renderGroupControls(indexInList);
 
@@ -210,66 +215,66 @@ public abstract class ElementEntry {
 
 	private void renderGroupControls(int indexInList) {
 
-		if (BaseElement.getElementById(renderObject.getParentId()) instanceof GroupElement parentElement) { // Only show if element is inside a Group / has a parent
+		if (ClientElementManager.getInstance().getElementById(renderObject.getParentId()) instanceof GroupElementClient parentElement) { // Only show if element is inside a Group / has a parent
 			if (ImGui.button("Remove from Group")) {
-				if (BaseElement.getElementById(parentElement.getParentId()) instanceof GroupElement parentParentElement) { // If parent has another parent, execute this instead
-					parentParentElement.addElement(renderObject); // Add the element to be removed to the parent of the parent
-					parentElement.removeElement(renderObject); // Remove element from parent
+				if (ClientElementManager.getInstance().getElementById(parentElement.getParentId()) instanceof GroupElementClient parentParentElement) { // If parent has another parent, execute this instead
+					parentParentElement.addClientElement(renderObject.copy()); // Add the element to be removed to the parent of the parent
+					parentElement.removeClientElement(renderObject);
 				} else { // Only happens when null is returned and that means the parent is the main element and it isn't enclosed by anything else
-					renderObject.setParentId("MAIN"); // Set to main since parent does not exist and element is now in root folder
-
-					elementOrder.add(elementOrder.indexOf(parentElement), renderObject);
-					parentElement.removeElement(renderObject);
+					renderObject.setParentId(ClientElementInterface.MAIN_CANVAS_ID); // Set to main since parent does not exist and element is now in root folder
+					ClientElementManager.getInstance().addElement(ClientElementManager.getInstance().indexOfElement(parentElement), renderObject.copy());
+					parentElement.removeClientElement(renderObject);
 				}
 			}
 		}
 
-		if (elementList.size() > indexInList + 1) {
-			if (elementList.get(indexInList + 1) instanceof GroupElement) {
+		if (sizeOfList() > indexInList + 1) {
+			if (getElement(indexInList + 1) instanceof GroupElementClient) {
 				if (ImGui.button("Add to group below")) {
-					((GroupElement) elementList.get(indexInList + 1)).addElement(renderObject.copy());
-					renderObject.removeMe();
+					((GroupElementClient) getElement(indexInList + 1)).addClientElementFirst(renderObject.copy());
+					deleteElement(renderObject);
 				}
 			}
 
 			if (ImGui.button("Group with below")) {
-				GroupElement groupElement = new GroupElement(0, 0, 0, 0, 0, parentId);
-				groupElement.addElement(renderObject.copy());
-				groupElement.addElement(elementList.get(indexInList + 1));
-				elementList.add(indexInList, groupElement);
-				elementList.remove(indexInList + 2); // + 2 because: (Index 1 = New GroupElement) <-- We're here (at indexInList)! (Index 2 = This element) (Index 3 = Element to group with and remove)
-				renderObject.removeMe();
+				GroupElementClient groupElement = new GroupElementClient(0, 0, 0, 0, 0, null, parentId);
+				addElement(indexInList, groupElement); // First add the new GroupElement at the current index so it gets a new ID and is registered in the element list. Done, so client elements can have a parent id that's not null
+				groupElement.addClientElement(renderObject.copy()); // Now add the elements
+				groupElement.addClientElement(getElement(indexInList + 2).copy());
+				deleteElement(getElement(indexInList + 2));  // + 2 because: (Index 1 = New GroupElement) <-- We're here (at indexInList)! (Index 2 = This element) (Index 3 = Element to group with and remove)
+				deleteElement(renderObject);
 			}
 		}
 
-		if (!(renderObject instanceof GroupElement)) return; // Render the following only when the renderObject is a GroupElement
+		if (!(renderObject instanceof GroupElementClient)) return; // Render the following only when the renderObject is a GroupElement
 
 		// "Ungroup" button. Only active on GroupElements
 		if (ImGui.button("Ungroup")) {
-			String newParentId = Objects.equals(renderObject.getParentId(), "MAIN") ? "MAIN" : renderObject.getParentId(); // If the group element isn't enclosed by any other group, give the children "MAIN" as parent id, otherwise give the id of the enclosing element, that encloses the group element
+			// If the group element isn't enclosed by any other group, give the children "MAIN" as parent id, otherwise give the id of the enclosing element, that encloses the group element
+			UUID newParentId = Objects.equals(renderObject.getParentId(), ClientElementInterface.MAIN_CANVAS_ID) ? ClientElementInterface.MAIN_CANVAS_ID : renderObject.getParentId();
 
-			List<BaseElement> elements = ((GroupElement) renderObject).getElements();
+			List<ClientElementInterface> elements = ((GroupElementClient) renderObject).getClientElements();
 			elements.forEach(element -> element.setParentId(newParentId)); // Give children new parent id
 
-			elementList.addAll(elementList.indexOf(renderObject) + 1, elements); // Index +1 because renderObject is the Group and GroupIndex + 1 is the first child index
-			elementList.remove(renderObject); // Remove Group Element from element list
+			addAllElements(indexOfElement(renderObject) + 1, elements); // Index +1 because renderObject is the Group and GroupIndex + 1 is the first child index
+			removeElement(renderObject); // Remove Group Element from element list
 		}
 	}
 
-	private float getGroupContentHeight(GroupElement group) {
+	private float getGroupContentHeight(GroupElementClient group) {
 		if (!group.isExpanded()) return 0;
 
 		float height = 10; // Initial spacing
-		for (BaseElement element : group.getElements()) {
+		for (ClientElementInterface element : group.getClientElements()) {
 			height += entryHeight + padding;
-			if (element instanceof GroupElement && ((GroupElement)element).isExpanded()) {
-				height += getGroupContentHeight((GroupElement)element);
+			if (element instanceof GroupElementClient && ((GroupElementClient)element).isExpanded()) {
+				height += getGroupContentHeight((GroupElementClient)element);
 			}
 		}
 		return height;
 	}
 
-	private void renderBaseElementContent(float framePadding, BaseElement selectedOption) {
+	private void renderBaseElementContent(float framePadding, ClientElementInterface selectedOption) {
 		// Selection Button
 		ImGui.setCursorPosX(this.padding * 2);
 		ImGui.setCursorPosY((entryHeight - imgui.calcTextSize("T").y) / 2 - framePadding);
@@ -280,27 +285,27 @@ public abstract class ElementEntry {
 		// Preview
 		ImGui.setCursorPosY((entryHeight - previewSize) / 2);
 		ImGui.setCursorPosX(ImGui.getCursorPosX() + 2 * this.padding);
-		if (renderObject instanceof ImageElement) ImGui.image(texId, previewSize, previewSize);
-		else if (renderObject instanceof TextElement) ImGui.image(textIconId, previewSize, previewSize);
-		else if (renderObject instanceof GroupElement) ImGui.image(groupIconId, previewSize, previewSize);
+		if (renderObject instanceof ImageElementClient) ImGui.image(texId, previewSize, previewSize);
+		else if (renderObject instanceof TextElementClient) ImGui.image(textIconId, previewSize, previewSize);
+		else if (renderObject instanceof GroupElementClient) ImGui.image(groupIconId, previewSize, previewSize);
 	}
 
-	private ElementEntry createChildElementEntry(BaseElement element, GroupElement grpElement) {
-		return new ElementEntry(element.getName(), element.getId(), element, grpElement.getElements(), grpElement.getId()) {
+	private ElementEntry createChildElementEntry(ClientElementInterface element, GroupElementClient grpElement) {
+		return new ElementEntry(element, grpElement.getId()) {
 			@Override
 			public void moveEntryUp() {
-				grpElement.setElements(ArrayTools.moveElementUpBy(
-                        grpElement.getElements(),
-                        grpElement.getElements().indexOf(element),
+				grpElement.setClientElements(ArrayTools.moveElementUpBy(
+                        grpElement.getClientElements(),
+                        grpElement.getClientElements().indexOf(element),
                         1
                 ));
 			}
 
 			@Override
 			public void moveEntryDown() {
-				grpElement.setElements(ArrayTools.moveElementDownBy(
-                        grpElement.getElements(),
-                        grpElement.getElements().indexOf(element),
+				grpElement.setClientElements(ArrayTools.moveElementDownBy(
+                        grpElement.getClientElements(),
+                        grpElement.getClientElements().indexOf(element),
                         1
                 ));
 			}
@@ -308,15 +313,74 @@ public abstract class ElementEntry {
 			@Override
 			public void elementSelectedAction() {
 				selectedElement = element;
-				ElementPropertyWindow.initVars(element, grpElement.getElements(), signRatio);
+				ElementPropertyWindow.initVars(element, signRatio);
+			}
+
+			@Override
+			public ClientElementInterface getElement(int i) {
+				return grpElement.getClientElements().get(i);
+			}
+
+			@Override
+			public void addElementFirst(ClientElementInterface element) {
+				grpElement.addClientElementFirst(element);
+			}
+
+			@Override
+			public int indexOfElement(ClientElementInterface element) {
+				return grpElement.getClientElements().indexOf(element);
+			}
+
+			@Override
+			public int sizeOfList() {
+				return grpElement.getClientElements().size();
+			}
+
+			@Override
+			public void addElement(ClientElementInterface element) {
+				grpElement.addClientElement(element);
+			}
+
+			@Override
+			public void addElement(int index, ClientElementInterface element) {
+				grpElement.addClientElement(index, element);
+			}
+
+			@Override
+			public void addAllElements(List<ClientElementInterface> elements) {
+				grpElement.addAllElements(elements);
+			}
+
+			@Override
+			public void addAllElements(int index, List<ClientElementInterface> elements) {
+				grpElement.addAllElements(index, elements);
+			}
+
+			@Override
+			public void removeElement(ClientElementInterface element) {
+				grpElement.removeClientElement(element);
+			}
+
+			@Override
+			public void removeElement(int index) {
+				grpElement.removeClientElement(index);
+			}
+
+			@Override
+			public void deleteElement(ClientElementInterface element) {
+				grpElement.removeClientElement(element);
+				ClientElementManager.getInstance().unregisterElement(element);
 			}
 		};
 	}
 
 	private void exportElement() {
-		Saves.createSavesDirIfNonExistent();
+		Saves.createSavesDir();
 
-		FileDialogPopup.setData(getPrettyJson(renderObject.toJson().toString()));
+		JsonObject modifiedJson = renderObject.toJson();
+		modifiedJson.addProperty("Id", "null");
+		modifiedJson.addProperty("ParentId", "null");
+		FileDialogPopup.setData(getPrettyJson(modifiedJson.toString()));
 
 		FileDialogPopup.open(
 				Saves.getElementSaveDir(),

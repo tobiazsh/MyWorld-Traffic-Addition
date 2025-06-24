@@ -35,7 +35,7 @@ public abstract class CustomNetworking<T> {
         }
 
         // Handle data chunk
-        if (!activeTransfers.containsKey(transferId)) return; //Ignore chunks for unknown transfers
+        if (!activeTransfers.containsKey(transferId)) return; // Ignore chunks for unknown transfers
 
         ChunkTransferData transfer = activeTransfers.get(transferId);
         transfer.addChunk(payload.chunkIndex(), payload.data());

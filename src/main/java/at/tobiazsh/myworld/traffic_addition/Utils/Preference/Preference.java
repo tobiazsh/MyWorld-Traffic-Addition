@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic;
+package at.tobiazsh.myworld.traffic_addition.Utils.Preference;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import com.google.gson.JsonObject;
@@ -36,6 +36,12 @@ public class Preference {
         saveToDisk(key, new JsonPrimitive(value));
     }
 
+    public static final long INVALID_LONG = -200L;
+
+    public void saveToDisk(String key, long value) {
+        saveToDisk(key, new JsonPrimitive(value));
+    }
+
     private void saveToDisk(String key, JsonPrimitive value) {
         try {
             createFileIfNotExist();
@@ -66,6 +72,11 @@ public class Preference {
     public Float getFloat(String key) {
         JsonPrimitive prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsFloat();
+    }
+
+    public long getLong(String key) {
+        JsonPrimitive prim = loadFromDisk(key);
+        return prim == null ? INVALID_LONG : prim.getAsLong();
     }
 
     private JsonPrimitive loadFromDisk(String key) {

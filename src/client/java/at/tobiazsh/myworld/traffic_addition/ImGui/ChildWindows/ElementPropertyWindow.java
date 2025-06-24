@@ -8,12 +8,13 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor;
+import at.tobiazsh.myworld.traffic_addition.Utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.FontManager;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.Utils.LinkedHashMapTool;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -33,8 +34,8 @@ public class ElementPropertyWindow {
 	private static float[] currentElementRotation = new float[]{};
 	private static float factor;
 	private static float[] color;
-	private static BaseElement element;
-	private static List<BaseElement> elementList; // The list where BaseElement element is in
+	private static ClientElementInterface element;
+	private static List<ClientElementInterface> elementList; // The list where BaseElement element is in
 
 	private static boolean relateSize = true;
 	private static ImVec2 ratioedSignSize = new ImVec2();
@@ -68,28 +69,22 @@ public class ElementPropertyWindow {
 		}
 	}
 
-	private static boolean isImage = true;
-
 	public static boolean shouldRender = false;
 
-	public static void initVars(BaseElement element, List<BaseElement> elementList, ImVec2 ratioedSignSize) {
+	public static void initVars(ClientElementInterface element, ImVec2 ratioedSignSize) {
 		ElementPropertyWindow.currentElementName = new ImString(element.getName(), 512);
 		ElementPropertyWindow.currentElementRotation = new float[]{element.getRotation()};
 		relateSize = true;
 		ElementPropertyWindow.element = element;
-		ElementPropertyWindow.elementList = elementList;
 		ElementPropertyWindow.ratioedSignSize = ratioedSignSize;
 		factor = element.getFactor();
 		color = element.getColor();
 
-		if (element instanceof TextElement) {
-			isImage = false;
-			textElementText = new ImString(((TextElement) element).getText(), 1024);
-			fontSize = new ImFloat(((TextElement) element).getFont().getFontSize());
-			fontPath = new ImString(((TextElement) element).getFont().getFontPath(), 512);
-			selectedFontIndex.set(LinkedHashMapTool.getIndex(availableFonts, ((TextElement) element).getFont().getFontPath()));
-		} else {
-			isImage = true;
+		if (element instanceof TextElementClient) {
+			textElementText = new ImString(((TextElementClient) element).getText(), 1024);
+			fontSize = new ImFloat(((TextElementClient) element).getFont().getFontSize());
+			fontPath = new ImString(((TextElementClient) element).getFont().getFontPath(), 512);
+			selectedFontIndex.set(LinkedHashMapTool.getIndex(availableFonts, ((TextElementClient) element).getFont().getFontPath()));
 		}
 	}
 
@@ -100,7 +95,7 @@ public class ElementPropertyWindow {
 
 			// If no Element is selected, display message
 			if (element == null) {
-				ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+				ImGui.pushFont(ImGuiImpl.RobotoBold);
 
 				String text = "No Element selected!";
 
@@ -121,16 +116,14 @@ public class ElementPropertyWindow {
 
 			// NAMING
 
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Element Name");
 			ImGui.popFont();
 
 			ImGui.inputText("##nameInput", currentElementName);
 
 			if (ImGui.button("Confirm##name")) {
-				int index = elementList.indexOf(element);
 				element.setName(currentElementName.get());
-				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 
@@ -139,7 +132,7 @@ public class ElementPropertyWindow {
 			ImGui.separator();
 			ImGui.spacing();
 
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Size");
 			ImGui.popFont();
 
@@ -148,8 +141,8 @@ public class ElementPropertyWindow {
 			float aspectRatioW = elemH[0] / elemW[0];
 			float aspectRatioH = elemW[0] / elemH[0];
 
+			// Width Drag
 			if (ImGui.dragFloat("Width", elemW, 1.0f, 0.1f, ratioedSignSize.x)) {
-				int index = elementList.indexOf(element);
 
 				if (relateSize) {
 					elemH[0] = elemW[0] * aspectRatioW; // Adjust height based on new width
@@ -157,13 +150,12 @@ public class ElementPropertyWindow {
 				}
 
 				element.setWidth(elemW[0]);
-				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
+			// Height Drag
 			if (ImGui.dragFloat("Height", elemH, 1.0f, 0.1f, ratioedSignSize.y)) {
-				int index = elementList.indexOf(element);
 
 				if (relateSize) {
 					elemW[0] = elemH[0] * aspectRatioH; // Adjust height based on new width
@@ -171,7 +163,6 @@ public class ElementPropertyWindow {
 				}
 
 				element.setHeight(elemH[0]);
-				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
@@ -181,41 +172,33 @@ public class ElementPropertyWindow {
 			ImGui.separator();
 			ImGui.spacing();
 
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Position");
 			ImGui.popFont();
 
 			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
 			if (ImGui.dragFloat("X", elemX, 1.0f, 0.0f, ratioedSignSize.x - elemW[0])) {
-				int index = elementList.indexOf(findElementById(element.getId(), elementList));
 				element.setX(elemX[0]);
-				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Drag Float for the position of the element on the Y-Coordinate; Max is the sign's width minus the element's width to not exceed the bounds
 			if (ImGui.dragFloat("Y", elemY, 1.0f, 0.0f, ratioedSignSize.y - elemH[0])) {
-				int index = elementList.indexOf(element);
 				element.setY(elemY[0]);
-				elementList.set(index, element);
 			}
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Button that centers the current selected element on the X-Coordinate
 			if (ImGui.button("Center X")) {
-				int index = elementList.indexOf(element);
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
-				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 
 			// Button that centers the current selected element on the Y-Coordinate
 			if (ImGui.button("Center Y")) {
-				int index = elementList.indexOf(element);
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
-				elementList.set(index, element);
 				SignEditor.addUndo();
 			}
 
@@ -228,7 +211,7 @@ public class ElementPropertyWindow {
 			ImGui.separator();
 			ImGui.spacing();
 
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Rotation");
 			ImGui.popFont();
 
@@ -243,7 +226,7 @@ public class ElementPropertyWindow {
 			ImGui.separator();
 			ImGui.spacing();
 
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Color");
 			ImGui.popFont();
 
@@ -255,7 +238,7 @@ public class ElementPropertyWindow {
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
-			if (!isImage) renderTextControls();
+			if (element instanceof TextElementClient) renderTextControls();
 		}
 
 		ImGui.end();
@@ -266,7 +249,7 @@ public class ElementPropertyWindow {
 
 		previousTextElementText = new ImString(textElementText.get());
 
-		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+		ImGui.pushFont(ImGuiImpl.RobotoBold);
 		ImGui.text("Text");
 		ImGui.popFont();
 		ImGui.inputText("##textElementTextEditInput", textElementText);
@@ -274,23 +257,31 @@ public class ElementPropertyWindow {
 		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 		if (!(textElementText.get().equals(previousTextElementText.get()))) {
-			((TextElement) element).setText(textElementText.get());
+			((TextElementClient) element).setText(textElementText.get());
 		}
 
 		ImGui.spacing();
 
-		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+		// Font Size
+		ImGui.pushFont(ImGuiImpl.RobotoBold);
 		ImGui.text("Font Size");
 		ImGui.popFont();
 		ImGui.inputFloat("##fontSizeInput", fontSize);
-		if (ImGui.button("Confirm##fontSize"))
-			((TextElement) element).getFont().setFontSize(fontSize.get());
+		if (ImGui.button("Confirm##fontSize")) {
+			((TextElementClient) element).setFont(
+					new BasicFont(
+							((TextElementClient) element).getFont().getFontPath(),
+							fontSize.get()
+					)
+			);
+		}
 
 		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 		ImGui.spacing();
 
-		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+		// Font Selection (Font Path)
+		ImGui.pushFont(ImGuiImpl.RobotoBold);
 		ImGui.text("Font");
 		ImGui.popFont();
 
@@ -299,27 +290,27 @@ public class ElementPropertyWindow {
 
 		if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
-		if (previousSelectedFontIndex != selectedFontIndex.get())
-			((TextElement) element).getFont().setFontPath(LinkedHashMapTool.getKeyAtIndex(availableFonts, selectedFontIndex.get()));
+		// If font changes
+		if (previousSelectedFontIndex != selectedFontIndex.get()) {
+			((TextElementClient) element).setFont(
+					new BasicFont(
+						LinkedHashMapTool.getKeyAtIndex(availableFonts, selectedFontIndex.get()),
+						((TextElementClient) element).getFont().getFontSize()
+					)
+			);
+		}
 
 		ImGui.spacing();
-		ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
-		ImGui.text("Size Extended");
+		ImGui.pushFont(ImGuiImpl.RobotoBold);
+		ImGui.text("Size Matching");
 		ImGui.popFont();
 		if (ImGui.button("Normalize Size")) {
-			((TextElement) element).setWidthCalculated(false);
+			((TextElementClient) element).setWidthCalculated(false);
 			SignEditor.addUndo();
 		}
 	}
 
 	public static void toggle() {
 		shouldRender = !shouldRender;
-	}
-
-	private static BaseElement findElementById(String id, List<BaseElement> list) {
-		return list.stream()
-				.filter(element -> element.getId().equals(id))
-				.findFirst()
-				.orElse(null);
 	}
 }

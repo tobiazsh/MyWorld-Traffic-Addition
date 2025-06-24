@@ -4,9 +4,10 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.Utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Texture;
 import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Textures;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -17,25 +18,57 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
+import java.util.UUID;
+
 import static at.tobiazsh.myworld.traffic_addition.ImGui.Utils.ImUtil.rotatePivot;
 import static at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.SignBlockEntityRenderer.getFacingRotation;
 
-public class ImageElementClient extends ImageElement implements ClientElementRenderInterface {
+public class ImageElementClient extends ImageElement implements ClientElementInterface {
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, Texture texture, String parentId, String id) {
-        super(x, y, width, height, factor, rotation, texture, parentId, id);
+    public boolean textureLoaded = false;
+
+    public ImageElementClient(
+            float x, float y,
+            float width, float height,
+            float factor,
+            float rotation,
+            String path,
+            UUID parentId
+    ) {
+        super(x, y, width, height, factor, rotation, path, parentId);
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, float rotation, String path, String parentId, String id) {
-        super(x, y, width, height, factor, rotation, path, parentId, id);
+    public ImageElementClient(
+            float x, float y,
+            float width, float height,
+            float factor,
+            float rotation,
+            Texture texture,
+            UUID parentId
+    ) {
+        super(x, y, width, height, factor, rotation, null, parentId);
+        this.elementTexture = texture;
+        this.textureLoaded = true; // Assume texture is loaded if provided
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, Texture texture, String parentId, String id) {
-        this(x, y, width, height, factor, 0, texture, parentId, id);
+    public ImageElementClient(
+            float x, float y,
+            float width, float height,
+            float factor,
+            float rotation,
+            String path,
+            UUID id,
+            UUID parentId
+    ) {
+        this(x, y, width, height, factor, rotation, path, parentId);
+        this.id = id; // Set the ID for the element
     }
 
-    public ImageElementClient(float x, float y, float width, float height, float factor, String path, String parentId, String id) {
-        this(x, y, width, height, factor, 0, path, parentId, id);
+    public void checkSize() {
+        if (this.width == -1 || this.height == -1) {
+            MyWorldTrafficAddition.LOGGER.debug("ImageElement has not been initialized properly! x, y, width or height is -1! Sizing auto!");
+            this.sizeAuto();
+        }
     }
 
     private ImVec2 p0, p1, p2, p3;
@@ -43,25 +76,35 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
     /**
      * Renders the image element in an ImGui Context.
      */
-    public void renderImGui() {
+    public void renderImGui(float scale) {
         ImDrawList drawList = ImGui.getWindowDrawList();
+
+        if (!this.textureLoaded) this.loadTexture();
 
         if (this.getTexture() == null) {
             MyWorldTrafficAddition.LOGGER.error("Texture is null for ImageElement!");
             return;
         }
 
-        if (!this.texIsLoaded) this.loadTexture();
+        checkSize();
 
         ImVec2 windowPos = new ImVec2(ImGui.getCursorScreenPosX(), ImGui.getCursorScreenPosY());
         float[] color = this.getColor();
 
-        p0 = new ImVec2(windowPos.x + this.x, windowPos.y + this.y); // Top Left Vertices
-        p1 = new ImVec2(windowPos.x + this.x + this.width, windowPos.y + this.y); // Top Right Vertices
-        p2 = new ImVec2(windowPos.x + this.x + this.width, windowPos.y + this.y + this.height); // Bottom Right Vertices
-        p3 = new ImVec2(windowPos.x + this.x, windowPos.y + this.y + height); // Bottom Left Vertices
+        // Calculate points and account for scale
+        p0 = new ImVec2(windowPos.x + x * scale, windowPos.y + y * scale); // Top Left Vertices
+        p1 = new ImVec2(windowPos.x + (x + width) * scale, windowPos.y + y * scale); // Top Right Vertices
+        p2 = new ImVec2(windowPos.x + (x + width) * scale, windowPos.y + (y + height) * scale); // Bottom Right Vertices
+        p3 = new ImVec2(windowPos.x + x * scale, windowPos.y + (y + height) * scale); // Bottom Left Vertices
 
-        rotateTexture(rotation, windowPos);
+        rotateTexture(
+                rotation,
+                windowPos,
+                new ImVec2(
+                        windowPos.x + (this.x + this.width / 2) * scale,
+                        windowPos.y + (this.y + this.height / 2) * scale
+                )
+        );
 
         float uv0X = 0.0f, uv0Y = 0.0f;
         float uv1X = 1.0f, uv1Y = 0.0f;
@@ -93,7 +136,14 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      * @param facing Direction the element should face
      */
     @Override
-    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    public void renderMinecraft(
+            int indexInList,
+            int csbeHeight,
+            MatrixStack matrices,
+            VertexConsumerProvider vertexConsumers,
+            int light, int overlay,
+            Direction facing
+    ) {
 
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
@@ -103,7 +153,7 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         float[] color = this.getColor();
 
         float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
-        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementRenderInterface.zOffset + ((indexInList + 1) * 0.00001f));
+        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
@@ -186,11 +236,10 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
      * @param angle The angle to rotate by
      * @param windowPos The position of the window
      */
-    public void rotateTexture(float angle, ImVec2 windowPos){
+    public void rotateTexture(float angle, ImVec2 windowPos, ImVec2 center){
         // For efficiency
         if (angle == 0) return;
 
-        ImVec2 center = new ImVec2(windowPos.x + this.x + this.width / 2, windowPos.y + this.y + this.height / 2);
         float radians = (float) Math.toRadians(angle);
 
         p0 = rotatePivot(p0, center, radians);
@@ -199,14 +248,72 @@ public class ImageElementClient extends ImageElement implements ClientElementRen
         p3 = rotatePivot(p3, center, radians);
     }
 
-    /**
-     * Creates a new ImageElementClient object from an ImageElement object
-     * @param element The ImageElement object to create the ImageElementClient object from
-     * @return The ImageElementClient object
-     */
-    public static ImageElementClient fromImageElement(ImageElement element) {
-        ImageElementClient img = new ImageElementClient(element.getX(), element.getY(), element.getWidth(), element.getHeight(), element.getFactor(), element.getRotation(), element.getResourcePath(), element.getParentId(), element.getId());
-        img.setColor(element.getColor());
-        return img;
+    public Texture getTexture() {
+        return elementTexture;
+    }
+
+    public void loadTexture() {
+        if (resourcePath == null || resourcePath.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.debug("Error (Loading texture on ImageElement): Couldn't load texture because resource path is empty!");
+            return;
+        }
+
+        elementTexture = Textures.smartRegisterTexture(resourcePath);
+        textureLoaded = true;
+    }
+
+    public void setCustomTexture(Texture texture) {
+        this.elementTexture = texture;
+    }
+
+    // Always call after loadTexture() was called!
+
+    public void sizeAuto() {
+        if (elementTexture.isEmpty()) {
+            System.err.println("Error (Loading ImageElement size): Couldn't determine size because texture hasn't been initialized! Initialize with ImageElement.loadTexture()!");
+            return;
+        }
+
+        float w = elementTexture.getWidth();
+        float h = elementTexture.getHeight();
+
+        if (w == -1) {
+            System.err.println("Error (Loading ImageElement size): Couldn't determine width because width in Texture class is -1. Possible cause: No texture ID has been associated with that resource path. Make sure that the texture has been registered!");
+            return;
+        }
+
+        if (h == -1) {
+            System.err.println("Error (Loading ImageElement size): Couldn't determine height because height in Texture class is -1. Possible cause: No texture ID has been associated with that resource path. Make sure that the texture has been registered!");
+            return;
+        }
+
+        setHeight(h);
+        setWidth(w);
+    }
+
+    @Override
+    public void onPaste() {
+    }
+
+    @Override
+    public void onImport() {
+    }
+
+    @Override
+    public ClientElementInterface copy() {
+        ImageElementClient copy = new ImageElementClient(
+                x, y,
+                width, height,
+                factor,
+                rotation,
+                resourcePath,
+                null,
+                parentId
+        );
+
+        copy.setName(this.getName());
+        copy.setColor(this.getColor());
+
+        return copy;
     }
 }

@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.Components.BlockEntities;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.Components.Blocks.CustomizableSignBlock;
 import com.google.gson.JsonObject;
@@ -42,6 +43,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private boolean isRendered = true;
     private boolean isInitialized = false;
     private boolean updateBackgroundTexture = false;
+    private boolean updateOccurred = false;
 
     private String borderModelPath = "customizable_sign_block_border_all";
     private BlockPos masterPos;
@@ -57,6 +59,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public List<String> backgroundStylePieces = new ArrayList<>();
     public List<BaseElement> elements = new ArrayList<>();
 
+    public void setUpdateOccurred(boolean updateOccurred) {
+        this.updateOccurred = updateOccurred;
+    }
+
+    public boolean hasUpdateOccured() {
+        return updateOccurred;
+    }
+
     public void updateTextureVars() {
         if (!isMaster) return;
         if (signTextureJson == null || signTextureJson.isEmpty()) return;
@@ -65,7 +75,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         setUpdateBackgroundTexture(true);
 
         elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
-        elements = BaseElement.unpackList(elements);
+        elements = BaseElementInterface.unpackList(elements);
 
         elements.replaceAll(element -> {
             if (element instanceof ImageElement) {
@@ -74,6 +84,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
             return element;
         });
+
+        updateOccurred = true;
     }
 
     public static void setTransmittedTexture(String json, ServerPlayerEntity player) {
@@ -436,4 +448,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             default -> { return pos.north(offset); }
         }
     }
+
+
 }

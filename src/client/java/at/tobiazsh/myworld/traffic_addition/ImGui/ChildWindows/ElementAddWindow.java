@@ -8,16 +8,18 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementFactory;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementManager;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.Utils.Elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Texture;
-import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Textures;
 import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
-
-import static at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.SignEditor.elementOrder;
 
 public class ElementAddWindow {
 	public static boolean shouldRender = false;
@@ -30,20 +32,23 @@ public class ElementAddWindow {
 	 * The window displays a list of elements that can be added to the sign editor.
 	 */
 	public static void render() {
-		if (shouldConfig) config();
+		if (shouldConfig) loadPreviews();
 		if (!shouldRender) return;
 
-		ImGui.pushFont(ImGuiImpl.DejaVuSans);
+		ImGui.pushFont(ImGuiImpl.Roboto);
 		if (ImGui.begin(windowId, ImGuiWindowFlags.MenuBar)) {
+
+			//OnlineImageGallery.render(); // TODO: Implement online image gallery
 
 			if (ImGui.beginMenuBar()) {
 				if (ImGui.menuItem("Cancel (X)")) shouldRender = false;
+				//if (ImGui.menuItem("Add Online Image...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
 
 				ImGui.endMenuBar();
 			}
 
 			// Display the title of the window in bold font
-			ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+			ImGui.pushFont(ImGuiImpl.RobotoBold);
 			ImGui.text("Add Elements");
 			ImGui.popFont();
 
@@ -83,9 +88,9 @@ public class ElementAddWindow {
 	}
 
 	/**
-	 * Configures the element add window by loading the icons from the resources folder.
+	 * Loads the previews of the elements from the icons folder and online image server.
 	 */
-	public static void config() {
+	public static void loadPreviews() {
 		try {
 			folder = FileSystem.listFilesRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/", true).concentrateFileType("PNG");
 		} catch (Exception e) {
@@ -117,10 +122,8 @@ public class ElementAddWindow {
 		 * Adds an element to the sign editor canvas.
 		 * @param element The element to be added
 		 */
-		public static void addElement(ImageElement element) {
-			element.loadTexture();
-			element.sizeAuto();
-			elementOrder.addFirst(element);
+		public static void addElement(ImageElementClient element) {
+			ClientElementManager.getInstance().addElementFirst(element);
 			shouldRender = false;
 		}
 
@@ -160,7 +163,7 @@ public class ElementAddWindow {
 					ImGui.spacing();
 
 					// Display the element name in bold font
-					ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+					ImGui.pushFont(ImGuiImpl.RobotoBold);
 					ImGui.textWrapped(name);
 					ImGui.popFont();
 
@@ -175,7 +178,7 @@ public class ElementAddWindow {
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
 				if (ImGui.button("Add")) {
-					addElement(new ImageElement(1.0f, path, "MAIN"));
+					addElement((ImageElementClient) ClientElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
 				}
 
 			}

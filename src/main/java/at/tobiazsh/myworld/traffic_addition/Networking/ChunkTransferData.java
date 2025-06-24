@@ -29,15 +29,29 @@ public class ChunkTransferData {
     }
 
     public byte[] assembleData() {
-        byte[] result = new byte[totalSize];
-        int position = 0;
+        byte[] data = new byte[totalSize]; // Ensure the array is sized to dataSize
+        int offset = 0;
 
-        for (byte[] chunk : chunks) {
-            System.arraycopy(chunk, 0, result, position, chunk.length);
-            position += chunk.length;
+        for (int i = 0; i < chunks.length; i++) {
+            byte[] chunk = chunks[i];
+            if (chunk == null) {
+                throw new IllegalStateException("Missing chunk at index " + i);
+            }
+
+            // Calculate the number of bytes to copy for the current chunk
+            int lengthToCopy = Math.min(chunk.length, totalSize - offset);
+
+            // Copy the chunk into the destination array
+            System.arraycopy(chunk, 0, data, offset, lengthToCopy);
+            offset += lengthToCopy;
+
+            // Stop copying if we've reached the total data size
+            if (offset >= totalSize) {
+                break;
+            }
         }
 
-        return result;
+        return data;
     }
 
     public Identifier getProtocolId() {

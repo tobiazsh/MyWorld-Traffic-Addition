@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.Utils.Textures;
+import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Textures;
 import imgui.ImGui;
 
 public class ErrorPopup {
@@ -15,7 +15,7 @@ public class ErrorPopup {
     public static void render() {
         if (ImGui.beginPopupModal("Error##Popup")) {
 
-            ImGui.pushFont(ImGuiImpl.DejaVuSansBold);
+            ImGui.pushFont(ImGuiImpl.RobotoBold);
 
             ImGui.image(Textures.smartRegisterTexture(errorIconPath).getTextureId(), 20, 20);
 

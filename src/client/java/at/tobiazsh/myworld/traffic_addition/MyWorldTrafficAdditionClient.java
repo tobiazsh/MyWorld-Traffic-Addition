@@ -1,11 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition;
 
+import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.Networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.Networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.*;
-import at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl;
+import at.tobiazsh.myworld.traffic_addition.Utils.*;
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;
@@ -13,8 +14,6 @@ import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModif
 import at.tobiazsh.myworld.traffic_addition.Screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.Screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.Screens.SignSelectionScreen;
-import at.tobiazsh.myworld.traffic_addition.Utils.GlobalReceiverClient;
-import at.tobiazsh.myworld.traffic_addition.Utils.RegistrableBlockEntityRender;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -38,11 +37,11 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	public static CustomizableSignSettingScreen customizableSignSettingScreen;
 
-	private static List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
-	private static List<String> modelPaths = new ArrayList<>();
-	private static List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
+	private static final List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
+	private static final List<String> modelPaths = new ArrayList<>();
+	private static final List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
 
-	public static final ImGui imgui = new ImGui();
+	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
 
 	@Override
 	public void onInitializeClient() {
@@ -54,14 +53,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		addModelPaths();
 		registerNonBlockModels();
+		registerCustomProtocols();
 
 		putBlockRenderLayers();
+
+		OnlineImageCache.createCacheDir();
 
 		loadPreferences();
 	}
 
 	private static void loadPreferences() {
-		PreferenceControl.loadGameplayPreferences();
+		ClientPreferences.loadGameplayPreferences();
 	}
 
 	public static void putBlockRenderLayer(Block block, RenderLayer renderLayer) {
@@ -124,16 +126,34 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		globalReceiverClients.addAll(Arrays.asList(
 				new GlobalReceiverClient<>(OpenSignPoleRotationScreenPayload.Id, (payload) -> {
 					BlockPos pos = payload.pos();
-					MinecraftClient.getInstance().setScreen(new SignPoleRotationScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player));
+
+					if (MinecraftClient.getInstance().world == null || MinecraftClient.getInstance().player == null) {
+						MyWorldTrafficAddition.LOGGER.warn("Cannot open SignPoleRotationScreen because world or player is null!");
+						return;
+					}
+
+                    MinecraftClient.getInstance().setScreen(new SignPoleRotationScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player));
 				}),
 
 				new GlobalReceiverClient<>(OpenSignSelectionPayload.Id, (payload) -> {
 					BlockPos pos = payload.pos();
+
+					if (MinecraftClient.getInstance().world == null || MinecraftClient.getInstance().player == null) {
+						MyWorldTrafficAddition.LOGGER.warn("Cannot open SignSelectionScreen because world or player is null!");
+						return;
+					}
+
 					MinecraftClient.getInstance().setScreen(new SignSelectionScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player, ModVars.getSignSelectionEnum(payload.selection_type())));
 				}),
 
 				new GlobalReceiverClient<>(OpenCustomizableSignEditScreen.Id, (payload) -> {
 					BlockPos pos = payload.pos();
+
+					if (MinecraftClient.getInstance().world == null || MinecraftClient.getInstance().player == null) {
+						MyWorldTrafficAddition.LOGGER.warn("Cannot open CustomizableSignSettingScreen because world or player is null!");
+						return;
+					}
+
 					customizableSignSettingScreen = new CustomizableSignSettingScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player);
 					MinecraftClient.getInstance().setScreen(customizableSignSettingScreen);
 				}),
@@ -146,12 +166,42 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 					}
 				})),
 
-				new GlobalReceiverClient<>(ChunkedDataPayload.Id, (payload) -> {
-					CustomClientNetworking.getInstance().processChunkedPayload(
-							payload,
-							(protocolId, data, handler) -> MinecraftClient.getInstance().execute(() -> handler.accept(data))
-					);
-				})
+				new GlobalReceiverClient<>(ChunkedDataPayload.Id, (payload) -> CustomClientNetworking.getInstance().processChunkedPayload(
+                        payload,
+                        (protocolId, data, handler) -> MinecraftClient.getInstance().execute(() -> handler.accept(data))
+                ))
 		));
+	}
+
+	private static void registerCustomProtocols() {
+		// Get maximum image upload size
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), bytes -> {
+			String maximumSize_str = new String(bytes);
+            OnlineImageDialog.maximumUploadSize = Long.parseLong(maximumSize_str);
+		});
+
+		// Get total number of uploaded images
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageLogic::setImageCount);
+
+		// Get number of private images uploaded by the player
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"), OnlineImageLogic::setPrivateImageCount);
+
+		// Get metadata of uploaded images
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"), OnlineImageLogic::setMetadataList);
+
+		// Get thumbnail of uploaded images
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"), OnlineImageLogic::setThumbnailData);
+
+		// Get image data
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageLogic::setImageData);
+	}
+
+	public static void onStopGame() {
+		MyWorldTrafficAddition.LOGGER.info("Shutting down MyWorld Traffic Addition!");
+
+		MyWorldTrafficAddition.LOGGER.info("Clearing image cache...");
+		OnlineImageCache.clearCache();
+
+		MyWorldTrafficAddition.LOGGER.info("Thank you for playing MyWorld Traffic Addition! <3");
 	}
 }

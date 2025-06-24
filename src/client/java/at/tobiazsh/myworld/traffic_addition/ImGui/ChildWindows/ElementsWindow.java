@@ -1,9 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows;
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.GroupElement;
 import imgui.ImGui;
 
 import java.util.List;
@@ -24,38 +24,103 @@ public class ElementsWindow {
     public static void render() {
         if (!shouldRender) return;
 
-        ImGui.pushFont(ImGuiImpl.DejaVuSans);
+        ImGui.pushFont(ImGuiImpl.Roboto);
         if (ImGui.begin("Elements")) {
-            for (int i = 0; i < elementOrder.size(); i++) {
-                BaseElement element = elementOrder.get(i);
-                ElementEntry entry = new ElementEntry(element.getName(), element.getId(), element, elementOrder, "MAIN") {
+            for (int i = 0; i < ClientElementManager.getInstance().totalElements(); i++) {
+                ClientElementInterface element = ClientElementManager.getInstance().getElement(i);
+                ElementEntry entry = new ElementEntry(element, ClientElementInterface.MAIN_CANVAS_ID) {
                     @Override
                     public void moveEntryUp() {
-                        elementOrder = ArrayTools.moveElementUpBy(elementOrder, elementOrder.indexOf(element), 1);
+                        ClientElementManager.getInstance().setElements(
+                                ArrayTools.moveElementUpBy(
+                                        ClientElementManager.getInstance().getElements(),
+                                        ClientElementManager.getInstance().indexOfElement(element),
+                                        1
+                                )
+                        );
                     }
 
                     @Override
                     public void moveEntryDown() {
-                        elementOrder = ArrayTools.moveElementDownBy(elementOrder, elementOrder.indexOf(element), 1);
+                        ClientElementManager.getInstance().setElements(
+                                ArrayTools.moveElementDownBy(
+                                        ClientElementManager.getInstance().getElements(),
+                                        ClientElementManager.getInstance().indexOfElement(element),
+                                        1
+                                )
+                        );
                     }
 
                     @Override
                     public void elementSelectedAction() {
                         selectedElement = element;
-                        ElementPropertyWindow.initVars(element, elementOrder, signRatio);
+                        ElementPropertyWindow.initVars(element, signRatio);
+                    }
+
+                    @Override
+                    public ClientElementInterface getElement(int i) {
+                        return ClientElementManager.getInstance().getElement(i);
+                    }
+
+                    @Override
+                    public void addElementFirst(ClientElementInterface element) {
+                        ClientElementManager.getInstance().addElementFirst(element);
+                    }
+
+                    @Override
+                    public int indexOfElement(ClientElementInterface element) {
+                        return ClientElementManager.getInstance().indexOfElement(element);
+                    }
+
+                    @Override
+                    public int sizeOfList() {
+                        return ClientElementManager.getInstance().totalElements();
+                    }
+
+                    @Override
+                    public void addElement(ClientElementInterface element) {
+                        ClientElementManager.getInstance().addElement(element);
+                    }
+
+                    @Override
+                    public void addElement(int index, ClientElementInterface element) {
+                        ClientElementManager.getInstance().addElement(index, element);
+                    }
+
+                    @Override
+                    public void addAllElements(List<ClientElementInterface> elements) {
+                        ClientElementManager.getInstance().addAllElements(elements);
+                    }
+
+                    @Override
+                    public void addAllElements(int index, List<ClientElementInterface> elements) {
+                        ClientElementManager.getInstance().addAllElements(index, elements);
+                    }
+
+                    @Override
+                    public void removeElement(ClientElementInterface element) {
+                        ClientElementManager.getInstance().removeElement(element);
+                    }
+
+                    @Override
+                    public void removeElement(int index) {
+                        ClientElementManager.getInstance().removeElement(index);
+                    }
+
+                    @Override
+                    public void deleteElement(ClientElementInterface element) {
+                        ClientElementManager.getInstance().removeElement(element);
                     }
                 };
 
-                entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == elementOrder.getFirst(), element == elementOrder.getLast(), selectedElement); // Check if the element is first/last in the list because then there's nothing to move up/down
+                entry.render(ImGui.getWindowWidth(), ImGui.getStyle().getWindowPaddingX(), element == ClientElementManager.getInstance().getFirstElement(), element == ClientElementManager.getInstance().getLastElement(), selectedElement); // Check if the element is first/last in the list because then there's nothing to move up/down
 
-                if (elementOrder.getLast() != element) ImGui.separator();
+                if (ClientElementManager.getInstance().getLastElement() != element) ImGui.separator();
             }
         }
 
         ImGui.end();
         ImGui.popFont();
-
-        removeElements();
     }
 
     /**
@@ -63,26 +128,5 @@ public class ElementsWindow {
      */
     public static void toggle() {
         shouldRender = !shouldRender;
-    }
-
-    private static void removeElements() {
-        removeRemovableElementsList(elementOrder);
-        removeRemovableElementsGroups(elementOrder);
-    }
-
-    private static void removeRemovableElementsList(List<BaseElement> elements) {
-        elements.removeIf(BaseElement::shouldRemove);
-    }
-
-    private static void removeRemovableElementsGroups(List<BaseElement> elements) {
-        elements.stream().filter(element -> element instanceof GroupElement).forEach(element -> {
-            elements.forEach(insideElement -> {
-
-                if (insideElement instanceof GroupElement)
-                    removeRemovableElementsGroups(((GroupElement) insideElement).getElements());
-
-                ((GroupElement) element).getElements().removeIf(BaseElement::shouldRemove);
-            });
-        });
     }
 }

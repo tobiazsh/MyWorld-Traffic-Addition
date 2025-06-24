@@ -5,23 +5,19 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GroupElement extends BaseElement {
 
     private List<BaseElement> elements = new CopyOnWriteArrayList<>();
-    private boolean expanded = false;
 
-    public GroupElement(float x, float y, float width, float height, float rotation, String parentId) {
-        super(x, y, width, height, 1, rotation, parentId);
+    public GroupElement(float x, float y, float width, float height, float rotation, String name, UUID parentId, UUID id) {
+        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, name, parentId, id);
     }
 
-    public GroupElement(float x, float y, float width, float height, float rotation, String name, String parentId, String id) {
-        super(x, y, width, height, rotation, 1, new float[]{255, 255, 255, 255}, name, parentId, id);
-    }
-
-    public GroupElement(float x, float y, float width, float height, float rotation, String name, String parentId) {
-        super(x, y, width, height, rotation, 1, new float[]{255, 255, 255, 255}, name, parentId);
+    public GroupElement(float x, float y, float width, float height, float rotation, UUID parentId, UUID id) {
+        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, parentId, id);
     }
 
     public List<BaseElement> getElements() {
@@ -102,7 +98,7 @@ public class GroupElement extends BaseElement {
         return new float[]{minX, minY, maxX, maxY};
     }
 
-    // Nullpoint = Lowest x and y value of all elements
+    // Null-point = Lowest x and y value of all elements
     public void setBounds() {
         float[] bounds = calculateBounds();
 
@@ -117,14 +113,6 @@ public class GroupElement extends BaseElement {
         super.setY(y);
     }
 
-    public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
-    }
-
-    public boolean isExpanded() {
-        return expanded;
-    }
-
     public void setChildrenParentElementId() {
         this.elements.forEach(element -> element.setParentId(this.id));
     }
@@ -133,36 +121,22 @@ public class GroupElement extends BaseElement {
      * Returns a list of all children inside combined into one list. Recursively resolves other GroupElements too.
      * @return List of all children
      */
-    public List<BaseElement> unpackAll() {
-        List<BaseElement> baseElements = new ArrayList<>();
+    public List<BaseElement> unpack() {
+        List<BaseElement> unpacked = new ArrayList<>();
 
-        for (BaseElement element : elements) {
-            if (!(element instanceof GroupElement)) {
-                baseElements.add(element);
-                continue;
+        elements.forEach(e -> {
+            if (e instanceof GroupElement groupElement) {
+                unpacked.addAll(groupElement.unpack()); // Recursively unpack GroupElements
+            } else {
+                unpacked.add(e); // Add non-GroupElement directly
             }
+        });
 
-            List<BaseElement> resolvedElements = ((GroupElement) element).unpackAll();
-            baseElements.addAll(resolvedElements);
-        }
-
-        return baseElements;
-    }
-
-    public void reassignIds() {
-        this.regenerateId();
-
-        for(BaseElement element : getElements()) {
-            if (element instanceof GroupElement)
-                reassignIds();
-            else {
-                element.regenerateId();
-            }
-        }
+        return unpacked;
     }
 
     @Override
-    public BaseElement setWidth(float width) {
+    public void setWidth(float width) {
         float oldWidth = super.getWidth();
         float scale = width / oldWidth;
 
@@ -179,13 +153,12 @@ public class GroupElement extends BaseElement {
             element.setX(originX + relativeX * scale);  // Adjusted position
         });
 
-        // Update the group's width using the superclass method
+        // Update the group's width
         super.setWidth(width);
-        return this;
     }
 
     @Override
-    public BaseElement setHeight(float height) {
+    public void setHeight(float height) {
         float oldHeight = super.getHeight();
         float scale = height / oldHeight;
 
@@ -204,41 +177,26 @@ public class GroupElement extends BaseElement {
 
         // Update the group's height using the superclass method
         super.setHeight(height);
-        return this;
     }
 
     @Override
     public void setX(float x) {
         float nullX = super.getX();
-
+        this.x = x;
         elements.forEach(element -> element.setX(element.getX() - nullX + x));
-
-        setBounds();
     }
 
     @Override
     public void setY(float y) {
         float nullY = super.getY();
-
+        this.y = y;
         elements.forEach(element -> element.setY(element.getY() - nullY + y));
-        setBounds();
     }
 
     @Override
     public void setRotation(float angle) {
         elements.forEach(element -> element.setRotation(element.getRotation() + angle - super.getRotation()));
-
         super.setRotation(angle);
-        setBounds();
-    }
-
-    @Override
-    public BaseElement copy() {
-        GroupElement group = new GroupElement(x, y, width, height, rotation, name, parentId);
-
-        elements.forEach(element -> group.addElement(element.copy()));
-
-        return group;
     }
 
     @Override
@@ -252,18 +210,5 @@ public class GroupElement extends BaseElement {
         object.addProperty("ElementType", ELEMENT_TYPE.GROUP_ELEMENT.ordinal());
 
         return object;
-    }
-
-    @Override
-    public void onPaste() {
-        elements.forEach(element -> element.setFactor(currentElementFactor));
-        elements.stream().filter(element -> element instanceof GroupElement).forEach(BaseElement::onPaste); // Recursively do the same thing
-        setBounds();
-        reassignIds();
-    }
-
-    @Override
-    public void onImport() {
-        reassignIds();
     }
 }

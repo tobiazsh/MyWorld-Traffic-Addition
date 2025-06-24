@@ -29,10 +29,9 @@ public class ImGuiRenderer {
      */
     public static void render() {
         ImGuiImpl.draw(io -> {
-            ImGui.pushFont(ImGuiImpl.DejaVuSans); // Use default font
+            ImGui.pushFont(ImGuiImpl.Roboto); // Use default font
 
             ErrorPopup.render(); // Render error popup
-            //ConfirmationPopup.render(); // Render confirmation popup
 
             if (showDemoWindow) { ImGui.showDemoWindow(); ImGui.showAboutWindow(); } // If demo window should be shown, do so
             if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so

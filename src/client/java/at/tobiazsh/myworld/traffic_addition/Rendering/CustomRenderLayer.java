@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static at.tobiazsh.myworld.traffic_addition.Utils.PreferenceLogic.PreferenceControl.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.Utils.ClientPreferences.gameplayPreference;
 import static net.minecraft.client.render.RenderPhase.*;
 
 /**

@@ -7,8 +7,10 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementFactory;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.TextElementClient;
-import at.tobiazsh.myworld.traffic_addition.CustomizableSign.SignOperation;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.ElementsWindow;
@@ -18,29 +20,29 @@ import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.ImGui.Utils.Clipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.Utils.Elements.*;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.Utils.FileSystem.Folder;
-import at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves;
+import at.tobiazsh.myworld.traffic_addition.Utils.Saves;
 import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
 import com.google.gson.*;
 import imgui.ImGui;
 import imgui.ImVec2;
+import imgui.ImVec4;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiWindowFlags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.DejaVuSans;
+import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.Roboto;
 import static at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl.clearFontAtlas;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.getPrettyJson;
 import static at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData.updateToNewVersion;
-import static at.tobiazsh.myworld.traffic_addition.Utils.Elements.BaseElement.currentElementFactor;
-import static at.tobiazsh.myworld.traffic_addition.Utils.SavesLogic.Saves.createSavesDirIfNonExistent;
+import static at.tobiazsh.myworld.traffic_addition.Utils.Saves.createSavesDir;
 
 public class SignEditor {
 
@@ -50,13 +52,10 @@ public class SignEditor {
 
     private static int signWidthBlocks;
     private static int signHeightBlocks;
-    
-    public static CustomizableSignData signJson = new CustomizableSignData();
-    public static List<String> backgroundTextures = new ArrayList<>();
+
     public static String backgroundTexturePath;
-    public static List<BaseElement> elementOrder = new ArrayList<>();
-    public static BaseElement selectedElement = null;
-    private static Folder backgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
+    public static ClientElementInterface selectedElement = null;
+    private static Folder allBackgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
     public static ImVec2 signRatio; // Initialized when screen is opened;
     public static boolean showDebug = false;
 
@@ -64,6 +63,7 @@ public class SignEditor {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
         clearFontAtlas();
+        ClientElementManager.getInstance().clearAll();
     }
 
     public static void disposeChildWindows() {
@@ -77,47 +77,10 @@ public class SignEditor {
         ElementsWindow.render();
         ElementAddWindow.render();
         ElementPropertyWindow.render();
-        BackgroundSelectorPopup.render(backgrounds, blockEntity);
+        BackgroundSelectorPopup.render(allBackgrounds, blockEntity);
         ConfirmationPopup.render();
         FileDialogPopup.render();
-    }
-
-    public static void setSignJson(CustomizableSignData json) {
-        signJson = json;
-    }
-
-    public static CustomizableSignData getSignJson() {
-        return signJson;
-    }
-
-    private static void readFromSign(World world) {
-        SignOperation.Json.Reader reader = new SignOperation.Json.Reader();
-        reader.readFromBlock(masterBlockPos, world);
-
-        elementOrder = reader.getDrawables();
-
-        List<String> bgTex = reader.getBackgroundTextures();
-        if (!bgTex.isEmpty()) backgroundTextures = bgTex;
-
-        updateToJson();
-    }
-
-    private static void updateFromJson() {
-        elementOrder = CustomizableSignData.deconstructElementsToArray(getSignJson());
-        backgroundTextures = CustomizableSignData.getBackgroundTexturePathList(getSignJson(), blockEntity);
-    }
-
-    private static void updateToJson() {
-        CustomizableSignData json = new CustomizableSignData();
-
-        if (backgroundTextures.isEmpty()) backgroundTexturePath = null;
-        else backgroundTexturePath = backgroundTextures.getFirst().substring(0, backgroundTextures.getFirst().lastIndexOf("/") + 1);
-
-        json.setStyle(backgroundTexturePath);
-        json.setElements(elementOrder);
-
-        setSignJson(json);
-        BaseElement.setCurrentSignData(signJson, elementOrder);
+        OnlineImageDialog.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -126,12 +89,13 @@ public class SignEditor {
             ErrorPopup.open("Sign not initialized!", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!", SignEditor::quit);
         }
 
+        ClientElementManager.getInstance().clearAll();
+
         SignEditor.masterBlockPos = masterBlockPos;
 
         disposeChildWindows();
 
         selectedElement = null;
-        setSignJson(new CustomizableSignData());
 
         if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity csbe) blockEntity = csbe;
         else {
@@ -142,21 +106,21 @@ public class SignEditor {
 
         // List all available backgrounds
         try {
-            backgrounds = FileSystem.listFoldersRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/", true);
+            allBackgrounds = FileSystem.listFoldersRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/", true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         signRatio = createRatio(SignPreview.previewMaxWidth, SignPreview.previewMaxHeight, signWidthBlocks, signHeightBlocks);
-        elementOrder = new ArrayList<>();
 
-        backgroundTextures.clear();
         backgroundTexturePath = "";
 
-        Clipboard.clearUndoStack();
-        Clipboard.clearRedoStack();
+        Clipboard.getInstance().clearUndoStack();
+        Clipboard.getInstance().clearRedoStack();
 
-        readFromSign(world);
+        // Read from sign block entity
+        ClientElementManager.getInstance().importFromSign(blockEntity);
+
         calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
 
         ImGuiRenderer.showSignEditor = true;
@@ -200,36 +164,71 @@ public class SignEditor {
     }
 
     public static void renderMain(){
-        ImGui.pushFont(DejaVuSans);
+        ImGui.pushFont(Roboto);
         ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
         handleHotKeys();
 
         JsonPreviewPopup.create();
-        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(getSignJson());
+        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(ClientElementManager.getInstance().rawData);
+
+        // Status bar showing dimensions, zoomed dimensions, pixel/block ratio and zoom percentage
+        ImGui.setCursorPosY(ImGui.getWindowHeight() - ImGui.getFontSize() - ImGui.getStyle().getWindowPaddingY()); // Position the status bar at the bottom of the window
+        renderStatusBar();
+
+        ImGui.setCursorPos(0, 0); // Reset cursor position to the top-left corner
 
         // Position for the preview (in the middle)
         float previewX = (ImGui.getWindowWidth() - signRatio.x * SignPreview.getZoom()) * 0.5f; // signRatio.x * getZoom() because the size of the sign changes with zoom
-        float previewY = (ImGui.getWindowHeight() - signRatio.y * SignPreview.getZoom()) * 0.5f; // -------//-------
+        float previewY = (ImGui.getWindowHeight() + ImGui.getFontSize() - signRatio.y * SignPreview.getZoom()) * 0.5f; // I just tried until it worked lmao
 
         // Set the cursor position once, to the top-left of the entire centered grid
         ImGui.setCursorPos(previewX, previewY);
 
-        SignPreview.render(signRatio.x, signRatio.y, signWidthBlocks, signHeightBlocks, currentElementFactor, new ImVec2(previewX, previewY), elementOrder, backgroundTextures);
+        SignPreview.render(
+                signRatio.x,
+                signRatio.y,
+                signWidthBlocks,
+                signHeightBlocks,
+                ClientElementManager.getInstance().getPixelOfOneBlock(),
+                new ImVec2(previewX, previewY),
+                ClientElementManager.getInstance().getElements(),
+                ClientElementManager.getInstance().backgroundTextures
+        );
 
         ImGui.end();
         ImGui.popFont();
+    }
+
+    private static void renderStatusBar() {
+        ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.141f, 0.141f, 0.141f, 1.0f)); // Opaque gray background
+        ImGui.beginChild("##Statusbar", new ImVec2(ImGui.getWindowSizeX(), ImGui.getFontSize()), false);
+
+        // Pixels display (left-bound)
+        String pixelString = Math.round(signRatio.x * 100) * 0.01 + " x " + Math.round(signRatio.y * 100) * 0.01 +
+                " (" + Math.round(signRatio.x * SignPreview.getZoom() * 100) * 0.01 + " x " + Math.round(signRatio.y * SignPreview.getZoom() * 100) * 0.01 + ") at "
+                + ClientElementManager.getInstance().getPixelOfOneBlock() + " px/block";
+
+        ImGui.text(pixelString);
+
+        // Zoom Display (right-bound)
+        String zoomString = Math.round(SignPreview.getZoom() * 100) + "%%";
+        ImGui.sameLine(ImGui.getContentRegionAvailX() - ImGui.calcTextSize(zoomString).x);
+        ImGui.text(zoomString);
+
+        ImGui.endChild();
+        ImGui.popStyleColor();
     }
 
     private static void renderMenuBar() {
         ImGui.beginMenuBar();
         if (ImGui.beginMenu("File")) {
             if (ImGui.menuItem("Save to Sign", "CTRL + S"))
-                SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder);
+                ClientElementManager.getInstance().exportToSign(masterBlockPos);
 
             if (ImGui.menuItem("Save to Sign & Quit", "CTRL + W")) {
-                SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder);
+                ClientElementManager.getInstance().exportToSign(masterBlockPos);
                 quit();
             }
 
@@ -283,7 +282,8 @@ public class SignEditor {
 
         if(ImGui.beginMenu("Elements")) {
             if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
-            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) TextElementClient.createNew(elementOrder);
+            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
+            // if (ImGui.menuItem("Upload Online Image...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
 
             ImGui.separator();
 
@@ -305,18 +305,18 @@ public class SignEditor {
 
         if (showDebug) if (ImGui.beginMenu("Debug")) {
 
-            if (ImGui.menuItem("Update Json")) updateToJson();
+            if (ImGui.menuItem("Update Json")) ClientElementManager.getInstance().updateRawData();
 
             if (ImGui.menuItem("Toggle Snap to Window")) {
                 ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
             }
 
             if (ImGui.menuItem("Create saves folder")) {
-                createSavesDirIfNonExistent();
+                createSavesDir();
             }
 
             if (ImGui.menuItem("Convert to new syntax")) {
-                CustomizableSignData style = signJson;
+                CustomizableSignData style = ClientElementManager.getInstance().rawData;
                 updateToNewVersion(style);
             }
 
@@ -327,52 +327,47 @@ public class SignEditor {
     }
 
     public static void calcFactor() {
-        currentElementFactor = signRatio.y / signHeightBlocks;
+         ClientElementManager.getInstance().setPixelOfOneBlock(signRatio.y / signHeightBlocks);
     }
 
     private static void pasteElement() {
-        BaseElement elementToPaste = Clipboard.getCopiedElement();
+        ClientElementInterface elementToPaste = Clipboard.getInstance().getCopiedElement();
 
-        if (elementToPaste == null) return; // Can't paste if empty
+        if (elementToPaste == null) return; // Can't paste if empty or no ID
 
         elementToPaste.onPaste();
-        elementOrder.addFirst(elementToPaste);
-        updateToJson();
+        ClientElementManager.getInstance().addElementFirst(elementToPaste);
     }
 
     private static void copySign() {
-        if (getSignJson().json.isEmpty()) return; // Can't copy if empty
+        ClientElementManager.getInstance().updateRawData();
+        if (ClientElementManager.getInstance().rawData.json.isEmpty()) return; // Can't copy if empty
 
-        Clipboard.setCopiedSign(getSignJson());
+        Clipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().rawData);
     }
 
     private static void pasteSign() {
-        if (Clipboard.getCopiedSign() == null || Clipboard.getCopiedSign().json.isEmpty()) return; // Can't paste if empty
+        if (Clipboard.getInstance().getCopiedSign() == null || Clipboard.getInstance().getCopiedSign().json.isEmpty()) return; // Can't paste if empty
 
-        setSignJson(Clipboard.getCopiedSign());
-        updateFromJson();
-        updateToJson();
+        ClientElementManager.getInstance().setData(Clipboard.getInstance().getCopiedSign(), blockEntity);
     }
 
     public static void addUndo() {
-        Clipboard.pushUndoStack(getSignJson());
-        updateToJson();
+        Clipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
     }
 
     private static void undo() {
-        if (Clipboard.undoEmpty()) return; // Can't undo if empty
+        if (Clipboard.getInstance().undoEmpty()) return; // Can't undo if empty
 
-        Clipboard.pushRedoStack(getSignJson());
-        setSignJson(Clipboard.popUndoStack());
-        updateFromJson();
+        Clipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().rawData);
+        ClientElementManager.getInstance().setData(Clipboard.getInstance().popUndoStack(), blockEntity);
     }
 
     private static void redo() {
-        if (Clipboard.redoEmpty()) return; // Can't redo if empty
+        if (Clipboard.getInstance().redoEmpty()) return; // Can't redo if empty
 
-        Clipboard.pushUndoStack(getSignJson());
-        setSignJson(Clipboard.popRedoStack());
-        updateFromJson();
+        Clipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
+        ClientElementManager.getInstance().setData(Clipboard.getInstance().popRedoStack(), blockEntity);
     }
 
     private static void handleHotKeys() {
@@ -381,10 +376,10 @@ public class SignEditor {
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) SignPreview.zoomIn(); // Zoom In
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) SignPreview.zoomOut(); // Zoom Out
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder); // Save
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) ClientElementManager.getInstance().exportToSign(masterBlockPos); // Save
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.W)) { // Save and Quit
-            SignOperation.Json.write(masterBlockPos, getSignJson(), elementOrder);
+            ClientElementManager.getInstance().exportToSign(masterBlockPos);
             quit();
         }
 
@@ -397,7 +392,7 @@ public class SignEditor {
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle(); // Element Properties Toggle
 
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open(); // Add Element Open
-        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) TextElementClient.createNew(elementOrder); // Add Text Element
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) ClientElementManager.getInstance().addElement(TextElementClient.createNew()); // Add Text Element
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.U)) undo(); // Undo
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.U)) redo(); // Redo
@@ -409,14 +404,16 @@ public class SignEditor {
 
     private static void clearCanvas() {
         ConfirmationPopup.show("Are you sure you want to clear the canvas?", "All of your current elements will be removed! This action cannot be undone!", (confirmed) -> {
-            if (confirmed) elementOrder.clear();
+            if (confirmed) ClientElementManager.getInstance().clearAll();
         });
     }
 
     private static void exportSign() {
-        createSavesDirIfNonExistent();
+        createSavesDir();
 
-        FileDialogPopup.setData(getPrettyJson(signJson.jsonString));
+        // Ensure the data is up to date
+        ClientElementManager.getInstance().updateRawData();
+        FileDialogPopup.setData(getPrettyJson(ClientElementManager.getInstance().rawData.jsonString));
 
         FileDialogPopup.open(
                 Saves.getSignSaveDir(),
@@ -427,42 +424,41 @@ public class SignEditor {
     }
 
     private static void importSign() {
-        createSavesDirIfNonExistent();
+        createSavesDir();
 
         FileDialogPopup.open(Saves.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             if (path == null || path.toString().isBlank()) return;
 
             CustomizableSignData style = new CustomizableSignData();
             style.setJson(FileDialogPopup.getData());
-            setSignJson(style);
-            updateFromJson();
-            updateToJson();
+            ClientElementManager.getInstance().setData(style, blockEntity);
 
-            elementOrder.forEach(element -> element.setFactor(currentElementFactor)); // For proportions
-
-            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
+            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path);
         }, "MWTACSIGN", "JSON");
     }
 
     private static void importElement() {
-        createSavesDirIfNonExistent();
+        createSavesDir();
 
         FileDialogPopup.open(Saves.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
-            BaseElement element = BaseElement.fromJson(elementObj);
+            ClientElementInterface element = ClientElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
 
             if (element == null) {
                 MyWorldTrafficAddition.LOGGER.error("Importing element failed! Path: {}", path.toString());
+                return;
             }
 
             element.onImport();
-            element.setFactor(currentElementFactor);
 
-            elementOrder.addFirst(element);
-            updateToJson();
+            ClientElementManager.getInstance().addElementFirst(element);
 
             MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
-        });
+        }, "MWTACSELEMENT", "JSON");
+    }
 
+    // Used Later for the online image dialog
+    private static void openOnlineImageDialog() {
+        OnlineImageDialog.startDialog();
     }
 }
