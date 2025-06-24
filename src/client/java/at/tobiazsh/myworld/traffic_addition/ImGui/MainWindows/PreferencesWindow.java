@@ -8,6 +8,7 @@ import at.tobiazsh.myworld.traffic_addition.Utils.LRUCache;
 import at.tobiazsh.myworld.traffic_addition.Utils.ClientPreferences;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
+import net.minecraft.text.Text;
 
 import java.util.Objects;
 
@@ -57,7 +58,7 @@ public class PreferencesWindow {
     }
 
     public static void render() {
-        ImGui.begin("Preferences", ImGuiWindowFlags.MenuBar);
+        ImGui.begin(Text.translatable("mwta.imgui.sign.editor.preferences").getString(), ImGuiWindowFlags.MenuBar); // Preferences Window
 
         menuBar();
 
@@ -77,12 +78,11 @@ public class PreferencesWindow {
     private static void menuBar() {
         ImGui.beginMenuBar();
 
-        if (ImGui.menuItem("Back to MENU")) currentPage = CURRENT_PAGE.MENU;
+        if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.back_to_menu").getString())) currentPage = CURRENT_PAGE.MENU; // Back to menu
 
-        if (ImGui.menuItem("Exit")) dispose();
-
-        if (ImGui.menuItem("Apply")) apply();
-        if (ImGui.menuItem("Default Values")) defaultValues();
+        if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.exit").getString())) dispose(); // Exit
+        if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.apply").getString())) apply(); // Apply
+        if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.default_values").getString())) defaultValues(); // Default Values
 
         ImGui.endMenuBar();
     }
@@ -97,39 +97,39 @@ public class PreferencesWindow {
     }
 
     private static void generalPage() {
-        ImGui.text("GENERAL SETTINGS");
+        ImGui.text(Text.translatable("mwta.imgui.sign.editor.general_settings").getString().toUpperCase()); // GENERAL SETTINGS
         drawLineMaxX();
         ImGui.separator();
 
         drawTitleAndDescription(
-                "Clear all caches",
-                "Clears all caches."
+                Text.translatable("mwta.imgui.prefs.clear_all_caches").getString(), // Clear all Caches
+                Text.translatable("mwta.imgui.prefs.clear_all_caches.description").getString() // Clear all Caches Description
         );
 
-        if (ImGui.button("Clear")) LRUCache.clearAllCaches();
+        if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.clear").getString())) LRUCache.clearAllCaches();
     }
 
     private static void signsPage() {
-        ImGui.text("SIGN SETTINGS");
+        ImGui.text(Text.translatable("mwta.imgui.sign.editor.sign_settings").getString().toUpperCase()); // SIGN SETTINGS
         drawLineMaxX();
         ImGui.separator();
 
         drawTitleAndDescription(
-                "View Distance (Blocks)",
-                "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance."
+                Text.translatable("mwta.imgui.prefs.view_distance").getString(), // View Distance
+                Text.translatable("mwta.imgui.prefs.view_distance.description").getString() // View Distance Description
         );
 
         ImGui.dragFloat("##viewDistanceS", viewDistanceSigns, 0.75f, 0f, 2048f);
     }
 
     private static void customizableSignsPage() {
-        ImGui.text("CUSTOMIZABLE SIGN SETTINGS");
+        ImGui.text(Text.translatable("mwta.imgui.sign.editor.customizable_sign_settings").getString().toUpperCase()); // CUSTOMIZABLE SIGN SETTINGS
         drawLineMaxX();
         ImGui.separator();
 
         drawTitleAndDescription(
-                "View Distance (Blocks)",
-                "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance."
+                Text.translatable("mwta.imgui.prefs.view_distance").getString(), // View Distance
+                Text.translatable("mwta.imgui.prefs.view_distance.description").getString() // View Distance Description
         );
 
         ImGui.dragFloat("##viewDistanceCS", viewDistanceCustomizableSigns, 0.5f, 0f, 2048f);
@@ -137,72 +137,72 @@ public class PreferencesWindow {
         ImGui.separator();
 
         drawTitleAndDescription(
-                "Element Distancing",
-                "The distance between the elements of the sign.\nHigher values may cause elements to overlap."
+                Text.translatable("mwta.imgui.prefs.element_distancing").getString(), // Element Distancing
+                Text.translatable("mwta.imgui.prefs.element_distancing.description").getString() // Element Distancing Description
         );
 
         ImGui.dragFloat("##elementDistancingCS", elementDistancingCustomizableSigns, 0.1f, 0f, 512f);
     }
 
     private static void drawCachePage() {
-        ImGui.text("CACHING SETTINGS");
+        ImGui.text(Text.translatable("mwta.imgui.sign.editor.caching_settings").getString().toUpperCase()); // CACHING SETTINGS
         drawLineMaxX();
         ImGui.separator();
 
         drawTitleAndDescription(
-                "Clear all caches",
-                "Clears all caches."
+                Text.translatable("mwta.imgui.prefs.clear_all_caches").getString(), // Clear all Caches
+                Text.translatable("mwta.imgui.prefs.clear_all_caches.description").getString() // Clear all Caches Description
         );
 
-        if (ImGui.button("Clear")) LRUCache.clearAllCaches();
+        if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.clear").getString())) LRUCache.clearAllCaches(); // Clear
 
         ImGui.separator();
 
         drawClearCachePage();
 
         drawTitleAndDescription(
-                "Clear Cache",
-                "Clears cache for a specific cache register. May improve performance."
+                Text.translatable("mwta.imgui.prefs.clear_cache").getString(),
+                Text.translatable("mwta.imgui.prefs.clear_cache.description").getString()
         );
 
-        if (ImGui.button("Clear Cache...")) ImGui.openPopup("Clear Cache");
+        if (ImGui.button(Text.translatable("mwta.imgui.prefs.clear_cache").getString() + " ...")) ImGui.openPopup(Text.translatable("mwta.imgui.prefs.clear_cache").getString());
 
         ImGui.separator();
 
         drawTitleAndDescription(
-                "Image RenderLayer Cache Size",
-                "The amount of RenderLayers stored in the LRU Cache. Each Element in the Sign Editor is it's own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa."
+                Text.translatable("mwta.imgui.prefs.image.renderlayer_cache_size").getString(),
+                Text.translatable("mwta.imgui.prefs.image.renderlayer_cache_size.description").getString()
         );
 
         ImGui.dragInt("##imageRenderLayerCacheSize", imageRenderLayerCacheSize, 1, 1, 512);
 
         ImGui.pushFont(ImGuiImpl.RobotoBold);
-        ImGui.text("If you change this value, you need to restart the game for it to take effect.");
+        ImGui.text(Text.translatable("mwta.imgui.prefs.take_effect_restart_game").getString()); // "If you change this value, you need to restart the game for it to take effect."
         ImGui.popFont();
 
         ImGui.separator();
 
         drawTitleAndDescription(
-                "Text RenderLayer Cache Size",
-                "The amount of RenderLayers stored in the LRU Cache. Each TextElement in the Sign Editor is it's own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa."
+                Text.translatable("mwta.imgui.prefs.text.renderlayer_cache_size").getString(),
+                Text.translatable("mwta.imgui.prefs.text.renderlayer_cache_size.description").getString()
         );
 
         ImGui.dragInt("##textRenderLayerCacheSize", textRenderLayerCacheSize, 1, 1, 512);
 
         ImGui.pushFont(ImGuiImpl.RobotoBold);
-        ImGui.text("If you change this value, you need to restart the game for it to take effect.");
+        ImGui.text(Text.translatable("mwta.imgui.prefs.take_effect_restart_game").getString()); // "If you change this value, you need to restart the game for it to take effect."
         ImGui.popFont();
     }
 
     private static void drawClearCachePage() {
-        if (ImGui.beginPopupModal("Clear Cache")) {
+        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.prefs.clear_cache").getString())) {
             ImGui.pushFont(ImGuiImpl.RobotoBold);
-            ImGui.text("Clear cache for ...");
+            ImGui.text(Text.translatable("mwta.imgui.prefs.clear_cache_for").getString() + " ..."); // Clear Cache for ...
             ImGui.popFont();
 
             LRUCache.getRegisteredCaches().forEach((s, cache) -> {
                 if (ImGui.button(s.replaceAll("_", " "))) {
-                    ConfirmationPopup.show("Do you really want to clear the cache?", "This action cannot be undone", (confirmed) -> {
+                    ConfirmationPopup.show(Text.translatable("mwta.imgui.prefs.clear_cache_confirmation").getString(), Text.translatable("mwta.imgui.warnings.action_cannot_be_undone").getString(), (confirmed) -> {
                         if (!confirmed) return;
 
                         LRUCache.clearCache(s);
@@ -224,7 +224,9 @@ public class PreferencesWindow {
     }
 
     private static void dispose() {
-        ConfirmationPopup.show("Do you really want to exit?", "All unsaved changes will be gone!", (confirmed) -> {
+        ConfirmationPopup.show(
+                Text.translatable("mwta.imgui.warnings.general_exit", Text.translatable("mwta.imgui.window_titles.preferences")).getString(),
+                Text.translatable("mwta.imgui.warnings.all_unsaved_changes_gone").getString(), (confirmed) -> {
             if (confirmed) PreferencesWindow.show = false;
         });
     }

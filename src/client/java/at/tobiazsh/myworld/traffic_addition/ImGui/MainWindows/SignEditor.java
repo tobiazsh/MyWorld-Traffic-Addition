@@ -32,6 +32,7 @@ import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiWindowFlags;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -86,7 +87,7 @@ public class SignEditor {
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
 
         if (!isInit) {
-            ErrorPopup.open("Sign not initialized!", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!", SignEditor::quit);
+            ErrorPopup.open(Text.translatable("mwta.imgui.errors.sign_not_initialized").getString(), Text.translatable("mwta.imgui.errors.sign_not_initialized.description").getString(), SignEditor::quit);
         }
 
         ClientElementManager.getInstance().clearAll();
@@ -99,7 +100,7 @@ public class SignEditor {
 
         if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity csbe) blockEntity = csbe;
         else {
-            System.err.println("Error (Rendering Sign Editor): Couldn't determine Sign (CustomizableSignBlockEntity not found)");
+            MyWorldTrafficAddition.LOGGER.error("Error (Rendering Sign Editor): Couldn't determine Sign (CustomizableSignBlockEntity not found)");
         }
 
         getSignSize();
@@ -165,7 +166,7 @@ public class SignEditor {
 
     public static void renderMain(){
         ImGui.pushFont(Roboto);
-        ImGui.begin("Sign Preview", ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
+        ImGui.begin(Text.translatable("mwta.imgui.window_titles.sign_editor").getString(), ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
         handleHotKeys();
@@ -207,7 +208,7 @@ public class SignEditor {
 
         // Pixels display (left-bound)
         String pixelString = Math.round(signRatio.x * 100) * 0.01 + " x " + Math.round(signRatio.y * 100) * 0.01 +
-                " (" + Math.round(signRatio.x * SignPreview.getZoom() * 100) * 0.01 + " x " + Math.round(signRatio.y * SignPreview.getZoom() * 100) * 0.01 + ") at "
+                " (" + Math.round(signRatio.x * SignPreview.getZoom() * 100) * 0.01 + " x " + Math.round(signRatio.y * SignPreview.getZoom() * 100) * 0.01 + ") " + Text.translatable("mwta.imgui.sign.editor.at").getString() + " "
                 + ClientElementManager.getInstance().getPixelOfOneBlock() + " px/block";
 
         ImGui.text(pixelString);
@@ -223,82 +224,82 @@ public class SignEditor {
 
     private static void renderMenuBar() {
         ImGui.beginMenuBar();
-        if (ImGui.beginMenu("File")) {
-            if (ImGui.menuItem("Save to Sign", "CTRL + S"))
+        if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.file").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.save_to_sign").getString(), "CTRL + S"))
                 ClientElementManager.getInstance().exportToSign(masterBlockPos);
 
-            if (ImGui.menuItem("Save to Sign & Quit", "CTRL + W")) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.save_to_sign_quit").getString(), "CTRL + W")) {
                 ClientElementManager.getInstance().exportToSign(masterBlockPos);
                 quit();
             }
 
-            if (ImGui.menuItem("Show JSON", "CTRL + F")) JsonPreviewPopup.shouldOpen = true;
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.show_json").getString(), "CTRL + F")) JsonPreviewPopup.shouldOpen = true;
 
-            if (ImGui.menuItem("Quit", "CTRL + Q")) quit();
-
-            ImGui.separator();
-
-            if (ImGui.menuItem("Import...")) importSign();
-            if (ImGui.menuItem("Export...")) exportSign();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.quit").getString(), "CTRL + Q")) quit();
 
             ImGui.separator();
 
-            if(ImGui.menuItem("Toggle Debug")) showDebug = !showDebug;
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.import").getString())) importSign();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.export").getString())) exportSign();
+
+            ImGui.separator();
+
+            if(ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.file.menuitem.toggle_debug").getString())) showDebug = !showDebug;
 
             ImGui.endMenu();
         }
 
-        if (ImGui.beginMenu("Edit")) {
-            if (ImGui.menuItem("Clear Canvas")) clearCanvas();
+        if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.edit").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.edit.menuitem.clear_canvas").getString())) clearCanvas();
 
             ImGui.separator();
 
-            if (ImGui.menuItem("Undo", "CTRL + U")) undo();
-            if (ImGui.menuItem("Redo", "CTRL + Shift + U")) redo();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.edit.menuitem.undo").getString(), "CTRL + U")) undo();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.edit.menuitem.redo").getString(), "CTRL + Shift + U")) redo();
 
             ImGui.endMenu();
         }
 
-        if (ImGui.beginMenu("Background")) {
-            if (ImGui.menuItem("Choose Background", "CTRL + G")) BackgroundSelectorPopup.open();
+        if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.background").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.edit.menuitem.choose_background").getString(), "CTRL + G")) BackgroundSelectorPopup.open();
 
             ImGui.endMenu();
         }
 
-        if (ImGui.beginMenu("View")) {
-            if (ImGui.menuItem("Toggle Element Window", "CTRL + E")) ElementsWindow.toggle();
-            if (ImGui.menuItem("Toggle Element Properties Window", "CTRL + P")) ElementPropertyWindow.toggle();
+        if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.view").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.view.menuitem.toggle_element_window").getString(), "CTRL + E")) ElementsWindow.toggle();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.view.menuitem.toggle_element_properties_window").getString(), "CTRL + P")) ElementPropertyWindow.toggle();
 
-            if (ImGui.menuItem("Toggle Element and Properties Windows")) { // Useful since normally you'd want to have both windows open
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.view.menuitem.toggle_properties_and_element_windows").getString())) { // Useful since normally you'd want to have both windows open
                 ElementsWindow.toggle();
                 ElementPropertyWindow.toggle();
             }
 
-            if (ImGui.menuItem("Zoom In", "CTRL + I")) SignPreview.zoomIn();
-            if (ImGui.menuItem("Zoom Out", "CTRL + O")) SignPreview.zoomOut();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.view.menuitem.zoom_in").getString(), "CTRL + I")) SignPreview.zoomIn();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.view.menuitem.zoom_out").getString(), "CTRL + O")) SignPreview.zoomOut();
 
             ImGui.endMenu();
         }
 
-        if(ImGui.beginMenu("Elements")) {
-            if (ImGui.menuItem("Add Element...", "CTRL + SHIFT + A")) ElementAddWindow.open();
-            if (ImGui.menuItem("Add Text Element", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            // if (ImGui.menuItem("Upload Online Image...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
+        if(ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.elements").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.add_element").getString(), "CTRL + SHIFT + A")) ElementAddWindow.open();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.add_text_element").getString(), "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
+            // if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.upload_online_image_element").getString())) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
 
             ImGui.separator();
 
-            if (ImGui.menuItem("Import Element...")) importElement();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.import_element").getString())) importElement();
 
             ImGui.endMenu();
         }
 
-        if (ImGui.beginMenu("Clipboard")) {
-            if (ImGui.menuItem("Copy Sign", "CTRL + C")) copySign();
-            if (ImGui.menuItem("Paste Sign", "CTRL + ALT + V")) pasteSign();
+        if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.clipboard").getString())) {
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.clipboard.menuitem.copy_sign").getString(), "CTRL + C")) copySign();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.clipboard.menuitem.paste_sign").getString(), "CTRL + ALT + V")) pasteSign();
 
             ImGui.separator();
 
-            if (ImGui.menuItem("Paste Element", "CTRL + SHIFT + V")) pasteElement();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.clipboard.menuitem.paste_element").getString(), "CTRL + SHIFT + V")) pasteElement();
 
             ImGui.endMenu();
         }
@@ -403,7 +404,7 @@ public class SignEditor {
     }
 
     private static void clearCanvas() {
-        ConfirmationPopup.show("Are you sure you want to clear the canvas?", "All of your current elements will be removed! This action cannot be undone!", (confirmed) -> {
+        ConfirmationPopup.show(Text.translatable("mwta.imgui.warnings.clear_canvas").getString(), Text.translatable("mwta.imgui.warnings.clear_canvas.description").getString(), (confirmed) -> {
             if (confirmed) ClientElementManager.getInstance().clearAll();
         });
     }

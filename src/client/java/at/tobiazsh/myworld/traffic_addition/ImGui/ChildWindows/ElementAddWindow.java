@@ -20,11 +20,12 @@ import at.tobiazsh.myworld.traffic_addition.Utils.Texturing.Textures;
 import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
+import net.minecraft.text.Text;
 
 public class ElementAddWindow {
 	public static boolean shouldRender = false;
 	public static boolean shouldConfig = false;
-	public static String windowId = "Element Add Window";
+	public static String windowId = Text.translatable("mwta.imgui.sign.editor.add_element").getString(); // "Add New Element" title
 	private static FileSystem.Folder folder = null;
 
 	/**
@@ -41,7 +42,7 @@ public class ElementAddWindow {
 			//OnlineImageGallery.render(); // TODO: Implement online image gallery
 
 			if (ImGui.beginMenuBar()) {
-				if (ImGui.menuItem("Cancel (X)")) shouldRender = false;
+				if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.cancel").getString() + " (X)")) shouldRender = false; // "Cancel" button
 				//if (ImGui.menuItem("Add Online Image...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
 
 				ImGui.endMenuBar();
@@ -49,7 +50,7 @@ public class ElementAddWindow {
 
 			// Display the title of the window in bold font
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text("Add Elements");
+			ImGui.text(Text.translatable("mwta.imgui.sign.editor.add_element").getString()); // "Add New Element" title
 			ImGui.popFont();
 
 			ImGui.separator();
@@ -177,7 +178,7 @@ public class ElementAddWindow {
 				ImGui.endChild();
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
-				if (ImGui.button("Add")) {
+				if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.add").getString())) { // "Add" button
 					addElement((ImageElementClient) ClientElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
 				}
 

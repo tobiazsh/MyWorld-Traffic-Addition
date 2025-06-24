@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.CustomizableSign.Elements.ClientElem
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.Utils.ArrayTools;
 import imgui.ImGui;
+import net.minecraft.text.Text;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ElementsWindow {
         if (!shouldRender) return;
 
         ImGui.pushFont(ImGuiImpl.Roboto);
-        if (ImGui.begin("Elements")) {
+        if (ImGui.begin(Text.translatable("mwta.imgui.sign.editor.elements").getString())) { // Begin the ImGui window with a title
             for (int i = 0; i < ClientElementManager.getInstance().totalElements(); i++) {
                 ClientElementInterface element = ClientElementManager.getInstance().getElement(i);
                 ElementEntry entry = new ElementEntry(element, ClientElementInterface.MAIN_CANVAS_ID) {
