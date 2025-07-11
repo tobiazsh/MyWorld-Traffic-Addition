@@ -49,7 +49,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     private FontManager fontManager;
 
     @Override
-    public FontManager getFontManager() {
+    public FontManager myWorldTrafficAddition$getFontManager() {
         return this.fontManager;
     }
 }

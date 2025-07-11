@@ -44,7 +44,7 @@ public class CustomMinecraftFont extends BasicFont {
     }
 
     public static TextRenderer loadFont(String fontPath) {
-        FontManagerAccessor fma = ((FontManagerAccessor) ((MinecraftClientAccessor) client).getFontManager());
+        FontManagerAccessor fma = ((FontManagerAccessor) ((MinecraftClientAccessor) client).myWorldTrafficAddition$getFontManager());
         AtomicBoolean d = new AtomicBoolean(false);
 
         TextRenderer tr = new CustomTextRenderer(id -> {
