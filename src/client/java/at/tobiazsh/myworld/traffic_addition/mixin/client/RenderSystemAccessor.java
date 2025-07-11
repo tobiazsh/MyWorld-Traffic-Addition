@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(RenderSystem.class)
-public class RenderSystemAccessor {
+public abstract class RenderSystemAccessor {
 	@Inject(method = "flipFrame", at = @At("HEAD"))
 	private static void render(long window, TracyFrameCapturer capturer, CallbackInfo ci) {
 		ImGuiRenderer.render();

@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public class MinecraftClientMixin implements MinecraftClientAccessor {
+public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
     @Shadow
     @Final
