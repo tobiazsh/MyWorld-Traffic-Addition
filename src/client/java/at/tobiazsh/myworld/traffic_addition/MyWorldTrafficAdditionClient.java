@@ -17,6 +17,7 @@ import at.tobiazsh.myworld.traffic_addition.screens.SignSelectionScreen;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
@@ -50,6 +51,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		addBlockEntityRenderers();
 		RegistrableBlockEntityRender.bulkRegisterBlockEntityRenderers(blockEntityRenderers);
+
+		ClientCommandRegistrationCallback.EVENT.register(ModCommandsClient::initialize);
 
 		addModelPaths();
 		registerNonBlockModels();
