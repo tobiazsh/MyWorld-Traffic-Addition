@@ -12,6 +12,9 @@ import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActi
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.SignPoleBlockActions;
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.*;
 import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
+import io.github.tobiazsh.jengua.Language;
+import io.github.tobiazsh.jengua.LanguageLoader;
+import io.github.tobiazsh.jengua.Translator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
@@ -21,6 +24,8 @@ import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +78,10 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.entries);
+
+		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
+		setupJengua();
+		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
@@ -170,5 +179,21 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request image
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
+	}
+
+	// -------- Language Translations --------
+
+	public static Translator translator;
+	public static Language default_en_US;
+	public static final String en_US_path = "/assets/%s/jenglang/en_US.json".formatted(MOD_ID);
+
+	private static void setupJengua() {
+		try {
+			default_en_US = LanguageLoader.loadLanguageFromResources(en_US_path);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		translator = new Translator(default_en_US, default_en_US); // Use en_US as both default and fallback language
 	}
 }
