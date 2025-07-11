@@ -33,7 +33,6 @@ public class MwtaCommand {
                     ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.PREF.ordinal()));
                     return 0;
                 }))
-                .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(1))
                 .executes(MwtaCommand::displayInfo));
     }
 
