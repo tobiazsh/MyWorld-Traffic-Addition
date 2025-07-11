@@ -1,19 +1,19 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups.OnlineImageDialog;
-import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.ImGui.MainWindows.PreferencesWindow;
-import at.tobiazsh.myworld.traffic_addition.Networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.Networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.Rendering.Renderers.*;
-import at.tobiazsh.myworld.traffic_addition.Utils.*;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenCustomizableSignEditScreen;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenSignPoleRotationScreenPayload;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.OpenSignSelectionPayload;
-import at.tobiazsh.myworld.traffic_addition.Screens.CustomizableSignSettingScreen;
-import at.tobiazsh.myworld.traffic_addition.Screens.SignPoleRotationScreen;
-import at.tobiazsh.myworld.traffic_addition.Screens.SignSelectionScreen;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
+import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
+import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
+import at.tobiazsh.myworld.traffic_addition.utils.*;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignSelectionPayload;
+import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
+import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
+import at.tobiazsh.myworld.traffic_addition.screens.SignSelectionScreen;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
-import static at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
+import static at.tobiazsh.myworld.traffic_addition.components.block_entities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
 
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 

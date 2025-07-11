@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.mixin.client;
 
-import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiRenderer;
+import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.tracy.TracyFrameCapturer;
 import org.spongepowered.asm.mixin.Mixin;

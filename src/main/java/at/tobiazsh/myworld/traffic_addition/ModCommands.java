@@ -8,7 +8,7 @@ package at.tobiazsh.myworld.traffic_addition;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

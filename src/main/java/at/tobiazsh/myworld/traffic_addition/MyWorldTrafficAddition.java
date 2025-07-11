@@ -1,17 +1,17 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.Networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.Networking.CustomServerNetworking;
-import at.tobiazsh.myworld.traffic_addition.Utils.OnlineImageServerLogic;
-import at.tobiazsh.myworld.traffic_addition.Utils.Preference.ServerPreferences;
-import at.tobiazsh.myworld.traffic_addition.Utils.SmartPayload;
-import at.tobiazsh.myworld.traffic_addition.Components.BlockEntities.SpecialBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.CustomizableSignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.SignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ServerActions.SignPoleBlockActions;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.BlockModification.*;
-import at.tobiazsh.myworld.traffic_addition.Components.CustomPayloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
+import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
+import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
+import at.tobiazsh.myworld.traffic_addition.components.block_entities.SpecialBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.CustomizableSignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.SignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.SignPoleBlockActions;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.*;
+import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
 import io.github.tobiazsh.jengua.Translator;
@@ -25,12 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.Utils.SmartPayload.bulkRegisterPayloads;
+import static at.tobiazsh.myworld.traffic_addition.utils.SmartPayload.bulkRegisterPayloads;
 
 /*
 	@author Tobias
@@ -82,6 +81,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
 		setupJengua();
 		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
+
+
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
@@ -195,5 +196,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		}
 
 		translator = new Translator(default_en_US, default_en_US); // Use en_US as both default and fallback language
+
+		System.out.println(translator.tr("Global", "add"));
+	}
+
+	public static String tr(String namespace, String key) {
+		return translator.tr(namespace, key);
 	}
 }
