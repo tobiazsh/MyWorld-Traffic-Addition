@@ -198,8 +198,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		}
 
 		translator = new Translator(default_en_US, default_en_US); // Use en_US as both default and fallback language
-
-		System.out.println(translator.tr("Global", "add"));
 	}
 
 	public static String tr(String namespace, String key) {
