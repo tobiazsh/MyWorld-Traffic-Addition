@@ -16,6 +16,7 @@ import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
 import io.github.tobiazsh.jengua.Translator;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -55,7 +56,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ModGroups.initialize();
 		ModBlocks.initialize();
 		ModBlockEntities.initialize();
-		ModCommands.initialize();
+
+		CommandRegistrationCallback.EVENT.register(ModCommands::initialize);
 
 		SpecialBlockEntity.initialize(); // Remnant of old code but I'll leave it here since I am lazy
 
