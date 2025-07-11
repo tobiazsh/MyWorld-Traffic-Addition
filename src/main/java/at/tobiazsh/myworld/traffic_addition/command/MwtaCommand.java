@@ -21,18 +21,9 @@ public class MwtaCommand {
     private static void registerCommand(@NotNull CommandDispatcher<ServerCommandSource> dispatcher, @NotNull String name) {
         dispatcher.register(CommandManager
                 .literal(name)
-                .then(CommandManager.literal("ToggleImGuiTestScreen").executes(context -> {
-                    ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.DEMO.ordinal()));
-                    return 0;
-                }))
-                .then(CommandManager.literal("about").executes(context -> {
-                    ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.ABOUT.ordinal()));
-                    return 0;
-                }))
-                .then(CommandManager.literal("pref").executes(context -> {
-                    ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.PREF.ordinal()));
-                    return 0;
-                }))
+                .then(CommandManager.literal("ToggleImGuiTestScreen").executes(MwtaCommand::toggleImGuiTestScreen))
+                .then(CommandManager.literal("about").executes(MwtaCommand::openAboutWindow))
+                .then(CommandManager.literal("pref").executes(MwtaCommand::openPreferencesWindow))
                 .executes(MwtaCommand::displayInfo));
     }
 
@@ -65,6 +56,42 @@ public class MwtaCommand {
         context.getSource().sendMessage(l4);
         context.getSource().sendMessage(l5);
 
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int toggleImGuiTestScreen(@NotNull CommandContext<ServerCommandSource> context) {
+        if (!context.getSource().isExecutedByPlayer()) {
+            context.getSource().sendError(Text.literal("This command can only be executed by a player!").formatted(Formatting.RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        context.getSource().sendFeedback(() -> Text.literal("Toggling ImGui Test Screen...").formatted(Formatting.GREEN), false);
+
+        ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.DEMO.ordinal()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int openAboutWindow(@NotNull CommandContext<ServerCommandSource> context) {
+        if (!context.getSource().isExecutedByPlayer()) {
+            context.getSource().sendError(Text.literal("This command can only be executed by a player!").formatted(Formatting.RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        context.getSource().sendFeedback(() -> Text.literal("Opening About Window...").formatted(Formatting.GREEN), false);
+
+        ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.ABOUT.ordinal()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int openPreferencesWindow(@NotNull CommandContext<ServerCommandSource> context) {
+        if (!context.getSource().isExecutedByPlayer()) {
+            context.getSource().sendError(Text.literal("This command can only be executed by a player!").formatted(Formatting.RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        context.getSource().sendFeedback(() -> Text.literal("Opening Preferences Window...").formatted(Formatting.GREEN), false);
+
+        ServerPlayNetworking.send(Objects.requireNonNull(context.getSource().getPlayer()), new ShowImGuiWindow(ModVars.ImGuiWindowIds.PREF.ordinal()));
         return Command.SINGLE_SUCCESS;
     }
 }
