@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.ImGui.ChildWindows.Popups;
 
 import at.tobiazsh.myworld.traffic_addition.ImGui.ImGuiImpl;
 import imgui.ImGui;
+import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
 
@@ -14,20 +15,20 @@ public class ConfirmationPopup {
     public static boolean waitingOnInput = false;
 
     public static void render() {
-        if (ImGui.beginPopupModal("Warning##Popup")) {
+        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.sign.editor.popups.warning").getString() + "##Popup")) {
             ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text(text);
             ImGui.popFont();
             ImGui.text(information);
 
-            if (ImGui.button("Yes")) {
+            if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.warning.yes").getString())) {
                 confirmed = true;
                 waitingOnInput = false;
                 ImGui.closeCurrentPopup();
             }
 
             ImGui.sameLine();
-            if (ImGui.button("No")) {
+            if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.warning").getString())) {
                 confirmed = false;
                 waitingOnInput = false;
                 ImGui.closeCurrentPopup();
@@ -37,7 +38,7 @@ public class ConfirmationPopup {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup("Warning##Popup");
+            ImGui.openPopup(Text.translatable("mwta.imgui.sign.editor.popups.warning").getString() + "##Popup");
             shouldOpen = false;
         }
     }

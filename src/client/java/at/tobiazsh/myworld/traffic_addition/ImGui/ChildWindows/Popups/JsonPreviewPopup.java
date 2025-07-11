@@ -12,12 +12,13 @@ import at.tobiazsh.myworld.traffic_addition.Utils.CustomizableSignData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import imgui.ImGui;
+import net.minecraft.text.Text;
 
 public class JsonPreviewPopup {
 	private static CustomizableSignData currentStyle = new CustomizableSignData();
 
 	public static boolean shouldOpen = false;
-	public static String windowId = "JSON Preview";
+	public static String windowId = Text.translatable("mwta.imgui.sign.editor.popups.json_viewer").getString();
 	private static String json;
 
 	public static void open(CustomizableSignData style) {
@@ -32,14 +33,14 @@ public class JsonPreviewPopup {
 	public static void create() {
 		if (ImGui.beginPopupModal(windowId)) {
 
-			if (ImGui.button("Close")) {
+			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.json_viewer.close").getString())) {
 				shouldOpen = false;
 				ImGui.closeCurrentPopup();
 			}
 
 			ImGui.sameLine();
 
-			if (ImGui.button("Copy to Clipboard")) {
+			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.json_viewer.copy_to_clipboard").getString())) {
 				ImGui.setClipboardText(json);
 			}
 
@@ -47,7 +48,7 @@ public class JsonPreviewPopup {
 
 			ImGui.beginChild("##jsonDisplayer", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
 
-			if (currentStyle.json == null) ImGui.text("Currently no JSON Data available");
+			if (currentStyle.json == null) ImGui.text(Text.translatable("mwta.imgui.sign.editor.popups.json_viewer.no_data_available").getString());
 			else ImGui.textWrapped(json);
 			ImGui.endChild();
 

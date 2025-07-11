@@ -10,6 +10,7 @@ import imgui.ImVec4;
 import imgui.flag.*;
 import imgui.type.ImInt;
 import imgui.type.ImString;
+import net.minecraft.text.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class FileDialogPopup {
         if (!shouldRender) return; // Prevent rendering when not necessary
 
         ImGui.setNextWindowSizeConstraints(new ImVec2(400, 800), new ImVec2(Float.MAX_VALUE, Float.MAX_VALUE));
-        if (ImGui.beginPopupModal(type.name().charAt(0) + type.name().substring(1).toLowerCase() + "###FileDialog")){
+        if (ImGui.beginPopupModal(getTypeName(type) + "###FileDialog")){
             handleHotkeys();
             menuBar();
 
@@ -132,7 +133,11 @@ public class FileDialogPopup {
 
         if (ImGui.inputText("##PathBar", pathBarPath, ImGuiInputTextFlags.EnterReturnsTrue)) {
             if (!updatePath(Paths.get(pathBarPath.get()))) {
-                ErrorPopup.open("Invalid Path", "The path you entered is invalid.", () -> pathBarPath.set(currentPath.toString()));
+                ErrorPopup.open(
+                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path").getString(),
+                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path").getString(),
+                        () -> pathBarPath.set(currentPath.toString())
+                );
             } else refresh();
         }
 
@@ -143,9 +148,9 @@ public class FileDialogPopup {
         ImGui.beginChild("##MenuBarRegion", ImGui.getContentRegionAvailX(), 30, false, ImGuiWindowFlags.MenuBar);
         if (ImGui.beginMenuBar()) {
 
-            if (ImGui.menuItem("Parent Directory")) parentDir();
-            if (ImGui.menuItem("Refresh")) refresh();
-            if (ImGui.menuItem("New Folder...")) newFolder();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.parent_directory").getString())) parentDir();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.refresh").getString())) refresh();
+            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.new_folder.action").getString())) newFolder();
 
             ImGui.endMenuBar();
         }
@@ -153,13 +158,18 @@ public class FileDialogPopup {
     }
 
     private static void newFolder() {
-        UserInputPopup.open("Folder Name", UserInputPopup.InputType.STRING, (folderName) -> {
+        UserInputPopup.open(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.folder_name").getString(), UserInputPopup.InputType.STRING, (folderName) -> {
             if (folderName.isBlank()) return;
 
             try {
                 Files.createDirectory(currentPath.resolve(folderName));
             } catch (IOException e) {
-                ErrorPopup.open("Error", "A fatal error occurred while creating the folder! Please check logs!", () -> {});
+                ErrorPopup.open(
+                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
+                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_folder.description").getString(),
+                        () -> {}
+                );
+
                 MyWorldTrafficAddition.LOGGER.error("A fatal error occurred while creating folder {}!", currentPath.resolve(folderName));
                 throw new RuntimeException(e);
             }
@@ -189,7 +199,7 @@ public class FileDialogPopup {
         ImGui.pushStyleColor(ImGuiCol.ButtonHovered, new ImVec4(0.61f, 0.93f, 0.5f, 1f)); // Background on Hover
         ImGui.pushStyleColor(ImGuiCol.ButtonActive, new ImVec4(0.43f, 0.65f, 0.345f, 1f)); // Background on Click
 
-        if (ImGui.button((type == FileDialogType.SAVE) ? "Save" : "Open", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) confirm(); // Button "Save" or "Open"
+        if (ImGui.button(getTypeName(type), 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) confirm(); // Button "Save" or "Open"
 
         ImGui.popStyleColor(3);
 
@@ -199,7 +209,7 @@ public class FileDialogPopup {
 
         // Cancel button
         ImGui.setColumnWidth(1, 100);
-        if (ImGui.button("Cancel", 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) cancel();
+        if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.cancel").getString(), 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) cancel();
         ImGui.nextColumn();
 
         // File extension selection
@@ -236,7 +246,11 @@ public class FileDialogPopup {
         } catch (IOException e) {
             e.printStackTrace();
 
-            ErrorPopup.open("Error", "A fatal error occurred while creating parent directories! Please check logs!", () -> {});
+            ErrorPopup.open(
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_parent_dirs.description").getString(),
+                    () -> {}
+            );
 
             MyWorldTrafficAddition.LOGGER.error("A fatal error occurred while creating parent directories for file {}!", filePath);
             throw new RuntimeException(e);
@@ -247,7 +261,12 @@ public class FileDialogPopup {
         try {
             createdSuccessfully = newFile.createNewFile();
         } catch (IOException e) {
-            ErrorPopup.open("Error", "A fatal error occurred while creating the file! Please check logs!", () -> {});
+            ErrorPopup.open(
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_file.description").getString(),
+                    () -> {}
+            );
+
             MyWorldTrafficAddition.LOGGER.error("A fatal error occurred while creating file {}!", filePath);
             throw new RuntimeException(e);
         }
@@ -268,7 +287,12 @@ public class FileDialogPopup {
         try {
             Files.write(path, data.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            ErrorPopup.open("Error", "A fatal error occurred while writing data to file! Please check logs!", () -> {});
+            ErrorPopup.open(
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.writing_to_file.description").getString(),
+                    () -> {}
+            );
+
             MyWorldTrafficAddition.LOGGER.error("A fatal error occurred while writing to file {}! It is likely that the data could not be encoded to UTF-8!", filePath);
             throw new RuntimeException(e);
         }
@@ -278,7 +302,10 @@ public class FileDialogPopup {
 
     // Will be executed if file already exists in current directory
     private static void handleFileExists() {
-        ConfirmationPopup.show("File already exists", "The file you are trying to save already exists. Do you want to overwrite it?", (confirmed) -> {
+        ConfirmationPopup.show(
+                Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists").getString(),
+                Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists.description").getString(),
+                (confirmed) -> {
             if (confirmed) write(fileData, filePath);
         });
     }
@@ -288,14 +315,23 @@ public class FileDialogPopup {
         filePath = currentPath.resolve(directoryContent.at(selectedIndex).name);
 
         if (!Files.exists(filePath)) {
-            ErrorPopup.open("File not found", "The file you are trying to open does not exist.", () -> {});
+            ErrorPopup.open(
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found").getString(),
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found.description").getString(),
+                    () -> {}
+            );
             return;
         }
 
         try {
             fileData = Files.readString(filePath);
         } catch (IOException e) {
-            ErrorPopup.open("Error", "A fatal error occurred while reading data from file! Please check logs!", () -> {});
+            ErrorPopup.open(
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
+                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.reading_file.description").getString(),
+                    () -> {}
+            );
+
             MyWorldTrafficAddition.LOGGER.error("A fatal error occurred while reading from file {}! It is likely that the data could not be decoded from UTF-8!", filePath);
             throw new RuntimeException(e);
         }
@@ -391,5 +427,21 @@ public class FileDialogPopup {
 
     public static String getData() {
         return fileData;
+    }
+
+    private static String getTypeName(FileDialogType type) {
+        switch (type) {
+            case SAVE -> {
+                return Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.save").getString();
+            }
+
+            case OPEN -> {
+                return Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.open").getString();
+            }
+
+            default -> {
+                return "UNKNOWN FILE DIALOG TYPE";
+            }
+        }
     }
 }

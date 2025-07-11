@@ -15,6 +15,7 @@ import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.BufferUtils;
@@ -46,7 +47,7 @@ public class OnlineImageDialog {
     private static boolean shouldOpenProgressPopup = false;
     private static boolean isOperationComplete = false;
     private static float operationProgress = 0.0f;
-    private static String operationMessage = "Waiting...";
+    private static String operationMessage = Text.translatable("mwta.imgui.sign.editor.popups.online_image_dialog.operation_message.default").getString();
     private static boolean cancelDownload = false;
 
     private static ImString imageUrl = new ImString(512);
@@ -88,7 +89,7 @@ public class OnlineImageDialog {
         if (!shouldRender) return; // Prevent rendering if not necessary
 
         ImGui.setNextWindowSize(windowWidth, windowHeight);
-        if (ImGui.beginPopupModal("Upload Online Image...")) {
+        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.sign.editor.popups.online_image_uploader").getString())) {
 
             switch (currentPage) {
                 case NEW -> renderNewPage();
@@ -102,7 +103,7 @@ public class OnlineImageDialog {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup("Upload Online Image...");
+            ImGui.openPopup(Text.translatable("mwta.imgui.sign.editor.popups.online_image_uploader").getString());
             shouldOpen = false;
         }
     }

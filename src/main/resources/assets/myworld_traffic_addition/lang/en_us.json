@@ -288,5 +288,49 @@
 	"mwta.imgui.sign.editor.menu.clipboard": "Clipboard",
 	"mwta.imgui.sign.editor.menu.clipboard.menuitem.copy_sign": "Copy Sign",
 	"mwta.imgui.sign.editor.menu.clipboard.menuitem.paste_sign": "Paste Sign",
-	"mwta.imgui.sign.editor.menu.clipboard.menuitem.paste_element": "Paste Element"
+	"mwta.imgui.sign.editor.menu.clipboard.menuitem.paste_element": "Paste Element",
+
+
+	"mwta.imgui.sign.editor.popups.background_selector": "Choose Background",
+	"mwta.imgui.sign.editor.popups.background_selector.background_settings": "Background Settings",
+	"mwta.imgui.sign.editor.popups.background_selector.country": "Country",
+	"mwta.imgui.sign.editor.popups.background_selector.background": "Background",
+	"mwta.imgui.sign.editor.popups.background_selector.cancel": "Cancel",
+	"mwta.imgui.sign.editor.popups.background_selector.apply": "Apply",
+
+	"mwta.imgui.sign.editor.popups.warning": "Warning",
+	"mwta.imgui.sign.editor.popups.warning.yes": "Yes",
+	"mwta.imgui.sign.editor.popups.warning.no": "No",
+
+	"mwta.imgui.sign.editor.popups.error": "Error",
+	"mwta.imgui.sign.editor.popups.error.close": "Close",
+	"mwta.imgui.sign.editor.popups.error.message": "Message:",
+
+	"mwta.imgui.sign.editor.popups.file_dialog.open": "Open",
+	"mwta.imgui.sign.editor.popups.file_dialog.save": "Save",
+	"mwta.imgui.sign.editor.popups.file_dialog.cancel": "Cancel",
+	"mwta.imgui.sign.editor.popups.file_dialog.parent_directory": "Parent Directory",
+	"mwta.imgui.sign.editor.popups.file_dialog.refresh": "Refresh",
+	"mwta.imgui.sign.editor.popups.file_dialog.new_folder.action": "New Folder...",
+	"mwta.imgui.sign.editor.popups.file_dialog.folder_name": "Folder Name",
+	"mwta.imgui.sign.editor.popups.file_dialog.error": "Error",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path": "Invalid Path",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path.description": "The path you have entered is invalid.",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.creating_file.description": "A fatal error occurred while creating the file! Please check logs!",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.creating_folder.description": "A fatal error occurred while creating the folder! Please check logs!",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.writing_to_file.description": "A fatal error occurred while writing data to file! Please check logs!",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.creating_parent_dirs.description": "A fatal error occurred while creating parent directories! Please check logs!",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.reading_file.description": "A fatal error occurred while reading the file! Please check logs!",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found": "File not found",
+	"mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found.description": "The file you are trying to open does not exist.",
+	"mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists": "File already exists",
+	"mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists.description": "The file you are trying to save already exists. Do you want to overwrite it?",
+
+	"mwta.imgui.sign.editor.popups.json_viewer": "JSON Viewer",
+	"mwta.imgui.sign.editor.popups.json_viewer.close": "Close",
+	"mwta.imgui.sign.editor.popups.json_viewer.copy_to_clipboard": "Copy t Clipboard",
+	"mwta.imgui.sign.editor.popups.json_viewer.no_data_available": "No data available",
+
+	"mwta.imgui.sign.editor.popups.online_image_uploader": "Upload Online Image...",
+	"mwta.imgui.sign.editor.popups.online_image_dialog.operation_message.default": "Waiting..."
 }
