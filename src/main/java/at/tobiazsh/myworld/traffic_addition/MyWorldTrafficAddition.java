@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
@@ -81,9 +82,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.entries);
 
 		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
-		setupJengua();
+		JenguaTranslator.setup();
 		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
-		
+
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
 
@@ -180,25 +181,5 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request image
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
-	}
-
-	// -------- Language Translations --------
-
-	public static Translator translator;
-	public static Language default_en_US;
-	public static final String en_US_path = "/assets/%s/jenglang/en_US.json".formatted(MOD_ID);
-
-	private static void setupJengua() {
-		try {
-			default_en_US = LanguageLoader.loadLanguageFromResources(en_US_path);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		translator = new Translator(default_en_US, default_en_US); // Use en_US as both default and fallback language
-	}
-
-	public static String tr(String namespace, String key) {
-		return translator.tr(namespace, key);
 	}
 }
