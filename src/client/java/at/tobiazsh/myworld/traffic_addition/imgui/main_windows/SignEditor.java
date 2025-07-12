@@ -107,7 +107,7 @@ public class SignEditor {
 
         // List all available backgrounds
         try {
-            allBackgrounds = FileSystem.listFoldersRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/", true);
+            allBackgrounds = FileSystem.listFoldersRecursive("/assets/%s/textures/imgui/sign_res/backgrounds/".formatted(MyWorldTrafficAddition.MOD_ID), true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
