@@ -25,9 +25,12 @@ public class FileSystem {
 
 	/**
 	 * Non-recursively list the contents of the specified folder
+	 *
 	 * @param path Path to the resource
 	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
+	 *
 	 * @return Folder containing only the direct contents of the specified path
+	 *
 	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
 	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
 	 */
