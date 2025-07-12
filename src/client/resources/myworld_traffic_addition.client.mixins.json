@@ -5,7 +5,7 @@
   "client": [
     "RenderSystemAccessor",
     "FontManagerAccessor",
-    "MinecraftClientAccessor",
+    "MinecraftClientMixin",
     "imgui.MinecraftClientMixin"
   ],
   "injectors": {
