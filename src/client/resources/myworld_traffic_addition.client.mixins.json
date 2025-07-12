@@ -6,7 +6,7 @@
     "RenderSystemAccessor",
     "FontManagerAccessor",
     "MinecraftClientMixin",
-    "imgui.MinecraftClientMixin"
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1
