@@ -83,9 +83,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
 		setupJengua();
 		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
-
-
-
+		
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
 
