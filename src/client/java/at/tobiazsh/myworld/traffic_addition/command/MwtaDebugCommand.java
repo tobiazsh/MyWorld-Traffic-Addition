@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.command;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -41,7 +42,7 @@ public class MwtaDebugCommand {
         }
 
         try {
-            LanguageSaver.saveLanguageFileTo(MyWorldTrafficAddition.default_en_US, targetFile);
+            LanguageSaver.saveLanguageFileTo(JenguaTranslator.default_en_US, targetFile);
         } catch (Exception e) {
             source.sendError(Text.of("Failed to save language file! More details in log!"));
             MyWorldTrafficAddition.LOGGER.error("Failed to save language file!", e);
