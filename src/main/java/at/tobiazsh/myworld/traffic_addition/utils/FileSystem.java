@@ -8,7 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class FileSystem {
 
 		if (fromResource) {
 			// Retrieve the resource URL and handle missing resource
-			url = MyWorldTrafficAdditionClient.class.getResource(path);
+			url = MyWorldTrafficAddition.class.getResource(path);
 		} else {
 			Path p = Path.of(path);
 			url = p.toUri().toURL();
@@ -73,7 +73,7 @@ public class FileSystem {
 			}
 		} catch (Exception e) {
 			// Handle or log the exception
-			e.printStackTrace();
+            MyWorldTrafficAddition.LOGGER.error("Failed to list contents of path: {}", path, e);
 		}
 
 		return rootDir;
@@ -155,7 +155,7 @@ public class FileSystem {
 
 		if (fromResource) {
 			// Retrieve the resource URL and handle missing resource
-			url = MyWorldTrafficAdditionClient.class.getResource(path);
+			url = MyWorldTrafficAddition.class.getResource(path);
 		} else {
 			url = Path.of(path).toUri().toURL();
 		}
@@ -175,7 +175,7 @@ public class FileSystem {
 			populateDirectory(rootDir, newPath, path);
 		} catch (Exception e) {
 			// Handle or log the exception
-			e.printStackTrace();
+			MyWorldTrafficAddition.LOGGER.error("Failed to crawl directory: {}", path, e);
 		}
 
 		return rootDir;
