@@ -41,6 +41,7 @@ import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.clearFontAtlas;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.updateToNewVersion;
 import static at.tobiazsh.myworld.traffic_addition.utils.Saves.createSavesDir;
@@ -87,7 +88,7 @@ public class SignEditor {
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
 
         if (!isInit) {
-            ErrorPopup.open(Text.translatable("mwta.imgui.errors.sign_not_initialized").getString(), Text.translatable("mwta.imgui.errors.sign_not_initialized.description").getString(), SignEditor::quit);
+            ErrorPopup.open(tr("ImGui.SignEditor.Errors", "Sign not initialized!"), Text.translatable("mwta.imgui.errors.sign_not_initialized.description").getString(), SignEditor::quit);
         }
 
         ClientElementManager.getInstance().clearAll();
