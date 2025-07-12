@@ -93,7 +93,7 @@ public class ElementAddWindow {
 	 */
 	public static void loadPreviews() {
 		try {
-			folder = FileSystem.listFilesRecursive("/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/", true).concentrateFileType("PNG");
+			folder = FileSystem.listFilesRecursive("/assets/%s/textures/imgui/sign_res/icons/".formatted(MyWorldTrafficAddition.MOD_ID), true).concentrateFileType("PNG");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
