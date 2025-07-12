@@ -80,7 +80,7 @@ public class FontManager {
 
     static {
         try {
-            availableFonts = Objects.requireNonNull(FileSystem.listFilesRecursive("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/", true)).removeFoldersCurrentDir().concentrateFileType("TTF");
+            availableFonts = Objects.requireNonNull(FileSystem.listFilesRecursive("/assets/%s/font/".formatted(MyWorldTrafficAddition.MOD_ID), true)).removeFoldersCurrentDir().concentrateFileType("TTF");
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
