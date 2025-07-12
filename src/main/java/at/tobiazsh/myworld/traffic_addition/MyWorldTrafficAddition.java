@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
@@ -13,9 +12,6 @@ import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_ac
 import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.SignPoleBlockActions;
 import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
-import io.github.tobiazsh.jengua.Language;
-import io.github.tobiazsh.jengua.LanguageLoader;
-import io.github.tobiazsh.jengua.Translator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -26,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -80,10 +75,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.entries);
-
-		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
-		JenguaTranslator.setup();
-		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}

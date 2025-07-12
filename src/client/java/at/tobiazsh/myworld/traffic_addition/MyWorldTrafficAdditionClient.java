@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
@@ -61,6 +62,10 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		putBlockRenderLayers();
 
 		OnlineImageCache.createCacheDir();
+
+		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
+		JenguaTranslator.setup();
+		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
 
 		loadPreferences();
 	}
