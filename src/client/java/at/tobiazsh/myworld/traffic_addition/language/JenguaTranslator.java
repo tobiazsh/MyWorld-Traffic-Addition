@@ -2,10 +2,10 @@ package at.tobiazsh.myworld.traffic_addition.language;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
 import io.github.tobiazsh.jengua.Translator;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -64,6 +64,20 @@ public class JenguaTranslator {
 
     public static String[] getAvailableLanguages() {
         return availableLanguages;
+    }
+
+    public static void autoSetLanguage() {
+        String minecraftLocale = MinecraftClient.getInstance().getLanguageManager().getLanguage();
+        String jenguaLocale = convertMinecraftToJenguaLocale(minecraftLocale);
+        MyWorldTrafficAddition.LOGGER.info("Trying to automatically set Jengua language to {}...", jenguaLocale);
+
+        if (translator.getAvailableLanguages().contains(jenguaLocale)) {
+            MyWorldTrafficAddition.LOGGER.info("Setting Jengua language to {}.", jenguaLocale);
+            translator.setLanguage(jenguaLocale);
+        } else {
+            MyWorldTrafficAddition.LOGGER.warn("Jengua language {} not available, falling back to default language.", jenguaLocale);
+            translator.setLanguage(default_en_US.code());
+        }
     }
 
     /**

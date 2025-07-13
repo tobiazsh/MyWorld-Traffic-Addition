@@ -10,11 +10,11 @@ package at.tobiazsh.myworld.traffic_addition.mixin.client;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.FontManager;
-import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.Window;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,8 +31,9 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     // ---- ImGui ----
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void initImGui(CallbackInfo ci) {
-        ImGuiImpl.create(window.getHandle());
+    public void customInit(CallbackInfo ci) {
+        ImGuiImpl.create(window.getHandle()); // Initialize ImGui with the Minecraft window handle
+        JenguaTranslator.autoSetLanguage(); // Automatically set the language based on the system or user preference
     }
 
     @Inject(method = "close", at = @At("RETURN"))
@@ -61,5 +62,4 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     public void stop(CallbackInfo ci) {
         MyWorldTrafficAdditionClient.onStopGame();
     }
-
 }
