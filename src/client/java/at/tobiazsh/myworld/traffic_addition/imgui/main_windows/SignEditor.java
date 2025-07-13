@@ -285,7 +285,7 @@ public class SignEditor {
         if(ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.menu.elements").getString())) {
             if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.add_element").getString(), "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.add_text_element").getString(), "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.upload_online_image_element").getString())) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
+            //if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.menu.elements.menuitem.upload_online_image_element").getString())) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
 
             ImGui.separator();
 
