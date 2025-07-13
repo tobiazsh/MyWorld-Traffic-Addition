@@ -10,6 +10,7 @@ import net.minecraft.text.Text;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getBackgroundTexturePathList;
 
 public class BackgroundSelectorPopup {
@@ -25,16 +26,16 @@ public class BackgroundSelectorPopup {
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);
         ImGui.pushFont(ImGuiImpl.Roboto);
-        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.sign.editor.popups.background_selector").getString())) {
+        if (ImGui.beginPopupModal(tr("ImGui.Child.Popups.BackgroundSelector", "Choose Background"))) {
             ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
-            ImGui.setCursorPosX((1000 - imgui.calcTextSize(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.background_settings").getString()).x) / 2);
-            ImGui.text(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.background_settings").getString());
+            ImGui.setCursorPosX((1000 - imgui.calcTextSize(tr("ImGui.Child.Popups.BackgroundSelector", "Background Settings")).x) / 2);
+            ImGui.text(tr("ImGui.Child.Popups.BackgroundSelector", "Background Settings"));
             ImGui.popFont();
 
             ImGui.separator();
 
             ImGui.pushFont(ImGuiImpl.RobotoBold);
-            ImGui.text(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.country").getString());
+            ImGui.text(tr("Global", "Country"));
             ImGui.popFont();
 
             if (ImGui.beginCombo("##country", selectedCountry.name)) {
@@ -61,7 +62,7 @@ public class BackgroundSelectorPopup {
             ImGui.spacing();
 
             ImGui.pushFont(ImGuiImpl.RobotoBold);
-            ImGui.text(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.background").getString());
+            ImGui.text(tr("Global", "Background"));
             ImGui.popFont();
 
             if (ImGui.beginCombo("##background", currentBackground.name)) {
@@ -80,7 +81,7 @@ public class BackgroundSelectorPopup {
 
             ImGui.spacing();
 
-            if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.cancel").getString())) {
+            if (ImGui.button(tr("Global", "Cancel"))) {
                 styleSelected = false;
                 currentBackground = Objects.requireNonNullElse(oldBackground, defaultBackground); // If there wasn't a background beforehand, select the default one.
                 ImGui.closeCurrentPopup();
@@ -92,7 +93,7 @@ public class BackgroundSelectorPopup {
 
             if (applyButtonDisabled) ImGui.beginDisabled();
 
-            if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.background_selector.apply").getString())) {
+            if (ImGui.button(tr("Global", "Apply"))) {
                 styleSelected = false;
                 ImGui.closeCurrentPopup();
 
@@ -106,7 +107,7 @@ public class BackgroundSelectorPopup {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup(Text.translatable("mwta.imgui.sign.editor.popups.background_selector").getString());
+            ImGui.openPopup(tr("ImGui.Child.Popups.BackgroundSelector", "Choose Background"));
             shouldOpen = false;
         }
 
