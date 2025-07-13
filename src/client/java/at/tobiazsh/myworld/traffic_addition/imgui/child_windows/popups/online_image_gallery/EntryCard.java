@@ -93,8 +93,8 @@ public class EntryCard {
             if (hasFetchedNameSuccessfully) {
                 ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Profile Name"), uploaderName)); // Profile Name: Fetching...
             } else {
-            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Profile Name"), tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard","Fetching..."))); // Profile Name: Fetching...
-                }
+                ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Profile Name"), tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", status))); // Profile Name: Fetching...
+            }
 
             // Button to start fetching the name; only shown if not fetched or error
             if (!hasFetchedNameSuccessfully && !isFetchingName) {
