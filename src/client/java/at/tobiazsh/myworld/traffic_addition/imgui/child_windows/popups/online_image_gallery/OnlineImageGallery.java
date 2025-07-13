@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 public class OnlineImageGallery {
 
     private static boolean shouldRender = false;
@@ -61,7 +63,7 @@ public class OnlineImageGallery {
         }
 
         ImGui.setNextWindowSize(windowWidth, windowHeight);
-        if (ImGui.beginPopupModal("Online Image Gallery")) {
+        if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery"))) {
 
             renderMenuBar();
             renderPageBar();
@@ -83,7 +85,7 @@ public class OnlineImageGallery {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup("Online Image Gallery");
+            ImGui.openPopup(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery"));
             shouldOpen = false;
         }
 
@@ -99,7 +101,7 @@ public class OnlineImageGallery {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.129f, 0.129f, 0.129f, 1.0f));
         ImGui.beginChild("##tabControls", ImGui.getWindowSizeX() - 2 * ImGui.getStyle().getWindowPaddingX(), ImGui.getFrameHeight(), false);
 
-        if (ImGui.button("Cancel (X)")) {
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Cancel"))) {
             shouldClose = true;
             ImGui.closeCurrentPopup();
         }
@@ -108,7 +110,7 @@ public class OnlineImageGallery {
 
         boolean pushedAll = currentTab == TABS.ALL;
         if (pushedAll) ImGui.pushStyleColor(ImGuiCol.Button, buttonActivatedColor);
-        if (ImGui.button("All Images") && currentTab != TABS.ALL)  {
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "All Images")) && currentTab != TABS.ALL)  {
             currentTab = TABS.ALL;
             refresh();
         }
@@ -118,7 +120,7 @@ public class OnlineImageGallery {
 
         boolean pushedMine = currentTab == TABS.MINE;
         if (pushedMine) ImGui.pushStyleColor(ImGuiCol.Button, buttonActivatedColor);
-        if (ImGui.button("My Images") && currentTab != TABS.MINE) {
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "My Images")) && currentTab != TABS.MINE) {
             currentTab = TABS.MINE;
             refresh();
         }
@@ -126,7 +128,7 @@ public class OnlineImageGallery {
 
         ImGui.sameLine();
 
-        if (ImGui.button("Refresh")) {
+        if (ImGui.button(tr("Global", "Refresh"))) {
             refresh();
         }
 
@@ -141,23 +143,23 @@ public class OnlineImageGallery {
 
         boolean disablePrev = currentPage == 0;
         if (disablePrev) ImGui.beginDisabled();
-        if (ImGui.button("< Previous Page")) previousPage();
+        if (ImGui.button("< %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery", "Previous Page")))) previousPage(); // < Previous Page
         if (disablePrev) ImGui.endDisabled();
 
         ImGui.sameLine();
 
-        String pageText = "Page " + (currentPage + 1) + " of " + (maxPages + 1);
+        String pageText = "%s %s %s %s".formatted(tr("Global", "Page"), currentPage + 1, tr("Global", "Of").toLowerCase(), maxPages + 1); // Page ... of ...
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(pageText)) / 2);
         ImGui.text(pageText);
 
         ImGui.sameLine();
 
         boolean disableNext = currentPage == maxPages;
-        ImGui.setCursorPosX(ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("Next Page >") - ImGui.getStyle().getWindowPaddingX());
+        ImGui.setCursorPosX(ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("%s >".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery", "Next Page"))) - ImGui.getStyle().getWindowPaddingX());
         if (disableNext) ImGui.beginDisabled();
-        if (ImGui.button("Next Page >")) nextPage();
+        if (ImGui.button("%s >".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery", "Next Page")))) nextPage(); // Next Page >
         if (disableNext) ImGui.endDisabled();
-        
+
         ImGui.endChild();
         ImGui.popStyleColor();
     }
@@ -183,13 +185,14 @@ public class OnlineImageGallery {
         if (isLoading) return;
 
         if (metadataList.isEmpty()) {
+            String noImagesFound = tr("ImGui.Child.PopUps.OnlineImageGallery", "No images found.");
             ImGui.setCursorPos(
                     new ImVec2(
-                            (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("No images found.")) / 2,
-                            (ImGui.getWindowSizeY() - MyWorldTrafficAdditionClient.imgui.calcTextSizeY("No images found.")) / 2
+                            (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(noImagesFound)) / 2,
+                            (ImGui.getWindowSizeY() - MyWorldTrafficAdditionClient.imgui.calcTextSizeY(noImagesFound)) / 2
                     )
             );
-            ImGui.text("No images found.");
+            ImGui.text(noImagesFound);
             return;
         }
 
@@ -198,7 +201,7 @@ public class OnlineImageGallery {
             for (int i = 0; i < currentThumbnails.size(); i++) {
                 int finalI = i;
                 entryCards.add(new EntryCard(metadataList.get(i), currentThumbnails.get(i).getTextureId(), currentTab == TABS.MINE, () -> {
-                    ConfirmationPopup.show("Are you sure you want to delete " + metadataList.get(finalI).getImageName() + "?", "This action cannot be undone!", callback -> {
+                    ConfirmationPopup.show("%s %s?".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery", "Are you sure you want to delete"), metadataList.get(finalI).getImageName()), tr("ImGui.Global.Warn", "This action cannot be undone!"), callback -> {
                         if (callback) {
                             requestDeletion(metadataList.get(finalI).getImageUUID());
                             refresh();
@@ -226,15 +229,16 @@ public class OnlineImageGallery {
     }
 
     private static void displayLoading() {
+        String loading = tr("ImGui.Child.PopUps.OnlineImageGallery", "Loading...");
         ImGui.setCursorPos(new ImVec2(
-                (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("LOADING...")) / 2,
-                (ImGui.getWindowSizeY() - MyWorldTrafficAdditionClient.imgui.calcTextSizeY("LOADING...")) / 2
+                (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(loading)) / 2,
+                (ImGui.getWindowSizeY() - MyWorldTrafficAdditionClient.imgui.calcTextSizeY(loading)) / 2
         ));
-        ImGui.text("LOADING...");
+        ImGui.text(loading);
     }
 
     private static void displayErrorInfo() {
-        String message = "An Error occurred while loading images! More info in the log.";
+        String message = tr("ImGui.Child.PopUps.OnlineImageGallery.Error", "An Error occurred while loading images! More info in the log.");
         ImGui.setCursorPos(new ImVec2(
                 (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(message)) / 2,
                 (ImGui.getWindowSizeY() - MyWorldTrafficAdditionClient.imgui.calcTextSizeY(message)) / 2
