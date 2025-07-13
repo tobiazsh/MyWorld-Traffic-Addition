@@ -23,7 +23,6 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
 import imgui.type.ImString;
-import net.minecraft.text.Text;
 
 import java.util.*;
 
