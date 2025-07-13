@@ -10,7 +10,6 @@ import imgui.ImVec4;
 import imgui.flag.*;
 import imgui.type.ImInt;
 import imgui.type.ImString;
-import net.minecraft.text.Text;
 
 import java.io.File;
 import java.io.IOException;
