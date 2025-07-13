@@ -10,7 +10,6 @@ import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImInt;
-import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Objects;
