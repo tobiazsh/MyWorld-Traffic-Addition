@@ -25,10 +25,10 @@ public class BackgroundSelectorPopup {
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);
         ImGui.pushFont(ImGuiImpl.Roboto);
-        if (ImGui.beginPopupModal(tr("ImGui.Child.Popups.BackgroundSelector", "Choose Background"))) {
+        if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background"))) {
             ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
-            ImGui.setCursorPosX((1000 - imgui.calcTextSize(tr("ImGui.Child.Popups.BackgroundSelector", "Background Settings")).x) / 2);
-            ImGui.text(tr("ImGui.Child.Popups.BackgroundSelector", "Background Settings"));
+            ImGui.setCursorPosX((1000 - imgui.calcTextSize(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Settings")).x) / 2);
+            ImGui.text(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Settings"));
             ImGui.popFont();
 
             ImGui.separator();
@@ -106,7 +106,7 @@ public class BackgroundSelectorPopup {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup(tr("ImGui.Child.Popups.BackgroundSelector", "Choose Background"));
+            ImGui.openPopup(tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background"));
             shouldOpen = false;
         }
 
