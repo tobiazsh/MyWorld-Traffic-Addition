@@ -5,6 +5,8 @@ import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.ImGui;
 import net.minecraft.text.Text;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 public class ErrorPopup {
 
     private static boolean shouldOpen = false;
@@ -14,7 +16,7 @@ public class ErrorPopup {
     private static Runnable onClose;
 
     public static void render() {
-        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.sign.editor.popups.error").getString() + "##Popup")) {
+        if (ImGui.beginPopupModal(tr("Global", "Error") + "##Popup")) {
 
             ImGui.pushFont(ImGuiImpl.RobotoBold);
 
@@ -27,7 +29,7 @@ public class ErrorPopup {
             ImGui.text(text);
             ImGui.separator();
 
-            ImGui.text(Text.translatable("mwta.imgui.sign.editor.popups.error.message").getString());
+            ImGui.text("%s:".formatted(tr("Global", "Message")));
 
             ImGui.popFont();
 
@@ -35,7 +37,7 @@ public class ErrorPopup {
 
             ImGui.separator();
 
-            if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.error.close").getString())) {
+            if (ImGui.button(tr("Global", "Close"))) {
                 ImGui.closeCurrentPopup();
                 onClose.run();
             }
@@ -44,7 +46,7 @@ public class ErrorPopup {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup(Text.translatable("mwta.imgui.sign.editor.popups.error").getString() + "##Popup");
+            ImGui.openPopup(tr("Global", "Error") + "##Popup");
             shouldOpen = false;
         }
     }
