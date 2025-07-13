@@ -22,7 +22,6 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
-import net.minecraft.text.Text;
 
 import java.util.List;
 import java.util.Objects;
