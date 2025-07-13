@@ -3,7 +3,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.ImGui;
-import net.minecraft.text.Text;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
