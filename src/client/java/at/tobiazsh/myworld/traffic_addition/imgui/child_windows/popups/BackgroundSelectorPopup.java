@@ -5,7 +5,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
 import imgui.ImGui;
-import net.minecraft.text.Text;
 
 import java.util.Objects;
 
