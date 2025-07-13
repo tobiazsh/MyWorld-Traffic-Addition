@@ -14,6 +14,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
@@ -23,10 +24,12 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 import net.minecraft.text.Text;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 public class ElementAddWindow {
 	public static boolean shouldRender = false;
 	public static boolean shouldConfig = false;
-	public static String windowId = Text.translatable("mwta.imgui.sign.editor.add_element").getString(); // "Add New Element" title
+	public static String windowId = null;
 	private static FileSystem.Folder folder = null;
 
 	/**
@@ -37,21 +40,24 @@ public class ElementAddWindow {
 		if (shouldConfig) loadPreviews();
 		if (!shouldRender) return;
 
+		if (windowId == null)
+			windowId = tr("ImGui.Child.PopUps.ElementAddWindow", "Add New Element");
+
 		ImGui.pushFont(ImGuiImpl.Roboto);
 		if (ImGui.begin(windowId, ImGuiWindowFlags.MenuBar)) {
 
-			//OnlineImageGallery.render(); // TODO: Implement online image gallery
+			OnlineImageGallery.render(); // TODO: Implement online image gallery
 
 			if (ImGui.beginMenuBar()) {
-				if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.cancel").getString() + " (X)")) shouldRender = false; // "Cancel" button
-				//if (ImGui.menuItem("Add Online Image...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
+				if (ImGui.menuItem(tr("Global", "Cancel"))) shouldRender = false; // "Cancel" button
+				if (ImGui.menuItem(tr("ImGui.Child.PopUps.ElementAddWindow", "Add Online Image") + "...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
 
 				ImGui.endMenuBar();
 			}
 
 			// Display the title of the window in bold font
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.add_element").getString()); // "Add New Element" title
+			ImGui.text(tr("ImGui.Child.PopUps.ElementAddWindow", "Add New Element")); // "Add New Element" title
 			ImGui.popFont();
 
 			ImGui.separator();
@@ -179,7 +185,7 @@ public class ElementAddWindow {
 				ImGui.endChild();
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
-				if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.add").getString())) { // "Add" button
+				if (ImGui.button(tr("Global", "Add"))) { // "Add" button
 					addElement((ImageElementClient) ClientElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
 				}
 
@@ -196,11 +202,11 @@ public class ElementAddWindow {
 			this.setTexture(path);
 		}
 
-		public ElementIcon (String name, String path) {
+		public ElementIcon(String name, String path) {
 			this(name, path, defaultWidth, defaultHeight);
 		}
 
-		public ElementIcon (String name, String path, float size) {
+		public ElementIcon(String name, String path, float size) {
 			this(name, path);
 			this.setSize(size);
 		}
