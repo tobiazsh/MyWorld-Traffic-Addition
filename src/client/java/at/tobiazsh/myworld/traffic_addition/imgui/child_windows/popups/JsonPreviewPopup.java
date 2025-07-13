@@ -12,7 +12,6 @@ import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import imgui.ImGui;
-import net.minecraft.text.Text;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
