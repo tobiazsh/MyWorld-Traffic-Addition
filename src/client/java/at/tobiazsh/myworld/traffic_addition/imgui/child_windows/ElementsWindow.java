@@ -5,7 +5,6 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
 import imgui.ImGui;
-import net.minecraft.text.Text;
 
 import java.util.List;
 
