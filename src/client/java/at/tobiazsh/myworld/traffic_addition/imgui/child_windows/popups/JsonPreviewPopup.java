@@ -19,11 +19,10 @@ public class JsonPreviewPopup {
 	private static CustomizableSignData currentStyle = new CustomizableSignData();
 
 	public static boolean shouldOpen = false;
-	public static String windowId;
+	public static String windowId = null;
 	private static String json;
 
 	public static void open(CustomizableSignData style) {
-		windowId = tr("ImGui.Child.PopUps.JsonViewer", "Json Viewer");
 		JsonPreviewPopup.currentStyle = style;
 		shouldOpen = false;
 		ImGui.openPopup(windowId);
@@ -33,6 +32,9 @@ public class JsonPreviewPopup {
 	}
 
 	public static void render() {
+		if (windowId == null)
+			windowId = tr("ImGui.Child.PopUps.JsonViewer", "Json Viewer");
+
 		if (ImGui.beginPopupModal(windowId)) {
 
 			if (ImGui.button(tr("Global", "Close"))) {
