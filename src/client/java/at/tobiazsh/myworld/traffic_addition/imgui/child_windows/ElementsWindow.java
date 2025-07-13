@@ -9,6 +9,7 @@ import imgui.ImGui;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ElementsWindow {
 
@@ -25,7 +26,7 @@ public class ElementsWindow {
         if (!shouldRender) return;
 
         ImGui.pushFont(ImGuiImpl.Roboto);
-        if (ImGui.begin(Text.translatable("mwta.imgui.sign.editor.elements").getString())) { // Begin the ImGui window with a title
+        if (ImGui.begin(tr("Global", "Elements"))) { // Begin the ImGui window with a title
             for (int i = 0; i < ClientElementManager.getInstance().totalElements(); i++) {
                 ClientElementInterface element = ClientElementManager.getInstance().getElement(i);
                 ElementEntry entry = new ElementEntry(element, ClientElementInterface.MAIN_CANVAS_ID) {
