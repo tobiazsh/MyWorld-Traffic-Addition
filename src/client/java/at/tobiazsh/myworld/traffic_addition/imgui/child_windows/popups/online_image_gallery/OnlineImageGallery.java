@@ -157,9 +157,7 @@ public class OnlineImageGallery {
         if (disableNext) ImGui.beginDisabled();
         if (ImGui.button("Next Page >")) nextPage();
         if (disableNext) ImGui.endDisabled();
-
-        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("Mine") - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("All")));
-
+        
         ImGui.endChild();
         ImGui.popStyleColor();
     }
