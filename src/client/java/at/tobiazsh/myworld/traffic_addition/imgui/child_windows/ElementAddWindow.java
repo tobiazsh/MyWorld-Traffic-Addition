@@ -40,7 +40,7 @@ public class ElementAddWindow {
 		if (!shouldRender) return;
 
 		if (windowId == null)
-			windowId = tr("ImGui.Child.PopUps.ElementAddWindow", "Add New Element");
+			windowId = tr("ImGui.Child.ElementAddWindow", "Add New Element");
 
 		ImGui.pushFont(ImGuiImpl.Roboto);
 		if (ImGui.begin(windowId, ImGuiWindowFlags.MenuBar)) {
@@ -49,14 +49,14 @@ public class ElementAddWindow {
 
 			if (ImGui.beginMenuBar()) {
 				if (ImGui.menuItem(tr("Global", "Cancel"))) shouldRender = false; // "Cancel" button
-				if (ImGui.menuItem(tr("ImGui.Child.PopUps.ElementAddWindow", "Add Online Image") + "...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
+				if (ImGui.menuItem(tr("ImGui.Child.ElementAddWindow", "Add Online Image") + "...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
 
 				ImGui.endMenuBar();
 			}
 
 			// Display the title of the window in bold font
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(tr("ImGui.Child.PopUps.ElementAddWindow", "Add New Element")); // "Add New Element" title
+			ImGui.text(tr("ImGui.Child.ElementAddWindow", "Add New Element")); // "Add New Element" title
 			ImGui.popFont();
 
 			ImGui.separator();
