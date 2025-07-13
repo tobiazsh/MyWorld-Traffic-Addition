@@ -1,0 +1,150 @@
+{
+  "locale": "de_DE",
+  "ImGui": {
+    "Child": {
+      "PopUps": {
+        "JsonViewer": {
+          "Copy to Clipboard": "In Zwischenablage kopieren",
+          "Json Viewer": "Json Veranschaulicher"
+        },
+        "OnlineImageDialog": {
+          "Operation Message Default": "Standard Nachricht der Operation"
+        },
+        "FileDialog": {
+          "Parent Directory": "Übergeordnetes Verzeichnis",
+          "New Folder": "Neuer Ordner"
+        },
+        "BackgroundSelector": {
+          "Choose Background": "Hintergrund auswählen",
+          "Background Settings": "Hintergrund Einstellungen"
+        }
+      },
+      "ElementEntry": {
+        "Group with below": "Mit Darunterliegenden gruppieren",
+        "Add to Group below": "Zu darunterliegender Gruppe hinzufügen",
+        "Remove from Group": "Von Gruppe entfernen"
+      },
+      "ElementAddWindow": {
+        "Add New Element": "Neues Element hinzufügen"
+      },
+      "ElementPropertyWindow": {
+        "Element Properties": "Element Eigenschaften",
+        "No Element Selected": "Kein Element ausgewählt"
+      }
+    },
+    "Main": {
+      "SignEditor": {
+        "Copy Sign": "Schild kopieren",
+        "Toggle Element and Properties Window": "Elemente- und Eigenschaftsfenster umschalten",
+        "Import Element": "Element importieren",
+        "Clear Canvas": "Leinwand leeren",
+        "Toggle Element Window": "Elementefenster umschalten",
+        "Paste Element": "Element einfügen",
+        "Are you sure you want to clear the canvas?": "Bist du dir sicher, dass du die Leinwand leeren willst?",
+        "Save to Sign and Quit": "Auf Schild speichern und beenden",
+        "Toggle Debug Menu": "Debug-Menü umschalten",
+        "Paste Sign": "Schild einfügen",
+        "Toggle Element Properties Window": "Eigenschaftsfenster umschalten",
+        "Sign Editor": "Schild Bearbeiter",
+        "Add Image Element": "Neues Bildelement hinzufügen",
+        "Save to Sign": "Auf Schild speichern",
+        "Show Json": "Json anzeigen",
+        "Add Text Element": "Neues Textelement hinzufügen"
+      },
+      "PreferencesWindow": {
+        "If you change this value, you need to restart the game for it to take effect.": "Wenn du diesen Wert änderst, musst du das Spiel neu starten, damit die Änderung wirksam wird.",
+        "View Distance (Blocks)": "Sichtweite (Blöcke)",
+        "Customizable Sign Settings": "Dynamische Schilder Einstellungen",
+        "Clear Cache": "Cache leeren",
+        "Image RenderLayer Cache Size": "Bild RenderLayer Cache Größe",
+        "Clear all Caches": "Alle Caches leeren",
+        "The distance between the elements of the sign.\nHigher values may cause elements to overlap.": "Der Abstand zwischen den Elementen des Schildes.\nHöhere Werte können dazu führen, dass sich Elemente überlappen.",
+        "Caching Settings": "Caching Einstellungen",
+        "Element Distancing": "Element Abstand",
+        "Sign Settings": "Schilder Einstellungen",
+        "Clears cache for a specific cache register. May improve performance.": "Leert den Cache für einen bestimmten Cache-Eintrag. Kann die Leistung verbessern.",
+        "Back to Menu": "Zurück zum Menü",
+        "General Settings": "Allgemeine Einstellungen",
+        "Text RenderLayer Cache Size": "Text RenderLayer Cache Größe",
+        "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "Die Entfernung, in der die Schilder sichtbar sind.\nReduziert Flackern zwischen Hintergrund und Block.\nKann die Leistung beeinträchtigen.",
+        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "Die Anzahl der RenderLayers, die im LRU Cache gespeichert sind. Jedes Element hat seinen eigenen RenderLayer. Bei niedrigeren Werten ist die CPU-Auslastung höher, aber die RAM-Auslastung niedriger. Bei höheren Werten umgekehrt."
+      },
+      "Pref": {
+        "Title": {
+          "Language Settings": "Spracheinstellungen"
+        },
+        "Lang": {
+          "Lang": {
+            "Language": "Sprache",
+            "MyWorld Traffic Addition\u0027s Language. Does not apply to base game!": "MyWorld Traffic Addition\u0027s Sprache. Wird nicht auf Minecraft übernommen!"
+          }
+        }
+      },
+      "AboutWindow": {
+        "THANK YOU FOR DOWNLOADING \u003c3!": "DANKE FÜR'S HERUNTERLADEN \u003c3!",
+        "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯": "Während ich das schreibe, sollte ich wahrscheinlich für die Schule lernen, aber wen juckt's ¯\\_(^_^)_/¯",
+        "Made in Austria": "Hergestellt in Österreich"
+      }
+    },
+    "Global": {
+      "Warn": {
+        "This action cannot be undone!": "Diese Aktion kann nicht rückgängig gemacht werden!",
+        "Do you really want to exit?": "Möchtest du wirklich verlassen?",
+        "All unsaved changes will be gone!": "Alle ungespeicherten Änderungen gehen dabei verloren!"
+      }
+    }
+  },
+  "Global": {
+    "Add": "Hinzufügen",
+    "Warning": "Warnung",
+    "Description": "Beschreibung",
+    "Import": "Importieren",
+    "Cancel": "Abbrechen",
+    "Quit to Minecraft": "Zurück zu Minecraft",
+    "Apply": "Anwenden",
+    "Yes": "Ja",
+    "Quit": "Beenden",
+    "Edit": "Bearbeiten",
+    "Elements": "Elemente",
+    "Name": "Name",
+    "Clear": "Leeren",
+    "Open": "Öffnen",
+    "Refresh": "Aktualisieren",
+    "At": "Bei",
+    "Version": "Version",
+    "Export": "Exportieren",
+    "Preferences": "Einstellungen",
+    "Download": "Download",
+    "Exit": "Verlassen",
+    "Window": "Fenster",
+    "No": "Nein",
+    "Ungroup": "Gruppierung aufheben",
+    "Cut": "Ausschneiden",
+    "Background": "Hintergrund",
+    "Error": "Fehler",
+    "Undo": "Rückgängig machen",
+    "View": "Ansicht",
+    "About": "Über",
+    "Default Values": "Standardwerte",
+    "Copy": "Kopieren",
+    "Zoom Out": "Herauszoomen",
+    "Redo": "Wiederholen",
+    "Author": "Autor",
+    "Country": "Land",
+    "Duplicate": "Duplizieren",
+    "Close": "Schließen",
+    "Save": "Speichern",
+    "Clipboard": "Zwischenablage",
+    "Zoom In": "Hineinzoomen",
+    "File": "Datei",
+    "Other": "Andere",
+    "Lang": {
+      "auto": "Standardsprache",
+      "en_US": "Englisch (US)",
+      "de_DE": "Deutsch (Deutschland)"
+    }
+  },
+  "MWTA": {
+    "A Minecraft Mod for improved roads and general canvases in Minecraft": "Eine Minecraft Mod für verbesserte Straßen und allgemeine Leinwände in Minecraft"
+  }
+}
