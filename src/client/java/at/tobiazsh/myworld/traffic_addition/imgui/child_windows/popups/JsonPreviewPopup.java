@@ -30,7 +30,7 @@ public class JsonPreviewPopup {
 		json = gson.toJson(style.json);
 	}
 
-	public static void create() {
+	public static void render() {
 		if (ImGui.beginPopupModal(windowId)) {
 
 			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.json_viewer.close").getString())) {
