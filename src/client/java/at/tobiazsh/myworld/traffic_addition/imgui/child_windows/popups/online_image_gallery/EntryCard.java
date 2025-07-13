@@ -10,6 +10,8 @@ import imgui.ImGui;
 import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 public class EntryCard {
     public static int cardHeight = 250;
     public static int cardWidth = 176;
@@ -49,16 +51,16 @@ public class EntryCard {
         // Render Delete Button
         if (showDeleteButton) {
             ImGui.pushStyleColor(ImGuiCol.Button, new ImVec4(1.0f, 0.2f, 0.2f, 1.0f)); // Red color for delete button
-            if (ImGui.button("Delete", ImGui.getContentRegionAvailX(), deleteButtonHeight))
+            if (ImGui.button(tr("Global", "Delete"), ImGui.getContentRegionAvailX(), deleteButtonHeight))
                 this.onDeleteAction.run();
             ImGui.popStyleColor();
         }
 
         float spacing = ImGui.getStyle().getItemSpacing().x;
         float buttonWidth = (ImGui.getContentRegionAvailX() - spacing) * 0.5f;
-        if (ImGui.button("Add", buttonWidth, buttonHeight)) addToSign();
+        if (ImGui.button(tr("Global", "Add"), buttonWidth, buttonHeight)) addToSign();
         ImGui.sameLine();
-        if (ImGui.button("More...", buttonWidth, buttonHeight)) openMoreInfoPopup();
+        if (ImGui.button("%s...".formatted(tr("Global", "More")), buttonWidth, buttonHeight)) openMoreInfoPopup();
 
         ImGui.endChild();
         ImGui.popStyleColor();
@@ -71,45 +73,57 @@ public class EntryCard {
     private boolean hadErrorWhileFetching = false;
 
     private void renderMoreInfoPopup() {
-        if (ImGui.beginPopupModal("More Info##" + id)) {
+        if (ImGui.beginPopupModal(tr("Global", "More Info") + "##" + id)) {
 
-            ImGui.text("Name: " + imageEntry.getImageName());
-            ImGui.text("Encoded Name: " + imageEntry.getImageNameEncoded());
+            ImGui.text("%s: %s".formatted(tr("Global", "Name"), imageEntry.getImageName())); // Name: ____
+            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Encoded Name"), imageEntry.getImageNameEncoded())); // Encoded Name: ____
             ImGui.separator();
-            ImGui.text("Uploader's UUID: " + imageEntry.getUploaderUUID());
+            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploader's UUID"), imageEntry.getUploaderUUID())); // Uploader's UUID: ____
 
             // Status display
+            String status = "";
             if (isFetchingName) {
-                ImGui.text("Profile Name: FETCHING...");
+                status = "Fetching Name...";
             } else if (hadErrorWhileFetching) {
-                ImGui.text("Profile Name: ERROR! CHECK LOGS");
-            } else if (hasFetchedNameSuccessfully) {
-                ImGui.text("Profile Name: " + uploaderName);
+                status = "Fetching Error! Check logs!";
             } else {
-                ImGui.text("Profile Name: Not Fetched");
+                status = "Not fetched yet!";
             }
+
+            if (hasFetchedNameSuccessfully) {
+                ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Profile Name"), uploaderName)); // Profile Name: Fetching...
+            } else {
+            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Profile Name"), tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard","Fetching..."))); // Profile Name: Fetching...
+                }
 
             // Button to start fetching the name; only shown if not fetched or error
             if (!hasFetchedNameSuccessfully && !isFetchingName) {
                 ImGui.sameLine();
-                if (ImGui.button("Fetch from Web (Mojang API)")) fetchUploaderName();
+                if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Fetch")))
+                    fetchUploaderName();
             }
 
             ImGui.separator();
 
-            ImGui.text("Uploaded: " + DateTimeUtility.formatWithOrdinal(imageEntry.getCreationDateLocal()) + " at " + DateTimeUtility.formatMilitaryTime(imageEntry.getCreationDateLocal()));
-            ImGui.separator();
-            ImGui.text("Hidden: " + (imageEntry.isHidden() ? "Yes" : "No"));
+            ImGui.text("%s: %s %s %s".formatted(
+                    tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploaded"),
+                    DateTimeUtility.formatWithOrdinal(imageEntry.getCreationDateLocal()),
+                    " at ",
+                    DateTimeUtility.formatMilitaryTime(imageEntry.getCreationDateLocal()))
+            ); // Uploaded: 1st January 2023 at 12:00
 
             ImGui.separator();
-            if (ImGui.button("Close")) ImGui.closeCurrentPopup();
+            ImGui.text("%s: %s".formatted(tr("Global", "Hidden"), tr("Global", imageEntry.isHidden() ? "Yes" : "No"))); // Hidden: Yes/No
+
+            ImGui.separator();
+            if (ImGui.button(tr("Global", "Close"))) ImGui.closeCurrentPopup();
 
             ImGui.endPopup();
         }
     }
 
     private void openMoreInfoPopup() {
-        ImGui.openPopup("More Info##" + id);
+        ImGui.openPopup(tr("Global", "More Info") + "##" + id);
     }
 
     private void addToSign() {
