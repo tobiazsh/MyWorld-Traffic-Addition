@@ -22,7 +22,6 @@ import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
-import net.minecraft.text.Text;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
