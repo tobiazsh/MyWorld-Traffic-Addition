@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.language;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
@@ -20,7 +21,14 @@ public class JenguaTranslator {
     private static String[] availableLanguages;
     private static FileSystem.Folder languagesFolder;
 
+    /**
+     * Initializes the Jengua Translator with the default language (en_US) and sets up available languages.
+     * Loads the configured language from users preferences or automatically sets it based on Minecraft's language.
+     */
     public static void setup() {
+
+        MyWorldTrafficAddition.LOGGER.info("Setting up Jengua Translator...");
+
         try {
             default_en_US = LanguageLoader.loadLanguageFromResources(en_US_path);
         } catch (IOException e) {
@@ -32,6 +40,25 @@ public class JenguaTranslator {
         languagesFolder = getLanguagesFolder();
         registerAvailableLanguages();
         availableLanguages = translator.getAvailableLanguages().toArray(String[]::new);
+
+        MyWorldTrafficAddition.LOGGER.info("Setting up Jengua Translator successful!");
+        MyWorldTrafficAddition.LOGGER.info("Attempting to set language from preferences...");
+
+        String setLanguage = ClientPreferences.gameplayPreference.getString("mwtaLanguage");
+
+        if (
+                setLanguage == null ||
+                        setLanguage.isEmpty() ||
+                        setLanguage.equalsIgnoreCase("auto") ||
+                        !JenguaTranslator.translator.getAvailableLanguages().contains(setLanguage)
+        ) {
+            MyWorldTrafficAddition.LOGGER.info("Setting Jengua language based on Minecraft's language...");
+            JenguaTranslator.autoSetLanguage();
+            return;
+        }
+
+        JenguaTranslator.translator.setLanguage(setLanguage);
+        MyWorldTrafficAddition.LOGGER.info("Jengua language set to {}.", JenguaTranslator.translator.getLanguage().code());
     }
 
     public static String tr(String namespace, String key) {

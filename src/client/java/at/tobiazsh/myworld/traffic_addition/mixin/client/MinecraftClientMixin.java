@@ -7,10 +7,12 @@ package at.tobiazsh.myworld.traffic_addition.mixin.client;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
+import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
@@ -33,7 +35,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     @Inject(method = "<init>", at = @At("RETURN"))
     public void customInit(CallbackInfo ci) {
         ImGuiImpl.create(window.getHandle()); // Initialize ImGui with the Minecraft window handle
-        JenguaTranslator.autoSetLanguage(); // Automatically set the language based on the system or user preference
+        JenguaTranslator.setup(); // Setup Jengua and load configured language
     }
 
     @Inject(method = "close", at = @At("RETURN"))

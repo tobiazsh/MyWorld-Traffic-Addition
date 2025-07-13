@@ -63,10 +63,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		OnlineImageCache.createCacheDir();
 
-		MyWorldTrafficAddition.LOGGER.info("Setting up Jengua for translations...");
-		JenguaTranslator.setup();
-		MyWorldTrafficAddition.LOGGER.info("Set up Jengua successfully!");
-
 		loadPreferences();
 	}
 

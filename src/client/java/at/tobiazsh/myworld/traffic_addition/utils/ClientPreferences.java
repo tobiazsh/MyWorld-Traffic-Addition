@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.Preference;
@@ -27,6 +28,8 @@ public class ClientPreferences {
                 gameplayPreference.getFloat("elementDistancingCustomizableSigns"),
                 CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault
         );
+
+        /* LANGUAGE PREFERENCES LOADED INSIDE MinecraftClientMixin.java! */
     }
 
 }
