@@ -15,7 +15,6 @@ import imgui.ImGui;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.BufferUtils;
@@ -34,9 +33,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
-
-// WEBP IS NOT SUPPORTED!!!
 
 public class OnlineImageDialog {
     private static boolean shouldOpen = false;
@@ -47,7 +45,7 @@ public class OnlineImageDialog {
     private static boolean shouldOpenProgressPopup = false;
     private static boolean isOperationComplete = false;
     private static float operationProgress = 0.0f;
-    private static String operationMessage = Text.translatable("mwta.imgui.sign.editor.popups.online_image_dialog.operation_message.default").getString();
+    private static String operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Message Default");
     private static boolean cancelDownload = false;
 
     private static ImString imageUrl = new ImString(512);
@@ -89,7 +87,7 @@ public class OnlineImageDialog {
         if (!shouldRender) return; // Prevent rendering if not necessary
 
         ImGui.setNextWindowSize(windowWidth, windowHeight);
-        if (ImGui.beginPopupModal(Text.translatable("mwta.imgui.sign.editor.popups.online_image_uploader").getString())) {
+        if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageDialog", "Online Image Uploader"))) {
 
             switch (currentPage) {
                 case NEW -> renderNewPage();
@@ -103,7 +101,7 @@ public class OnlineImageDialog {
         }
 
         if (shouldOpen) {
-            ImGui.openPopup(Text.translatable("mwta.imgui.sign.editor.popups.online_image_uploader").getString());
+            ImGui.openPopup(tr("ImGui.Child.PopUps.OnlineImageDialog", "Online Image Uploader"));
             shouldOpen = false;
         }
     }
@@ -143,25 +141,24 @@ public class OnlineImageDialog {
         URL imageUrl;
 
         // Set status
-        operationMessage = "Constructing URL...";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Constructing URL");
 
         // Handle Empty URL
         if (url == null || url.isEmpty()) {
-            errorTitle = "No URL provided!";
-            errorMessage = "Please provide a valid URL to download the image from.";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Please provide a valid URL to download the image from");
             hasError = true;
             isOperationComplete = true;
 
-            return new Pair<>(1, "No URL provided!");
+            return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"));
         }
 
         // Try to create a URL object from the given string
-
         try {
             imageUrl = URI.create(url).toURL();
         } catch (MalformedURLException e) {
-            errorTitle = "Malformed URL!";
-            errorMessage = "The URL you provided is malformed. Download action has been aborted! Please check the URL and try again. Otherwise, please check the logs!";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Malformed URL");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The URL you provided is malformed. Download action has been aborted! Please check the URL and try again. Otherwise, please check the logs");
             hasError = true;
             isOperationComplete = true;
 
@@ -169,15 +166,15 @@ public class OnlineImageDialog {
         }
 
         operationProgress = 0.25f;
-        operationMessage = "Opening connection...";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Opening Connection");
 
         URLConnection connection; // URLConnection to connect to the image URL
 
         try {
             connection = imageUrl.openConnection();
         } catch (IOException e) {
-            errorTitle = "Couldn't open connection!";
-            errorMessage = "An error occurred while trying to open a connection to the URL. Download Action has been aborted! Please check your Internet and try again.\nOtherwise, please see the documentation and logs!";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Connection Failed");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open a connection to the URL. Download Action has been aborted! Please check your Internet and try again");
             hasError = true;
             isOperationComplete = true;
 
@@ -190,8 +187,8 @@ public class OnlineImageDialog {
         }
 
         if (totalBytes > maximumUploadSize) {
-            errorTitle = "File too large!";
-            errorMessage = "The file is too large to be downloaded. Maximum size is " + (maximumUploadSize / 1024) + " KiB.";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "File Too Large");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The file is too large to be downloaded. Maximum size is ") + (maximumUploadSize / 1024) + " KiB.";
             hasError = true;
             isOperationComplete = true;
 
@@ -199,7 +196,7 @@ public class OnlineImageDialog {
         }
 
         operationProgress = 0.0f; // Reset for download Progress
-        operationMessage = "Downloading image...";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading Image");
 
         // Validate if the file is an image
         InputStream inputStream;
@@ -207,8 +204,8 @@ public class OnlineImageDialog {
         try {
             inputStream = new BufferedInputStream(connection.getInputStream());
         } catch (IOException e) {
-            errorTitle = "Couldn't open input stream!";
-            errorMessage = "An error occurred while trying to open an input stream to the URL. Download Action has been aborted! Please check your Internet and the URL and try again.\nOtherwise, please see the documentation and logs!";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Input Stream Failed");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open an input stream to the URL. Download Action has been aborted! Please check your Internet and the URL and try again");
             hasError = true;
             isOperationComplete = true;
 
@@ -228,11 +225,11 @@ public class OnlineImageDialog {
 
                 // Update download progress
                 operationProgress = (float) bytesRead / totalBytes;
-                operationMessage = "Downloading... " + (bytesRead / 1024) + " KiB of " + (totalBytes / 1024) + " KiB";
+                operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading") + "... " + (bytesRead / 1024) + " KiB " + tr("Global", "of") + " " + (totalBytes / 1024) + " KiB";
 
                 if (cancelDownload) {
                     deleteImageData(false);
-                    return new Pair<>(1, "Download cancelled by user");
+                    return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog", "Download Cancelled By User"));
                 }
             }
 
@@ -240,16 +237,16 @@ public class OnlineImageDialog {
             inputStream.close();
             imageData = byteBuffer;
         } catch (IOException e) {
-            errorTitle = "Download Failed!";
-            errorMessage = "An error occurred while downloading the file. Please check your Internet connection and try again.";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Download Failed");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while downloading the file. Please check your Internet connection and try again");
             hasError = true;
             isOperationComplete = true;
 
-            return new Pair<>(1, "Error downloading file from URL " + url + "\nMJava's Nonsense: " + e.getMessage());
+            return new Pair<>(1, "Error downloading file from URL " + url + "\nJava's Nonsense: " + e.getMessage());
         }
 
         operationProgress = 0.75f;
-        operationMessage = "Validating image...";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Validating Image");
 
         // Validate if the file is an image
         byte[] imageBytes = new byte[imageData.remaining()];
@@ -259,17 +256,17 @@ public class OnlineImageDialog {
 
         try (InputStream validationStream = new ByteArrayInputStream(imageBytes)) {
             if (ImageIO.read(validationStream) == null || (Objects.equals(ImageUtils.getImageFormat(imageBytes), "webp"))) {
-                errorTitle = "Invalid Image!";
-                errorMessage = "The downloaded file is not a valid or supported image. Please check the URL and format and try again.";
+                errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Invalid Image");
+                errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The downloaded file is not a valid or supported image. Please check the URL and format and try again");
                 hasError = true;
                 isOperationComplete = true;
 
                 deleteImageData(true);
-                return new Pair<>(1, "Downloaded file is not a valid image!");
+                return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Downloaded file is not a valid image"));
             }
         } catch (IOException e) {
-            errorTitle = "Validation Failed!";
-            errorMessage = "An error occurred while validating the image. Please check the link and try again.";
+            errorTitle = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Validation Failed");
+            errorMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while validating the image. Please check the link and try again");
             hasError = true;
             isOperationComplete = true;
 
@@ -277,7 +274,7 @@ public class OnlineImageDialog {
         }
 
         operationProgress = 1.0f;
-        operationMessage = "Downloaded image successfully!";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloaded Image Successfully");
         isOperationComplete = true;
 
         imageData = stbi_load_from_memory(imageData, imgW, imgH, imgC, 0);
@@ -309,7 +306,7 @@ public class OnlineImageDialog {
 
     private static void resetProgressPopup() {
         operationProgress = 0.0f;
-        operationMessage = "Waiting...";
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Waiting");
         isOperating = false;
         cancelDownload = false;
         shouldOpenProgressPopup = false;
@@ -319,13 +316,13 @@ public class OnlineImageDialog {
         hasError = false;
     }
 
-    private static String progressPopupTitle = "Download";
+    private static String progressPopupTitle = tr("Global", "Download");
     private static float progressPopupWidth = 500;
     private static float progressPopupHeight = 160;
 
     private static void renderProgressPopup(boolean showCancel, Runnable onClose, Runnable onCancel) {
         ImGui.setNextWindowSize(progressPopupWidth, progressPopupHeight);
-        if (ImGui.beginPopupModal("Operation Progress")) {
+        if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Progress"))) {
 
             ImGui.pushFont(ImGuiImpl.RobotoBoldMedium); // Set font to bold
             ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(progressPopupTitle)) / 2); // Center title
@@ -336,14 +333,14 @@ public class OnlineImageDialog {
             ImGui.textWrapped(operationMessage); // Status text
 
             if (!isOperationComplete) {
-                if (showCancel && ImGui.button("Cancel")) onCancel.run();
+                if (showCancel && ImGui.button(tr("Global", "Cancel"))) onCancel.run();
             } else {
-                if (ImGui.button("Close")) {
+                if (ImGui.button(tr("Global", "Close"))) {
                     onClose.run();
                 }
 
                 if (hasError) {
-                    operationMessage = "Error!";
+                    operationMessage = tr("Global", "Error");
                     progressPopupHeight = 300;
                     ImGui.separator();
                     ImGui.pushFont(ImGuiImpl.RobotoBold);
@@ -357,7 +354,7 @@ public class OnlineImageDialog {
         }
 
         if (shouldOpenProgressPopup) {
-            ImGui.openPopup("Operation Progress");
+            ImGui.openPopup(tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Progress"));
             shouldOpenProgressPopup = false;
         }
     }
@@ -367,19 +364,19 @@ public class OnlineImageDialog {
         windowHeight = 140;
 
         ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
-        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("Enter image URL")) / 2); // Center title
-        ImGui.text("Enter image URL"); // Display title
+        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Enter Image URL"))) / 2); // Center title
+        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Enter Image URL")); // Display title
         ImGui.popFont(); // Pop Font
 
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center input field
         ImGui.inputText("##imageUrlDummylabel", imageUrl); // Input field for URL
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center button
 
-        if (ImGui.button("Load from URL")) handleDownload();
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageDialog", "Load from URL"))) handleDownload();
 
         ImGui.sameLine();
 
-        if (ImGui.button("Cancel")) {
+        if (ImGui.button(tr("Global", "Cancel"))) {
             resetValues();
             shouldRender = false;
             ImGui.closeCurrentPopup();
@@ -396,7 +393,7 @@ public class OnlineImageDialog {
                     createImageBackup();
                 }
 
-                progressPopupTitle = "Download"; // Reset title
+                progressPopupTitle = tr("Global", "Download"); // Reset title
             }, OnlineImageDialog::handleCancel);
         }
     }
@@ -406,12 +403,12 @@ public class OnlineImageDialog {
         windowHeight = 600;
 
         ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
-        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("Image Size Options")) / 2); // Center title
-        ImGui.text("Image Size Options"); // Display title
+        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Image Size Options"))) / 2); // Center title
+        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Image Size Options")); // Display title
         ImGui.popFont(); // Pop Font
 
         ImGui.separator();
-        ImGui.text("Current Image Size: " + (imageData.remaining() >> 10) + " KiB");
+        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Current Image Size") + ": " + (imageData.remaining() >> 10) + " KiB");
         ImGui.separator();
 
         if (currentTexture != null) {
@@ -425,17 +422,17 @@ public class OnlineImageDialog {
 
         float[] scale = new float[]{imageScale[0]*100.0f};
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center slider
-        if (ImGui.sliderFloat("Resolution", scale, 1.0f, 100.0f, "%.0f%% of Current")) {
+        if (ImGui.sliderFloat(tr("ImGui.Child.PopUps.OnlineImageDialog", "Resolution"), scale, 1.0f, 100.0f, "%.0f%% " + tr("Global", "of") + " " + tr("Global", "Current"))) {
             imageScale[0] = scale[0] / 100.0f;
         }
 
         ImGui.setCursorPosY(ImGui.getWindowSizeY() - ImGui.getFontSize()*2); // Make things appear all the way at the bottom
         ImGui.beginChild("##imageSizerActionButtonContainer");
-        if (ImGui.button("Apply")) applySettings();
+        if (ImGui.button(tr("Global", "Apply"))) applySettings();
         ImGui.sameLine();
-        if (ImGui.button("Next")) currentPage = OnlineImageDialogPage.CONFIRM;
+        if (ImGui.button(tr("Global", "Next"))) currentPage = OnlineImageDialogPage.CONFIRM;
         ImGui.sameLine();
-        if (ImGui.button("Restore original")) restoreOriginal();
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageDialog", "Restore Original"))) restoreOriginal();
 
         ImGui.endChild();
     }
@@ -451,20 +448,20 @@ public class OnlineImageDialog {
         }, () -> {});
 
         ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
-        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX("Confirm Image Upload")) / 2); // Center title
-        ImGui.text("Confirm Image Upload"); // Display title
+        ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Confirm Image Upload"))) / 2); // Center title
+        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Confirm Image Upload")); // Display title
         ImGui.popFont();
 
-        ImGui.inputText("Name", imageName); // Input field for image name
-        ImGui.textWrapped("Give your image a unique name!");
+        ImGui.inputText(tr("Global", "Name"), imageName); // Input field for image name
+        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "Give your image a unique name"));
         ImGui.spacing();
-        ImGui.checkbox("Hide for others", hideForOthers); // Checkbox to hide image for others
-        ImGui.textWrapped("This will hide your image for others. Admins can still see it, so don't be naughty! ;)");
+        ImGui.checkbox(tr("ImGui.Child.PopUps.OnlineImageDialog", "Hide for others"), hideForOthers); // Checkbox to hide image for others
+        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "This will hide your image for others. Admins can still see it, so don't be naughty"));
 
         ImGui.setCursorPosY(ImGui.getWindowSizeY() - ImGui.getFontSize()*2); // Make things appear all the way at the bottom
         ImGui.beginChild("##confirmPageActionButtonContainer");
 
-        if (ImGui.button("Cancel")) {
+        if (ImGui.button(tr("Global", "Cancel"))) {
             resetValues();
             shouldRender = false;
             ImGui.closeCurrentPopup();
@@ -472,7 +469,7 @@ public class OnlineImageDialog {
 
         ImGui.sameLine();
         if (imageName.isEmpty()) ImGui.beginDisabled();
-        if (ImGui.button("Confirm and Upload")) uploadToServer();
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageDialog", "Confirm and Upload"))) uploadToServer();
         if (imageName.isEmpty()) ImGui.endDisabled();
         ImGui.endChild();
     }
@@ -483,12 +480,15 @@ public class OnlineImageDialog {
 
             if (result.getC() == null) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to scale image! Aborting...");
-                ConfirmationPopup.show("Failed to scale image!", "MyWorld Traffic Addition has failed at scaling the image. Please check the logs for more details. Continue anyway (all actions are permanent!)?", (callback) -> {
-                    if (callback) {
-                        // Proceed with editing
-                        MyWorldTrafficAddition.LOGGER.info("User decided to ditch scaling and proceed with editing. All actions were permanent.");
-                    } else abort();
-                });
+                ConfirmationPopup.show(
+                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to scale image"),
+                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "MyWorld Traffic Addition has failed at scaling the image. Please check the logs for more details. Continue anyway (all actions are permanent)"),
+                        (callback) -> {
+                            if (callback) {
+                                // Proceed with editing
+                                MyWorldTrafficAddition.LOGGER.info("User decided to ditch scaling and proceed with editing. All actions were permanent.");
+                            } else abort();
+                        });
 
                 return;
             }
@@ -532,31 +532,31 @@ public class OnlineImageDialog {
 
     private static void uploadToServer() {
         isOperating = true;
-        progressPopupTitle = "Upload";
-        operationMessage = "Uploading image to server...";
+        progressPopupTitle = tr("Global", "Upload");
+        operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Uploading image to server");
 
         Thread thread = new Thread(() -> {
-            operationMessage = "Encoding image to PNG...";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding image to PNG");
             byte[] imagePngData = encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0));
             operationProgress = 0.2f;
 
-            operationMessage = "Creating Thumbnail...";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Thumbnail");
             Triplet<Integer, Integer, ByteBuffer> thumbnail = getThumbnail(imageData);
             operationProgress = 0.4f;
 
             if (thumbnail.getC() == null) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to upload image to server! Aborting...");
-                operationMessage = "Failed to create thumbnail!";
+                operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to create thumbnail");
                 isOperationComplete = true;
                 isOperating = false;
                 return;
             }
 
-            operationMessage = "Encoding thumbnail to PNG...";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding thumbnail to PNG");
             byte[] thumbnailPngData = encodePNG(thumbnail.getC(), thumbnail.getA(), thumbnail.getB(), imgC.get(0));
             operationProgress = 0.6f;
 
-            operationMessage = "Creating Metadata...";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Metadata");
             JsonObject metadata = createMetadata(
                     imageName.get(),
                     MinecraftClient.getInstance().getGameProfile().getId(),
@@ -569,7 +569,7 @@ public class OnlineImageDialog {
             // Also save metadata locally for faster loading and less server load
             saveLocally(metadata, imagePngData, thumbnailPngData);
 
-            operationMessage = "Packing data...";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Packing data");
 
             // Combine data
             byte[] metadataBytes = metadata.toString().getBytes(StandardCharsets.UTF_8);
@@ -594,7 +594,7 @@ public class OnlineImageDialog {
             );
 
             operationProgress = 1f;
-            operationMessage = "Upload complete! If everything went right, you are now able to see your image in the gallery!";
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Upload complete! If everything went right, you are now able to see your image in the gallery");
             isOperationComplete = true;
             isOperating = false;
         });
@@ -617,7 +617,6 @@ public class OnlineImageDialog {
             MyWorldTrafficAddition.LOGGER.error("Failed to write image to file! Aborting...\nDetails: {}", e.getMessage());
             abort();
         }
-
     }
 
     /**
@@ -625,8 +624,8 @@ public class OnlineImageDialog {
      * @param imageName Link to the image
      * @param playerUuid UUID of the player
      * @param imageUuid UUID of the image
-     * @param uploadDateTime Upload date & time
      * @param hide True if the image should be hidden for others, false otherwise
+     * @param uploadDateTime Upload date & time
      * @return JsonObject containing metadata
      */
     private static JsonObject createMetadata(String imageName, UUID playerUuid, UUID imageUuid, boolean hide, Instant uploadDateTime) {
@@ -642,6 +641,8 @@ public class OnlineImageDialog {
 
     /**
      * Scales image down to specified scale
+     *
+     * @param imageData Raw pixel data to scale
      * @param scale Scale to scale the image to
      * @param width Current width
      * @param height Current height
@@ -733,12 +734,15 @@ public class OnlineImageDialog {
     private static void restoreOriginal() {
         if (originalImageData == null) {
             MyWorldTrafficAddition.LOGGER.error("Backup image data does not exist!");
-            ConfirmationPopup.show("Failed to load backup!", "MyWorld Traffic Addition has failed at loading the image backup. Continue anyways?", (callback) -> {
-                if (callback) {
-                    // Proceed with editing
-                    MyWorldTrafficAddition.LOGGER.info("User decided to ditch backup loading and proceed with editing. All actions were permanent.");
-                } else abort();
-            });
+            ConfirmationPopup.show(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to load backup"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "MyWorld Traffic Addition has failed at loading the image backup. Continue anyways"),
+                    (callback) -> {
+                        if (callback) {
+                            // Proceed with editing
+                            MyWorldTrafficAddition.LOGGER.info("User decided to ditch backup loading and proceed with editing. All actions were permanent.");
+                        } else abort();
+                    });
         } else {
             imageData = originalImageData;
             imgW.put(0, orgImgW.get(0));
@@ -759,12 +763,15 @@ public class OnlineImageDialog {
 
     private static void createImageBackup() {
         if (imageData == null) {
-            ConfirmationPopup.show("Failed to create backup!", "Failed to create a backup of the image file. Please check the logs for more details. Continue anyway (all actions are permanent!)?", (callback)-> {
-                if (callback) {
-                    // Proceed with editing
-                    MyWorldTrafficAddition.LOGGER.info("User decided to ditch backup creation and proceed with editing. All actions were permanent.");
-                } else abort();
-            });
+            ConfirmationPopup.show(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to create backup"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to create a backup of the image file. Please check the logs for more details. Continue anyway (all actions are permanent)"),
+                    (callback)-> {
+                        if (callback) {
+                            // Proceed with editing
+                            MyWorldTrafficAddition.LOGGER.info("User decided to ditch backup creation and proceed with editing. All actions were permanent.");
+                        } else abort();
+                    });
         } else {
             originalImageData = imageData;
         }
