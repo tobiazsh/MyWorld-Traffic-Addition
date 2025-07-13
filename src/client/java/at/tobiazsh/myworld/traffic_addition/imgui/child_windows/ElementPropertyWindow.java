@@ -28,6 +28,7 @@ import net.minecraft.text.Text;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ElementPropertyWindow {
 
@@ -92,13 +93,13 @@ public class ElementPropertyWindow {
 	public static void render() {
 		if (!shouldRender) return;
 
-		if (ImGui.begin(Text.translatable("mwta.imgui.sign.editor.element_properties").getString(), ImGuiWindowFlags.NoNavInputs)) { // Translatable text for "Element Properties"
+		if (ImGui.begin(tr("ImGui.Child.ElementPropertyWindow", "Element Properties"), ImGuiWindowFlags.NoNavInputs)) { // Translatable text for "Element Properties"
 
 			// If no Element is selected, display message
 			if (element == null) {
 				ImGui.pushFont(ImGuiImpl.RobotoBold);
 
-				String text = Text.translatable("mwta.imgui.sign.editor.no_element_selected").getString();
+				String text = tr("ImGui.Child.ElementPropertyWindow", "No Element Selected");
 
 				ImVec2 textSize = imgui.calcTextSize(text);
 				ImGui.setCursorPos((ImGui.getWindowWidth() - textSize.x) / 2, (ImGui.getWindowHeight() - textSize.y) / 2);
@@ -118,12 +119,12 @@ public class ElementPropertyWindow {
 			// NAMING
 
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.element_name").getString()); // Translatable text for "Element Name"
+			ImGui.text(tr("ImGui.Child.ElementPropertyWindow", "Element Name")); // Translatable text for "Element Name"
 			ImGui.popFont();
 
 			ImGui.inputText("##nameInput", currentElementName);
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.confirm").getString() + "##name")) { // Translatable text for "Confirm"
+			if (ImGui.button(tr("Global", "Confirm") + "##name")) { // Translatable text for "Confirm"
 				element.setName(currentElementName.get());
 				SignEditor.addUndo();
 			}
@@ -134,16 +135,16 @@ public class ElementPropertyWindow {
 			ImGui.spacing();
 
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.size").getString()); // Translatable text for "Size"
+			ImGui.text(tr("Global", "Size")); // Translatable text for "Size"
 			ImGui.popFont();
 
-			if (ImGui.checkbox(Text.translatable("mwta.imgui.sign.editor.relate").getString(), relateSize)) relateSize = !relateSize; // Translatable text for "Relate"
+			if (ImGui.checkbox(tr("Global", "Relate"), relateSize)) relateSize = !relateSize; // Translatable text for "Relate"
 
 			float aspectRatioW = elemH[0] / elemW[0];
 			float aspectRatioH = elemW[0] / elemH[0];
 
 			// Width Drag
-			if (ImGui.dragFloat(Text.translatable("mwta.imgui.sign.editor.width").getString(), elemW, 1.0f, 0.1f, ratioedSignSize.x)) { // Translatable text for "Width"
+			if (ImGui.dragFloat(tr("Global", "Width"), elemW, 1.0f, 0.1f, ratioedSignSize.x)) { // Translatable text for "Width"
 
 				if (relateSize) {
 					elemH[0] = elemW[0] * aspectRatioW; // Adjust height based on new width
@@ -156,7 +157,7 @@ public class ElementPropertyWindow {
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Height Drag
-			if (ImGui.dragFloat(Text.translatable("mwta.imgui.sign.editor.height").getString(), elemH, 1.0f, 0.1f, ratioedSignSize.y)) { // Translatable text for "Height"
+			if (ImGui.dragFloat(tr("Global", "Height"), elemH, 1.0f, 0.1f, ratioedSignSize.y)) { // Translatable text for "Height"
 
 				if (relateSize) {
 					elemW[0] = elemH[0] * aspectRatioH; // Adjust height based on new width
@@ -174,7 +175,7 @@ public class ElementPropertyWindow {
 			ImGui.spacing();
 
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.position").getString()); // Translatable text for "Position"
+			ImGui.text(tr("Global", "Position")); // Translatable text for "Position"
 			ImGui.popFont();
 
 			// Drag Float for the position of the element on the X-Coordinate; Max is the sign's height minus the element's height to not exceed the bounds
@@ -192,18 +193,18 @@ public class ElementPropertyWindow {
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Button that centers the current selected element on the X-Coordinate
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.center_x").getString())) { // Translatable text for "Center X"
+			if (ImGui.button(tr("ImGui.Child.ElementPropertyWindow", "Center X"))) { // Translatable text for "Center X"
 				element.setX((ratioedSignSize.x - elemW[0]) / 2);
 				SignEditor.addUndo();
 			}
 
 			// Button that centers the current selected element on the Y-Coordinate
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.center_y").getString())) { // Translatable text for "Center Y"
+			if (ImGui.button(tr("ImGui.Child.ElementPropertyWindow", "Center Y"))) { // Translatable text for "Center Y"
 				element.setY((ratioedSignSize.y - elemH[0]) / 2);
 				SignEditor.addUndo();
 			}
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.center").getString() + "...")) { // Translatable text for "Center..."
+			if (ImGui.button(tr("ImGui.Child.ElementPropertyWindow", "Center") + "...")) { // Translatable text for "Center..."
 				// TODO: Create Centering logic that can adapt to different contexts and relate to different elements
 			}
 
@@ -213,7 +214,7 @@ public class ElementPropertyWindow {
 			ImGui.spacing();
 
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.rotation").getString()); // Translatable text for "Rotation"
+			ImGui.text(tr("Global", "Rotation")); // Translatable text for "Rotation"
 			ImGui.popFont();
 
 			if (ImGui.dragFloat("##rotationDragger", currentElementRotation, 1.0f, 0, (float)359.99)) {
@@ -228,12 +229,12 @@ public class ElementPropertyWindow {
 			ImGui.spacing();
 
 			ImGui.pushFont(ImGuiImpl.RobotoBold);
-			ImGui.text(Text.translatable("mwta.imgui.sign.editor.color").getString()); // Translatable text for "Color"
+			ImGui.text(tr("Global", "Color")); // Translatable text for "Color"
 			ImGui.popFont();
 
 			int alphaSettings = ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf; // Disable if TextElement is selected as Minecraft doesn't support alpha in text rendering
 
-			if (ImGui.colorPicker4(Text.translatable("mwta.imgui.sign.editor.color_picker").getString(), color, alphaSettings)) { // Translatable text for "Color Picker"
+			if (ImGui.colorPicker4(tr("Global", "Color Picker"), color, alphaSettings)) { // Translatable text for "Color Picker"
 				element.setColor(color);
 			}
 
@@ -251,7 +252,7 @@ public class ElementPropertyWindow {
 		previousTextElementText = new ImString(textElementText.get());
 
 		ImGui.pushFont(ImGuiImpl.RobotoBold);
-		ImGui.text(Text.translatable("mwta.imgui.sign.editor.text").getString()); // Translatable text for "Text"
+		ImGui.text(tr("Global", "Text")); // Translatable text for "Text"
 		ImGui.popFont();
 		ImGui.inputText("##textElementTextEditInput", textElementText);
 
@@ -265,10 +266,10 @@ public class ElementPropertyWindow {
 
 		// Font Size
 		ImGui.pushFont(ImGuiImpl.RobotoBold);
-		ImGui.text(Text.translatable("mwta.imgui.sign.editor.font_size").getString()); // Translatable text for "Font Size"
+		ImGui.text(tr("Global", "Font Size")); // Translatable text for "Font Size"
 		ImGui.popFont();
 		ImGui.inputFloat("##fontSizeInput", fontSize);
-		if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.confirm").getString() + "##fontSize")) { // "Confirm" text
+		if (ImGui.button(tr("Global", "Confirm") + "##fontSize")) { // "Confirm" text
 			((TextElementClient) element).setFont(
 					new BasicFont(
 							((TextElementClient) element).getFont().getFontPath(),
@@ -283,7 +284,7 @@ public class ElementPropertyWindow {
 
 		// Font Selection (Font Path)
 		ImGui.pushFont(ImGuiImpl.RobotoBold);
-		ImGui.text(Text.translatable("mwta.imgui.sign.editor.font").getString()); // Translatable text for "Font"
+		ImGui.text(tr("Global", "Font")); // Translatable text for "Font"
 		ImGui.popFont();
 
 		previousSelectedFontIndex = selectedFontIndex.get();
@@ -303,9 +304,9 @@ public class ElementPropertyWindow {
 
 		ImGui.spacing();
 		ImGui.pushFont(ImGuiImpl.RobotoBold);
-		ImGui.text(Text.translatable("mwta.imgui.sign.editor.size_matching").getString()); // Translatable text for "Size Matching"
+		ImGui.text(tr("ImGui.Child.ElementPropertyWindow", "Other Controls"));
 		ImGui.popFont();
-		if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.normalize_size").getString())) { // Translatable text for "Normalize Size"
+		if (ImGui.button(tr("ImGui.Child.ElementPropertyWindow", "Normalize Size"))) { // Translatable text for "Normalize Size"
 			((TextElementClient) element).setWidthCalculated(false);
 			SignEditor.addUndo();
 		}
