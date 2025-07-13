@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
@@ -188,23 +189,23 @@ public abstract class ElementEntry {
 	private void contextualMenu() {
 		if (ImGui.beginPopupContextItem("ElementEntryContextMenu##" + renderObject.getId())) {
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.copy").getString())) { // "Copy" button
+			if (ImGui.button(tr("Global", "Copy"))) { // "Copy" button
 				Clipboard.getInstance().setCopiedElement(renderObject.copy());
 				ImGui.closeCurrentPopup();
 			}
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.cut").getString())) { // "Cut" button
+			if (ImGui.button(tr("Global", "Cut"))) { // "Cut" button
 				Clipboard.getInstance().setCopiedElement(renderObject.copy());
 				deleteElement(renderObject);
 				ImGui.closeCurrentPopup();
 			}
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.duplicate").getString())) { // "Duplicate" button
+			if (ImGui.button(tr("Global", "Duplicate"))) { // "Duplicate" button
 				ClientElementInterface copiedElement = renderObject.copy();
 				addElementFirst(copiedElement);
 			}
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.export").getString() + "...")) exportElement(); // "Export..." button
+			if (ImGui.button(tr("Global", "Export") + "...")) exportElement(); // "Export..." button
 
 			int indexInList = indexOfElement(renderObject);
 
@@ -217,7 +218,7 @@ public abstract class ElementEntry {
 	private void renderGroupControls(int indexInList) {
 
 		if (ClientElementManager.getInstance().getElementById(renderObject.getParentId()) instanceof GroupElementClient parentElement) { // Only show if element is inside a Group / has a parent
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.remove_from_group").getString())) { // "Remove from group" button
+			if (ImGui.button(tr("ImGui.Child.ElementEntry", "Remove from Group"))) { // "Remove from group" button
 				if (ClientElementManager.getInstance().getElementById(parentElement.getParentId()) instanceof GroupElementClient parentParentElement) { // If parent has another parent, execute this instead
 					parentParentElement.addClientElement(renderObject.copy()); // Add the element to be removed to the parent of the parent
 					parentElement.removeClientElement(renderObject);
@@ -231,14 +232,14 @@ public abstract class ElementEntry {
 
 		if (sizeOfList() > indexInList + 1) {
 			if (getElement(indexInList + 1) instanceof GroupElementClient) {
-				if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.add_to_group_below").getString())) { // "Add to group below" button
+				if (ImGui.button(tr("ImGui.Child.ElementEntry", "Add to Group below"))) { // "Add to group below" button
 					((GroupElementClient) getElement(indexInList + 1)).addClientElement(renderObject.copy());
 					((GroupElementClient) getElement(indexInList + 1)).addClientElementFirst(renderObject.copy());
 					deleteElement(renderObject);
 				}
 			}
 
-			if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.group_with_below").getString())) { // "Group with below" button
+			if (ImGui.button(tr("ImGui.Child.ElementEntry", "Group with below"))) { // "Group with below" button
 				GroupElementClient groupElement = new GroupElementClient(0, 0, 0, 0, 0, null, parentId);
 				addElement(indexInList, groupElement); // First add the new GroupElement at the current index so it gets a new ID and is registered in the element list. Done, so client elements can have a parent id that's not null
 				groupElement.addClientElement(renderObject.copy()); // Now add the elements
@@ -251,7 +252,7 @@ public abstract class ElementEntry {
 		if (!(renderObject instanceof GroupElementClient)) return; // Render the following only when the renderObject is a GroupElement
 
 		// "Ungroup" button. Only active on GroupElements
-		if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.ungroup").getString())) { // "Ungroup" button
+		if (ImGui.button(tr("Global", "Ungroup"))) { // "Ungroup" button
 			// If the group element isn't enclosed by any other group, give the children "MAIN" as parent id, otherwise give the id of the enclosing element, that encloses the group element
 			UUID newParentId = Objects.equals(renderObject.getParentId(), ClientElementInterface.MAIN_CANVAS_ID) ? ClientElementInterface.MAIN_CANVAS_ID : renderObject.getParentId();
 
