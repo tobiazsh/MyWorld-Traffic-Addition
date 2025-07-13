@@ -17,21 +17,25 @@ import net.minecraft.text.Text;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MODVER;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class AboutWindow {
 
     public static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
     public static String author = "Tobiazsh (Tobias)";
-    public static String description = Text.translatable("mwta.description").getString(); // Description
-    public static String[] other = {Text.translatable("mwta.made_in_austria").getString(), Text.translatable("mwta.funny_text_in_about_window_1").getString()}; // Other information
+    public static String description = tr("MWTA", "A Minecraft Mod for improved roads and general canvases in Minecraft"); // Description
+    public static String[] other = {
+            tr("ImGui.Main.AboutWindow", "Made in Austria"),
+            tr("ImGui.Main.AboutWindow", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯")
+    }; // Other information
 
     public static void render() {
         ImGui.pushFont(ImGuiImpl.Roboto);
-        ImGui.begin(Text.translatable("mwta.imgui.sign.editor.about").getString() + " " + title, ImGuiWindowFlags.MenuBar); // "About MyWorld Traffic Addition" title
+        ImGui.begin(tr("Global", "About") + " " + title, ImGuiWindowFlags.MenuBar); // "About MyWorld Traffic Addition" title
 
         if (ImGui.beginMenuBar()) {
-            if (ImGui.beginMenu(Text.translatable("mwta.imgui.sign.editor.window").getString())) { // "Window" menu
-                if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.quit_to_minecraft").getString())) { // "Quit to Minecraft" menu item
+            if (ImGui.beginMenu(tr("Global", "Window"))) { // "Window" menu
+                if (ImGui.menuItem(tr("Global", "Quit to Minecraft"))) { // "Quit to Minecraft" menu item
                     ImGuiRenderer.showAboutWindow = false;
                 }
                 ImGui.endMenu();
@@ -52,17 +56,17 @@ public class AboutWindow {
 
         ImGui.newLine();
 
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.name").getString() + ": " + title); // "Name: MyWorld Traffic Addition"
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.version").getString() + ": " + MODVER); // "Version: ..."
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.author").getString() + ": " + author); // Author: Tobias
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.description") + ": " + description); // Description: -
+        ImGui.text("%s: %s".formatted(tr("Global", "Name"), title)); // "Name: MyWorld Traffic Addition"
+        ImGui.text("%s: %s".formatted(tr("Global", "Version"), MODVER)); // "Version: ..."
+        ImGui.text("%s: %s".formatted(tr("Global", "Author"), author)); // Author: Tobias
+        ImGui.text("%s: %s".formatted(tr("Global", "Description"), description)); // Description: -
 
         ImGui.newLine();
 
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.other").getString() + ":"); // "Other:"
+        ImGui.text(tr("Global", "Other") + ":"); // "Other:"
         ImGui.sameLine();
         for (String string : other) {
-            ImGui.setCursorPosX((imgui.calcTextSize(Text.translatable("mwta.imgui.sign.editor.other").getString() + ":").x + 10));
+            ImGui.setCursorPosX((imgui.calcTextSize(tr("Global", "Other") + ":").x + 10));
             ImGui.text(string);
         }
 
@@ -71,7 +75,7 @@ public class AboutWindow {
         ImGui.popFont();
         ImGui.pushFont(ImGuiImpl.RobotoBold);
 
-        ImGui.text(Text.translatable("mwta.imgui.sign.editor.thanks_for_downloading").getString()); // "THANK YOU FOR DOWNLOADING <3!"
+        ImGui.text(tr("ImGui.Main.AboutWindow", "THANK YOU FOR DOWNLOADING <3!")); // "THANK YOU FOR DOWNLOADING <3!"
 
         ImGui.popFont();
 
