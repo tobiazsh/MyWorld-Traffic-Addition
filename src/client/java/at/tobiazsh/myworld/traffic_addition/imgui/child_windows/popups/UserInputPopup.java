@@ -7,6 +7,8 @@ import imgui.type.ImString;
 
 import java.util.function.Consumer;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 public class UserInputPopup {
 
     public enum InputType {
@@ -33,9 +35,9 @@ public class UserInputPopup {
                 case FLOAT -> ImGui.inputFloat("##FloatInputUserInputPopup", inputFloat, 0.25f, 1, "%.2f");
             }
 
-            if (ImGui.button("Confirm##UserInputPopup")) confirm();
+            if (ImGui.button(tr("Global", "Confirm") + "##UserInputPopup")) confirm();
             ImGui.sameLine();
-            if (ImGui.button("Cancel##UserInputPopup")) cancel();
+            if (ImGui.button(tr("Global", "Cancel") + "##UserInputPopup")) cancel();
 
             ImGui.endPopup();
         }
