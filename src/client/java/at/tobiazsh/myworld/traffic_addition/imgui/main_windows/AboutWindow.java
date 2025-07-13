@@ -13,7 +13,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
-import net.minecraft.text.Text;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MODVER;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
