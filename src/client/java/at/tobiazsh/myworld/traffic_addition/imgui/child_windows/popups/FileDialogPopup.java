@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+
 /**
  * A popup that allows the user to select a file or save a file.
  * When saving a file, the data to save can be set with {@link FileDialogPopup#setData(String)}. If this is not set, the file will be empty. This must be called BEFORE opening the dialog!
@@ -134,9 +136,8 @@ public class FileDialogPopup {
         if (ImGui.inputText("##PathBar", pathBarPath, ImGuiInputTextFlags.EnterReturnsTrue)) {
             if (!updatePath(Paths.get(pathBarPath.get()))) {
                 ErrorPopup.open(
-                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path").getString(),
-                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.invalid_path").getString(),
-                        () -> pathBarPath.set(currentPath.toString())
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "Invalid Path"),
+                        "", () -> pathBarPath.set(currentPath.toString())
                 );
             } else refresh();
         }
@@ -148,9 +149,9 @@ public class FileDialogPopup {
         ImGui.beginChild("##MenuBarRegion", ImGui.getContentRegionAvailX(), 30, false, ImGuiWindowFlags.MenuBar);
         if (ImGui.beginMenuBar()) {
 
-            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.parent_directory").getString())) parentDir();
-            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.refresh").getString())) refresh();
-            if (ImGui.menuItem(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.new_folder.action").getString())) newFolder();
+            if (ImGui.menuItem(tr("ImGui.Child.PopUps.FileDialog", "Parent Directory"))) parentDir();
+            if (ImGui.menuItem(tr("Global", "Refresh"))) refresh();
+            if (ImGui.menuItem(tr("ImGui.Child.PopUps.FileDialog", "New Folder") + "...")) newFolder();
 
             ImGui.endMenuBar();
         }
@@ -158,15 +159,15 @@ public class FileDialogPopup {
     }
 
     private static void newFolder() {
-        UserInputPopup.open(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.folder_name").getString(), UserInputPopup.InputType.STRING, (folderName) -> {
+        UserInputPopup.open(tr("ImGui.Child.PopUps.FileDialog", "Folder Name"), UserInputPopup.InputType.STRING, (folderName) -> {
             if (folderName.isBlank()) return;
 
             try {
                 Files.createDirectory(currentPath.resolve(folderName));
             } catch (IOException e) {
                 ErrorPopup.open(
-                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
-                        Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_folder.description").getString(),
+                        tr("Global", "Error"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the folder! Please check logs!"),
                         () -> {}
                 );
 
@@ -209,7 +210,7 @@ public class FileDialogPopup {
 
         // Cancel button
         ImGui.setColumnWidth(1, 100);
-        if (ImGui.button(Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.cancel").getString(), 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) cancel();
+        if (ImGui.button(tr("Global", "Cancel"), 100 - ImGui.getStyle().getItemSpacingX() * 2, ImGui.getFrameHeight())) cancel();
         ImGui.nextColumn();
 
         // File extension selection
@@ -247,8 +248,8 @@ public class FileDialogPopup {
             e.printStackTrace();
 
             ErrorPopup.open(
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_parent_dirs.description").getString(),
+                    tr("Global", "Error"),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating parent directories! Please check logs!"),
                     () -> {}
             );
 
@@ -262,8 +263,8 @@ public class FileDialogPopup {
             createdSuccessfully = newFile.createNewFile();
         } catch (IOException e) {
             ErrorPopup.open(
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.creating_file.description").getString(),
+                    tr("Global", "Error"),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the file! Please check logs!"),
                     () -> {}
             );
 
@@ -288,8 +289,8 @@ public class FileDialogPopup {
             Files.write(path, data.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             ErrorPopup.open(
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.writing_to_file.description").getString(),
+                    tr("Global", "Error"),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while writing data to file! Please check logs!"),
                     () -> {}
             );
 
@@ -303,8 +304,8 @@ public class FileDialogPopup {
     // Will be executed if file already exists in current directory
     private static void handleFileExists() {
         ConfirmationPopup.show(
-                Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists").getString(),
-                Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.warn.file_already_exists.description").getString(),
+                tr("ImGui.Child.PopUps.FileDialog.Error", "File Already Exists"),
+                tr("ImGui.Child.PopUps.FileDialog.Error", "The file you are trying to save already exists. Do you want to overwrite it?"),
                 (confirmed) -> {
             if (confirmed) write(fileData, filePath);
         });
@@ -316,8 +317,8 @@ public class FileDialogPopup {
 
         if (!Files.exists(filePath)) {
             ErrorPopup.open(
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found").getString(),
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.file_not_found.description").getString(),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "File not found!"),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "The file you are trying to open does not exist."),
                     () -> {}
             );
             return;
@@ -327,8 +328,8 @@ public class FileDialogPopup {
             fileData = Files.readString(filePath);
         } catch (IOException e) {
             ErrorPopup.open(
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error").getString(),
-                    Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.error.reading_file.description").getString(),
+                    tr("Global", "Error"),
+                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while reading the file! Please check logs!"),
                     () -> {}
             );
 
@@ -432,11 +433,11 @@ public class FileDialogPopup {
     private static String getTypeName(FileDialogType type) {
         switch (type) {
             case SAVE -> {
-                return Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.save").getString();
+                return tr("Global", "Save");
             }
 
             case OPEN -> {
-                return Text.translatable("mwta.imgui.sign.editor.popups.file_dialog.open").getString();
+                return tr("Global", "Open");
             }
 
             default -> {
