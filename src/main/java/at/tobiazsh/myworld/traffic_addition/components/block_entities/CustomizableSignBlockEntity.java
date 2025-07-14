@@ -258,6 +258,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         nbt.putString("SignTexture", signTextureJson);
     }
 
+
+
     @Override
     protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.writeNbt(nbt, registryLookup);
@@ -269,20 +271,49 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
 
-        borderModelPath = nbt.getString("BorderModelPath");
-        isMaster = nbt.getBoolean("IsMaster");
-        masterPos = deconstructMasterPosString(nbt.getString("MasterPos"));
-        signPolePositions = nbt.getString("SignPolePositions");
-        isRendered = nbt.getBoolean("RenderingState");
-        signPositions = nbt.getString("SignPositions");
-        rotation = nbt.getInt("Rotation");
-        width = nbt.getInt("Width");
-        height = nbt.getInt("Height");
-        isInitialized = nbt.getBoolean("IsInitialized");
-        signTextureJson = nbt.getString("SignTexture");
+        borderModelPath = getStringOrDefault(nbt, "BorderModelPath", "customizable_sign_block_border_all");
+        isMaster = getBooleanOrDefault(nbt, "IsMaster", true);
+        masterPos = deconstructMasterPosString(getStringOrDefault(nbt, "MasterPos", constructMasterPosString(getPos())));
+        signPolePositions = getStringOrDefault(nbt, "SignPolePositions", "");
+        isRendered = getBooleanOrDefault(nbt, "RenderingState", true);
+        signPositions = getStringOrDefault(nbt, "SignPositions", "");
+        rotation = getIntOrDefault(nbt, "Rotation", 0);
+        width = getIntOrDefault(nbt, "Width", 1);
+        height = getIntOrDefault(nbt, "Height", 1);
+        isInitialized = getBooleanOrDefault(nbt, "IsInitialized", false);
+        signTextureJson = getStringOrDefault(nbt, "SignTexture", "{}");
 
         updateTextureVars();
     }
+
+    private String getStringOrDefault(NbtCompound nbt, String key, String defaultValue) {
+        Optional<String> valueOpt = nbt.getString(key);
+        if (valueOpt.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
+            return defaultValue;
+        }
+        return valueOpt.get();
+    }
+
+    private boolean getBooleanOrDefault(NbtCompound nbt, String key, boolean defaultValue) {
+        Optional<Boolean> valueOpt = nbt.getBoolean(key);
+        if (valueOpt.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
+            return defaultValue;
+        }
+        return valueOpt.get();
+    }
+
+    private int getIntOrDefault(NbtCompound nbt, String key, int defaultValue) {
+        Optional<Integer> valueOpt = nbt.getInt(key);
+        if (valueOpt.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
+            return defaultValue;
+        }
+        return valueOpt.get();
+    }
+
+
 
     @Override
     public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
