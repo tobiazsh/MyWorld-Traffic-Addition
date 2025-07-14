@@ -13,6 +13,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.Objects;
 
 public class MwtaCommand {
@@ -47,7 +48,10 @@ public class MwtaCommand {
         Text l2 = Text.literal("Attention! Some commands can and will destroy all of your signs!\n").formatted(Formatting.WHITE);
         Text l3 = Text.literal("To know more about MyWorld Traffic Addition, please execute \"/mwta about\"\n").formatted(Formatting.WHITE);
         Text l4 = Text.literal("To edit the preferences for MyWorld Traffic Addition, please execute \"/mwta pref\"\n").formatted(Formatting.WHITE);
-        Text l5 = Text.literal("For more information about commands, please visit the GitHub Page (click here)").styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/tobiazsh/myworld_traffic_addition")).withFormatting(Formatting.BLUE, Formatting.BOLD));
+
+        Text l5 = Text.literal("For more information about commands, please visit the GitHub Page (click here)")
+                .styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create("https://github.com/tobiazsh/myworld_traffic_addition")))
+                .withFormatting(Formatting.BLUE, Formatting.BOLD));
 
         context.getSource().sendMessage(l1);
         context.getSource().sendMessage(l2);
