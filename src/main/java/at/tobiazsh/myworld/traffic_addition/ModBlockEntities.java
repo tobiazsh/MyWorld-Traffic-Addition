@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.*;
+import at.tobiazsh.myworld.traffic_addition.block_entities.*;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;

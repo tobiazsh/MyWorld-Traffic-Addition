@@ -7,7 +7,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.OctagonalSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.OctagonalSignBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

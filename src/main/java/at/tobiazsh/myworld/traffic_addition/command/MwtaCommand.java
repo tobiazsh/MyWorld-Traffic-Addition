@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.command;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;

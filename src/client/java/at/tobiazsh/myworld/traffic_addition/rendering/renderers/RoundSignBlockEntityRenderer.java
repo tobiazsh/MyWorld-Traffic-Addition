@@ -8,7 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.RoundSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.RoundSignBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

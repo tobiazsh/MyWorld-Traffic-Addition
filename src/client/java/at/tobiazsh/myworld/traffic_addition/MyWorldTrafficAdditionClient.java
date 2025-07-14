@@ -3,15 +3,14 @@ package at.tobiazsh.myworld.traffic_addition;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
-import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignSelectionPayload;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignSelectionScreen;
@@ -33,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
-import static at.tobiazsh.myworld.traffic_addition.components.block_entities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
+import static at.tobiazsh.myworld.traffic_addition.block_entities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
 
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
