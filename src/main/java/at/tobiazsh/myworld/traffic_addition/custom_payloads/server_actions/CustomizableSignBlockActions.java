@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
