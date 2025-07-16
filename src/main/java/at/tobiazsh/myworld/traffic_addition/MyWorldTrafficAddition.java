@@ -7,7 +7,6 @@ import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
-import at.tobiazsh.myworld.traffic_addition.block_entities.SpecialBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignPoleBlockActions;
@@ -54,8 +53,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ModBlockEntities.initialize();
 
 		CommandRegistrationCallback.EVENT.register(ModCommands::initialize);
-
-		SpecialBlockEntity.initialize(); // Remnant of old code but I'll leave it here since I am lazy
 
 		MyWorldTrafficAddition.LOGGER.info("Adding payloads...");
 		addSmartPayloadsServer();
@@ -172,5 +169,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request image
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
+	}
+
+
+
+	public static Identifier createId(String id) {
+		return Identifier.of(MOD_ID, id);
 	}
 }
