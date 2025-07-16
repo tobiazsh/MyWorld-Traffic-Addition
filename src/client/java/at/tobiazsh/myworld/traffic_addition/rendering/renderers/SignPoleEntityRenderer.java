@@ -12,8 +12,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
-import static net.minecraft.client.render.RenderLayer.getSolid;
-
 @Environment(EnvType.CLIENT)
 public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlockEntity> {
 
