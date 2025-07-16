@@ -67,11 +67,11 @@ public class OnlineImageServerLogic {
             String imageUUID = metadataJson.get("ImageUUID").getAsString();
             String uploaderUUID = metadataJson.get("UploaderUUID").getAsString();
 
-            CustomImageDir.createCustomImageDir(); // Create custom image directory if it doesn't exist
+            CustomImageDirectory.createCustomImageDir(); // Create custom image directory if it doesn't exist
 
             Path destinationPath = hidden ?
-                    CustomImageDir.getHiddenCustomImageDir() :
-                    CustomImageDir.getCustomImageDir();
+                    CustomImageDirectory.getHiddenCustomImageDir() :
+                    CustomImageDirectory.getCustomImageDir();
 
             File imageFile = new File(destinationPath.resolve(imageUUID + ".png").toAbsolutePath().toString());
             File thumbnailFile = new File(destinationPath.resolve(imageUUID + "_thumbnail.png").toAbsolutePath().toString());
@@ -142,8 +142,8 @@ public class OnlineImageServerLogic {
      * Counts the number of entries and reads all metadata into memory.
      */
     public static void countEntriesAndReadIntoMemory() {
-        Path hiddenImageDir = CustomImageDir.getHiddenCustomImageDir();
-        Path customImageDir = CustomImageDir.getCustomImageDir();
+        Path hiddenImageDir = CustomImageDirectory.getHiddenCustomImageDir();
+        Path customImageDir = CustomImageDirectory.getCustomImageDir();
 
         if (!hiddenImageDir.toFile().exists()) // If dir doesn't exist, no uploads have been made; return
             return;
@@ -308,11 +308,11 @@ public class OnlineImageServerLogic {
 
         // Check if and where image exists
         try {
-            if (Files.exists(CustomImageDir.getCustomImageDir().resolve(imageName)))
-                return Files.readAllBytes(CustomImageDir.getCustomImageDir().resolve(imageName));
+            if (Files.exists(CustomImageDirectory.getCustomImageDir().resolve(imageName)))
+                return Files.readAllBytes(CustomImageDirectory.getCustomImageDir().resolve(imageName));
 
-            else if (Files.exists(CustomImageDir.getHiddenCustomImageDir().resolve(imageName)))
-                return Files.readAllBytes(CustomImageDir.getHiddenCustomImageDir().resolve(imageName));
+            else if (Files.exists(CustomImageDirectory.getHiddenCustomImageDir().resolve(imageName)))
+                return Files.readAllBytes(CustomImageDirectory.getHiddenCustomImageDir().resolve(imageName));
         } catch (IOException exc) {
             MyWorldTrafficAddition.LOGGER.error("Unable to read image image for UUID {}: {}", uuid, exc.getMessage());
         }
@@ -362,12 +362,12 @@ public class OnlineImageServerLogic {
 
             UUID imageUUID = byteToUUID(imageUuidBytes);
 
-            if (!Files.exists(CustomImageDir.getCustomImageDir().resolve(imageUUID + ".png"))) {
+            if (!Files.exists(CustomImageDirectory.getCustomImageDir().resolve(imageUUID + ".png"))) {
                 sendFailedImageResponse(player, imageUUID, requestIdBytes);
                 return; // Exit if image does not exist
             }
 
-            Path imagePath = CustomImageDir.getCustomImageDir().resolve(imageUUID + ".png");
+            Path imagePath = CustomImageDirectory.getCustomImageDir().resolve(imageUUID + ".png");
 
             byte[] imageData;
 
@@ -427,9 +427,9 @@ public class OnlineImageServerLogic {
         executorService.submit(() -> {
             UUID imageUUID = byteToUUID(imageUUIDBytes);
 
-            boolean existsInPublicDir = Files.exists(CustomImageDir.getCustomImageDir().resolve(imageUUID + "_metadata.json"));
+            boolean existsInPublicDir = Files.exists(CustomImageDirectory.getCustomImageDir().resolve(imageUUID + "_metadata.json"));
 
-            Path parentDir = existsInPublicDir ? CustomImageDir.getCustomImageDir() : CustomImageDir.getHiddenCustomImageDir();
+            Path parentDir = existsInPublicDir ? CustomImageDirectory.getCustomImageDir() : CustomImageDirectory.getHiddenCustomImageDir();
 
             boolean successful = true; // We assume that the deletion is going to be successful
 
