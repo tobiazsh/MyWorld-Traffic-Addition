@@ -31,6 +31,8 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
+
 @Environment(EnvType.CLIENT)
 public class CustomizableSignSettingScreen extends Screen {
 

@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
+
 public class CustomizableSignData {
 	public String jsonString; // JSON as String
 	public JsonObject json = new JsonObject(); // JSON
