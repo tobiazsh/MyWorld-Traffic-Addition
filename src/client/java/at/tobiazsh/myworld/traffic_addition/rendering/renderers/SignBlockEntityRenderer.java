@@ -37,18 +37,15 @@ import net.minecraft.util.math.Vec3d;
 public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<T> {
 
     private final BakedModelManager bakedModelMgr;
-    private final String bakedModelIdentifier;
     private Coordinates mountingOffset;
     private BlockPos attachmentBlockPos;
     public String textureIdentifier;
-    private int rotationDegrees;
 
     public static float zOffsetRenderLayer = 3f;
     public static float zOffsetRenderLayerDefault = 3f;
 
     public SignBlockEntityRenderer(BakedModelManager bakedModelMgr, String bakedModelIdentifier) {
         this.bakedModelMgr = bakedModelMgr;
-        this.bakedModelIdentifier = bakedModelIdentifier;
     }
 
     private boolean hasReloaded = false;
@@ -72,7 +69,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         matrices.push();
 
         if(blockEntityBehind instanceof SignPoleBlockEntity signPoleBlockEntity) {
-            rotationDegrees = signPoleBlockEntity.getRotationValue() + 180;
+            int rotationDegrees = signPoleBlockEntity.getRotationValue() + 180;
 
             if (entity.getRotation() != rotationDegrees) {
                 ClientPlayNetworking.send(new SignBlockRotationPayload(entity.getPos(), rotationDegrees));
