@@ -17,8 +17,7 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
 
     private BlockStateModel signPoleModel = null;
 
-    public SignPoleEntityRenderer (BlockEntityRendererFactory.Context context) {
-    }
+    public SignPoleEntityRenderer (BlockEntityRendererFactory.Context context) {}
 
     @Override
     public void render(SignPoleBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d cameraPos) {
