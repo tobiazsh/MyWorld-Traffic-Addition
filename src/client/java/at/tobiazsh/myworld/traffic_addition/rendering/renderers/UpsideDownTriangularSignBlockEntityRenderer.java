@@ -29,12 +29,12 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
     }
 
     @Override
-    protected void renderTextureOnModel(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int light, int overlay) {
+    protected void renderTextureOnModel(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         Identifier TEXTURE = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.textureIdentifier);
 
         RenderLayer renderLayer = RenderLayer.getEntityCutout(TEXTURE);
 
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
+        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
         matrices.push();
         matrices.scale(1.0f, 1.0f, 1.0f);
