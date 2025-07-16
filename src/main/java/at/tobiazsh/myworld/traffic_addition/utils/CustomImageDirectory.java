@@ -6,7 +6,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.File;
 import java.nio.file.Path;
 
-public class CustomImageDir {
+public class CustomImageDirectory {
 
     private static final String CUSTOM_IMAGE_DIR = "myworld_traffic_addition/uploaded_images";
     private static final String HIDDEN_CUSTOM_IMAGE_DIR = "myworld_traffic_addition/uploaded_images/hidden";

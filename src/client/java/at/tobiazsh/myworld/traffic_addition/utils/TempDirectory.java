@@ -6,7 +6,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.File;
 import java.nio.file.Path;
 
-public class TempDir {
+public class TempDirectory {
 
     private static final String TEMP_DIR = "myworld_traffic_addition/temp";
 
