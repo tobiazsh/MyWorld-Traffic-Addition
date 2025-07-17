@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.utils;
+package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 
@@ -19,14 +19,14 @@ public class OnlineImageCache {
      * This method should be called during the initialization phase of the mod.
      */
     public static void createCacheDir() {
-        ClientCustomImageDir.createCustomImageDir();
+        ClientCustomImageDirectory.createCustomImageDir();
     }
 
     /**
      * Clears all files in the cache directory.
      */
     public static void clearCache() {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(cacheDir)) {
             for (Path entry : stream) {
                 if (!Files.isDirectory(entry)) {
@@ -43,7 +43,7 @@ public class OnlineImageCache {
      * @param fileName The exact name of the file to remove from the cache including its extension.
      */
     public static void removeFromCache(String fileName) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         Path filePath = cacheDir.resolve(fileName);
 
         try {
@@ -60,7 +60,7 @@ public class OnlineImageCache {
      * @param imageName The name of the image file to be saved in the cache directory - including the extension!
      */
     public static Path cacheImage(byte[] imageBytesPng, String imageName) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         Path imagePath = cacheDir.resolve(imageName);
 
         try {
@@ -73,7 +73,7 @@ public class OnlineImageCache {
     }
 
     public static Path getCachedImagePath(String imageName) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         return cacheDir.resolve(imageName);
     }
 
@@ -83,7 +83,7 @@ public class OnlineImageCache {
      * @return The byte array of the image if it exists, null otherwise.
      */
     public static byte[] loadImage(String imageName) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         Path imagePath = cacheDir.resolve(imageName);
 
         if (Files.exists(imagePath)) {
@@ -103,7 +103,7 @@ public class OnlineImageCache {
      * @return A list of UUIDs extracted from the cached image file names.
      */
     public static List<UUID> getCachedUUIDs(String suffix) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         try (var stream = Files.list(cacheDir)) {
             return StreamSupport.stream(stream.spliterator(), false)
                     .filter(path -> path.getFileName().toString().endsWith(suffix))
@@ -121,7 +121,7 @@ public class OnlineImageCache {
      * @return true if the image is cached, false otherwise.
      */
     public static boolean isImageCached(String imageName) {
-        Path cacheDir = ClientCustomImageDir.getCacheImageDir();
+        Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         Path imagePath = cacheDir.resolve(imageName);
         return Files.exists(imagePath);
     }

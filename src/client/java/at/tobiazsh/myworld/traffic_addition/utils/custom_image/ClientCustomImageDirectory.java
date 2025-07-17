@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.utils;
+package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import net.fabricmc.loader.api.FabricLoader;
@@ -7,7 +7,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 // Stores json of all the images the player uploaded
-public class ClientCustomImageDir {
+public class ClientCustomImageDirectory {
     private static final String MY_IMAGE_DIR = "myworld_traffic_addition/custom_images/mine";
     private static final String CACHE_IMAGE_DIR = "myworld_traffic_addition/custom_images/cache";
 

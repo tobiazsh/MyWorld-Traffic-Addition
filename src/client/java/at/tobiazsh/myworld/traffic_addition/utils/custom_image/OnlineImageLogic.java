@@ -1,8 +1,8 @@
-package at.tobiazsh.myworld.traffic_addition.utils;
+package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.util.Identifier;

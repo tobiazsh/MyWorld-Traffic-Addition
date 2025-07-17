@@ -14,6 +14,8 @@ import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.O
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignSelectionScreen;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
