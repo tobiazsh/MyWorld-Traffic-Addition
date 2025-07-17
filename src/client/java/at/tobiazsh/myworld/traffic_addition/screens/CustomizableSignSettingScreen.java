@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -166,8 +167,8 @@ public class CustomizableSignSettingScreen extends Screen {
         signWidth = checkWidth(pos);
 
         // Configure connected blocks
-        setRestMaster(pos);
-        setBorderTypes(pos);
+        informOthersMaster(pos);
+        setSignBorder(pos);
         checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
         checkSigns(pos, getFacing(pos, world));
 
@@ -236,7 +237,7 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Sets all connected signs to use the master block for rendering
      */
-    private void setRestMaster(BlockPos masterPosY) {
+    private void informOthersMaster(BlockPos masterPosY) {
         BlockPos currentYPos = masterPosY;
 
         while (world.getBlockEntity(currentYPos) instanceof CustomizableSignBlockEntity) {
@@ -302,7 +303,7 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Determines and sets appropriate border types for all sign blocks based on position
      */
-    private void setBorderTypes(BlockPos masterPos) {
+    private void setSignBorder(BlockPos masterPos) {
         Direction rightSide = getRightSideDirection(getFacing(masterPos, world).getOpposite());
         BlockPos currentYPos = masterPos;
 
@@ -311,13 +312,9 @@ public class CustomizableSignSettingScreen extends Screen {
 
             while (world.getBlockEntity(currentXPos) instanceof CustomizableSignBlockEntity) {
                 // Determine which sides need borders based on position
-                List<Boolean> borders = getBorderListBoundingBased(currentXPos, world);
-                String modelPath = CustomizableSignBlockEntity.getBorderName(
-                        borders.get(0), borders.get(1), borders.get(2), borders.get(3),
-                        "customizable_sign_block_border"
-                );
+                BorderProperty borders = getBorderListBoundingBased(currentXPos, world);
 
-                ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(currentXPos, modelPath));
+                ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(currentXPos, borders.toString()));
                 currentXPos = getBlockPosAtDirection(rightSide, currentXPos, 1);
             }
 

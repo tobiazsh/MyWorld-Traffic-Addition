@@ -132,9 +132,10 @@ public class CustomizableSignData {
 
 		// Scan the blocks around the masterPos and get the necessary textures. Then store them in a list
 		while (world.getBlockEntity(scanPosY) instanceof CustomizableSignBlockEntity) {
-			while (world.getBlockEntity(scanPosX) instanceof CustomizableSignBlockEntity) {
-				List<Boolean> borders = getBorderListBoundingBased(scanPosX, world); // Get the true/false map for the border at that pos
-				textureNames.add(getBorderName(borders.get(0), borders.get(1), borders.get(2), borders.get(3), "border")); // Get the texture name based on the border map
+			while (world.getBlockEntity(scanPosX) instanceof CustomizableSignBlockEntity csbEntity) {
+				// ALTERNATIVE: BorderProperty borders = getBorderListBoundingBased(scanPosX, world); // Get the true/false map for the border at that pos
+				BorderProperty borders = csbEntity.getBorderType();
+				textureNames.add(borders.toNormalString()); // Get the texture name based on the border map
 
 				scanPosX = getBlockPosAtDirection(rightSide, scanPosX, 1);
 			}

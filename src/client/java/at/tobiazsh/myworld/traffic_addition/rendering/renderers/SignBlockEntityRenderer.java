@@ -92,16 +92,13 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         }
 
         BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModels().getModel(signBlock.getDefaultState());
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
-                entity.getWorld(),
+                matrices.peek(),
+                consumer,
                 signBlockStateModel,
-                entity.getCachedState(),
-                entity.getPos(),
-                matrices,
-                vertexConsumers,
-                true,
-                entity.getPos().asLong(),
-                overlay
+                1.0f, 1.0f, 1.0f,
+                light, overlay
         );
 
         renderTextureOnModel(entity, matrices, vertexConsumers, light, overlay);
@@ -206,16 +203,13 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         rotateHolder(entity, matrices);
 
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
-                entity.getWorld(),
+                matrices.peek(),
+                consumer,
                 signHolderModel,
-                entity.getCachedState(),
-                entity.getPos(),
-                matrices,
-                vertexConsumers,
-                true,
-                entity.getPos().asLong(),
-                overlay
+                1.0f, 1.0f, 1.0f,
+                light, overlay
         );
 
         matrices.pop();

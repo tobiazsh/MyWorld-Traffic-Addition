@@ -8,6 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
@@ -31,6 +32,7 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.border.Border;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
@@ -45,7 +47,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private boolean updateBackgroundTexture = false;
     private boolean updateOccurred = false;
 
-    private String borderModelPath = "customizable_sign_block_border_all";
+    private BorderProperty borders = new BorderProperty(true, true, true, true);
+
     private BlockPos masterPos;
     private String signPolePositions = "";
     private String signPositions = "";
@@ -66,6 +69,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public boolean hasUpdateOccured() {
         return updateOccurred;
     }
+
+    public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
+        super(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, pos, state);
+
+        this.masterPos = pos;
+    }
+
+
 
     public void updateTextureVars() {
         if (!isMaster) return;
@@ -177,13 +188,13 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         updateGame();
     }
 
-    public void setBorderType(String borderModelPath) {
-        this.borderModelPath = borderModelPath;
+    public void setBorderType(BorderProperty borders) {
+        this.borders = borders;
         updateGame();
     }
 
-    public String getBorderType() {
-        return borderModelPath;
+    public BorderProperty getBorderType() {
+        return borders;
     }
 
     public void setMaster(boolean value) {
@@ -225,14 +236,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return pos;
     }
 
-    public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
-        super(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, pos, state);
-
-        this.masterPos = pos;
-    }
-
     private void nbtWrite(NbtCompound nbt) {
-        nbt.putString("BorderModelPath", borderModelPath);
+        nbt.putString("Borders", borders.toString());
         nbt.putBoolean("IsMaster", isMaster);
         nbt.putString("MasterPos", constructMasterPosString(masterPos));
         nbt.putString("SignPolePositions", signPolePositions);
@@ -271,7 +276,15 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
 
-        borderModelPath = getStringOrDefault(nbt, "BorderModelPath", "customizable_sign_block_border_all");
+        BorderProperty borders;
+
+        if (!nbt.contains("Borders") && !getStringOrDefault(nbt, "BorderModelPath", "").isBlank()) {
+            borders = convertOldBorderStringToBorderProperty(getStringOrDefault(nbt, "BorderModelPath", ""), "customizable_sign_block");
+        } else {
+            borders = BorderProperty.valueOf(getStringOrDefault(nbt, "Borders", BorderProperty.DEFAULT));
+        } // CONVERSION TO NEW VERSION
+
+        this.borders = borders;
         isMaster = getBooleanOrDefault(nbt, "IsMaster", true);
         masterPos = deconstructMasterPosString(getStringOrDefault(nbt, "MasterPos", constructMasterPosString(getPos())));
         signPolePositions = getStringOrDefault(nbt, "SignPolePositions", "");
@@ -329,54 +342,116 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return nbt;
     }
 
-    // I am VERY well aware that this is awful, but I found that this would be the easiest method for me :). Please correct if possible!
-    public static String getBorderName(boolean top, boolean right, boolean left, boolean bottom, String id) {
-        Map<List<Boolean>, String> borderMap = new HashMap<>();
-        borderMap.put(Arrays.asList(true, false, false, false), id + "_top");
-        borderMap.put(Arrays.asList(false, true, false, false), id + "_right");
-        borderMap.put(Arrays.asList(false, false, true, false), id + "_left");
-        borderMap.put(Arrays.asList(false, false, false, true), id + "_bottom");
-
-        borderMap.put(Arrays.asList(true, true, false, false), id + "_top_right");
-        borderMap.put(Arrays.asList(true, false, true, false), id + "_top_left");
-        borderMap.put(Arrays.asList(false, true, false, true), id + "_bottom_right");
-        borderMap.put(Arrays.asList(false, false, true, true), id + "_bottom_left");
-
-        borderMap.put(Arrays.asList(true, false, false, true), id + "_top_bottom");
-        borderMap.put(Arrays.asList(false, true, true, false), id + "_left_right");
-
-        borderMap.put(Arrays.asList(false, true, true, true), id + "_not_top");
-        borderMap.put(Arrays.asList(true, false, true, true), id + "_not_right");
-        borderMap.put(Arrays.asList(true, true, false, true), id + "_not_left");
-        borderMap.put(Arrays.asList(true, true, true, false), id + "_not_bottom");
-
-        borderMap.put(Arrays.asList(true, true, true, true), id + "_all");
-        borderMap.put(Arrays.asList(false, false, false, false), id + "_none");
-
-        return borderMap.getOrDefault(Arrays.asList(top, right, left, bottom), "customizable_sign_block_border_all");
-    }
-
-    public static List<Boolean> getBorderListBoundingBased(BlockPos masterPos, World world) {
-        List<Boolean> borders = new ArrayList<>();
+    public static BorderProperty getBorderListBoundingBased(BlockPos masterPos, World world) {
         Direction rightSideDirection = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
+        boolean up = true;
+        boolean right = true;
+        boolean down = true;
+        boolean left = true;
+
         if (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity)
-            borders.add(false);
-        else borders.add(true);
+            up = false;
 
         if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1)) instanceof CustomizableSignBlockEntity)
-            borders.add(false);
-        else borders.add(true);
-
-        if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity)
-            borders.add(false);
-        else borders.add(true);
+            right = false;
 
         if (world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity)
-            borders.add(false);
-        else borders.add(true);
+            down = false;
 
-        return borders;
+        if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity)
+            left = false;
+
+        return new BorderProperty(up, right, down, left);
+    }
+
+    /**
+     * Converts the old border string format to a BorderProperty object.
+     *
+     * @param borderString The old border string format including the name prefix. For example: "customizable_sign_border_top" or "sign_border_not_right".
+     * @param name The name prefix that is used in the border string. For example: "customizable_sign" or "sign".
+     * @return A BorderProperty object representing the border configuration.
+     */
+    public static BorderProperty convertOldBorderStringToBorderProperty(String borderString, String name) {
+        String withoutName = borderString.replaceFirst(name + "_border_", ""); // Counts the number of underscores in the name and removes the prefix including the underscore
+
+        boolean left = false;
+        boolean right = false;
+        boolean up = false;
+        boolean down = false;
+
+        switch (withoutName) {
+            case "top" -> up = true;
+            case "right" -> right = true;
+            case "bottom" -> down = true;
+            case "left" -> left = true;
+
+            case "not_right" -> {
+                up = true;
+                down = true;
+                left = true;
+            }
+
+            case "not_left" -> {
+                up = true;
+                down = true;
+                right = true;
+            }
+
+            case "not_top" -> {
+                right = true;
+                down = true;
+                left = true;
+            }
+
+            case "not_bottom" -> {
+                up = true;
+                right = true;
+                left = true;
+            }
+
+
+            case "top_bottom" -> {
+                up = true;
+                down = true;
+            }
+
+            case "left_right" -> {
+                right = true;
+                left = true;
+            }
+
+            case "bottom_left" -> {
+                down = true;
+                left = true;
+            }
+
+            case "bottom_right" -> {
+                down = true;
+                right = true;
+            }
+
+            case "top_left" -> {
+                up = true;
+                left = true;
+            }
+
+            case "top_right" -> {
+                up = true;
+                right = true;
+            }
+
+            case "all" -> {
+                left = true;
+                right = true;
+                up = true;
+                down = true;
+            }
+
+            default -> {} // No borders are present
+        }
+
+        return new BorderProperty(up, right, down, left);
     }
 
     public static String constructBlockPosListString(List<BlockPos> blockPosList) {

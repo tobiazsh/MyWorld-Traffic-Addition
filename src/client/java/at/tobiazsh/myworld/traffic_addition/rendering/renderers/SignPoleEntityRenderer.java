@@ -4,6 +4,8 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -37,16 +39,14 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation_value));
         matrices.translate(-0.5f, 0, -0.5f);
 
+        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
+
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
-                entity.getWorld(),
+                matrices.peek(),
+                vertexConsumer,
                 signPoleModel,
-                entity.getCachedState(),
-                entity.getPos(),
-                matrices,
-                vertexConsumers,
-                true,
-                entity.getPos().asLong(),
-                overlay
+                1.0f, 1.0f, 1.0f,
+                light, overlay
         );
 
         matrices.pop();

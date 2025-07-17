@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
@@ -71,11 +72,11 @@ public class CustomizableSignBlockActions {
     public static void handleSetBorderType(SetBorderTypeCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
         GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
         BlockPos pos = payload.pos();
-        String modelPath = payload.modelPath();
+        String borders = payload.borders();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
         if (blockEntity instanceof CustomizableSignBlockEntity csbeBlockEntity)
-            defaults.world.getServer().execute(() -> csbeBlockEntity.setBorderType(modelPath));
+            defaults.world.getServer().execute(() -> csbeBlockEntity.setBorderType(BorderProperty.valueOf(borders)));
     }
 
     public static void handleSetMaster(SetMasterCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
