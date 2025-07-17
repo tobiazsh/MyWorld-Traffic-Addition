@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
+import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -72,14 +73,14 @@ public class SignBlockEntity extends BlockEntity {
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
 
-        this.rotation = nbt.getInt("Rotation");
-        this.shapeType = nbt.getInt("ShapeType");
-        this.textureId = nbt.getString("Texture");
-        this.backstepCoords = deconstructBackstepString(nbt.getString("Backstep"));
+        this.rotation = OptionalUtils.getOrDefault("Rotation", nbt::getInt, 0, "SignBlockEntity.readNbt");
+        this.shapeType = OptionalUtils.getOrDefault("ShapeType", nbt::getInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
+        this.textureId = OptionalUtils.getOrDefault("Texture", nbt::getString, "", "SignBlockEntity.readNbt");
+        this.backstepCoords = deconstructBackstepString(OptionalUtils.getOrDefault("Backstep", nbt::getString, "", "SignBlockEntity.readNbt"));
     }
 
     private static String constructBackstepString(Coordinates coordinates) {
-        String[] backstepStringParts = {String.valueOf(coordinates.x), String.valueOf(coordinates.y), String.valueOf(coordinates.z), coordinates.direction.getName()};
+        String[] backstepStringParts = {String.valueOf(coordinates.x), String.valueOf(coordinates.y), String.valueOf(coordinates.z), coordinates.direction.asString()};
         String backstepString = String.join("%", backstepStringParts);
         return backstepString;
     }
@@ -89,7 +90,7 @@ public class SignBlockEntity extends BlockEntity {
 
         if(backstepStringParts.length < 3) return new Coordinates(0, 0, 0, Direction.NORTH);
 
-        Coordinates coordinates = new Coordinates(Float.parseFloat(backstepStringParts[0]), Float.parseFloat(backstepStringParts[1]), Float.parseFloat(backstepStringParts[2]), Direction.byName(backstepStringParts[3]));
+        Coordinates coordinates = new Coordinates(Float.parseFloat(backstepStringParts[0]), Float.parseFloat(backstepStringParts[1]), Float.parseFloat(backstepStringParts[2]), Direction.valueOf(backstepStringParts[3]));
         return coordinates;
     }
 
