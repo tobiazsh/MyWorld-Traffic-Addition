@@ -1,13 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
-
-/*
- * @created 07/09/2024 (DD/MM/YYYY) - 23:31
- * @project MyWorld Traffic Addition
- * @author Tobias
- */
-
-
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
@@ -33,57 +25,80 @@ import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
 
+/**
+ * Screen for customizing sign blocks
+ */
 @Environment(EnvType.CLIENT)
 public class CustomizableSignSettingScreen extends Screen {
 
-    World world;
-    BlockPos pos;
-    PlayerEntity player;
-
+    // Constants
     private static final Text TITLE = Text.translatable("screen." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen");
+    private static final int MARGIN = 10;
+    private static final int WIDGET_HEIGHT = 20;
+    private static final int WIDGET_WIDTH = 200;
+    private static final int SPACING = 30;
 
-    private static final int margin = 10;
-    private int currentYPosition = margin;
-    private int scrollY = 0; // Part of scrolling feature
-    private int usedHeight = 0; // Keeps track of the height of all the elements together plus the extra margins;
+    // Block and world data
+    private final World world;
+    private final BlockPos pos;
+    private final PlayerEntity player;
 
-    private int initial_rotation_value;
+    // UI state
+    private int currentYPosition = MARGIN;
+    private int scrollY = 0;
+    private int usedHeight = 0;
+    private boolean showChildren = true;
 
+    // Sign state
+    private int initialRotationValue;
     private boolean isInitialized = false;
-    public boolean showChildren = true;
-
     private int signWidth = 1;
     private int signHeight = 1;
 
+    /**
+     * Creates a new screen for customizing signs
+     */
     public CustomizableSignSettingScreen(World world, BlockPos pos, PlayerEntity player) {
         super(TITLE);
         this.world = world;
         this.pos = pos;
         this.player = player;
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
+        loadInitialState();
+    }
 
-        if(blockEntity instanceof CustomizableSignBlockEntity csbe) {
-            initial_rotation_value = csbe.getRotation();
+    private void loadInitialState() {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof CustomizableSignBlockEntity csbe) {
+            initialRotationValue = csbe.getRotation();
             isInitialized = csbe.isInitialized();
         }
     }
 
-    private void applyRotation(int rotation) {
-        ClientPlayNetworking.send(new SetRotationCustomizableSignBlockPayload(pos, rotation));
+    @Override
+    protected void init() {
+        super.init();
+        drawChildren();
     }
 
+    /**
+     * Creates and adds all UI elements to the screen
+     */
     private void drawChildren() {
-
         if (!showChildren) return;
 
-        ButtonWidget initButton = ButtonWidget.builder(Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.check_button"), button -> initSign())
-                .dimensions(margin, currentYPosition, 200, 20)
-                .build();
-        currentYPosition += 30;
-        usedHeight += 30;
+        // Initialize button
+        addButton(
+                Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.check_button"),
+                (widget) -> initSign()
+        );
 
-        DegreeSliderWidget rotationWidget = new DegreeSliderWidget(margin, currentYPosition, 200, 20, Text.of(initial_rotation_value + "°"), initial_rotation_value / 90f + 0.5) {
+        // Rotation slider
+        DegreeSliderWidget rotationWidget = new DegreeSliderWidget(
+                MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT,
+                Text.of(initialRotationValue + "°"),
+                initialRotationValue / 90f + 0.5f
+        ) {
             @Override
             protected void updateMessage() {
                 this.setMessage(Text.of((int)getValue() + "°"));
@@ -94,28 +109,40 @@ public class CustomizableSignSettingScreen extends Screen {
                 applyRotation((int)getValue());
             }
         };
-        currentYPosition += 30;
-        usedHeight += 30;
+        addDrawableChild(rotationWidget);
+        advancePosition();
 
-        ButtonWidget drawEditorButton = ButtonWidget.builder(Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".draw_editor_button"), button -> showEditorScreen()).dimensions(margin, currentYPosition, 200, 20).build();
-
-        currentYPosition += 30;
-        usedHeight += 30;
-
-        // Place last
-        this.addDrawableChild(initButton);
-        this.addDrawableChild(rotationWidget);
-        this.addDrawableChild(drawEditorButton);
+        // Draw editor button
+        addButton(
+                Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".draw_editor_button"),
+                (widget) -> showEditorScreen()
+        );
     }
 
+    private void addButton(Text text, ButtonWidget.PressAction action) {
+        ButtonWidget button = ButtonWidget.builder(text, action)
+                .dimensions(MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT)
+                .build();
+        addDrawableChild(button);
+        advancePosition();
+    }
+
+    private void advancePosition() {
+        currentYPosition += SPACING;
+        usedHeight += SPACING;
+    }
+
+    private void applyRotation(int rotation) {
+        ClientPlayNetworking.send(new SetRotationCustomizableSignBlockPayload(pos, rotation));
+    }
+
+    /**
+     * Opens the ImGui sign editor screen
+     */
     private void showEditorScreen() {
-        // When one button is still focused from being pressed and I try to type a space in ImGui, it re-opens the ImGui Editor because Space (or Enter) acts as 'OK' in Minecraft's GUI, which isn't great since all progress is lost.
-        // Re-Opening causes the screen to lose focus on the last selected button, and thus you can press space without a problem.
-        // Was a bug previously.
-        // Mouse is reset... Fix if possible sometime in the future
+        // Re-opening fixes issues with button focus when using space in ImGui
         reopen(false);
         this.clearAll();
-
         SignEditor.open(this.pos, this.world, isInitialized);
     }
 
@@ -126,169 +153,194 @@ public class CustomizableSignSettingScreen extends Screen {
         MinecraftClient.getInstance().setScreen(screen);
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        drawChildren();
+    private void clearAll() {
+        this.clearChildren();
     }
 
+    /**
+     * Initializes the sign structure by determining dimensions and configuring connected blocks
+     */
     private void initSign() {
+        // Determine sign dimensions
         signHeight = checkHeight(pos);
         signWidth = checkWidth(pos);
+
+        // Configure connected blocks
         setRestMaster(pos);
         setBorderTypes(pos);
         checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
         checkSigns(pos, getFacing(pos, world));
 
+        // Send size to server
         ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
-
         isInitialized = true;
     }
 
+    /**
+     * Determines the height of the sign structure by checking blocks above
+     */
     private int checkHeight(BlockPos masterPos) {
         int height = 1;
+        BlockPos currentPos = masterPos;
 
-        while (world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity) {
-            masterPos = masterPos.up();
+        while (world.getBlockEntity(currentPos.up()) instanceof CustomizableSignBlockEntity) {
+            currentPos = currentPos.up();
             height++;
         }
 
         return height;
     }
 
+    /**
+     * Determines the width of the sign structure by checking adjacent blocks
+     */
     private int checkWidth(BlockPos masterPos) {
         int width = 1;
+        BlockPos currentPos = masterPos;
+        Direction facing = getFacing(currentPos, world);
 
-        while ((world.getBlockEntity(getCheckPos(getFacing(masterPos, world), masterPos))) instanceof CustomizableSignBlockEntity) {
-            masterPos = getCheckPos(getFacing(masterPos, world), masterPos);
-
+        while ((world.getBlockEntity(getCheckPos(facing, currentPos))) instanceof CustomizableSignBlockEntity) {
+            currentPos = getCheckPos(facing, currentPos);
             width++;
         }
 
         return width;
     }
 
-    private void checkSigns(BlockPos masterPos, Direction FACING) {
+    /**
+     * Identifies and registers all sign blocks in the structure
+     */
+    private void checkSigns(BlockPos masterPos, Direction facing) {
         List<BlockPos> signPositions = new ArrayList<>();
+        Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
+        // Scan row by row, starting at master position
         BlockPos currentUpPos = masterPos;
-        BlockPos currentRightPos = masterPos;
         while (world.getBlockEntity(currentUpPos) instanceof CustomizableSignBlockEntity) {
+            BlockPos currentRightPos = currentUpPos;
+
+            // Scan a single row
             while (world.getBlockEntity(currentRightPos) instanceof CustomizableSignBlockEntity) {
                 signPositions.add(currentRightPos);
-                currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING.getOpposite()), currentRightPos, 1);
+                currentRightPos = getBlockPosAtDirection(rightDirection, currentRightPos, 1);
             }
 
             currentUpPos = currentUpPos.up();
-            currentRightPos = currentUpPos;
         }
 
+        // Send all sign positions to server
         String signPositionString = CustomizableSignBlockEntity.constructBlockPosListString(signPositions);
         ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(masterPos, signPositionString));
     }
 
-    // This sets the rest Master
+    /**
+     * Sets all connected signs to use the master block for rendering
+     */
     private void setRestMaster(BlockPos masterPosY) {
-        while (world.getBlockEntity(masterPosY) instanceof CustomizableSignBlockEntity) {
+        BlockPos currentYPos = masterPosY;
 
-            BlockPos posX = masterPosY;
+        while (world.getBlockEntity(currentYPos) instanceof CustomizableSignBlockEntity) {
+            BlockPos currentXPos = currentYPos;
 
-            while (world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) {
-                Direction FACING = getFacing(posX, world);
+            while (world.getBlockEntity(currentXPos) instanceof CustomizableSignBlockEntity) {
+                Direction facing = getFacing(currentXPos, world);
 
-                if (posX == pos) posX = getCheckPos(FACING, posX);
+                // Skip the master block itself
+                if (currentXPos.equals(pos)) {
+                    currentXPos = getCheckPos(facing, currentXPos);
+                    continue;
+                }
 
-                ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(posX, false, pos));
-                ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(posX, false));
+                // Configure non-master blocks
+                ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(currentXPos, false, pos));
+                ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(currentXPos, false));
 
-                posX = getCheckPos(FACING, posX);
+                currentXPos = getCheckPos(facing, currentXPos);
             }
 
-            masterPosY = masterPosY.up();
+            currentYPos = currentYPos.up();
         }
     }
 
-    private void checkSignPoles(BlockPos masterPos, Direction FACING, int signHeight, int signWidth) {
+    /**
+     * Identifies and configures all sign poles connected to the sign structure
+     */
+    private void checkSignPoles(BlockPos masterPos, Direction facing, int signHeight, int signWidth) {
         List<BlockPos> poles = new ArrayList<>();
+        Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
-        BlockPos highestSignPolePos = masterPos.up(signHeight - 1); // Highest Point of the sign. -1 because the first y position is already included and without it, it would go up by one too much.
-        highestSignPolePos = getBlockPosAtDirection(FACING.getOpposite(), highestSignPolePos, 1); // Go one back to the sign poles
+        // Find the top-back corner of the sign structure
+        BlockPos highestSignPolePos = masterPos.up(signHeight - 1);
+        highestSignPolePos = getBlockPosAtDirection(facing.getOpposite(), highestSignPolePos, 1);
 
-        // First checks column, then row. This way, even the poles that aren't directly connected to a sign get counted.
-        BlockPos currentDownPos = highestSignPolePos;
+        // Scan all potential pole positions column by column
         BlockPos currentRightPos = highestSignPolePos;
         for (int i = 0; i < signWidth; i++) {
+            BlockPos currentDownPos = currentRightPos;
+
+            // Scan down to find all poles in this column
             while (world.getBlockEntity(currentDownPos) instanceof SignPoleBlockEntity) {
                 poles.add(currentDownPos);
                 currentDownPos = currentDownPos.down();
             }
 
-            currentRightPos = getBlockPosAtDirection(getRightSideDirection(FACING.getOpposite()), currentRightPos, 1);
-            currentDownPos = currentRightPos;
+            currentRightPos = getBlockPosAtDirection(rightDirection, currentRightPos, 1);
         }
 
+        // Configure all poles to not render individually
         for (BlockPos pole : poles) {
             ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false));
         }
 
-        ClientPlayNetworking.send(new SetSignPolePositionsCustomizableSignBlockPayload(masterPos, CustomizableSignBlockEntity.constructBlockPosListString(poles)));
+        // Register all poles with the master sign
+        ClientPlayNetworking.send(new SetSignPolePositionsCustomizableSignBlockPayload(
+                masterPos,
+                CustomizableSignBlockEntity.constructBlockPosListString(poles)
+        ));
     }
 
-    // False = No Border
-    // True = Yes Border
+    /**
+     * Determines and sets appropriate border types for all sign blocks based on position
+     */
     private void setBorderTypes(BlockPos masterPos) {
         Direction rightSide = getRightSideDirection(getFacing(masterPos, world).getOpposite());
+        BlockPos currentYPos = masterPos;
 
-        while (world.getBlockEntity(masterPos) instanceof CustomizableSignBlockEntity) {
+        while (world.getBlockEntity(currentYPos) instanceof CustomizableSignBlockEntity) {
+            BlockPos currentXPos = currentYPos;
 
-            List<Boolean> borders = getBorderListBoundingBased(masterPos, world);
-            String modelPath = CustomizableSignBlockEntity.getBorderName(borders.get(0), borders.get(1), borders.get(2), borders.get(3), "customizable_sign_block_border");
-            ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(masterPos, modelPath));
+            while (world.getBlockEntity(currentXPos) instanceof CustomizableSignBlockEntity) {
+                // Determine which sides need borders based on position
+                List<Boolean> borders = getBorderListBoundingBased(currentXPos, world);
+                String modelPath = CustomizableSignBlockEntity.getBorderName(
+                        borders.get(0), borders.get(1), borders.get(2), borders.get(3),
+                        "customizable_sign_block_border"
+                );
 
-            BlockPos posX = masterPos;
-
-            while (world.getBlockEntity(posX) instanceof CustomizableSignBlockEntity) {
-
-                List<Boolean> bordersX = getBorderListBoundingBased(posX, world);
-                String modelPathX = CustomizableSignBlockEntity.getBorderName(bordersX.get(0), bordersX.get(1), bordersX.get(2), bordersX.get(3), "customizable_sign_block_border");
-                ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(posX, modelPathX));
-
-                posX = getBlockPosAtDirection(rightSide, posX, 1);
+                ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(currentXPos, modelPath));
+                currentXPos = getBlockPosAtDirection(rightSide, currentXPos, 1);
             }
 
-            masterPos = masterPos.up();
+            currentYPos = currentYPos.up();
         }
     }
 
-    private void clearAll() {
-        this.clearChildren();
-    }
-
-    private void addSpacing() {
-        currentYPosition += 25;
-        usedHeight += 25;
-    }
-
-    // Scrolling feature
+    // Scrolling implementation
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        final int scrollFactor = 20;
 
-        // Scroll down = decrease verticalAmount
-        // Scroll up = increase verticalAmount
+        // Don't scroll if content fits on screen
+        if (usedHeight < this.height) return true;
 
-        int scrollFactor = 20; // Accelerates scrolling
+        // Prevent scrolling past boundaries
+        if ((scrollY + (int)(verticalAmount * scrollFactor)) > 0) return true;
+        if ((currentYPosition + (int)(verticalAmount * scrollFactor)) < this.height) return true;
 
-        if (usedHeight < this.height) return true; // Prevents unnecessary scrolling
-        if ((scrollY + (int)(verticalAmount * scrollFactor)) > 0) return true; // Prevents scrolling out of bounds (top)
-        if ((currentYPosition + (int)(verticalAmount * scrollFactor)) < this.height) return true; // Prevents scrolling out of bounds (bottom)
-
-        // Redraw everything with new currentYPosition. This works, because when scrolling down, currentYPosition is at a minus number and everything shifts up by that number.
-
+        // Apply scroll and redraw UI
         clearAll();
-
         scrollY += (int)(verticalAmount * scrollFactor);
         currentYPosition += scrollY;
-
         drawChildren();
 
         return true;
@@ -298,7 +350,6 @@ public class CustomizableSignSettingScreen extends Screen {
     public boolean shouldCloseOnEsc() {
         ImGuiRenderer.showSignEditor = false;
         showChildren = true;
-
         return true;
     }
 }
