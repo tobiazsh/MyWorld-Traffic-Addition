@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
+import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.block.Block;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -55,8 +56,8 @@ public class SignPoleBlockEntity extends BlockEntity {
     @Override
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         super.readNbt(nbt, registryLookup);
-        this.rotation_value = nbt.getInt(ROTATION_KEY);
-        this.shouldRender = nbt.getBoolean("ShouldRender");
+        this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, nbt::getInt, 0, "SignPoleBlockEntity.readNbt");
+        this.shouldRender = OptionalUtils.getOrDefault("ShouldRender", nbt::getBoolean, true, "SignPoleBlockEntity.readNbt");
     }
 
     public int getRotationValue() {
