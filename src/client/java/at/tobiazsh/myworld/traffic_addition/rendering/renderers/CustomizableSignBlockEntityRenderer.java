@@ -17,6 +17,8 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.utils.MinecraftRenderUtils;
+import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -27,17 +29,18 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
-import static at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer.getFacingRotation;
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
 
@@ -79,14 +82,13 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render the sign block
     @Override
-    public void render(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d cameraPos) {
 
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!entity.isRendering()) return;
 
         // Get the direction the sign is facing
         direction = entity.getCachedState().get(CustomizableSignBlock.FACING);
-        BakedModel baseModel = bakedModelManager.getModel(new ModelIdentifier(Identifier.of(MyWorldTrafficAddition.MOD_ID, "customizable_sign_block"), "facing=" + direction.getName())); // Define the BakedModel for the sign
 
         // Get the BlockEntity of the master block
         assert MinecraftClient.getInstance().world != null;
@@ -103,9 +105,19 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Rotate the sign
         rotateSign(rotation, matrices);
 
-        // Render the master block sign block
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
-        blockRenderManager.getModelRenderer().render(matrices.peek(), consumer, entity.getCachedState(), baseModel, 1.0f, 1.0f, 1.0f, light, overlay);
+        // Render master block sign block
+        BlockStateModel csbeStateModel = bakedModelManager.getBlockModels().getModel(entity.getCachedState());
+        blockRenderManager.getModelRenderer().render(
+                entity.getWorld(),
+                csbeStateModel,
+                entity.getCachedState(),
+                entity.getPos(),
+                matrices,
+                vertexConsumers,
+                true,
+                entity.getPos().asLong(),
+                overlay
+        );
 
         // Render the border for the master sign block
         renderBorder(entity, tickDelta, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(CustomizableSignBlock.FACING));
@@ -115,7 +127,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // If the entity is master, render the other signs attached to it
         if (entity.isMaster()) {
             renderSignPoles(entity, tickDelta, matrices, vertexConsumers, light, overlay);
-            renderSigns(entity, tickDelta, matrices, vertexConsumers, light, overlay, direction);
+            renderSigns(entity, csbeStateModel, tickDelta, matrices, vertexConsumers, light, overlay, direction);
         }
 
         matrices.pop();
@@ -124,15 +136,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
 
-    private void renderSigns(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction FACING) {
+    private void renderSigns(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction FACING) {
         // Get the sign positions as a list of BlockPos
         List<BlockPos> signPositions = getSignPositions(entity);
-        BakedModel signModel = bakedModelManager.getModel(new ModelIdentifier(Identifier.of(MyWorldTrafficAddition.MOD_ID, "customizable_sign_block"), "facing=" + FACING.getName())); // Define the BakedModel for the sign block
 
         // Render each sign
         for (BlockPos sign : signPositions) {
             if (Objects.requireNonNull(entity.getWorld()).getBlockEntity(sign) instanceof CustomizableSignBlockEntity signBlockEntity)
-                renderSign(signBlockEntity, tickDelta, matrices, vertexConsumers, light, overlay, FACING, signModel);
+                renderSign(signBlockEntity, tickDelta, matrices, vertexConsumers, light, overlay, FACING);
         }
     }
 
@@ -140,7 +151,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction FACING, BakedModel model) {
+    private void renderSign(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction FACING) {
         matrices.push();
 
         // Position of the master block
@@ -149,8 +160,18 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1)); // Offset correction relative to the sign
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
 
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
-        blockRenderManager.getModelRenderer().render(matrices.peek(), consumer, entity.getCachedState(), model, 1.0f, 1.0f, 1.0f, light, overlay); // Render sign block
+        // Render sign block
+        blockRenderManager.getModelRenderer().render(
+                entity.getWorld(),
+                blockStateModel,
+                entity.getCachedState(),
+                entity.getPos(),
+                matrices,
+                vertexConsumers,
+                true,
+                entity.getPos().asLong(),
+                overlay
+        );
 
         // Render the border on top of the sign
         renderBorder(entity, tickDelta, matrices, vertexConsumers, light, overlay, FACING);
@@ -175,11 +196,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
 
         // Define the BakedModel for the border
+        ExtraModelKey extraModelKey = ExtraModelKey.of(Identifier.of(MyWorldTrafficAddition.MOD_ID, borderModelPath));
         BakedModel model = bakedModelManager.getModel(Identifier.of(MyWorldTrafficAddition.MOD_ID, borderModelPath));
 
         // Rotate the border appropriately to match the direction the sign is facing with the pivot point in the center
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(FACING)));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(FACING)));
         matrices.translate(-0.5, -0.5, -0.5);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(borderRenderLayer);
@@ -287,7 +309,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
                 // Turn to match the facing direction
                 matrices.translate(0.5, 0.5, 0.5);
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(facing.getOpposite())));
+                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(facing.getOpposite())));
                 matrices.translate(-0.5, -0.5, -0.5);
 
                 // Position the vertices

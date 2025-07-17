@@ -1,7 +1,8 @@
-package at.tobiazsh.myworld.traffic_addition.utils;
+package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
+import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

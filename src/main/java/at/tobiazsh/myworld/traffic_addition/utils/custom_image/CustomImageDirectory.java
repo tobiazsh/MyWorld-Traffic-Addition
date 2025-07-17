@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.utils;
+package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import net.fabricmc.loader.api.FabricLoader;

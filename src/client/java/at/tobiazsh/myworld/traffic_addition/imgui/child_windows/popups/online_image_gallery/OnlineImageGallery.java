@@ -5,7 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageLogic;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;

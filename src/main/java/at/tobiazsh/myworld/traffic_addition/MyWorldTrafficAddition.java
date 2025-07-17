@@ -4,7 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlock
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageServerLogic;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
