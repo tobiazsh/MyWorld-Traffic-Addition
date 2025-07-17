@@ -31,6 +31,7 @@ public class ModBlocks {
             )
     ).register(true);
 
+
     public static final RegisteredModBlock SIGN_POLE_BLOCK = new RegisteredModBlock(
             createId("sign_pole_block"),
             new SignPoleBlock(
@@ -42,29 +43,36 @@ public class ModBlocks {
             )
     ).register(true);
 
+
+
     // SIGNS
 
     private static final AbstractBlock.Settings SIGN_SETTINGS = AbstractBlock.Settings.create().strength(Blocks.IRON_BLOCK.getHardness()).sounds(BlockSoundGroup.STONE).nonOpaque();
+
 
     public static final RegisteredModBlock TRIANGULAR_SIGN_BLOCK = new RegisteredModBlock(
             createId("triangular_sign_block"),
             new TriangularSignBlock(SIGN_SETTINGS.registryKey(genKey(createId("triangular_sign_block"))))
     ).register(true);
 
+
     public static final RegisteredModBlock UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK = new RegisteredModBlock(
             createId("upside_down_triangular_sign_block"),
             new UpsideDownTriangularSignBlock(SIGN_SETTINGS.registryKey(genKey(createId("upside_down_triangular_sign_block"))))
     ).register(true);
+
 
     public static final RegisteredModBlock OCTAGONAL_SIGN_BLOCK = new RegisteredModBlock(
             createId("octagonal_sign_block"),
             new OctagonalSignBlock(SIGN_SETTINGS.registryKey(genKey(createId("octagonal_sign_block"))))
     ).register(true);
 
+
     public static final RegisteredModBlock ROUND_SIGN_BLOCK = new RegisteredModBlock(
             createId("round_sign_block"),
             new RoundSignBlock(SIGN_SETTINGS.registryKey(genKey(createId("round_sign_block"))))
     ).register(true);
+
 
     public static final RegisteredModBlock CUSTOMIZABLE_SIGN_BLOCK = new RegisteredModBlock(
             createId("customizable_sign_block"),
