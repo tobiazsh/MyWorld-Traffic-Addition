@@ -94,6 +94,18 @@ public class ModBlocks {
             )
     ).register(true);
 
+
+    public static final RegisteredModBlock CUSTOMIZABLE_SIGN_BORDER_BLOCK = new RegisteredModBlock(
+            createId("customizable_sign_border_block"),
+            new CustomizableSignBorderBlock(
+                    AbstractBlock.Settings.create()
+                            .nonOpaque()
+                            .sounds(BlockSoundGroup.STONE)
+                            .strength(Blocks.IRON_BLOCK.getHardness())
+                            .registryKey(genKey(createId("customizable_sign_border_block")))
+            )
+    );
+
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.add(ModBlocks.BORDER_BLOCK.getBlock().asItem());
