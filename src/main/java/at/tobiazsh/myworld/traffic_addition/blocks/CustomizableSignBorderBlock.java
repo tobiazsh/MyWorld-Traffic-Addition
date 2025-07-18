@@ -19,8 +19,8 @@ public class CustomizableSignBorderBlock extends Block {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    public static final VoxelShape SHAPE_NS = Block.createCuboidShape(7, 0, 7.5, 9, 16, 8.5); // North and South
-    public static final VoxelShape SHAPE_EW = Block.createCuboidShape(7.5, 0, 7, 8.5, 16, 9); // East and West
+    VoxelShape SHAPE_NS = Block.createCuboidShape(7, 0, 7.5, 9, 15, 8.5); // North and South
+    VoxelShape SHAPE_EW = Block.createCuboidShape(7.5, 0, 7, 8.5, 15, 9); // East and West
 
     public CustomizableSignBorderBlock(Settings settings) {
         super(settings);
