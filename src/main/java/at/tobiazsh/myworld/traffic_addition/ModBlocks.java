@@ -92,7 +92,7 @@ public class ModBlocks {
                             .strength(Blocks.IRON_BLOCK.getHardness())
                             .registryKey(genKey(createId("sign_holder_block")))
             )
-    ).register(true);
+    ).register(false);
 
 
 //    public static final RegisteredModBlock CUSTOMIZABLE_SIGN_BORDER_BLOCK = new RegisteredModBlock(
