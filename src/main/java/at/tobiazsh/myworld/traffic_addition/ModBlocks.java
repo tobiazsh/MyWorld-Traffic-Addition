@@ -7,7 +7,6 @@ import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.createId;
 import static at.tobiazsh.myworld.traffic_addition.blocks.utils.RegisteredModBlock.genKey;
