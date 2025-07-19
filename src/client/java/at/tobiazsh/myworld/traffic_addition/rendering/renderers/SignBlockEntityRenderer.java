@@ -8,11 +8,11 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
  */
 
 
+import at.tobiazsh.myworld.traffic_addition.ModBlocks;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.blocks.SignHolderBlock;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockBackstepCoordsChange;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockRotationPayload;
 import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
@@ -27,14 +27,13 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
-public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<T> {
+public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBlock> implements BlockEntityRenderer<T> {
 
     private final BakedModelManager bakedModelMgr;
     private Coordinates mountingOffset;
@@ -44,7 +43,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     public static float zOffsetRenderLayer = 3f;
     public static float zOffsetRenderLayerDefault = 3f;
 
-    public SignBlockEntityRenderer(BakedModelManager bakedModelMgr, String bakedModelIdentifier) {
+    public SignBlockEntityRenderer(BakedModelManager bakedModelMgr) {
         this.bakedModelMgr = bakedModelMgr;
     }
 
@@ -53,8 +52,8 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     @Override
     public void render(T entity, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d cameraPos) {
 
-        SignBlock signBlock = (SignBlock) entity.getCachedState().getBlock();
-        Coordinates backstepCoords = signBlock.setBackstepCoords(entity.getCachedState(), entity.getWorld(), entity.getPos());
+        G signBlock = (G) entity.getCachedState().getBlock();
+        Coordinates backstepCoords = signBlock.getBackMovementCoordinates(entity.getCachedState());
 
         if(backstepCoords != entity.getBackstepCoords()) {
             ClientPlayNetworking.send(new SignBlockBackstepCoordsChange(entity.getPos(), backstepCoords.x, backstepCoords.y, backstepCoords.z, backstepCoords.direction));
@@ -91,7 +90,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
             renderSignHolder(entity, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(SignBlock.FACING));
         }
 
-        BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModels().getModel(signBlock.getDefaultState());
+        BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModels().getModel(entity.getCachedState());
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
                 matrices.peek(),
@@ -181,27 +180,36 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     /**
      * Rotates the holder of the sign block entity based on its facing direction.
      */
-    private static void rotateHolder(SignBlockEntity entity, MatrixStack matrices) {
+    private static void moveHolderBack(SignBlockEntity entity, MatrixStack matrices) {
         switch (entity.getCachedState().get(SignBlock.FACING)) {
-            case SOUTH -> matrices.translate(0, 0, 1);
-            case EAST -> matrices.translate(1, 0, 0);
-            case WEST -> matrices.translate(-1, 0, 0);
-            default -> matrices.translate(0, 0, -1);
+            case SOUTH -> matrices.translate(0, 0, -1);
+            case EAST -> matrices.translate(-1, 0, 0);
+            case WEST -> matrices.translate(1, 0, 0);
+            default -> matrices.translate(0, 0, 1);
         }
+    }
+
+    private static int getRotationManeuverCount(Direction facing) {
+        return switch (facing) {
+            case EAST -> 1;
+            case SOUTH -> 0;
+            case WEST -> 3;
+            default -> 2; // NORTH
+        };
     }
 
     private void renderSignHolder(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
-        SignHolderBlock signHolderBlock = (SignHolderBlock) Registries.BLOCK.get(Identifier.of(MyWorldTrafficAddition.MOD_ID, "sign_holder_block"));
-        BlockStateModel signHolderModel = bakedModelMgr.getBlockModels().getModel(signHolderBlock.getDefaultState());
+        BlockStateModel signHolderModel = bakedModelMgr.getBlockModels().getModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().getDefaultState());
 
         matrices.push();
 
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-        matrices.translate(-0.5, -0.5, -0.5);
+        moveHolderBack(entity, matrices);
 
-        rotateHolder(entity, matrices);
+
+        matrices.translate(0.5, 0.5, 0.5);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90 * getRotationManeuverCount(facing)));
+        matrices.translate(-0.5, -0.5, -0.5);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(

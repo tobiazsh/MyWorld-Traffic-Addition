@@ -11,6 +11,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.UpsideDownTriangularSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.blocks.UpsideDownTriangularSignBlock;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -22,10 +23,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity> {
+public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity, UpsideDownTriangularSignBlock> {
 
     public UpsideDownTriangularSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-        super(MinecraftClient.getInstance().getBakedModelManager(), "upsidedown_triangular_sign_block");
+        super(MinecraftClient.getInstance().getBakedModelManager());
     }
 
     @Override

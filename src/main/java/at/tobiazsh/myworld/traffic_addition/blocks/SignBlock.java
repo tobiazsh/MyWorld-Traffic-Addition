@@ -77,8 +77,6 @@ public abstract class SignBlock extends BlockWithEntity {
         if(world.getBlockEntity(blockBehindPos) instanceof SignPoleBlockEntity blockEntityBehind) {
             ((SignBlockEntity) world.getBlockEntity(pos)).setRotation(blockEntityBehind.getRotationValue());
         }
-
-        setBackstepCoords(state, world, pos);
     }
 
     public static BlockPos getBehindPos(BlockPos pos, BlockState state) {
@@ -90,13 +88,13 @@ public abstract class SignBlock extends BlockWithEntity {
         }
     }
 
-    public Coordinates setBackstepCoords(BlockState state, World world, BlockPos pos) {
+    public Coordinates getBackMovementCoordinates(BlockState state) {
         Coordinates backstepCoords;
         switch (state.get(FACING)) {
-            case EAST -> { backstepCoords = new Coordinates(-1.55f, 0f, 0f, Direction.EAST); }
-            case SOUTH -> { backstepCoords = new Coordinates(0f, 0f, -1.55f, Direction.SOUTH); }
-            case WEST -> { backstepCoords = new Coordinates(1.55f, 0f, 0f, Direction.WEST); }
-            default -> { backstepCoords = new Coordinates(0f, 0f, .55f, Direction.NORTH); }
+            case EAST -> backstepCoords = new Coordinates(-1.55f, 0f, 0f, Direction.EAST);
+            case SOUTH -> backstepCoords = new Coordinates(0f, 0f, -1.55f, Direction.SOUTH);
+            case WEST -> backstepCoords = new Coordinates(1.55f, 0f, 0f, Direction.WEST);
+            default -> backstepCoords = new Coordinates(0f, 0f, .55f, Direction.NORTH);
         }
 
         return backstepCoords;

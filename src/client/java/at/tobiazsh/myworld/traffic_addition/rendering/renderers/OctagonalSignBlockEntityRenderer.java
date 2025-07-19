@@ -8,15 +8,16 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
  */
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.OctagonalSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.blocks.OctagonalSignBlock;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 
 @Environment(EnvType.CLIENT)
-public class OctagonalSignBlockEntityRenderer extends SignBlockEntityRenderer<OctagonalSignBlockEntity> {
+public class OctagonalSignBlockEntityRenderer extends SignBlockEntityRenderer<OctagonalSignBlockEntity, OctagonalSignBlock> {
 
     public OctagonalSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-        super(MinecraftClient.getInstance().getBakedModelManager(), "octagonal_sign_block");
+        super(MinecraftClient.getInstance().getBakedModelManager());
     }
 }
