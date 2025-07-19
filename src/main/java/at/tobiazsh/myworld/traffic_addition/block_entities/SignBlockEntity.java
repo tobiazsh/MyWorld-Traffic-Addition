@@ -90,7 +90,7 @@ public class SignBlockEntity extends BlockEntity {
 
         if(backstepStringParts.length < 3) return new Coordinates(0, 0, 0, Direction.NORTH);
 
-        Coordinates coordinates = new Coordinates(Float.parseFloat(backstepStringParts[0]), Float.parseFloat(backstepStringParts[1]), Float.parseFloat(backstepStringParts[2]), Direction.valueOf(backstepStringParts[3]));
+        Coordinates coordinates = new Coordinates(Float.parseFloat(backstepStringParts[0]), Float.parseFloat(backstepStringParts[1]), Float.parseFloat(backstepStringParts[2]), Direction.byId(backstepStringParts[3]));
         return coordinates;
     }
 
