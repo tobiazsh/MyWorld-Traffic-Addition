@@ -345,10 +345,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public static BorderProperty getBorderListBoundingBased(BlockPos masterPos, World world) {
         Direction rightSideDirection = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
-        boolean up = true;
-        boolean right = true;
-        boolean down = true;
-        boolean left = true;
+        boolean up = false;
+        boolean right = false;
+        boolean down = false;
+        boolean left = false;
 
         // Corners
         boolean upRight = true;
