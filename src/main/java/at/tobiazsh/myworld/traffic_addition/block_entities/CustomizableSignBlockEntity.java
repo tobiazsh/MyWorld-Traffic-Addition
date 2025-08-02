@@ -342,6 +342,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return nbt;
     }
 
+    /**
+     * Returns a BorderProperty object that represents the bounding box of the CustomizableSignBlockEntity based on the surrounding blocks.
+     * Does extensive neighbour-checking to determine which borders and corners should be present.
+     */
     public static BorderProperty getBorderListBoundingBased(BlockPos masterPos, World world) {
         Direction rightSideDirection = getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
