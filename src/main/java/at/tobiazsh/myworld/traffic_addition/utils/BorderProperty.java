@@ -46,6 +46,7 @@ public record BorderProperty(
         boolean right = Boolean.parseBoolean(parts[1].trim());
         boolean down = Boolean.parseBoolean(parts[2].trim());
         boolean left = Boolean.parseBoolean(parts[3].trim());
+
         boolean cornerUpRight = Boolean.parseBoolean(parts[4].trim());
         boolean cornerUpLeft = Boolean.parseBoolean(parts[5].trim());
         boolean cornerDownRight = Boolean.parseBoolean(parts[6].trim());
