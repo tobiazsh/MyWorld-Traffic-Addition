@@ -359,7 +359,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         if (!(world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity))
             up = false;
 
-        if (world.getBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1)) instanceof CustomizableSignBlockEntity)
+        if (!(world.getBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1)) instanceof CustomizableSignBlockEntity))
             right = false;
 
         if (world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity)
