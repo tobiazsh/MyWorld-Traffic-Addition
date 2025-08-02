@@ -457,7 +457,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             default -> {} // No borders are present
         }
 
-        return new BorderProperty(up, right, down, left);
+        return new BorderProperty(
+                up, right, down, left,
+                false, false, false, false // No information about corners. Solution: Re-initialize sign in game or live with it. I am too lazy to implement this right now since FAPI fucked up my whole codebase.
+        );
     }
 
     public static String constructBlockPosListString(List<BlockPos> blockPosList) {
