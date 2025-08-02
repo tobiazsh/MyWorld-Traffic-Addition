@@ -361,6 +361,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(masterPos.down(), world);
         boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1), world);
 
+        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1).down(), world); // Check if down left is a CustomizableSignBlockEntity
+        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1).down(), world); // Check if down right is a CustomizableSignBlockEntity
+        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1).up(), world); // Check if up left is a CustomizableSignBlockEntity
+        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1).up(), world); // Check if up right is a CustomizableSignBlockEntity
+
         if (!upIsCustomizableBlockEntity) {
             up = true;
             upRight = true;
