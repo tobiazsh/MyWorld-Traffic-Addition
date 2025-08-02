@@ -47,7 +47,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private boolean updateBackgroundTexture = false;
     private boolean updateOccurred = false;
 
-    private BorderProperty borders = new BorderProperty(true, true, true, true);
+    private BorderProperty borders = new BorderProperty(
+            true, true, true, true,
+            true, true, true, true
+    );
 
     private BlockPos masterPos;
     private String signPolePositions = "";
