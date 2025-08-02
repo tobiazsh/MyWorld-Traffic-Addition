@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -38,7 +39,7 @@ public record BorderProperty(
                 )
                 .split(",");
 
-        if (parts.length != 8) {
+        if (parts.length < 4) {
             throw new IllegalArgumentException("Invalid BorderProperty format. Expected format: up, right, down, left, cornerUpRight, cornerUpLeft, cornerDownRight, cornerDownLeft");
         }
 
@@ -47,10 +48,19 @@ public record BorderProperty(
         boolean down = Boolean.parseBoolean(parts[2].trim());
         boolean left = Boolean.parseBoolean(parts[3].trim());
 
-        boolean cornerUpRight = Boolean.parseBoolean(parts[4].trim());
-        boolean cornerUpLeft = Boolean.parseBoolean(parts[5].trim());
-        boolean cornerDownRight = Boolean.parseBoolean(parts[6].trim());
-        boolean cornerDownLeft = Boolean.parseBoolean(parts[7].trim());
+        boolean cornerUpRight = false;
+        boolean cornerUpLeft = false;
+        boolean cornerDownRight = false;
+        boolean cornerDownLeft = false;
+
+        if (parts.length != 8) {
+            MyWorldTrafficAddition.LOGGER.error("Unable to determine corners for BorderProperty: {}! Interpreting all as false!", borderProperty);
+        } else {
+            cornerUpRight = Boolean.parseBoolean(parts[4].trim());
+            cornerUpLeft = Boolean.parseBoolean(parts[5].trim());
+            cornerDownRight = Boolean.parseBoolean(parts[6].trim());
+            cornerDownLeft = Boolean.parseBoolean(parts[7].trim());
+        }
 
         return new BorderProperty(
                 up, right, down, left,
