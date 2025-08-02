@@ -394,16 +394,48 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             downLeft = true;
         }
 
-        if (!(world.getBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1)) instanceof CustomizableSignBlockEntity))
-            right = false;
 
-        if (!(world.getBlockEntity(masterPos.down()) instanceof CustomizableSignBlockEntity))
-            down = false;
+        // Special corner cases
 
-        if (!(world.getBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1)) instanceof CustomizableSignBlockEntity))
-            left = false;
+        // Up-Left corner
+        if (
+                leftIsCustomizableBlockEntity && upIsCustomizableBlockEntity &&
+                !upLeftIsCustomizableBlockEntity
+        ) {
+            upLeft = true;
+        }
 
-        return new BorderProperty(up, right, down, left);
+
+        // Up-Right corner
+        if (
+                rightIsCustomizableBlockEntity && upIsCustomizableBlockEntity &&
+                !upRightIsCustomizableBlockEntity
+        ) {
+            upRight = true;
+        }
+
+
+        // Down-Left corner
+        if (
+                leftIsCustomizableBlockEntity && downIsCustomizableBlockEntity &&
+                !downLeftIsCustomizableBlockEntity // Check if down left is not a CustomizableSignBlockEntity
+        ) {
+            downLeft = true;
+        }
+
+
+        // Down-Right corner
+        if (
+                rightIsCustomizableBlockEntity && downIsCustomizableBlockEntity &&
+                !downRightIsCustomizableBlockEntity // Check if down right is not a CustomizableSignBlockEntity
+        ) {
+            downRight = true;
+        }
+
+        return new BorderProperty(
+                up, right, down, left,
+                upRight, upLeft, downRight, downLeft
+        );
     }
 
     /**
