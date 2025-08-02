@@ -536,6 +536,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private void updateGame() {
         markDirty();
+
+        if (this.getWorld() == null) return; // Cannot update if world is null
+
         this.getWorld().emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
         this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
     }
