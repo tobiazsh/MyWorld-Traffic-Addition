@@ -108,7 +108,7 @@ public class ModBlocks {
                             .strength(Blocks.IRON_BLOCK.getHardness())
                             .registryKey(genKey(createId("customizable_sign_corner_bit")))
             )
-    )
+    );
 
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
