@@ -567,5 +567,13 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         }
     }
 
-
+    /**
+     * Checks if block entity at given position is a usable CustomizableSignBlockEntity. Usable implies that it's not locked.
+     * The check for locking and the locking itself will be implemented in the future.
+     * Right now, it only checks if the block entity is an instance of CustomizableSignBlockEntity.
+     */
+    public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, World world) {
+        return
+            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity;
+    }
 }
