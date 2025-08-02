@@ -19,8 +19,7 @@ public class CustomizableSignBorderBlock extends Block {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    VoxelShape SHAPE_NS = Block.createCuboidShape(7, 0, 7.5, 9, 15, 8.5); // North and South
-    VoxelShape SHAPE_EW = Block.createCuboidShape(7.5, 0, 7, 8.5, 15, 9); // East and West
+    VoxelShape SHAPE = Block.createCuboidShape(7.5, 1, 7.5, 8.5, 16, 8.5);
 
     public CustomizableSignBorderBlock(Settings settings) {
         super(settings);
@@ -28,11 +27,7 @@ public class CustomizableSignBorderBlock extends Block {
 
     @Override
     protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(FACING)) {
-            case NORTH, SOUTH -> SHAPE_NS;
-            case EAST, WEST -> SHAPE_EW;
-            default -> SHAPE_NS; // Default to North-South if facing is not set
-        };
+        return SHAPE;
     }
 
     @Override
