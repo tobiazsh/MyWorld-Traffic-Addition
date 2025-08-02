@@ -44,11 +44,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private final BakedModelManager bakedModelManager;
     private final BlockRenderManager blockRenderManager;
-    private Direction direction;
-    private String borderModelPath;
     private int rotation = 0;
-
-    private static RenderLayer borderRenderLayer;
 
     public static float zOffsetRenderLayer = 3f;
     public static final float zOffsetRenderLayerDefault = 3f;
@@ -58,15 +54,18 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements = new HashMap<>();
 
-    static {
-        CustomRenderLayer.ModelLayering modelLayering = new CustomRenderLayer.ModelLayering(zOffsetRenderLayer, CustomRenderLayer.ModelLayering.LayeringType.CUTOUT_Z_OFFSET_BACKWARD);
-        borderRenderLayer = modelLayering.buildRenderLayer();
-    }
-
+    // Constructor
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
         bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
         blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
-        borderModelPath = "block/customizable_sign_block_border_all"; // Standard border model
+
+        BorderRenderer.init(
+                bakedModelManager,
+                new CustomRenderLayer.ModelLayering(
+                        zOffsetRenderLayer,
+                        CustomRenderLayer.ModelLayering.LayeringType.CUTOUT_Z_OFFSET_BACKWARD
+                )
+        ); // Initialize the border renderer with the baked model manager
     }
 
     private List<BlockPos> getSignPositions(CustomizableSignBlockEntity entity) {
@@ -84,9 +83,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!entity.isRendering()) return;
-
-        // Get the direction the sign is facing
-        direction = entity.getCachedState().get(CustomizableSignBlock.FACING);
 
         // Get the BlockEntity of the master block
         assert MinecraftClient.getInstance().world != null;
@@ -117,15 +113,16 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                 overlay
         );
 
+        Direction facingDirection = entity.getCachedState().get(CustomizableSignBlock.FACING);
+
         // Render the border for the master sign block
-        //renderBorder(entity, tickDelta, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(CustomizableSignBlock.FACING));
-        renderTexture(entity, entity.getCachedState().get(CustomizableSignBlock.FACING), matrices, vertexConsumers, light, overlay);
-        renderSignHolders(entity, matrices, vertexConsumers, light, overlay);
+        BorderRenderer.render(entity, matrices, vertexConsumers, entity.getBorderType(), light, overlay, facingDirection);
+        renderTexture(entity, matrices, vertexConsumers, light, overlay, facingDirection);
 
         // If the entity is master, render the other signs attached to it
         if (entity.isMaster()) {
             renderSignPoles(entity, matrices, vertexConsumers, light, overlay);
-            renderSigns(entity, csbeStateModel, matrices, vertexConsumers, light, overlay);
+            renderSigns(entity, csbeStateModel, matrices, vertexConsumers, light, overlay, facingDirection);
         }
 
         matrices.pop();
@@ -134,7 +131,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
 
-    private void renderSigns(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    private void renderSigns(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         // Get the sign positions as a list of BlockPos
         List<BlockPos> signPositions = getSignPositions(entity);
 
@@ -146,7 +143,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                         blockStateModel,
                         matrices,
                         vertexConsumers,
-                        light, overlay
+                        light, overlay,
+                        facing
                 );
         }
     }
@@ -155,7 +153,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    private void renderSign(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         matrices.push();
 
         // Position of the master block
@@ -175,41 +173,29 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         );
 
         // Render the border on top of the sign
-        //renderBorder(entity, tickDelta, matrices, vertexConsumers, light, overlay, FACING);
+        BorderRenderer.render(entity, matrices, vertexConsumers, entity.getBorderType(), light, overlay, facing);
+
+        BlockPosFloat blockPosBehind = new BlockPosFloat(entity.getPos())
+                .offset(
+                        entity.getCachedState().get(CustomizableSignBlock.FACING).getOpposite(),
+                        1f
+                );
+
+        BlockEntity blockBehind = Objects.requireNonNull(entity.getWorld())
+                .getBlockEntity(
+                        new BlockPos(
+                                (int) blockPosBehind.x,
+                                (int) blockPosBehind.y,
+                                (int) blockPosBehind.z
+                        )
+                );
+
+        if (blockBehind instanceof SignPoleBlockEntity) {
+            renderSignHolder(entity, matrices, vertexConsumers, light, overlay, facing);
+        }
 
         matrices.pop();
     }
-
-
-
-
-//    // Render the border of the sign
-//    private void renderBorder(CustomizableSignBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction FACING) {
-//        matrices.push();
-//
-//        // Define base border model path
-//        borderModelPath = "block/" + entity.getBorderType();
-//
-//        // If the border model path has no texture and shouldn't render, exit function
-//        if (Objects.equals(borderModelPath, "block/customizable_sign_block_border_none")) {
-//            matrices.pop();
-//            return;
-//        }
-//
-//        // Define the BakedModel for the border
-//        ExtraModelKey extraModelKey = ExtraModelKey.of(Identifier.of(MyWorldTrafficAddition.MOD_ID, borderModelPath));
-//        BakedModel model = bakedModelManager.getModel(Identifier.of(MyWorldTrafficAddition.MOD_ID, borderModelPath));
-//
-//        // Rotate the border appropriately to match the direction the sign is facing with the pivot point in the center
-//        matrices.translate(0.5, 0.5, 0.5);
-//        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(FACING)));
-//        matrices.translate(-0.5, -0.5, -0.5);
-//
-//        VertexConsumer consumer = vertexConsumers.getBuffer(borderRenderLayer);
-//        blockRenderManager.getModelRenderer().render(matrices.peek(), consumer, entity.getCachedState(), model, 1.0f, 1.0f, 1.0f, light, overlay); // Rendering occurs here
-//
-//        matrices.pop();
-//    }
 
 
 
@@ -264,11 +250,11 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the texture of the sign
-    private void renderTexture(CustomizableSignBlockEntity csbe, Direction facing, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    private void renderTexture(CustomizableSignBlockEntity csbe, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         // If the block isn't a master block, exit function because there's nothing to render anyway since non-masters don't hold texture information
         if (!csbe.isMaster() || !csbe.isInitialized()) return;
 
-        renderTextureBackground(csbe, csbe.backgroundStylePieces, csbe.getHeight(), csbe.getWidth(), matrices, vertexConsumers, light, overlay, facing);
+        renderBackground(csbe, csbe.backgroundStylePieces, csbe.getHeight(), csbe.getWidth(), matrices, vertexConsumers, light, overlay, facing);
         renderElements(csbe, csbe.getHeight(), matrices, vertexConsumers, light, overlay, facing);
     }
 
@@ -276,7 +262,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the background texture of the sign
-    private void renderTextureBackground(CustomizableSignBlockEntity csbe, List<String> backgroundStylePieces, int height, int width, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    private void renderBackground(CustomizableSignBlockEntity csbe, List<String> backgroundStylePieces, int height, int width, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         // If there's nothing to render, exit
         if (csbe.shouldUpdateBackgroundTexture()) {
             csbe.backgroundStylePieces = CustomizableSignData.getBackgroundTexturePathList(new CustomizableSignData().setJson(csbe.getSignTextureJson()), csbe).reversed();
@@ -288,7 +274,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Coordinates of the master block
         BlockPos masterPos = csbe.getMasterPos();
-
         BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
         matrices.push();
@@ -359,34 +344,17 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
 
-    // Render the sign holders that hold the sign up
-    private void renderSignHolders(CustomizableSignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        List<BlockPos> signPositions = getSignPositions(entity);
-
-        signPositions.forEach(signPos -> {
-            BlockPosFloat blockPosBehind = new BlockPosFloat(signPos).offset(entity.getCachedState().get(CustomizableSignBlock.FACING).getOpposite(), 1f);
-            BlockEntity blockBehind = Objects.requireNonNull(entity.getWorld()).getBlockEntity(new BlockPos((int) blockPosBehind.x, (int) blockPosBehind.y, (int) blockPosBehind.z));
-
-            if (blockBehind instanceof SignPoleBlockEntity) {
-                renderSignHolder(entity, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(CustomizableSignBlock.FACING), blockPosBehind);
-            }
-        });
-    }
-
-
-
-
-    private void renderSignHolder(CustomizableSignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing, BlockPosFloat holderPos) {
+    private void renderSignHolder(CustomizableSignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         BlockStateModel blockStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().getDefaultState());
 
         matrices.push();
 
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
-        matrices.translate(-0.5, -0.5, -0.5);
+        BlockPos holderPos = entity.getPos().offset(facing, 1); // Position of the sign holder is one block in front of the sign
+        matrices.translate(Vec3d.of(BlockPosExtended.getOffset(entity.getPos(), holderPos))); // Translate the sign holder to the correct position);
 
-        BlockPosFloat diffPos = holderPos.calcDistance(new BlockPosFloat(entity.getPos()));
-        matrices.translate(diffPos.x, -diffPos.y, diffPos.z);
+        matrices.translate(0.5, 0.5, 0.5);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(facing.getOpposite())));
+        matrices.translate(-0.5, -0.5, -0.5);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
         MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
