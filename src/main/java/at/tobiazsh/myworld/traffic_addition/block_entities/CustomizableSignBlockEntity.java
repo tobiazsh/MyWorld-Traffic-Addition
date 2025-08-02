@@ -540,6 +540,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Returns the direction to the right side of the given direction.
+     */
     @Contract(pure = true)
     public static Direction getRightSideDirection(Direction dir) {
         switch (dir) {
