@@ -351,10 +351,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         boolean left = false;
 
         // Corners
-        boolean upRight = true;
-        boolean upLeft = true;
-        boolean downRight = true;
-        boolean downLeft = true;
+        boolean upRight = false;
+        boolean upLeft = false;
+        boolean downRight = false;
+        boolean downLeft = false;
 
         if (!(world.getBlockEntity(masterPos.up()) instanceof CustomizableSignBlockEntity))
             up = false;
