@@ -228,8 +228,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private String constructMasterPosString(BlockPos pos) {
         String[] posList = { String.valueOf(pos.getX()), String.valueOf(pos.getY()), String.valueOf(pos.getZ()) };
-        String posStr = String.join("%", posList);
-        return posStr;
+        return String.join("%", posList);
     }
 
     private BlockPos deconstructMasterPosString(String posStr) {
