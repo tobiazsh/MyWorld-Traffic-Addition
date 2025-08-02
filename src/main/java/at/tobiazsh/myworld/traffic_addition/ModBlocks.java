@@ -99,6 +99,17 @@ public class ModBlocks {
             )
     ).register(false);
 
+    public static final RegisteredModBlock CUSTOMIZABLE_SIGN_CORNER_BIT = new RegisteredModBlock(
+            createId("customizable_sign_corner_bit"),
+            new CustomizableSignCornerBit(
+                    AbstractBlock.Settings.create()
+                            .nonOpaque()
+                            .sounds(BlockSoundGroup.STONE)
+                            .strength(Blocks.IRON_BLOCK.getHardness())
+                            .registryKey(genKey(createId("customizable_sign_corner_bit")))
+            )
+    )
+
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.add(ModBlocks.BORDER_BLOCK.getBlock().asItem());
