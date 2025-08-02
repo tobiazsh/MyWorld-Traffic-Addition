@@ -233,8 +233,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private BlockPos deconstructMasterPosString(String posStr) {
         String[] posList = posStr.split("%");
-        BlockPos pos = new BlockPos(Integer.parseInt(posList[0]), Integer.parseInt(posList[1]), Integer.parseInt(posList[2]));
-        return pos;
+        return new BlockPos(Integer.parseInt(posList[0]), Integer.parseInt(posList[1]), Integer.parseInt(posList[2]));
     }
 
     private void nbtWrite(NbtCompound nbt) {
