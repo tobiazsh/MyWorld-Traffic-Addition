@@ -248,18 +248,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         nbt.putInt("Height", height);
         nbt.putBoolean("IsInitialized", isInitialized);
 
-        // TODO: REMOVE IN AUGUST 2025
-        if (!signTextureJson.isBlank()) {
-            CustomizableSignData signData = new CustomizableSignData();
-            signData.setJsonString(signTextureJson);
-
-            if (CustomizableSignData.styleMatchesOldVersion(signData)) {
-                CustomizableSignData.updateToNewVersion(signData);
-                this.signTextureJson = signData.jsonString;
-            }
-        }
-        // REMOVE IN AUGUST 2025 END
-
         nbt.putString("SignTexture", signTextureJson);
     }
 
