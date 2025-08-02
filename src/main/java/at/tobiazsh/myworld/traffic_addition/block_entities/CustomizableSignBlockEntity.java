@@ -553,6 +553,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Returns the position at the given direction and offset from the given position in given direction.
+     */
     public static BlockPos getBlockPosAtDirection(Direction dir, BlockPos pos, int offset) {
         if (offset == 0) return pos;
 
