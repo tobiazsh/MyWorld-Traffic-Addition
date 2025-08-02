@@ -32,7 +32,6 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.border.Border;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
