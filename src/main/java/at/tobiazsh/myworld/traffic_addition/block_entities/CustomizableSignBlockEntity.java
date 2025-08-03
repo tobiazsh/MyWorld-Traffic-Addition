@@ -592,13 +592,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return this.getCachedState().get(CustomizableSignBlock.FACING);
     }
 
-
-
-
-
-
-
-
     /**
      * Checks if block entity at given position is a usable CustomizableSignBlockEntity. Usable implies that it's not locked.
      * The check for locking and the locking itself will be implemented in the future.
