@@ -88,14 +88,14 @@ public class ModBlocks {
     ).register(false);
 
 
-    public static final RegisteredModBlock CUSTOMIZABLE_SIGN_BORDER_BLOCK = new RegisteredModBlock(
-            createId("customizable_sign_border_block"),
-            new CustomizableSignBorderBlock(
+    public static final RegisteredModBlock CUSTOMIZABLE_SIGN_BORDER = new RegisteredModBlock(
+            createId("customizable_sign_border"),
+            new CustomizableSignBorder(
                     AbstractBlock.Settings.create()
                             .nonOpaque()
                             .sounds(BlockSoundGroup.STONE)
                             .strength(Blocks.IRON_BLOCK.getHardness())
-                            .registryKey(genKey(createId("customizable_sign_border_block")))
+                            .registryKey(genKey(createId("customizable_sign_border")))
             )
     ).register(false);
 

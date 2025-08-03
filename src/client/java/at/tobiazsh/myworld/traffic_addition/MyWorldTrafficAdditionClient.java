@@ -75,7 +75,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
 		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
 		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), RenderLayer.getCutout());
 		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
 	}
 
