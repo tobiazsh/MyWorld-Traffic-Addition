@@ -30,13 +30,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getBlockPosAtDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 
 public class CustomizableSignBlockEntity extends BlockEntity {
 
@@ -351,14 +350,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         boolean downLeft = false;
 
         boolean upIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(masterPos.up(), world);
-        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1), world);
+        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1), world);
         boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(masterPos.down(), world);
-        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1), world);
+        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1), world);
 
-        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1).down(), world);  // Check if down left is a CustomizableSignBlockEntity
-        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1).down(), world);               // Check if down right is a CustomizableSignBlockEntity
-        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection.getOpposite(), masterPos, 1).up(), world);      // Check if up left is a CustomizableSignBlockEntity
-        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(getBlockPosAtDirection(rightSideDirection, masterPos, 1).up(), world);                   // Check if up right is a CustomizableSignBlockEntity
+        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1).down(), world);  // Check if down left is a CustomizableSignBlockEntity
+        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1).down(), world);               // Check if down right is a CustomizableSignBlockEntity
+        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1).up(), world);      // Check if up left is a CustomizableSignBlockEntity
+        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1).up(), world);                   // Check if up right is a CustomizableSignBlockEntity
 
         if (!upIsCustomizableBlockEntity) {
             up = true;

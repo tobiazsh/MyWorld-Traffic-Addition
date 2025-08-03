@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getBlockPosAtDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class CustomizableSignData {
@@ -139,7 +139,7 @@ public class CustomizableSignData {
 				BorderProperty borders = csbEntity.getBorderType();
 				textureNames.add(borders.toNormalString()); // Get the texture name based on the border map
 
-				scanPosX = getBlockPosAtDirection(rightSide, scanPosX, 1);
+				scanPosX = blockPosInDirection(rightSide, scanPosX, 1);
 			}
 
 			scanPosY = scanPosY.up();

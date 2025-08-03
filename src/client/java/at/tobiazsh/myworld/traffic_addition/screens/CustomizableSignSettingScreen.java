@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getBlockPosAtDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 /**
@@ -225,7 +225,7 @@ public class CustomizableSignSettingScreen extends Screen {
             // Scan a single row
             while (world.getBlockEntity(currentRightPos) instanceof CustomizableSignBlockEntity) {
                 signPositions.add(currentRightPos);
-                currentRightPos = getBlockPosAtDirection(rightDirection, currentRightPos, 1);
+                currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
             }
 
             currentUpPos = currentUpPos.up();
@@ -274,7 +274,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
         // Find the top-back corner of the sign structure
         BlockPos highestSignPolePos = masterPos.up(signHeight - 1);
-        highestSignPolePos = getBlockPosAtDirection(facing.getOpposite(), highestSignPolePos, 1);
+        highestSignPolePos = blockPosInDirection(facing.getOpposite(), highestSignPolePos, 1);
 
         // Scan all potential pole positions column by column
         BlockPos currentRightPos = highestSignPolePos;
@@ -287,7 +287,7 @@ public class CustomizableSignSettingScreen extends Screen {
                 currentDownPos = currentDownPos.down();
             }
 
-            currentRightPos = getBlockPosAtDirection(rightDirection, currentRightPos, 1);
+            currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
         }
 
         // Configure all poles to not render individually
@@ -317,7 +317,7 @@ public class CustomizableSignSettingScreen extends Screen {
                 BorderProperty borders = getBorderListBoundingBased(currentXPos, world);
 
                 ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(currentXPos, borders.toString()));
-                currentXPos = getBlockPosAtDirection(rightSide, currentXPos, 1);
+                currentXPos = blockPosInDirection(rightSide, currentXPos, 1);
             }
 
             currentYPos = currentYPos.up();
