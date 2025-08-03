@@ -7,6 +7,7 @@ public class DirectionUtils {
     /**
      * Calculates the rotation angle based on the facing direction.
      */
+    @Contract(pure = true)
     public static int getFacingRotation(Direction facingDirection) {
         switch (facingDirection) {
             case SOUTH -> { return 180; }
