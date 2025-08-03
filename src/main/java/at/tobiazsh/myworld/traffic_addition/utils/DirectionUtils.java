@@ -36,6 +36,13 @@ public class DirectionUtils {
      * Returns the position at the given direction and offset from the given position in given direction.
      */
     public static BlockPos blockPosInDirection(Direction dir, BlockPos pos, int offset) {
+        return BlockPosFloat.toBlockPos(blockPosInDirection(dir, BlockPosFloat.fromBlockPos(pos), offset));
+    }
+
+    /**
+     * Returns the position at the given direction and offset from the given position in given direction. Operates using BlockPosFloat.
+     */
+    public static BlockPosFloat blockPosInDirection(Direction dir, BlockPosFloat pos, float offset) {
         if (offset == 0) return pos;
 
         switch (dir) {
