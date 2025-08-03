@@ -202,8 +202,8 @@ public class CustomizableSignSettingScreen extends Screen {
         BlockPos currentPos = masterPos;
         Direction facing = getFacing(currentPos, world);
 
-        while ((world.getBlockEntity(getCheckPos(facing, currentPos))) instanceof CustomizableSignBlockEntity) { // TODO: HERE
-            currentPos = getCheckPos(facing, currentPos); // TODO: HERE
+        while ((world.getBlockEntity(blockPosInDirection(facing, currentPos, 1))) instanceof CustomizableSignBlockEntity) {
+            currentPos = blockPosInDirection(facing, currentPos, 1);
             width++;
         }
 
@@ -250,7 +250,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
                 // Skip the master block itself
                 if (currentXPos.equals(pos)) {
-                    currentXPos = getCheckPos(facing, currentXPos); // TODO: HERE
+                    currentXPos = blockPosInDirection(facing, currentXPos, 1);
                     continue;
                 }
 
@@ -258,7 +258,7 @@ public class CustomizableSignSettingScreen extends Screen {
                 ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(currentXPos, false, pos));
                 ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(currentXPos, false));
 
-                currentXPos = getCheckPos(facing, currentXPos); // TODO: HERE
+                currentXPos = blockPosInDirection(facing, currentXPos, 1);
             }
 
             currentYPos = currentYPos.up();
