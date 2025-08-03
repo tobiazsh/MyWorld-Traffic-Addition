@@ -593,14 +593,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
 
-    public static BlockPos getCheckPos(Direction dir, BlockPos masterPos) {
-        switch (dir) {
-            case EAST -> { return masterPos.north(); }
-            case SOUTH -> { return masterPos.east(); }
-            case WEST -> { return masterPos.south(); }
-            default -> { return masterPos.west(); }
-        }
-    }
+
 
 
 

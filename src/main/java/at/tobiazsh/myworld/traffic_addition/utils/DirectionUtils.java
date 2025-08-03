@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Contract;
 
@@ -28,6 +29,15 @@ public class DirectionUtils {
             case SOUTH -> { return Direction.WEST; }
             case WEST -> { return Direction.NORTH; }
             default -> { return Direction.EAST; }
+        }
+    }
+
+    public static BlockPos getCheckPos(Direction dir, BlockPos masterPos) {
+        switch (dir) {
+            case EAST -> { return masterPos.north(); }
+            case SOUTH -> { return masterPos.east(); }
+            case WEST -> { return masterPos.south(); }
+            default -> { return masterPos.west(); }
         }
     }
 }
