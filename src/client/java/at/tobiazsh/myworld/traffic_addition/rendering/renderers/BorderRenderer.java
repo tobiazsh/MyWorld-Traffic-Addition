@@ -67,7 +67,7 @@ public class BorderRenderer {
         BlockPosFloat pos = DirectionUtils.blockPosInDirection(
                 facing.getOpposite(),
                 new BlockPosFloat(0, 0, 0),
-                1/2f - 3/32f
+                13/32f
         );
 
         matrices.translate(pos.x, pos.y, pos.z);
