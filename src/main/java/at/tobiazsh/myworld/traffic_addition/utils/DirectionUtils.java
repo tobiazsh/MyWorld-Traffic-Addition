@@ -31,4 +31,18 @@ public class DirectionUtils {
             default -> { return Direction.EAST; }
         }
     }
+
+    /**
+     * Returns the position at the given direction and offset from the given position in given direction.
+     */
+    public static BlockPos getBlockPosAtDirection(Direction dir, BlockPos pos, int offset) {
+        if (offset == 0) return pos;
+
+        switch (dir) {
+            case EAST -> { return pos.east(offset); }
+            case SOUTH -> { return pos.south(offset); }
+            case WEST -> { return pos.west(offset); }
+            default -> { return pos.north(offset); }
+        }
+    }
 }

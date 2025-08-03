@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getBlockPosAtDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 /**
  * Screen for customizing sign blocks
@@ -200,8 +202,8 @@ public class CustomizableSignSettingScreen extends Screen {
         BlockPos currentPos = masterPos;
         Direction facing = getFacing(currentPos, world);
 
-        while ((world.getBlockEntity(getCheckPos(facing, currentPos))) instanceof CustomizableSignBlockEntity) {
-            currentPos = getCheckPos(facing, currentPos);
+        while ((world.getBlockEntity(getCheckPos(facing, currentPos))) instanceof CustomizableSignBlockEntity) { // TODO: HERE
+            currentPos = getCheckPos(facing, currentPos); // TODO: HERE
             width++;
         }
 
@@ -248,7 +250,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
                 // Skip the master block itself
                 if (currentXPos.equals(pos)) {
-                    currentXPos = getCheckPos(facing, currentXPos);
+                    currentXPos = getCheckPos(facing, currentXPos); // TODO: HERE
                     continue;
                 }
 
@@ -256,7 +258,7 @@ public class CustomizableSignSettingScreen extends Screen {
                 ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(currentXPos, false, pos));
                 ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(currentXPos, false));
 
-                currentXPos = getCheckPos(facing, currentXPos);
+                currentXPos = getCheckPos(facing, currentXPos); // TODO: HERE
             }
 
             currentYPos = currentYPos.up();

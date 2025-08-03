@@ -39,6 +39,8 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getBlockPosAtDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
 
@@ -287,7 +289,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                 matrices.push();
 
                 BlockPos renderPos = masterPos.up(i - 1);
-                renderPos = CustomizableSignBlockEntity.getBlockPosAtDirection(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), renderPos, j - 1);
+                renderPos = getBlockPosAtDirection(getRightSideDirection(facing.getOpposite()), renderPos, j - 1);
 
                 BlockPos offset = BlockPosExtended.getOffset(masterPos, renderPos);
                 offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1)); // The position of the texture
