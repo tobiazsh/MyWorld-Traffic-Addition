@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
@@ -335,7 +336,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * Does extensive neighbour-checking to determine which borders and corners should be present.
      */
     public static BorderProperty getBorderListBoundingBased(BlockPos masterPos, World world) {
-        Direction rightSideDirection = getRightSideDirection(getFacing(masterPos, world).getOpposite());
+        Direction rightSideDirection = DirectionUtils.getRightSideDirection(getFacing(masterPos, world).getOpposite());
 
         boolean up = false;
         boolean right = false;
