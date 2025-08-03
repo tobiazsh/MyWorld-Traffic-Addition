@@ -15,13 +15,13 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
 
-public class CustomizableSignBorderBlock extends Block {
+public class CustomizableSignBorder extends Block {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
     VoxelShape SHAPE = Block.createCuboidShape(7.5, 1, 7.5, 8.5, 16, 8.5);
 
-    public CustomizableSignBorderBlock(Settings settings) {
+    public CustomizableSignBorder(Settings settings) {
         super(settings);
     }
 
