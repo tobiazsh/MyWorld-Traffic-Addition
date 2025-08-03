@@ -18,7 +18,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import at.tobiazsh.myworld.traffic_addition.utils.MinecraftRenderUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -304,7 +304,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
                 // Turn to match the facing direction
                 matrices.translate(0.5, 0.5, 0.5);
-                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(facing.getOpposite())));
+                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
                 matrices.translate(-0.5, -0.5, -0.5);
 
                 // Position the vertices
@@ -353,7 +353,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.translate(Vec3d.of(BlockPosExtended.getOffset(entity.getPos(), holderPos))); // Translate the sign holder to the correct position);
 
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(facing.getOpposite())));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());

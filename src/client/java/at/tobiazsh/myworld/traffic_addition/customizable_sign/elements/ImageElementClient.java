@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.utils.MinecraftRenderUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
@@ -172,7 +172,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MinecraftRenderUtils.getFacingRotation(facing.getOpposite())));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Rotate around the element's center
