@@ -28,8 +28,8 @@ import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont.getTextRendererByPath;
-import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.getRightSideDirection;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
 

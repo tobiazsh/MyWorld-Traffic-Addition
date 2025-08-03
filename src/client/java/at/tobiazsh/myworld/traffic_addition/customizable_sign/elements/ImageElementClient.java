@@ -22,6 +22,7 @@ import org.joml.Matrix4f;
 import java.util.UUID;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class ImageElementClient extends ImageElement implements ClientElementInterface {
 
@@ -154,7 +155,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
         BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
-        BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
+        BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
 
