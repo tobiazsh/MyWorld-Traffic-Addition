@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import net.minecraft.util.math.Direction;
 
-public class MinecraftRenderUtils {
+public class DirectionUtils {
 
     /**
      * Calculates the rotation angle based on the facing direction.
