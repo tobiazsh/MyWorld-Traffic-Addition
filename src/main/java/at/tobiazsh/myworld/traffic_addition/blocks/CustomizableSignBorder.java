@@ -19,7 +19,7 @@ public class CustomizableSignBorder extends Block {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    VoxelShape SHAPE = Block.createCuboidShape(7.5, 1, 7.5, 8.5, 16, 8.5);
+    VoxelShape SHAPE = Block.createCuboidShape(7.5, 1, 7.5, 8.5, 15, 8.5);
 
     public CustomizableSignBorder(Settings settings) {
         super(settings);
