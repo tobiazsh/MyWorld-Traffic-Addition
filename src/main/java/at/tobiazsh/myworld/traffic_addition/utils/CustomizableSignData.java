@@ -136,7 +136,7 @@ public class CustomizableSignData {
 			while (world.getBlockEntity(scanPosX) instanceof CustomizableSignBlockEntity csbEntity) {
 				// ALTERNATIVE: BorderProperty borders = getBorderListBoundingBased(scanPosX, world); // Get the true/false map for the border at that pos
 				BorderProperty borders = csbEntity.getBorderType();
-				textureNames.add(borders.toNormalString()); // Get the texture name based on the border map
+				textureNames.add(borders.normalStringWithoutCorners()); // Get the texture name based on the border map
 
 				scanPosX = blockPosInDirection(rightSide, scanPosX, 1);
 			}
