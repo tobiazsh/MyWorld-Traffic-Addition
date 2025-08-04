@@ -24,6 +24,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -101,18 +102,17 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Rotate the sign
         rotateSign(rotation, matrices);
 
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
+
         // Render master block sign block
         BlockStateModel csbeStateModel = bakedModelManager.getBlockModels().getModel(entity.getCachedState());
-        blockRenderManager.getModelRenderer().render(
-                entity.getWorld(),
+
+        BlockModelRenderer.render(
+                matrices.peek(),
+                consumer,
                 csbeStateModel,
-                entity.getCachedState(),
-                entity.getPos(),
-                matrices,
-                vertexConsumers,
-                true,
-                entity.getPos().asLong(),
-                overlay
+                1.0f, 1.0f, 1.0f,
+                light, overlay
         );
 
         Direction facingDirection = entity.getCachedState().get(CustomizableSignBlock.FACING);
@@ -166,7 +166,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Render sign block
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
+        BlockModelRenderer.render(
                 matrices.peek(),
                 vertexConsumer,
                 blockStateModel,
@@ -238,7 +238,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
 
         // Render sign pole
-        blockRenderManager.getModelRenderer().render(
+        BlockModelRenderer.render(
                 matrices.peek(),
                 consumer, blockStateModel,
                 1.0f, 1.0f, 1.0f,
@@ -359,7 +359,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.translate(-0.5, -0.5, -0.5);
 
         VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getCutout());
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
+        BlockModelRenderer.render(
                 matrices.peek(),
                 consumer,
                 blockStateModel,
