@@ -91,7 +91,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         BlockEntity masterEntity = MinecraftClient.getInstance().world.getBlockEntity(entity.getMasterPos());
 
         // Just a check to avoid errors
-        if(masterEntity instanceof CustomizableSignBlockEntity) {
+        if (masterEntity instanceof CustomizableSignBlockEntity) {
             // Define the rotation depending on the facing state of the sign
             rotation = ((CustomizableSignBlockEntity) masterEntity).getRotation();
         }
