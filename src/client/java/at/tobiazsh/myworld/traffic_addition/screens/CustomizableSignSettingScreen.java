@@ -235,6 +235,7 @@ public class CustomizableSignSettingScreen extends Screen {
             BlockPos currentRightPos = currentUpPos;
 
             // Scan a single row
+            scannedWidth = 0;
             while (isUsableCustomizableSignBlockEntity(currentRightPos, world)) {
                 signs.add(currentRightPos);
                 currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
