@@ -1,7 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
+import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Contract;
 
 public class DirectionUtils {
@@ -51,6 +54,20 @@ public class DirectionUtils {
             case WEST -> { return pos.west(offset); }
             default -> { return pos.north(offset); }
         }
+    }
+
+    /**
+     * Returns the facing direction of a block at the given position in the world.
+     */
+    public static Direction getFacing(BlockPos pos, World world) {
+        return world.getBlockState(pos).get(CustomizableSignBlock.FACING);
+    }
+
+    /**
+     * Returns the facing direction of a block entity.
+     */
+    public static Direction getFacing(BlockEntity entity) {
+        return entity.getCachedState().get(CustomizableSignBlock.FACING);
     }
 
 }

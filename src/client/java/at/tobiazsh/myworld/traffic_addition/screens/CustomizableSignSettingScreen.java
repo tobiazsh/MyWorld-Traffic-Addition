@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
@@ -10,7 +9,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import io.github.tobiazsh.jengua.Translator;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -59,8 +58,6 @@ public class CustomizableSignSettingScreen extends Screen {
     // Sign state
     private int initialRotationValue;
     private boolean isInitialized = false;
-    private int signWidth = 1;
-    private int signHeight = 1;
 
     /**
      * Creates a new screen for customizing signs
@@ -174,8 +171,8 @@ public class CustomizableSignSettingScreen extends Screen {
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
         Direction facing = currentSignBlockEntity.getFacing();
 
-        signHeight = checkHeight(pos);
-        signWidth = checkWidth(pos, facing);
+        int signHeight = checkHeight(pos, facing);
+        int signWidth = checkWidth(pos, facing);
 
         // Configure connected blocks
         List<BlockPos> signs = checkSigns(pos, facing, signWidth, signHeight);
@@ -183,7 +180,7 @@ public class CustomizableSignSettingScreen extends Screen {
         if (!abort && signs != null) {
             informMaster(signs, pos);
             setSignBorder(signs);
-            checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
+            checkSignPoles(pos, DirectionUtils.getFacing(pos, world), signHeight, signWidth);
 
             // Send size to server
             ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
@@ -193,20 +190,18 @@ public class CustomizableSignSettingScreen extends Screen {
             ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(pos, signPositionString));
         }
 
-        // Send size to server
-        ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
         isInitialized = true;
     }
 
     /**
      * Determines the height of the sign structure by checking blocks above
      */
-    private int checkHeight(BlockPos masterPos) {
+    private int checkHeight(BlockPos masterPos, Direction facing) {
         int height = 1;
 
         BlockPos currentPos = masterPos;
 
-        while (isUsableCustomizableSignBlockEntity(currentPos.up(), world)) {
+        while (isUsableCustomizableSignBlockEntity(currentPos.up(), world, facing)) {
             currentPos = currentPos.up();
             height++;
         }
@@ -221,7 +216,7 @@ public class CustomizableSignSettingScreen extends Screen {
         int right = 1;
         Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
-        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(rightDirection, startingPos, right), world))
+        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(rightDirection, startingPos, right), world, facing))
             right++;
 
         return right; // Subtract 1 to not double count the master block
@@ -238,12 +233,12 @@ public class CustomizableSignSettingScreen extends Screen {
         int scannedHeight = 0;
         int scannedWidth = 0;
         BlockPos currentUpPos = masterPos;
-        while (isUsableCustomizableSignBlockEntity(currentUpPos, world)) {
+        while (isUsableCustomizableSignBlockEntity(currentUpPos, world, facing)) {
             BlockPos currentRightPos = currentUpPos;
 
             // Scan a single row
             scannedWidth = 0;
-            while (isUsableCustomizableSignBlockEntity(currentRightPos, world)) {
+            while (isUsableCustomizableSignBlockEntity(currentRightPos, world, facing)) {
                 signs.add(currentRightPos);
                 currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
 

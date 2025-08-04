@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
@@ -128,7 +127,7 @@ public class CustomizableSignData {
 		BlockPos scanPosY = pos;
 
 		// The direction that's on the right side of the block
-		Direction rightSide = getRightSideDirection(getFacing(blockEntity).getOpposite());
+		Direction rightSide = getRightSideDirection(DirectionUtils.getFacing(blockEntity).getOpposite());
 
 		List<String> textureNames = new ArrayList<>();
 

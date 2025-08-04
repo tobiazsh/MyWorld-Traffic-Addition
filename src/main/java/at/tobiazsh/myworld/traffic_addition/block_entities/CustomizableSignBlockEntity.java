@@ -308,7 +308,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * Does extensive neighbour-checking to determine which borders and corners should be present.
      */
     public static BorderProperty getBorderListBoundingBased(BlockPos position, World world) {
-        Direction rightSideDirection = DirectionUtils.getRightSideDirection(getFacing(position, world).getOpposite());
+        Direction facing = DirectionUtils.getFacing(position, world);
+        Direction rightSideDirection = DirectionUtils.getRightSideDirection(facing.getOpposite());
 
         boolean up = false;
         boolean right = false;
@@ -321,15 +322,15 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         boolean downRight = false;
         boolean downLeft = false;
 
-        boolean upIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.up(), world);
-        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1), world);
-        boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.down(), world);
-        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1), world);
+        boolean upIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.up(), world, facing);
+        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1), world, facing);
+        boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.down(), world, facing);
+        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1), world, facing);
 
-        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).down(), world);  // Check if down left is a CustomizableSignBlockEntity
-        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).down(), world);               // Check if down right is a CustomizableSignBlockEntity
-        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).up(), world);      // Check if up left is a CustomizableSignBlockEntity
-        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).up(), world);                   // Check if up right is a CustomizableSignBlockEntity
+        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).down(), world, facing);  // Check if down left is a CustomizableSignBlockEntity
+        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).down(), world, facing);               // Check if down right is a CustomizableSignBlockEntity
+        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).up(), world, facing);      // Check if up left is a CustomizableSignBlockEntity
+        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).up(), world, facing);                   // Check if up right is a CustomizableSignBlockEntity
 
         if (!upIsCustomizableBlockEntity) {
             up = true;
@@ -552,14 +553,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         this.updateBackgroundTexture = var;
     }
 
-    public static Direction getFacing(BlockPos pos, World world) {
-        return world.getBlockState(pos).get(CustomizableSignBlock.FACING);
-    }
-
-    public static Direction getFacing(BlockEntity entity) {
-        return entity.getCachedState().get(CustomizableSignBlock.FACING);
-    }
-
     public Direction getFacing() {
         return this.getCachedState().get(CustomizableSignBlock.FACING);
     }
@@ -567,10 +560,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     /**
      * Checks if block entity at given position is a usable CustomizableSignBlockEntity. Usable implies that it's not locked.
      * The check for locking and the locking itself will be implemented in the future.
-     * Right now, it only checks if the block entity is an instance of CustomizableSignBlockEntity.
+     * Right now, it only checks if the block entity is an instance of CustomizableSignBlockEntity and if the block is facing the same direction.
      */
-    public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, World world) {
+    public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, World world, Direction shouldFace) {
         return
-            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity;
+            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity && shouldFace == ((CustomizableSignBlockEntity) world.getBlockEntity(pos)).getFacing();
     }
 }
