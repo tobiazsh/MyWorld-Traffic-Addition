@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
@@ -7,7 +8,9 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
+import io.github.tobiazsh.jengua.Translator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -161,19 +164,27 @@ public class CustomizableSignSettingScreen extends Screen {
         this.clearChildren();
     }
 
+    private boolean abort = false;
+
     /**
      * Initializes the sign structure by determining dimensions and configuring connected blocks
      */
     private void initSign() {
         // Determine sign dimensions
+        CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
+        Direction facing = currentSignBlockEntity.getFacing();
+
         signHeight = checkHeight(pos);
-        signWidth = checkWidth(pos);
+        signWidth = checkWidth(pos, facing);
 
         // Configure connected blocks
-        informOthersMaster(pos);
-        setSignBorder(pos);
-        checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
-        checkSigns(pos, getFacing(pos, world));
+        List<BlockPos> signs = checkSigns(pos, facing, signWidth, signHeight);
+
+        if (!abort && signs != null) {
+            informMaster(signs, pos);
+            setSignBorder(signs);
+            checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
+        }
 
         // Send size to server
         ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
@@ -185,6 +196,7 @@ public class CustomizableSignSettingScreen extends Screen {
      */
     private int checkHeight(BlockPos masterPos) {
         int height = 1;
+
         BlockPos currentPos = masterPos;
 
         while (isUsableCustomizableSignBlockEntity(currentPos.up(), world)) {
@@ -198,72 +210,70 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Determines the width of the sign structure by checking adjacent blocks
      */
-    private int checkWidth(BlockPos masterPos) {
-        int width = 1;
-        BlockPos currentPos = masterPos;
-        Direction facing = getFacing(currentPos, world);
+    private int checkWidth(BlockPos startingPos, Direction facing) {
+        int right = 1;
+        Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
-        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(facing, currentPos, 1), world)) {
-            currentPos = blockPosInDirection(facing, currentPos, 1);
-            width++;
-        }
+        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(rightDirection, startingPos, right), world))
+            right++;
 
-        return width;
+        return right; // Subtract 1 to not double count the master block
     }
 
     /**
      * Identifies and registers all sign blocks in the structure
      */
-    private void checkSigns(BlockPos masterPos, @NotNull Direction facing) {
-        List<BlockPos> signPositions = new ArrayList<>();
+    private List<BlockPos> checkSigns(BlockPos masterPos, @NotNull Direction facing, int signWidth, int signHeight) {
+        List<BlockPos> signs = new ArrayList<>();
         Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
         // Scan row by row, starting at master position
+        int scannedHeight = 0;
+        int scannedWidth = 0;
         BlockPos currentUpPos = masterPos;
         while (isUsableCustomizableSignBlockEntity(currentUpPos, world)) {
             BlockPos currentRightPos = currentUpPos;
 
             // Scan a single row
             while (isUsableCustomizableSignBlockEntity(currentRightPos, world)) {
-                signPositions.add(currentRightPos);
+                signs.add(currentRightPos);
                 currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
+
+                scannedWidth++;
             }
 
+            if (scannedWidth != signWidth) {
+                player.sendMessage(Text.literal(JenguaTranslator.tr("Minecraft.MWTA.Warn.SignNotComplete", "Sign is not complete! Please check the structure")), false);
+                abort = true;
+                break;
+            }
+
+            scannedHeight++;
             currentUpPos = currentUpPos.up();
         }
 
-        // Send all sign positions to server
-        String signPositionString = CustomizableSignBlockEntity.constructBlockPosListString(signPositions);
-        ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(masterPos, signPositionString));
+        if (scannedHeight != signHeight) {
+            player.sendMessage(Text.literal(JenguaTranslator.tr("Minecraft.MWTA.Warn.SignNotComplete", "Sign is not complete! Please check the structure")), false);
+            abort = true;
+        }
+
+        if (abort) {
+            return null;
+        }
+
+        return signs;
     }
 
     /**
-     * Sets all connected signs to use the master block for rendering
+     * Informs all other signs except the master about their new master position
      */
-    private void informOthersMaster(BlockPos masterPosY) {
-        BlockPos currentYPos = masterPosY;
-
-        while (isUsableCustomizableSignBlockEntity(currentYPos, world)) {
-            BlockPos currentXPos = currentYPos;
-
-            while (isUsableCustomizableSignBlockEntity(currentXPos, world)) {
-                Direction facing = getFacing(currentXPos, world);
-
-                // Skip the master block itself
-                if (currentXPos.equals(pos)) {
-                    currentXPos = blockPosInDirection(facing, currentXPos, 1);
-                    continue;
-                }
-
-                // Configure non-master blocks
-                ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(currentXPos, false, pos));
-                ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(currentXPos, false));
-
-                currentXPos = blockPosInDirection(facing, currentXPos, 1);
-            }
-
-            currentYPos = currentYPos.up();
-        }
+    private void informMaster(List<BlockPos> signs, BlockPos masterPos) {
+        signs.stream()
+                .filter(pos -> !pos.equals(masterPos))
+                .forEach(pos -> {
+                    ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(pos, false, masterPos));
+                    ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(pos, false));
+                });
     }
 
     /**
@@ -273,30 +283,22 @@ public class CustomizableSignSettingScreen extends Screen {
         List<BlockPos> poles = new ArrayList<>();
         Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
-        // Find the top-back corner of the sign structure
-        BlockPos highestSignPolePos = masterPos.up(signHeight - 1);
-        highestSignPolePos = blockPosInDirection(facing.getOpposite(), highestSignPolePos, 1);
+        // Start position; this is the topmost pole position in the sign structure
+        BlockPos start = blockPosInDirection(facing.getOpposite(), masterPos.up(signHeight - 1), 1);
 
-        // Scan all potential pole positions column by column
-        BlockPos currentRightPos = highestSignPolePos;
         for (int i = 0; i < signWidth; i++) {
-            BlockPos currentDownPos = currentRightPos;
-
-            // Scan down to find all poles in this column
-            while (world.getBlockEntity(currentDownPos) instanceof SignPoleBlockEntity) {
-                poles.add(currentDownPos);
-                currentDownPos = currentDownPos.down();
+            BlockPos pos = blockPosInDirection(rightDirection, start, i);
+            // Nach unten suchen, solange ein SignPoleBlockEntity gefunden wird
+            while (world.getBlockEntity(pos) instanceof SignPoleBlockEntity) {
+                poles.add(pos);
+                pos = pos.down();
             }
-
-            currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
         }
 
-        // Configure all poles to not render individually
-        for (BlockPos pole : poles) {
-            ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false));
-        }
+        // Mark all poles as not renderable
+        poles.forEach(pole -> ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false)));
 
-        // Register all poles with the master sign
+        // Register poles in the master sign block
         ClientPlayNetworking.send(new SetSignPolePositionsCustomizableSignBlockPayload(
                 masterPos,
                 CustomizableSignBlockEntity.constructBlockPosListString(poles)
@@ -306,23 +308,11 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Determines and sets appropriate border types for all sign blocks based on position
      */
-    private void setSignBorder(BlockPos masterPos) {
-        Direction rightSide = getRightSideDirection(getFacing(masterPos, world).getOpposite());
-        BlockPos currentYPos = masterPos;
-
-        while (isUsableCustomizableSignBlockEntity(currentYPos, world)) {
-            BlockPos currentXPos = currentYPos;
-
-            while (isUsableCustomizableSignBlockEntity(currentXPos, world)) {
-                // Determine which sides need borders based on position
-                BorderProperty borders = getBorderListBoundingBased(currentXPos, world);
-
-                ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(currentXPos, borders.toString()));
-                currentXPos = blockPosInDirection(rightSide, currentXPos, 1);
-            }
-
-            currentYPos = currentYPos.up();
-        }
+    private void setSignBorder(List<BlockPos> signs) {
+        signs.forEach(signPos -> {
+            BorderProperty borders = getBorderListBoundingBased(signPos, world);
+            ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(signPos, borders.toString()));
+        });
     }
 
     // Scrolling implementation
