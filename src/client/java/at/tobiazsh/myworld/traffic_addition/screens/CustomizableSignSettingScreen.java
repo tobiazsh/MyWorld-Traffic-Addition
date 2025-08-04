@@ -184,6 +184,13 @@ public class CustomizableSignSettingScreen extends Screen {
             informMaster(signs, pos);
             setSignBorder(signs);
             checkSignPoles(pos, getFacing(pos, world), signHeight, signWidth);
+
+            // Send size to server
+            ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
+
+            // Send all sign positions to server
+            String signPositionString = CustomizableSignBlockEntity.constructBlockPosListString(signs);
+            ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(pos, signPositionString));
         }
 
         // Send size to server
