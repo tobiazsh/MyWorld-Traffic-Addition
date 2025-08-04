@@ -307,8 +307,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * Returns a BorderProperty object that represents the bounding box of the CustomizableSignBlockEntity based on the surrounding blocks.
      * Does extensive neighbour-checking to determine which borders and corners should be present.
      */
-    public static BorderProperty getBorderListBoundingBased(BlockPos masterPos, World world) {
-        Direction rightSideDirection = DirectionUtils.getRightSideDirection(getFacing(masterPos, world).getOpposite());
+    public static BorderProperty getBorderListBoundingBased(BlockPos position, World world) {
+        Direction rightSideDirection = DirectionUtils.getRightSideDirection(getFacing(position, world).getOpposite());
 
         boolean up = false;
         boolean right = false;
@@ -321,15 +321,15 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         boolean downRight = false;
         boolean downLeft = false;
 
-        boolean upIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(masterPos.up(), world);
-        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1), world);
-        boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(masterPos.down(), world);
-        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1), world);
+        boolean upIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.up(), world);
+        boolean rightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1), world);
+        boolean downIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(position.down(), world);
+        boolean leftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1), world);
 
-        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1).down(), world);  // Check if down left is a CustomizableSignBlockEntity
-        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1).down(), world);               // Check if down right is a CustomizableSignBlockEntity
-        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), masterPos, 1).up(), world);      // Check if up left is a CustomizableSignBlockEntity
-        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, masterPos, 1).up(), world);                   // Check if up right is a CustomizableSignBlockEntity
+        boolean downLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).down(), world);  // Check if down left is a CustomizableSignBlockEntity
+        boolean downRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).down(), world);               // Check if down right is a CustomizableSignBlockEntity
+        boolean upLeftIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection.getOpposite(), position, 1).up(), world);      // Check if up left is a CustomizableSignBlockEntity
+        boolean upRightIsCustomizableBlockEntity = isUsableCustomizableSignBlockEntity(blockPosInDirection(rightSideDirection, position, 1).up(), world);                   // Check if up right is a CustomizableSignBlockEntity
 
         if (!upIsCustomizableBlockEntity) {
             up = true;
