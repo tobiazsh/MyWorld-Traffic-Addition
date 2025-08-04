@@ -77,4 +77,10 @@ public record BorderProperty(
                 cornerUpRight, cornerUpLeft, cornerDownRight, cornerDownLeft
         );
     }
+
+    public String normalStringWithoutCorners() {
+        return "%s_%s_%s_%s".formatted(
+                up, right, down, left
+        );
+    }
 }
