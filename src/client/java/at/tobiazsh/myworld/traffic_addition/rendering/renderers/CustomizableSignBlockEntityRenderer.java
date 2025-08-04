@@ -118,7 +118,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         Direction facingDirection = entity.getCachedState().get(CustomizableSignBlock.FACING);
 
         // Render the border for the master sign block
-        BorderRenderer.render(entity, matrices, vertexConsumers, entity.getBorderType(), light, overlay, facingDirection);
+        BorderRenderer.render(matrices, vertexConsumers, entity.getBorderType(), light, overlay, facingDirection);
         renderTexture(entity, matrices, vertexConsumers, light, overlay, facingDirection);
 
         // If the entity is master, render the other signs attached to it
@@ -175,7 +175,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         );
 
         // Render the border on top of the sign
-        BorderRenderer.render(entity, matrices, vertexConsumers, entity.getBorderType(), light, overlay, facing);
+        BorderRenderer.render(matrices, vertexConsumers, entity.getBorderType(), light, overlay, facing);
 
         BlockPosFloat blockPosBehind = new BlockPosFloat(entity.getPos())
                 .offset(
