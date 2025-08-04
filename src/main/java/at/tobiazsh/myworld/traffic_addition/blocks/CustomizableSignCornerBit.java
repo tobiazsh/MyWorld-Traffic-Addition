@@ -19,7 +19,7 @@ public class CustomizableSignCornerBit extends Block {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    VoxelShape SHAPE = Block.createCuboidShape(7.5, 9, 7.5, 8.5, 10, 8.5);
+    VoxelShape SHAPE = Block.createCuboidShape(7.5, 7.5, 7.5, 8.5, 8.5, 8.5);
 
     public CustomizableSignCornerBit(Settings settings) {
         super(settings);
