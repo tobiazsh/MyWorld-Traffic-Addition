@@ -1,17 +1,16 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.OnlineImageServerLogic;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageServerLogic;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.SpecialBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.CustomizableSignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.SignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.server_actions.SignPoleBlockActions;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.*;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignPoleBlockActions;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -39,7 +38,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static final String MOD_ID = "myworld_traffic_addition";
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.3.0";
+	public static final String MODVER = "v1.4.0";
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
@@ -54,8 +53,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ModBlockEntities.initialize();
 
 		CommandRegistrationCallback.EVENT.register(ModCommands::initialize);
-
-		SpecialBlockEntity.initialize(); // Remnant of old code but I'll leave it here since I am lazy
 
 		MyWorldTrafficAddition.LOGGER.info("Adding payloads...");
 		addSmartPayloadsServer();
@@ -172,5 +169,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request image
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
+	}
+
+
+
+	public static Identifier createId(String id) {
+		return Identifier.of(MOD_ID, id);
 	}
 }

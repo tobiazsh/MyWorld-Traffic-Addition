@@ -10,7 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import com.google.gson.*;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +21,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity.*;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class CustomizableSignData {
 	public String jsonString; // JSON as String
@@ -126,17 +127,18 @@ public class CustomizableSignData {
 		BlockPos scanPosY = pos;
 
 		// The direction that's on the right side of the block
-		Direction rightSide = getRightSideDirection(getFacing(blockEntity).getOpposite());
+		Direction rightSide = getRightSideDirection(DirectionUtils.getFacing(blockEntity).getOpposite());
 
 		List<String> textureNames = new ArrayList<>();
 
 		// Scan the blocks around the masterPos and get the necessary textures. Then store them in a list
 		while (world.getBlockEntity(scanPosY) instanceof CustomizableSignBlockEntity) {
-			while (world.getBlockEntity(scanPosX) instanceof CustomizableSignBlockEntity) {
-				List<Boolean> borders = getBorderListBoundingBased(scanPosX, world); // Get the true/false map for the border at that pos
-				textureNames.add(getBorderName(borders.get(0), borders.get(1), borders.get(2), borders.get(3), "border")); // Get the texture name based on the border map
+			while (world.getBlockEntity(scanPosX) instanceof CustomizableSignBlockEntity csbEntity) {
+				// ALTERNATIVE: BorderProperty borders = getBorderListBoundingBased(scanPosX, world); // Get the true/false map for the border at that pos
+				BorderProperty borders = csbEntity.getBorderType();
+				textureNames.add(borders.normalStringWithoutCorners()); // Get the texture name based on the border map
 
-				scanPosX = getBlockPosAtDirection(rightSide, scanPosX, 1);
+				scanPosX = blockPosInDirection(rightSide, scanPosX, 1);
 			}
 
 			scanPosY = scanPosY.up();

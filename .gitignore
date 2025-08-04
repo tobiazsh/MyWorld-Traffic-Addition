@@ -44,3 +44,5 @@ replay_*.log
 
 /run/
 /src/main/resources/assets/myworld_traffic_addition/textures/imgui/sign_res/icons/aut/arrow.ai
+/package.json
+/package-lock.json

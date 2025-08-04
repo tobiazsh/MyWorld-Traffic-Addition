@@ -95,6 +95,15 @@
       }
     }
   },
+  "Minecraft": {
+    "MWTA": {
+      "Warn": {
+        "SignNotComplete": {
+          "Sign is not complete! Please check the structure": "Sign is not complete! Please check the structure"
+        }
+      }
+    }
+  },
   "Global": {
     "Add": "Add",
     "Warning": "Warning",

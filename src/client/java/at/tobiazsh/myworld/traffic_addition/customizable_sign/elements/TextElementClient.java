@@ -6,6 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
@@ -27,9 +28,8 @@ import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont.getTextRendererByPath;
-import static at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity.getRightSideDirection;
-import static at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer.getFacingRotation;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
 
@@ -146,7 +146,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
         // Rotate to face the same direction as the block
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(facing)));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing)));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Turn by 180 degrees, because it's inverted

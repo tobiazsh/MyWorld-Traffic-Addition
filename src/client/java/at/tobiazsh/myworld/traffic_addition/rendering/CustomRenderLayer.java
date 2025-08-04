@@ -2,9 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.rendering;
 
 import at.tobiazsh.myworld.traffic_addition.utils.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TriState;
 import net.minecraft.util.Util;
@@ -83,9 +82,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .program(RenderPhase.ENTITY_SOLID_PROGRAM)
                             .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
-                            .transparency(NO_TRANSPARENCY)
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -93,11 +90,10 @@ public class CustomRenderLayer {
 
                     return RenderLayer.of(
                             "entity_solid_z_offset_backward",
-                            VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-                            VertexFormat.DrawMode.QUADS,
                             1536,
                             true,
                             false,
+                            RenderPipelines.ENTITY_SOLID,
                             multiPhaseParameters
                     );
                 }
@@ -106,9 +102,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .program(ENTITY_CUTOUT_PROGRAM)
                             .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
-                            .transparency(TRANSLUCENT_TRANSPARENCY)
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -116,11 +110,10 @@ public class CustomRenderLayer {
 
                     return RenderLayer.of(
                             "entity_cutout_z_offset_backward",
-                            VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-                            VertexFormat.DrawMode.QUADS,
                             1536,
                             true,
                             false,
+                            RenderPipelines.ENTITY_CUTOUT,
                             multiPhaseParameters
                     );
                 }
@@ -197,15 +190,12 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
                 texture -> RenderLayer.of(
                         "text_z_offset_backward_intensity",
-                        VertexFormats.POSITION_COLOR_TEXTURE_LIGHT,
-                        VertexFormat.DrawMode.QUADS,
                         786432,
                         false,
                         false,
+                        RenderPipelines.RENDERTYPE_TEXT_INTENSITY,
                         RenderLayer.MultiPhaseParameters.builder()
-                                .program(TEXT_INTENSITY_PROGRAM)
                                 .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
-                                .transparency(TRANSLUCENT_TRANSPARENCY)
                                 .lightmap(ENABLE_LIGHTMAP)
                                 .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
                                 .build(false)
@@ -273,14 +263,12 @@ public class CustomRenderLayer {
         private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 zOff -> RenderLayer.of(
                         "cutout_z_offset_backward",
-                        VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
-                        VertexFormat.DrawMode.QUADS,
                         786432,
                         true,
                         false,
+                        RenderPipelines.CUTOUT,
                         RenderLayer.MultiPhaseParameters.builder()
                                 .lightmap(ENABLE_LIGHTMAP)
-                                .program(CUTOUT_PROGRAM)
                                 .layering(Layering.getRenderPhaseZLayeringBackward(zOff))
                                 .texture(BLOCK_ATLAS_TEXTURE)
                                 .build(true)

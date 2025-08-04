@@ -3,9 +3,10 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.ImDrawList;
@@ -21,7 +22,7 @@ import org.joml.Matrix4f;
 import java.util.UUID;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
-import static at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer.getFacingRotation;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class ImageElementClient extends ImageElement implements ClientElementInterface {
 
@@ -154,7 +155,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
         BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
-        BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(CustomizableSignBlockEntity.getRightSideDirection(facing.getOpposite()), x);
+        BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(getRightSideDirection(facing.getOpposite()), x);
 
         matrices.push();
 
@@ -172,7 +173,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(getFacingRotation(facing.getOpposite())));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Rotate around the element's center

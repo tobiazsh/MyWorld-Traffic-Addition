@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;

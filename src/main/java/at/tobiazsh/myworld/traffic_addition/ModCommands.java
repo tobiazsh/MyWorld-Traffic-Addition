@@ -9,21 +9,12 @@ package at.tobiazsh.myworld.traffic_addition;
 
 
 import at.tobiazsh.myworld.traffic_addition.command.MwtaCommand;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 public class ModCommands {
 

@@ -24,7 +24,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.elements.*;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.utils.Saves;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 
 import com.google.gson.*;
 

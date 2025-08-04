@@ -13,7 +13,7 @@ public class ModGroups {
 
     public static final RegistryKey<ItemGroup> TRAFFIC_ADDITION_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), Identifier.of(MyWorldTrafficAddition.MOD_ID, "traffic_addition"));
     public static final ItemGroup TRAFFIC_ADDITION_ITEM_GROUP = FabricItemGroup.builder()
-            .icon(() -> new ItemStack(ModBlocks.BORDER_BLOCK))
+            .icon(() -> new ItemStack(ModBlocks.BORDER_BLOCK.getBlock()))
             .displayName(Text.translatable("itemGroup.myworld_traffic_addition"))
             .build();
 

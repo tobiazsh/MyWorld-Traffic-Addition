@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import imgui.ImGui;
 
 import java.util.Objects;

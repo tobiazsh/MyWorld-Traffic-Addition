@@ -3,23 +3,23 @@ package at.tobiazsh.myworld.traffic_addition;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
-import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.ShowImGuiWindow;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.OpenSignSelectionPayload;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignSelectionScreen;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -33,14 +33,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
-import static at.tobiazsh.myworld.traffic_addition.components.block_entities.SpecialBlockEntity.SPECIAL_BLOCK_ENTITY;
 
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	public static CustomizableSignSettingScreen customizableSignSettingScreen;
 
 	private static final List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
-	private static final List<String> modelPaths = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
 
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
@@ -55,8 +53,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		ClientCommandRegistrationCallback.EVENT.register(ModCommandsClient::initialize);
 
-		addModelPaths();
-		registerNonBlockModels();
 		registerCustomProtocols();
 
 		putBlockRenderLayers();
@@ -74,55 +70,23 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlock(block, renderLayer);
 	}
 
-	private static Identifier genModId(String path) {
-		return Identifier.of(MyWorldTrafficAddition.MOD_ID, path);
-	}
-
 	private static void putBlockRenderLayers() {
-		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK, RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK, RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK, RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK, RenderLayer.getCutout());
-	}
-
-	private static void registerNonBlockModel(Identifier id) {
-		ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(id));
-	}
-
-	private static void registerNonBlockModels() {
-		modelPaths.forEach(path -> registerNonBlockModel(genModId(path)));
+		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
 	}
 
 	private static void addBlockEntityRenderers() {
 		blockEntityRenderers.addAll(Arrays.asList(
-				new RegistrableBlockEntityRender<>(SPECIAL_BLOCK_ENTITY, SpecialBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(SIGN_POLE_BLOCK_ENTITY, SignPoleEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(TRIANGULAR_SIGN_BLOCK_ENTITY, TriangularSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK_ENTITY, UpsideDownTriangularSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(OCTAGONAL_SIGN_BLOCK_ENTITY, OctagonalSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(ROUND_SIGN_BLOCK_ENTITY, RoundSignBlockEntityRenderer::new),
 				new RegistrableBlockEntityRender<>(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, CustomizableSignBlockEntityRenderer::new)
-		));
-	}
-
-	private static void addModelPaths() {
-		modelPaths.addAll(Arrays.asList(
-				"block/customizable_sign_block_border_all",
-				"block/customizable_sign_block_border_top",
-				"block/customizable_sign_block_border_bottom",
-				"block/customizable_sign_block_border_left",
-				"block/customizable_sign_block_border_right",
-				"block/customizable_sign_block_border_top_bottom",
-				"block/customizable_sign_block_border_left_right",
-				"block/customizable_sign_block_border_top_left",
-				"block/customizable_sign_block_border_top_right",
-				"block/customizable_sign_block_border_bottom_left",
-				"block/customizable_sign_block_border_bottom_right",
-				"block/customizable_sign_block_border_not_right",
-				"block/customizable_sign_block_border_not_left",
-				"block/customizable_sign_block_border_not_top",
-				"block/customizable_sign_block_border_not_bottom"
 		));
 	}
 

@@ -2,8 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.screens;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.components.block_entities.SignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.components.custom_payloads.block_modification.SignBlockTextureChangePayload;
+import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

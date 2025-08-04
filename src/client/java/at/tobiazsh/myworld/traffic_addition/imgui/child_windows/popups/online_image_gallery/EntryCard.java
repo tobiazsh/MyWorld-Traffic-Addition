@@ -4,7 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.OnlineImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.utils.DateTimeUtility;
 import imgui.ImGui;
 import imgui.ImVec4;

@@ -4,7 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.ClientCustomImageDir;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ClientCustomImageDirectory;
 import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.ImageOperations;
@@ -606,11 +606,11 @@ public class OnlineImageDialog {
     }
 
     private static void saveLocally(JsonObject metadata, byte[] imagePngData, byte[] thumbnailPngData) {
-        ClientCustomImageDir.createCustomImageDir(); // Create if dir doesn't exist
+        ClientCustomImageDirectory.createCustomImageDir(); // Create if dir doesn't exist
 
         try {
-            File imageFile = new File(ClientCustomImageDir.getCacheImageDir().resolve(metadata.get("ImageUUID").getAsString() + ".png").toAbsolutePath().toString());
-            File thumbnailFile = new File(ClientCustomImageDir.getCacheImageDir().resolve(metadata.get("ImageUUID").getAsString() + "_thumbnail.png").toAbsolutePath().toString());
+            File imageFile = new File(ClientCustomImageDirectory.getCacheImageDir().resolve(metadata.get("ImageUUID").getAsString() + ".png").toAbsolutePath().toString());
+            File thumbnailFile = new File(ClientCustomImageDirectory.getCacheImageDir().resolve(metadata.get("ImageUUID").getAsString() + "_thumbnail.png").toAbsolutePath().toString());
             java.nio.file.Files.write(imageFile.toPath(), imagePngData);
             java.nio.file.Files.write(thumbnailFile.toPath(), thumbnailPngData);
         } catch (IOException e) {
