@@ -72,7 +72,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private List<BlockPos> getSignPositions(CustomizableSignBlockEntity entity) {
         String constructedSignPositions = entity.getSignPositions();
-        if(constructedSignPositions.isEmpty()) return new ArrayList<>();
+        if (constructedSignPositions.isEmpty()) return new ArrayList<>();
         return CustomizableSignBlockEntity.deconstructBlockPosListString(constructedSignPositions);
     }
 
