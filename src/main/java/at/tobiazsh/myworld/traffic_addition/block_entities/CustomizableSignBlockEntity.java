@@ -11,6 +11,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
@@ -267,55 +268,26 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         BorderProperty borders;
 
-        if (!nbt.contains("Borders") && !getStringOrDefault(nbt, "BorderModelPath", "").isBlank()) {
-            borders = convertOldBorderStringToBorderProperty(getStringOrDefault(nbt, "BorderModelPath", ""), "customizable_sign_block");
+        if (!nbt.contains("Borders") && !OptionalUtils.getOrDefault("BorderModelPath", nbt::getString, "", "CustomizableSignBlockEntity.BorderModelPath").isBlank()) {
+            borders = convertOldBorderStringToBorderProperty(OptionalUtils.getOrDefault("BorderModelPath", nbt::getString, "", "CustomizableSignBlockEntity.BorderModelPath"), "customizable_sign_block");
         } else {
-            borders = BorderProperty.valueOf(getStringOrDefault(nbt, "Borders", BorderProperty.DEFAULT));
+            borders = BorderProperty.valueOf(OptionalUtils.getOrDefault("Borders", nbt::getString, BorderProperty.DEFAULT, "CustomizableSignBlockEntity.Borders"));
         } // CONVERSION TO NEW VERSION
 
         this.borders = borders;
-        isMaster = getBooleanOrDefault(nbt, "IsMaster", true);
-        masterPos = deconstructMasterPosString(getStringOrDefault(nbt, "MasterPos", constructMasterPosString(getPos())));
-        signPolePositions = getStringOrDefault(nbt, "SignPolePositions", "");
-        isRendered = getBooleanOrDefault(nbt, "RenderingState", true);
-        signPositions = getStringOrDefault(nbt, "SignPositions", "");
-        rotation = getIntOrDefault(nbt, "Rotation", 0);
-        width = getIntOrDefault(nbt, "Width", 1);
-        height = getIntOrDefault(nbt, "Height", 1);
-        isInitialized = getBooleanOrDefault(nbt, "IsInitialized", false);
-        signTextureJson = getStringOrDefault(nbt, "SignTexture", "{}");
+        isMaster = OptionalUtils.getOrDefault("IsMaster", nbt::getBoolean, true, "CustomizableSignBlockEntity.IsMaster");
+        masterPos = deconstructMasterPosString(OptionalUtils.getOrDefault("MasterPos", nbt::getString, constructMasterPosString(getPos()), "CustomizableSignBlockEntity.MasterPos"));
+        signPolePositions = OptionalUtils.getOrDefault("SignPolePositions", nbt::getString, "", "CustomizableSignBlockEntity.SignPolePositions");
+        isRendered = OptionalUtils.getOrDefault("RenderingState", nbt::getBoolean, true, "CustomizableSignBlockEntity.RenderingState");
+        signPositions = OptionalUtils.getOrDefault("SignPositions", nbt::getString, "", "CustomizableSignBlockEntity.SignPositions");
+        rotation = OptionalUtils.getOrDefault("Rotation", nbt::getInt, 0, "CustomizableSignBlockEntity.Rotation");
+        width = OptionalUtils.getOrDefault("Width", nbt::getInt, 1, "CustomizableSignBlockEntity.Width");
+        height = OptionalUtils.getOrDefault("Height", nbt::getInt, 1, "CustomizableSignBlockEntity.Height");
+        isInitialized = OptionalUtils.getOrDefault("IsInitialized", nbt::getBoolean, false, "CustomizableSignBlockEntity.IsInitialized");
+        signTextureJson = OptionalUtils.getOrDefault("SignTexture", nbt::getString, "{}", "CustomizableSignBlockEntity.SignTexture");
 
         updateTextureVars();
     }
-
-    private String getStringOrDefault(NbtCompound nbt, String key, String defaultValue) {
-        Optional<String> valueOpt = nbt.getString(key);
-        if (valueOpt.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
-            return defaultValue;
-        }
-        return valueOpt.get();
-    }
-
-    private boolean getBooleanOrDefault(NbtCompound nbt, String key, boolean defaultValue) {
-        Optional<Boolean> valueOpt = nbt.getBoolean(key);
-        if (valueOpt.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
-            return defaultValue;
-        }
-        return valueOpt.get();
-    }
-
-    private int getIntOrDefault(NbtCompound nbt, String key, int defaultValue) {
-        Optional<Integer> valueOpt = nbt.getInt(key);
-        if (valueOpt.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.error("CustomizableSignBlockEntity: NBT key '{}' not found, using default value '{}'", key, defaultValue);
-            return defaultValue;
-        }
-        return valueOpt.get();
-    }
-
-
 
     @Override
     public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
