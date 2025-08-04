@@ -36,8 +36,15 @@ public class BorderRenderer {
         borderRenderLayer = modelLayering.buildRenderLayer();
     }
 
-    public static <T extends BlockEntity> void render(
-            T entity,
+    // Here for optimization, so we don't have to create a new BlockPosFloat every time
+    private static final BlockPosFloat offsetUp = new BlockPosFloat(0, 0.46875f, 0); // 15/32f == 0.46875f because 16/32 is half the block minus the one pixel for the border itself
+    private static final BlockPosFloat offsetDown = new BlockPosFloat(0, -0.46875f, 0); // -15/32f == -0.46875f
+    private static final float globalBorderOffset = 0.46875f; // 13/32f == 0.40625f, which is the distance from the center of the sign to the border
+
+    /**
+     * Renders the borders of a customizable sign based on the given entity's properties.
+     */
+    public static void render(
             MatrixStack matrices,
             VertexConsumerProvider vertexConsumers,
             BorderProperty borders,
