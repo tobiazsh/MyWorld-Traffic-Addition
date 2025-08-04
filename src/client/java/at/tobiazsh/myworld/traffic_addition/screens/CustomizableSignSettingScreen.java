@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -186,7 +187,7 @@ public class CustomizableSignSettingScreen extends Screen {
         int height = 1;
         BlockPos currentPos = masterPos;
 
-        while (world.getBlockEntity(currentPos.up()) instanceof CustomizableSignBlockEntity) {
+        while (isUsableCustomizableSignBlockEntity(currentPos.up(), world)) {
             currentPos = currentPos.up();
             height++;
         }
@@ -202,7 +203,7 @@ public class CustomizableSignSettingScreen extends Screen {
         BlockPos currentPos = masterPos;
         Direction facing = getFacing(currentPos, world);
 
-        while ((world.getBlockEntity(blockPosInDirection(facing, currentPos, 1))) instanceof CustomizableSignBlockEntity) {
+        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(facing, currentPos, 1), world)) {
             currentPos = blockPosInDirection(facing, currentPos, 1);
             width++;
         }
@@ -213,17 +214,17 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Identifies and registers all sign blocks in the structure
      */
-    private void checkSigns(BlockPos masterPos, Direction facing) {
+    private void checkSigns(BlockPos masterPos, @NotNull Direction facing) {
         List<BlockPos> signPositions = new ArrayList<>();
         Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
         // Scan row by row, starting at master position
         BlockPos currentUpPos = masterPos;
-        while (world.getBlockEntity(currentUpPos) instanceof CustomizableSignBlockEntity) {
+        while (isUsableCustomizableSignBlockEntity(currentUpPos, world)) {
             BlockPos currentRightPos = currentUpPos;
 
             // Scan a single row
-            while (world.getBlockEntity(currentRightPos) instanceof CustomizableSignBlockEntity) {
+            while (isUsableCustomizableSignBlockEntity(currentRightPos, world)) {
                 signPositions.add(currentRightPos);
                 currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
             }
@@ -242,10 +243,10 @@ public class CustomizableSignSettingScreen extends Screen {
     private void informOthersMaster(BlockPos masterPosY) {
         BlockPos currentYPos = masterPosY;
 
-        while (world.getBlockEntity(currentYPos) instanceof CustomizableSignBlockEntity) {
+        while (isUsableCustomizableSignBlockEntity(currentYPos, world)) {
             BlockPos currentXPos = currentYPos;
 
-            while (world.getBlockEntity(currentXPos) instanceof CustomizableSignBlockEntity) {
+            while (isUsableCustomizableSignBlockEntity(currentXPos, world)) {
                 Direction facing = getFacing(currentXPos, world);
 
                 // Skip the master block itself
@@ -309,10 +310,10 @@ public class CustomizableSignSettingScreen extends Screen {
         Direction rightSide = getRightSideDirection(getFacing(masterPos, world).getOpposite());
         BlockPos currentYPos = masterPos;
 
-        while (world.getBlockEntity(currentYPos) instanceof CustomizableSignBlockEntity) {
+        while (isUsableCustomizableSignBlockEntity(currentYPos, world)) {
             BlockPos currentXPos = currentYPos;
 
-            while (world.getBlockEntity(currentXPos) instanceof CustomizableSignBlockEntity) {
+            while (isUsableCustomizableSignBlockEntity(currentXPos, world)) {
                 // Determine which sides need borders based on position
                 BorderProperty borders = getBorderListBoundingBased(currentXPos, world);
 
