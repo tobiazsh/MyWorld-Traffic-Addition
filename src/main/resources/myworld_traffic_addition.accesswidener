@@ -20,7 +20,7 @@ accessible method net/minecraft/client/font/TextRenderer tweakTransparency (I)I
 accessible field net/minecraft/client/font/TextRenderer fontStorageAccessor Ljava/util/function/Function;
 accessible field net/minecraft/client/font/TextRenderer validateAdvance Z
 accessible field net/minecraft/client/font/TextRenderer handler Lnet/minecraft/client/font/TextHandler;
-accessible field net/minecraft/client/font/TextRenderer$Drawer glyphs Ljava/util/List;
+accessible field net/minecraft/client/font/TextRenderer$Drawer drawnGlyphs Ljava/util/List;
 accessible field net/minecraft/client/font/TextRenderer$Drawer vertexConsumers Lnet/minecraft/client/render/VertexConsumerProvider;
 accessible field net/minecraft/client/font/TextRenderer$Drawer layerType Lnet/minecraft/client/font/TextRenderer$TextLayerType;
 accessible field net/minecraft/client/font/TextRenderer$Drawer matrix Lorg/joml/Matrix4f;
