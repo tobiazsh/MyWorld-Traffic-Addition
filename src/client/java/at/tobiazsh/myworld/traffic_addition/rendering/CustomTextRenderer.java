@@ -154,8 +154,7 @@ public class CustomTextRenderer extends TextRenderer {
         }
 
         public void drawGlyphs() {
-
-            for(BakedGlyph.DrawnGlyph drawnGlyph : this.glyphs) {
+            for(BakedGlyph.DrawnGlyph drawnGlyph : this.drawnGlyphs) {
                 BakedGlyph bakedGlyph = drawnGlyph.glyph();
 
                 RenderLayer templateLayer = bakedGlyph.getLayer(TextLayerType.NORMAL);
