@@ -9,13 +9,7 @@ accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse
 
 # TEXT RENDERER
 
-extendable method net/minecraft/client/font/TextRenderer$Drawer drawGlyphs ()V
-extendable method net/minecraft/client/font/TextRenderer$Drawer drawLayer (F)F
-extendable method net/minecraft/client/font/TextRenderer drawInternal (Ljava/lang/String;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/font/TextRenderer$TextLayerType;IIZ)I
-
-accessible method net/minecraft/client/font/TextRenderer$Drawer getBackgroundZIndex ()F
 accessible method net/minecraft/client/font/TextRenderer getFontStorage (Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/font/FontStorage;
-accessible method net/minecraft/client/font/TextRenderer tweakTransparency (I)I
 
 accessible field net/minecraft/client/font/TextRenderer fontStorageAccessor Ljava/util/function/Function;
 accessible field net/minecraft/client/font/TextRenderer validateAdvance Z
