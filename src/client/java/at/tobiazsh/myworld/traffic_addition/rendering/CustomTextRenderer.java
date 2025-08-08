@@ -115,7 +115,7 @@ public class CustomTextRenderer extends TextRenderer {
         public float drawLayer(float x) {
             BakedGlyph bakedGlyph = null;
             if (this.backgroundColor != 0) {
-                BakedGlyph.Rectangle rectangle = new BakedGlyph.Rectangle(x - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, this.getBackgroundZIndex(), this.backgroundColor);
+                BakedGlyph.Rectangle rectangle = new BakedGlyph.Rectangle(x - 1.0f, this.y + 9.0f, this.x, this.y - 1.0f, -1.0f, this.backgroundColor);
                 bakedGlyph = this.textRenderer.getFontStorage(Style.DEFAULT_FONT_ID).getRectangleBakedGlyph();
                 VertexConsumer vertexConsumer = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
                 bakedGlyph.drawRectangle(rectangle, this.matrix, vertexConsumer, this.light);
