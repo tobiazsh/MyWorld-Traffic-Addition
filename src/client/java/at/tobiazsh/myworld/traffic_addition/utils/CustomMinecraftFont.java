@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.rendering.CustomTextRenderer;
+import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.FontManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;

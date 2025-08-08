@@ -18,12 +18,12 @@ import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -66,17 +66,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		ClientPreferences.loadGameplayPreferences();
 	}
 
-	public static void putBlockRenderLayer(Block block, RenderLayer renderLayer) {
-		BlockRenderLayerMap.INSTANCE.putBlock(block, renderLayer);
+	public static void putBlockRenderLayer(Block block, BlockRenderLayer renderLayer) {
+		BlockRenderLayerMap.putBlock(block, renderLayer);
 	}
 
 	private static void putBlockRenderLayers() {
-		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), RenderLayer.getCutout());
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), RenderLayer.getCutout());
+		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), BlockRenderLayer.CUTOUT);
+		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), BlockRenderLayer.CUTOUT);
+		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), BlockRenderLayer.CUTOUT);
+		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), BlockRenderLayer.CUTOUT);
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), BlockRenderLayer.CUTOUT);
+		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), BlockRenderLayer.CUTOUT);
 	}
 
 	private static void addBlockEntityRenderers() {
