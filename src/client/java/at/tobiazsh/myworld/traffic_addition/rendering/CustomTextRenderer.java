@@ -98,7 +98,18 @@ public class CustomTextRenderer extends TextRenderer {
         protected float zOffset;
         protected CustomRenderLayer.TextLayering.LayeringType layerType;
 
-        public Drawer(CustomTextRenderer textRenderer, VertexConsumerProvider vertexConsumers, float x, float y, float zOffset, int color, int backgroundColor, boolean shadow, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layerType, int light, boolean swapZIndex) {
+        public Drawer(
+                CustomTextRenderer textRenderer,
+                VertexConsumerProvider vertexConsumers,
+                float x, float y,
+                float zOffset,
+                int color, int backgroundColor,
+                boolean shadow,
+                Matrix4f matrix,
+                CustomRenderLayer.TextLayering.LayeringType layerType,
+                int light,
+                boolean swapZIndex
+        ) {
             super(vertexConsumers, x, y, color, backgroundColor, shadow, matrix, null, light, swapZIndex);
             this.textRenderer = textRenderer;
             this.zOffset = zOffset;
