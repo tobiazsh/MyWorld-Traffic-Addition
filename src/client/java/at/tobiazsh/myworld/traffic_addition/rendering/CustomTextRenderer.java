@@ -171,7 +171,7 @@ public class CustomTextRenderer extends TextRenderer {
                 CustomRenderLayer.TextLayering constructedLayering = new CustomRenderLayer.TextLayering(this.zOffset, this.layerType, id);
 
                 VertexConsumer vertexConsumer = this.vertexConsumers.getBuffer(constructedLayering.buildRenderLayer());
-                bakedGlyph.draw(drawnGlyph, this.matrix, vertexConsumer, this.light);
+                bakedGlyph.draw(drawnGlyph, this.matrices, vertexConsumer, this.light, true);
             }
         }
 
