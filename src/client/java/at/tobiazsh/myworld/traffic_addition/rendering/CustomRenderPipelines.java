@@ -17,7 +17,6 @@ public class CustomRenderPipelines {
                 .withFragmentShader("core/rendertype_text_intensity")
                 .withSampler("Sampler0")
                 .withSampler("Sampler2")
-                .withDepthBias(-1.0F, -10.0F).build());
-
+                .withDepthBias(0f, 0f).build());
     }
 }
