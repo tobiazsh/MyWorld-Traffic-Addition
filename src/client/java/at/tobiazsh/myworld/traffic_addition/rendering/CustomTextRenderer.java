@@ -11,6 +11,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextVisitFactory;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.joml.Matrix4f;
 
 import java.util.Objects;
@@ -84,6 +85,12 @@ public class CustomTextRenderer extends TextRenderer {
         TextVisitFactory.visitFormatted(text, Style.EMPTY, drawer);
         return drawer.drawLayer(x);
     }
+
+    private static int tweakTransparency(int argb) {
+        return (argb & -67108864) == 0 ? ColorHelper.fullAlpha(argb) : argb;
+    }
+
+
 
     public class Drawer extends TextRenderer.Drawer {
 
