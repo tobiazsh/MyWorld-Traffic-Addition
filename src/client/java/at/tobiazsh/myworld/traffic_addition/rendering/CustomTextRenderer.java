@@ -137,7 +137,7 @@ public class CustomTextRenderer extends TextRenderer {
                 VertexConsumer vertexConsumer2 = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
 
                 for(BakedGlyph.Rectangle rectangle2 : this.rectangles) {
-                    bakedGlyph.drawRectangle(rectangle2, this.matrix, vertexConsumer2, this.light);
+                    bakedGlyph.drawRectangle(rectangle2, this.matrices, vertexConsumer2, this.light, true);
                 }
             }
 
