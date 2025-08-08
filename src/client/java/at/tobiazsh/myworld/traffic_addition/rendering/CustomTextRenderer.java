@@ -118,6 +118,7 @@ public class CustomTextRenderer extends TextRenderer {
             this.layerType = layerType;
             this.vertexConsumers = vertexConsumers;
             this.matrices = matrices;
+            this.light = light;
         }
 
         public float drawLayer(float x) {
