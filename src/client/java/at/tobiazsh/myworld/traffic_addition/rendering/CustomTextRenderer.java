@@ -81,7 +81,18 @@ public class CustomTextRenderer extends TextRenderer {
             int light,
             boolean swapZIndex
     ) {
-        CustomTextRenderer.Drawer drawer = new CustomTextRenderer.Drawer(this, vertexConsumerProvider, x, y, zOffset, color, backgroundColor, shadow, matrix, layerType, light, swapZIndex);
+        CustomTextRenderer.Drawer drawer = new CustomTextRenderer.Drawer(
+                this,
+                matrix,
+                vertexConsumerProvider,
+                x, y,
+                zOffset,
+                color, backgroundColor,
+                light,
+                shadow,
+                layerType
+        );
+        
         TextVisitFactory.visitFormatted(text, Style.EMPTY, drawer);
         return drawer.drawLayer(x);
     }
