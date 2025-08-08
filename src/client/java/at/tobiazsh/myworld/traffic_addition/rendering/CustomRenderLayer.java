@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TriState;
 import net.minecraft.util.Util;
 import net.minecraft.client.render.RenderLayer;
 import org.joml.Matrix4fStack;
