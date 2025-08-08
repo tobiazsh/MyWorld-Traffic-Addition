@@ -92,7 +92,7 @@ public class CustomTextRenderer extends TextRenderer {
                 shadow,
                 layerType
         );
-        
+
         TextVisitFactory.visitFormatted(text, Style.EMPTY, drawer);
         return drawer.drawLayer(x);
     }
@@ -145,10 +145,6 @@ public class CustomTextRenderer extends TextRenderer {
 
             this.drawGlyphs();
             if (this.rectangles != null) {
-                if (bakedGlyph == null) {
-                    bakedGlyph = this.textRenderer.getFontStorage(Style.DEFAULT_FONT_ID).getRectangleBakedGlyph();
-                }
-
                 for(BakedGlyph.Rectangle rectangle2 : this.rectangles) {
                     bakedGlyph.drawRectangle(rectangle2, this.matrices, vertexConsumer, this.light, true);
                 }
