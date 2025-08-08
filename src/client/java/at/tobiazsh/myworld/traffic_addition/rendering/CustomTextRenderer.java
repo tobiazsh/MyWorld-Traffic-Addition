@@ -98,9 +98,11 @@ public class CustomTextRenderer extends TextRenderer {
         protected float zOffset;
         protected CustomRenderLayer.TextLayering.LayeringType layerType;
         protected VertexConsumerProvider vertexConsumers;
+        protected Matrix4f matrices;
 
         public Drawer(
                 CustomTextRenderer textRenderer,
+                Matrix4f matrices,
                 VertexConsumerProvider vertexConsumers,
                 float x, float y,
                 float zOffset,
@@ -113,6 +115,7 @@ public class CustomTextRenderer extends TextRenderer {
             this.zOffset = zOffset;
             this.layerType = layerType;
             this.vertexConsumers = vertexConsumers;
+            this.matrices = matrices;
         }
 
         public float drawLayer(float x) {
