@@ -193,7 +193,7 @@ public class CustomRenderLayer {
                         786432,
                         false,
                         false,
-                        RenderPipelines.RENDERTYPE_TEXT_INTENSITY,
+                        CustomRenderPipelines.RENDERTYPE_CUSTOM_TEXT_INTENSITY,
                         RenderLayer.MultiPhaseParameters.builder()
                                 .texture(new RenderPhase.Texture(texture, false))
                                 .lightmap(ENABLE_LIGHTMAP)
