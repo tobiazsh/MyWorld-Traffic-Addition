@@ -82,7 +82,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                            .texture(new RenderPhase.Texture(texture, false))
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -102,7 +102,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                            .texture(new RenderPhase.Texture(texture, false))
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -195,7 +195,7 @@ public class CustomRenderLayer {
                         false,
                         RenderPipelines.RENDERTYPE_TEXT_INTENSITY,
                         RenderLayer.MultiPhaseParameters.builder()
-                                .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                                .texture(new RenderPhase.Texture(texture, false))
                                 .lightmap(ENABLE_LIGHTMAP)
                                 .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
                                 .build(false)
