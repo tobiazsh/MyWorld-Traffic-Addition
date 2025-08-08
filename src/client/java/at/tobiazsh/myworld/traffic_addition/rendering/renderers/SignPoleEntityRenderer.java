@@ -41,7 +41,7 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
 
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
+        BlockModelRenderer.render(
                 matrices.peek(),
                 vertexConsumer,
                 signPoleModel,
