@@ -53,7 +53,7 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(SignPoleBlockEntity entity) {
+    public boolean rendersOutsideBoundingBox() {
         return true;
     }
 }
