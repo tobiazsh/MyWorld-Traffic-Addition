@@ -9,7 +9,6 @@ accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse
 
 # TEXT RENDERER
 
-extendable method net/minecraft/client/font/TextRenderer$Drawer drawGlyphs ()V
 extendable method net/minecraft/client/font/TextRenderer$Drawer drawLayer (F)F
 extendable method net/minecraft/client/font/TextRenderer drawInternal (Ljava/lang/String;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/font/TextRenderer$TextLayerType;IIZ)I
 
