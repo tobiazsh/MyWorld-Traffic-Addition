@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 public class SignPoleBlockActions {
     public static void handleSetShouldRender(SetShouldRenderSignPolePayload payload, ServerPlayNetworking.Context ctx) {
         ServerPlayerEntity serverPlayer = ctx.player();
-        ServerWorld world = serverPlayer.getServerWorld();
+        ServerWorld world = serverPlayer.getWorld();
         BlockPos pos = payload.pos();
         boolean value = payload.value();
 
@@ -22,7 +22,7 @@ public class SignPoleBlockActions {
 
     public static void handleRotation(SignPoleRotationPayload payload, ServerPlayNetworking.Context context) {
         ServerPlayerEntity serverPlayer = context.player();
-        ServerWorld world = serverPlayer.getServerWorld();
+        ServerWorld world = serverPlayer.getWorld();
         BlockPos pos = payload.pos();
         int rotation = payload.rotation();
         BlockEntity blockEntity = world.getBlockEntity(pos);
