@@ -1,6 +1,7 @@
-package at.tobiazsh.myworld.traffic_addition.rendering;
+package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.*;
@@ -45,7 +46,7 @@ public class CustomTextRenderer extends TextRenderer {
             text = this.mirror(text);
         }
 
-        return this.drawInternal(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light, true);
+        return this.drawInternal(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light);
     }
 
     public int drawInternal(
@@ -59,11 +60,10 @@ public class CustomTextRenderer extends TextRenderer {
             VertexConsumerProvider vertexConsumers,
             CustomRenderLayer.TextLayering.LayeringType layerType,
             int backgroundColor,
-            int light,
-            boolean mirror
+            int light
     ) {
         color = tweakTransparency(color);
-        x = this.drawLayerCustom(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light, mirror);
+        x = this.drawLayerCustom(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light);
         return (int) x + (shadow ? 1 : 0);
     }
 
@@ -78,8 +78,7 @@ public class CustomTextRenderer extends TextRenderer {
             VertexConsumerProvider vertexConsumerProvider,
             CustomRenderLayer.TextLayering.LayeringType layerType,
             int backgroundColor,
-            int light,
-            boolean swapZIndex
+            int light
     ) {
         CustomTextRenderer.Drawer drawer = new CustomTextRenderer.Drawer(
                 this,
