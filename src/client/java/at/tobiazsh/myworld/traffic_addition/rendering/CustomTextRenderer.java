@@ -97,9 +97,11 @@ public class CustomTextRenderer extends TextRenderer {
         protected CustomTextRenderer textRenderer;
         protected float zOffset;
         protected CustomRenderLayer.TextLayering.LayeringType layerType;
+        protected VertexConsumerProvider vertexConsumers;
 
         public Drawer(
                 CustomTextRenderer textRenderer,
+                VertexConsumerProvider vertexConsumers,
                 float x, float y,
                 float zOffset,
                 int color, int backgroundColor,
@@ -110,6 +112,7 @@ public class CustomTextRenderer extends TextRenderer {
             this.textRenderer = textRenderer;
             this.zOffset = zOffset;
             this.layerType = layerType;
+            this.vertexConsumers = vertexConsumers;
         }
 
         public float drawLayer(float x) {
