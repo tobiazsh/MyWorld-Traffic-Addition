@@ -99,6 +99,7 @@ public class CustomTextRenderer extends TextRenderer {
         protected CustomRenderLayer.TextLayering.LayeringType layerType;
         protected VertexConsumerProvider vertexConsumers;
         protected Matrix4f matrices;
+        protected int light;
 
         public Drawer(
                 CustomTextRenderer textRenderer,
@@ -107,6 +108,7 @@ public class CustomTextRenderer extends TextRenderer {
                 float x, float y,
                 float zOffset,
                 int color, int backgroundColor,
+                int light,
                 boolean shadow,
                 CustomRenderLayer.TextLayering.LayeringType layerType
         ) {
@@ -124,7 +126,7 @@ public class CustomTextRenderer extends TextRenderer {
                 BakedGlyph.Rectangle rectangle = new BakedGlyph.Rectangle(x - 1.0f, this.y + 9.0f, this.x, this.y - 1.0f, -1.0f, this.backgroundColor);
                 bakedGlyph = this.textRenderer.getFontStorage(Style.DEFAULT_FONT_ID).getRectangleBakedGlyph();
                 VertexConsumer vertexConsumer = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
-                bakedGlyph.drawRectangle(rectangle, this.matrix, vertexConsumer, this.light);
+                bakedGlyph.drawRectangle(rectangle, this.matrices, vertexConsumer, this.light);
             }
 
             this.drawGlyphs();
