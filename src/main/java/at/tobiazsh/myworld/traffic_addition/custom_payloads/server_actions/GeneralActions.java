@@ -16,7 +16,7 @@ public class GeneralActions {
 
         public static ActionDefaults ActionDefaultsBuilder(ServerPlayNetworking.Context context) {
             ServerPlayerEntity serverPlayer = context.player();
-            return new ActionDefaults(serverPlayer, serverPlayer.getServerWorld());
+            return new ActionDefaults(serverPlayer, serverPlayer.getWorld());
         }
     }
 }
