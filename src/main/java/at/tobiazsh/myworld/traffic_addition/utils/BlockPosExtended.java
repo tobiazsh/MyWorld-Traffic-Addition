@@ -26,4 +26,16 @@ public class BlockPosExtended extends BlockPos {
 
         return new BlockPosExtended(offsetX, offsetY, offsetZ);
     }
+
+    public BlockPosExtended addOffset(BlockPosExtended offset) {
+        return new BlockPosExtended(
+            this.getX() + offset.getX(),
+            this.getY() + offset.getY(),
+            this.getZ() + offset.getZ()
+        );
+    }
+
+    public static BlockPosExtended addOffset(BlockPosExtended pos, BlockPosExtended offset) {
+        return pos.addOffset(offset);
+    }
 }
