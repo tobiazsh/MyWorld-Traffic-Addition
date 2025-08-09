@@ -25,6 +25,14 @@ public record BorderProperty(
 
     public static final String DEFAULT = "BorderProperty{false, false, false, false}";
 
+    @Override
+    public BorderProperty getInstance() {
+        return new BorderProperty(
+                false, false, false, false,
+                false, false, false, false
+        );
+    }
+
     /**
      * Converts the BorderProperty to a string representation. Formatted as "BorderProperty{up, right, down, left}".
      */
