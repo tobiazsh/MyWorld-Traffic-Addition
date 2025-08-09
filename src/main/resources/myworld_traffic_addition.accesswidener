@@ -15,10 +15,6 @@ accessible field net/minecraft/client/font/TextRenderer fontStorageAccessor Ljav
 accessible field net/minecraft/client/font/TextRenderer validateAdvance Z
 accessible field net/minecraft/client/font/TextRenderer handler Lnet/minecraft/client/font/TextHandler;
 accessible field net/minecraft/client/font/TextRenderer$Drawer drawnGlyphs Ljava/util/List;
-accessible field net/minecraft/client/font/TextRenderer$Drawer vertexConsumers Lnet/minecraft/client/render/VertexConsumerProvider;
-accessible field net/minecraft/client/font/TextRenderer$Drawer layerType Lnet/minecraft/client/font/TextRenderer$TextLayerType;
-accessible field net/minecraft/client/font/TextRenderer$Drawer matrix Lorg/joml/Matrix4f;
-accessible field net/minecraft/client/font/TextRenderer$Drawer light I
 accessible field net/minecraft/client/font/TextRenderer$Drawer backgroundColor I
 accessible field net/minecraft/client/font/TextRenderer$Drawer rectangles Ljava/util/List;
 accessible field net/minecraft/client/font/TextRenderer$Drawer y F
