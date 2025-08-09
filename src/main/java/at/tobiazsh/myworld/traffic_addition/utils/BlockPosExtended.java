@@ -19,10 +19,10 @@ public class BlockPosExtended extends BlockPos {
         super(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public static BlockPosExtended getOffset(BlockPos startPos, BlockPos endPos) {
-        int offsetX = startPos.getX() - endPos.getX();
-        int offsetY = startPos.getY() - endPos.getY();
-        int offsetZ = startPos.getZ() - endPos.getZ();
+    public static BlockPosExtended getOffset(BlockPos from, BlockPos to) {
+        int offsetX = from.getX() - to.getX();
+        int offsetY = from.getY() - to.getY();
+        int offsetZ = from.getZ() - to.getZ();
 
         return new BlockPosExtended(offsetX, offsetY, offsetZ);
     }
