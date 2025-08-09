@@ -11,6 +11,9 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 import net.minecraft.util.math.BlockPos;
 
 public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
+
+    public static final BlockPosExtended INSTANCE = new BlockPosExtended(0, 0, 0);
+
     public BlockPosExtended(int i, int j, int k) {
         super(i, j, k);
     }
