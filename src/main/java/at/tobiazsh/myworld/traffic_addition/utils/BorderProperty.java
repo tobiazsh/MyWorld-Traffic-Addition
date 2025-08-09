@@ -16,7 +16,12 @@ public record BorderProperty(
             boolean cornerUpLeft,
             boolean cornerDownRight,
             boolean cornerDownLeft
-) {
+) implements StringableObject<BorderProperty> {
+
+    public static final BorderProperty INSTANCE = new BorderProperty(
+            false, false, false, false,
+            false, false, false, false
+    );
 
     public static final String DEFAULT = "BorderProperty{false, false, false, false}";
 
@@ -24,14 +29,15 @@ public record BorderProperty(
      * Converts the BorderProperty to a string representation. Formatted as "BorderProperty{up, right, down, left}".
      */
     @Override
-    public @NotNull String toString() {
+    public @NotNull String toObjectString() {
         return "BorderProperty{%s,%s,%s,%s,%s,%s,%s,%s}".formatted(
                 up, right, down, left,
                 cornerUpRight, cornerUpLeft, cornerDownRight, cornerDownLeft
         );
     }
 
-    public static BorderProperty valueOf(String borderProperty) {
+    @Override
+    public BorderProperty fromString(String borderProperty) {
         String[] parts = borderProperty
                 .substring(
                         borderProperty.indexOf("{") + 1,

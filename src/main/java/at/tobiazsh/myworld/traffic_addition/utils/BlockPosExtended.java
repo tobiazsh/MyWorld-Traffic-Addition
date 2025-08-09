@@ -10,7 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import net.minecraft.util.math.BlockPos;
 
-public class BlockPosExtended extends BlockPos {
+public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
     public BlockPosExtended(int i, int j, int k) {
         super(i, j, k);
     }
@@ -37,5 +37,29 @@ public class BlockPosExtended extends BlockPos {
 
     public static BlockPosExtended addOffset(BlockPosExtended pos, BlockPosExtended offset) {
         return pos.addOffset(offset);
+    }
+
+    @Override
+    public String toObjectString() {
+        return String.format("BlockPosExtended{x=%s, y=%s, z=%s}", this.getX(), this.getY(), this.getZ());
+    }
+
+    @Override
+    public BlockPosExtended fromString(String str) {
+        String trimmed = str
+                .replace("BlockPosExtended{", "")
+                .replace("}", "")
+                .replace(" ", "");
+
+        String[] parts = trimmed.split(",");
+
+        if (parts.length != 3)
+            throw new IllegalArgumentException("Invalid BlockPosExtended string format: " + str);
+
+        int x = Integer.parseInt(parts[0].replace("x=", ""));
+        int y = Integer.parseInt(parts[1].replace("y=", ""));
+        int z = Integer.parseInt(parts[2].replace("z=", ""));
+
+        return new BlockPosExtended(x, y, z);
     }
 }
