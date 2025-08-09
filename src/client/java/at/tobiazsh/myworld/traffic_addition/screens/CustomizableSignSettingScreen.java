@@ -224,6 +224,13 @@ public class CustomizableSignSettingScreen extends Screen {
 
     /**
      * Identifies and registers all sign blocks in the structure
+     *
+     * @param masterPos the position of the master sign block
+     * @param facing the direction the sign is facing
+     * @param signWidth the width of the sign structure in blocks
+     * @param signHeight the height of the sign structure in blocks
+     *
+     * @return a list of BlockPosExtended which each represent the offset of a sign block from the master position
      */
     private List<BlockPos> checkSigns(BlockPos masterPos, @NotNull Direction facing, int signWidth, int signHeight) {
         List<BlockPos> signs = new ArrayList<>();
