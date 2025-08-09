@@ -9,32 +9,29 @@ accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse
 
 # TEXT RENDERER
 
-extendable method net/minecraft/client/font/TextRenderer$Drawer drawGlyphs ()V
-extendable method net/minecraft/client/font/TextRenderer$Drawer drawLayer (F)F
-extendable method net/minecraft/client/font/TextRenderer drawInternal (Ljava/lang/String;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/font/TextRenderer$TextLayerType;IIZ)I
-
-accessible method net/minecraft/client/font/TextRenderer$Drawer getBackgroundZIndex ()F
 accessible method net/minecraft/client/font/TextRenderer getFontStorage (Lnet/minecraft/util/Identifier;)Lnet/minecraft/client/font/FontStorage;
-accessible method net/minecraft/client/font/TextRenderer tweakTransparency (I)I
 
 accessible field net/minecraft/client/font/TextRenderer fontStorageAccessor Ljava/util/function/Function;
 accessible field net/minecraft/client/font/TextRenderer validateAdvance Z
 accessible field net/minecraft/client/font/TextRenderer handler Lnet/minecraft/client/font/TextHandler;
-accessible field net/minecraft/client/font/TextRenderer$Drawer glyphs Ljava/util/List;
-accessible field net/minecraft/client/font/TextRenderer$Drawer vertexConsumers Lnet/minecraft/client/render/VertexConsumerProvider;
-accessible field net/minecraft/client/font/TextRenderer$Drawer layerType Lnet/minecraft/client/font/TextRenderer$TextLayerType;
-accessible field net/minecraft/client/font/TextRenderer$Drawer matrix Lorg/joml/Matrix4f;
-accessible field net/minecraft/client/font/TextRenderer$Drawer light I
+accessible field net/minecraft/client/font/TextRenderer$Drawer drawnGlyphs Ljava/util/List;
 accessible field net/minecraft/client/font/TextRenderer$Drawer backgroundColor I
 accessible field net/minecraft/client/font/TextRenderer$Drawer rectangles Ljava/util/List;
 accessible field net/minecraft/client/font/TextRenderer$Drawer y F
 accessible field net/minecraft/client/font/TextRenderer$Drawer x F
+
+extendable class net/minecraft/client/font/TextRenderer$Drawer
+
+
 accessible field net/minecraft/client/font/FontStorage glyphAtlases Ljava/util/List;
-accessible field net/minecraft/client/font/BakedGlyph textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
 accessible field net/minecraft/client/font/GlyphAtlasTexture textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
 
 accessible field net/minecraft/client/render/RenderLayer$MultiPhase phases Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
 accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters texture Lnet/minecraft/client/render/RenderPhase$TextureBase;
 accessible method net/minecraft/client/render/RenderPhase$TextureBase getId ()Ljava/util/Optional;
 
-extendable class net/minecraft/client/font/TextRenderer$Drawer
+
+# BAKED GLYPH
+
+accessible field net/minecraft/client/font/BakedGlyph textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
+accessible method net/minecraft/client/font/BakedGlyph drawRectangle (Lnet/minecraft/client/font/BakedGlyph$Rectangle;FFILnet/minecraft/client/render/VertexConsumer;ILorg/joml/Matrix4f;)V

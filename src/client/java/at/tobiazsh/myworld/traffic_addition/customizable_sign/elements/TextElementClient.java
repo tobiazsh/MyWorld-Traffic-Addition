@@ -10,7 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import at.tobiazsh.myworld.traffic_addition.rendering.CustomTextRenderer;
+import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
 import imgui.ImFont;
 import imgui.ImGui;
 import imgui.ImVec2;

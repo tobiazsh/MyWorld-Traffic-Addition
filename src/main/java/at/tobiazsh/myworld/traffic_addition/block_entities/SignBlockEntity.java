@@ -12,6 +12,8 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.event.GameEvent;
@@ -61,22 +63,21 @@ public class SignBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        nbt.putInt("Rotation", this.rotation);
-        nbt.putInt("ShapeType", this.shapeType);
-        nbt.putString("Texture", this.textureId);
-        nbt.putString("Backstep", constructBackstepString(this.backstepCoords));
+    protected void writeData(WriteView writeView) {
+        super.writeData(writeView);
+        writeView.putInt("Rotation", this.rotation);
+        writeView.putInt("ShapeType", this.shapeType);
+        writeView.putString("Texture", this.textureId);
+        writeView.putString("Backstep", constructBackstepString(this.backstepCoords));
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
-
-        this.rotation = OptionalUtils.getOrDefault("Rotation", nbt::getInt, 0, "SignBlockEntity.readNbt");
-        this.shapeType = OptionalUtils.getOrDefault("ShapeType", nbt::getInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
-        this.textureId = OptionalUtils.getOrDefault("Texture", nbt::getString, "", "SignBlockEntity.readNbt");
-        this.backstepCoords = deconstructBackstepString(OptionalUtils.getOrDefault("Backstep", nbt::getString, "", "SignBlockEntity.readNbt"));
+    protected void readData(ReadView readView) {
+        super.readData(readView);
+        this.rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "SignBlockEntity.readNbt");
+        this.shapeType = OptionalUtils.getOrDefault("ShapeType", readView::getOptionalInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
+        this.textureId = OptionalUtils.getOrDefault("Texture", readView::getOptionalString, "", "SignBlockEntity.readNbt");
+        this.backstepCoords = deconstructBackstepString(OptionalUtils.getOrDefault("Backstep", readView::getOptionalString, "", "SignBlockEntity.readNbt"));
     }
 
     private static String constructBackstepString(Coordinates coordinates) {
@@ -101,10 +102,6 @@ public class SignBlockEntity extends BlockEntity {
 
     @Override
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        NbtCompound nbt = super.toInitialChunkDataNbt(registryLookup);
-        nbt.putString("Texture", this.textureId);
-        nbt.putInt("ShapeType", shapeType);
-        nbt.putInt("Rotation", rotation);
-        return nbt;
+        return createNbt(registryLookup);
     }
 }

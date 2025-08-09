@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.BlockStateModel;
@@ -41,7 +42,7 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
 
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
+        BlockModelRenderer.render(
                 matrices.peek(),
                 vertexConsumer,
                 signPoleModel,
@@ -53,7 +54,7 @@ public class SignPoleEntityRenderer implements BlockEntityRenderer<SignPoleBlock
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(SignPoleBlockEntity entity) {
+    public boolean rendersOutsideBoundingBox() {
         return true;
     }
 }

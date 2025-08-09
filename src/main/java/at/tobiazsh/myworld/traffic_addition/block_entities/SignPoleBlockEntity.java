@@ -2,6 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
 
 import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.block.Block;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,24 +42,21 @@ public class SignPoleBlockEntity extends BlockEntity {
 
     @Override
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        NbtCompound nbt = super.toInitialChunkDataNbt(registryLookup);
-        nbt.putInt(ROTATION_KEY, this.rotation_value);
-        nbt.putBoolean("ShouldRender", shouldRender);
-        return nbt;
+        return createNbt(registryLookup);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        nbt.putInt(ROTATION_KEY, this.rotation_value);
-        nbt.putBoolean("ShouldRender", shouldRender);
+    protected void writeData(WriteView writeView) {
+        super.writeData(writeView);
+        writeView.putInt(ROTATION_KEY, this.rotation_value);
+        writeView.putBoolean("ShouldRender", shouldRender);
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
-        this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, nbt::getInt, 0, "SignPoleBlockEntity.readNbt");
-        this.shouldRender = OptionalUtils.getOrDefault("ShouldRender", nbt::getBoolean, true, "SignPoleBlockEntity.readNbt");
+    protected void readData(ReadView readView) {
+        super.readData(readView);
+        this.shouldRender = readView.getBoolean("ShouldRender", true);
+        this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, readView::getOptionalInt, 0, "SignPoleBlockEntity.readNbt");
     }
 
     public int getRotationValue() {

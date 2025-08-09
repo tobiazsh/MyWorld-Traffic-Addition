@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TriState;
 import net.minecraft.util.Util;
 import net.minecraft.client.render.RenderLayer;
 import org.joml.Matrix4fStack;
@@ -82,7 +81,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                            .texture(new RenderPhase.Texture(texture, false))
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -102,7 +101,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                            .texture(new RenderPhase.Texture(texture, false))
                             .lightmap(ENABLE_LIGHTMAP)
                             .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
                             .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
@@ -193,9 +192,9 @@ public class CustomRenderLayer {
                         786432,
                         false,
                         false,
-                        RenderPipelines.RENDERTYPE_TEXT_INTENSITY,
+                        CustomRenderPipelines.RENDERTYPE_CUSTOM_TEXT_INTENSITY,
                         RenderLayer.MultiPhaseParameters.builder()
-                                .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
+                                .texture(new RenderPhase.Texture(texture, false))
                                 .lightmap(ENABLE_LIGHTMAP)
                                 .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
                                 .build(false)

@@ -27,6 +27,8 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -238,53 +240,52 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return new BlockPos(Integer.parseInt(posList[0]), Integer.parseInt(posList[1]), Integer.parseInt(posList[2]));
     }
 
-    private void nbtWrite(NbtCompound nbt) {
-        nbt.putString("Borders", borders.toString());
-        nbt.putBoolean("IsMaster", isMaster);
-        nbt.putString("MasterPos", constructMasterPosString(masterPos));
-        nbt.putString("SignPolePositions", signPolePositions);
-        nbt.putBoolean("RenderingState", isRendered);
-        nbt.putString("SignPositions", signPositions);
-        nbt.putInt("Rotation", rotation);
-        nbt.putInt("Width", width);
-        nbt.putInt("Height", height);
-        nbt.putBoolean("IsInitialized", isInitialized);
+    private void nbtWrite(WriteView view) {
+        view.putString("Borders", borders.toString());
+        view.putBoolean("IsMaster", isMaster);
+        view.putString("MasterPos", constructMasterPosString(masterPos));
+        view.putString("SignPolePositions", signPolePositions);
+        view.putBoolean("RenderingState", isRendered);
+        view.putString("SignPositions", signPositions);
+        view.putInt("Rotation", rotation);
+        view.putInt("Width", width);
+        view.putInt("Height", height);
+        view.putBoolean("IsInitialized", isInitialized);
 
-        nbt.putString("SignTexture", signTextureJson);
-    }
-
-
-
-    @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-
-        nbtWrite(nbt);
+        view.putString("SignTexture", signTextureJson);
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void writeData(WriteView view) {
+        super.writeData(view);
+        nbtWrite(view);
+    }
+
+    @Override
+    protected void readData(ReadView readView) {
+        super.readData(readView);
 
         BorderProperty borders;
 
-        if (!nbt.contains("Borders") && !OptionalUtils.getOrDefault("BorderModelPath", nbt::getString, "", "CustomizableSignBlockEntity.BorderModelPath").isBlank()) {
-            borders = convertOldBorderStringToBorderProperty(OptionalUtils.getOrDefault("BorderModelPath", nbt::getString, "", "CustomizableSignBlockEntity.BorderModelPath"), "customizable_sign_block");
+        if (readView.getOptionalString("Borders").isEmpty() && !OptionalUtils.getOrDefault("BorderModelPath", readView::getOptionalString, "", "CustomizableSignBlockEntity.BorderModelPath").isBlank()) { // If old border string is present, convert it to new BorderProperty
+            borders = convertOldBorderStringToBorderProperty(OptionalUtils.getOrDefault("BorderModelPath", readView::getOptionalString, "", "CustomizableSignBlockEntity.BorderModelPath"), "customizable_sign_block");
         } else {
-            borders = BorderProperty.valueOf(OptionalUtils.getOrDefault("Borders", nbt::getString, BorderProperty.DEFAULT, "CustomizableSignBlockEntity.Borders"));
+            borders = BorderProperty.valueOf(OptionalUtils.getOrDefault("Borders", readView::getOptionalString, BorderProperty.DEFAULT, "CustomizableSignBlockEntity.Borders"));
         } // CONVERSION TO NEW VERSION
 
         this.borders = borders;
-        isMaster = OptionalUtils.getOrDefault("IsMaster", nbt::getBoolean, true, "CustomizableSignBlockEntity.IsMaster");
-        masterPos = deconstructMasterPosString(OptionalUtils.getOrDefault("MasterPos", nbt::getString, constructMasterPosString(getPos()), "CustomizableSignBlockEntity.MasterPos"));
-        signPolePositions = OptionalUtils.getOrDefault("SignPolePositions", nbt::getString, "", "CustomizableSignBlockEntity.SignPolePositions");
-        isRendered = OptionalUtils.getOrDefault("RenderingState", nbt::getBoolean, true, "CustomizableSignBlockEntity.RenderingState");
-        signPositions = OptionalUtils.getOrDefault("SignPositions", nbt::getString, "", "CustomizableSignBlockEntity.SignPositions");
-        rotation = OptionalUtils.getOrDefault("Rotation", nbt::getInt, 0, "CustomizableSignBlockEntity.Rotation");
-        width = OptionalUtils.getOrDefault("Width", nbt::getInt, 1, "CustomizableSignBlockEntity.Width");
-        height = OptionalUtils.getOrDefault("Height", nbt::getInt, 1, "CustomizableSignBlockEntity.Height");
-        isInitialized = OptionalUtils.getOrDefault("IsInitialized", nbt::getBoolean, false, "CustomizableSignBlockEntity.IsInitialized");
-        signTextureJson = OptionalUtils.getOrDefault("SignTexture", nbt::getString, "{}", "CustomizableSignBlockEntity.SignTexture");
+        isMaster = readView.getBoolean("IsMaster", true);
+        isRendered = readView.getBoolean("RenderingState", true);
+        isInitialized = readView.getBoolean("IsInitialized", false);
+
+        masterPos = deconstructMasterPosString(OptionalUtils.getOrDefault("MasterPos", readView::getOptionalString, constructMasterPosString(getPos()), "CustomizableSignBlockEntity.MasterPos"));
+        signPolePositions = OptionalUtils.getOrDefault("SignPolePositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPolePositions");
+        signPositions = OptionalUtils.getOrDefault("SignPositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPositions");
+        signTextureJson = OptionalUtils.getOrDefault("SignTexture", readView::getOptionalString, "{}", "CustomizableSignBlockEntity.SignTexture");
+
+        rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "CustomizableSignBlockEntity.Rotation");
+        width = OptionalUtils.getOrDefault("Width", readView::getOptionalInt, 1, "CustomizableSignBlockEntity.Width");
+        height = OptionalUtils.getOrDefault("Height", readView::getOptionalInt, 1, "CustomizableSignBlockEntity.Height");
 
         updateTextureVars();
     }
@@ -296,11 +297,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     @Override
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        NbtCompound nbt = super.toInitialChunkDataNbt(registryLookup);
-
-        nbtWrite(nbt);
-
-        return nbt;
+        return createNbt(registryLookup); // TODO: If anything fails, I suspect you.
     }
 
     /**

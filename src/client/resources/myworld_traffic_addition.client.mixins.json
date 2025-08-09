@@ -3,10 +3,9 @@
   "package": "at.tobiazsh.myworld.traffic_addition.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "RenderSystemAccessor",
     "FontManagerAccessor",
     "MinecraftClientMixin",
-    "MinecraftClientMixin"
+    "RenderSystemAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -46,7 +46,6 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
 
     private final BakedModelManager bakedModelManager;
-    private final BlockRenderManager blockRenderManager;
     private int rotation = 0;
 
     public static float zOffsetRenderLayer = 3f;
@@ -60,7 +59,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     // Constructor
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
         bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
-        blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
 
         BorderRenderer.init(
                 bakedModelManager,

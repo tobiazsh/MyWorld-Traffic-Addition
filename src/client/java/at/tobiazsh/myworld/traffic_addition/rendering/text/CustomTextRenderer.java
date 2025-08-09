@@ -1,6 +1,7 @@
-package at.tobiazsh.myworld.traffic_addition.rendering;
+package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.*;
@@ -11,6 +12,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextVisitFactory;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.joml.Matrix4f;
 
 import java.util.Objects;
@@ -44,7 +46,7 @@ public class CustomTextRenderer extends TextRenderer {
             text = this.mirror(text);
         }
 
-        return this.drawInternal(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light, true);
+        return this.drawInternal(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light);
     }
 
     public int drawInternal(
@@ -58,11 +60,10 @@ public class CustomTextRenderer extends TextRenderer {
             VertexConsumerProvider vertexConsumers,
             CustomRenderLayer.TextLayering.LayeringType layerType,
             int backgroundColor,
-            int light,
-            boolean mirror
+            int light
     ) {
         color = tweakTransparency(color);
-        x = this.drawLayerCustom(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light, mirror);
+        x = this.drawLayerCustom(text, x, y, zOffset, color, shadow, matrix, vertexConsumers, layerType, backgroundColor, light);
         return (int) x + (shadow ? 1 : 0);
     }
 
@@ -77,34 +78,68 @@ public class CustomTextRenderer extends TextRenderer {
             VertexConsumerProvider vertexConsumerProvider,
             CustomRenderLayer.TextLayering.LayeringType layerType,
             int backgroundColor,
-            int light,
-            boolean swapZIndex
+            int light
     ) {
-        CustomTextRenderer.Drawer drawer = new CustomTextRenderer.Drawer(this, vertexConsumerProvider, x, y, zOffset, color, backgroundColor, shadow, matrix, layerType, light, swapZIndex);
+        CustomTextRenderer.Drawer drawer = new CustomTextRenderer.Drawer(
+                this,
+                matrix,
+                vertexConsumerProvider,
+                x, y,
+                zOffset,
+                color, backgroundColor,
+                light,
+                shadow,
+                layerType
+        );
+
         TextVisitFactory.visitFormatted(text, Style.EMPTY, drawer);
         return drawer.drawLayer(x);
     }
+
+    private static int tweakTransparency(int argb) {
+        return (argb & -67108864) == 0 ? ColorHelper.fullAlpha(argb) : argb;
+    }
+
+
 
     public class Drawer extends TextRenderer.Drawer {
 
         protected CustomTextRenderer textRenderer;
         protected float zOffset;
         protected CustomRenderLayer.TextLayering.LayeringType layerType;
+        protected VertexConsumerProvider vertexConsumers;
+        protected Matrix4f matrices;
+        protected int light;
 
-        public Drawer(CustomTextRenderer textRenderer, VertexConsumerProvider vertexConsumers, float x, float y, float zOffset, int color, int backgroundColor, boolean shadow, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layerType, int light, boolean swapZIndex) {
-            super(vertexConsumers, x, y, color, backgroundColor, shadow, matrix, null, light, swapZIndex);
+        public Drawer(
+                CustomTextRenderer textRenderer,
+                Matrix4f matrices,
+                VertexConsumerProvider vertexConsumers,
+                float x, float y,
+                float zOffset,
+                int color, int backgroundColor,
+                int light,
+                boolean shadow,
+                CustomRenderLayer.TextLayering.LayeringType layerType
+        ) {
+            super(x, y, color, backgroundColor, shadow);
             this.textRenderer = textRenderer;
             this.zOffset = zOffset;
             this.layerType = layerType;
+            this.vertexConsumers = vertexConsumers;
+            this.matrices = matrices;
+            this.light = light;
         }
 
         public float drawLayer(float x) {
             BakedGlyph bakedGlyph = null;
+            VertexConsumer vertexConsumer;
+
             if (this.backgroundColor != 0) {
-                BakedGlyph.Rectangle rectangle = new BakedGlyph.Rectangle(x - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, this.getBackgroundZIndex(), this.backgroundColor);
+                BakedGlyph.Rectangle rectangle = new BakedGlyph.Rectangle(x - 1.0f, this.y + 9.0f, this.x, this.y - 1.0f, -1.0f, this.backgroundColor);
                 bakedGlyph = this.textRenderer.getFontStorage(Style.DEFAULT_FONT_ID).getRectangleBakedGlyph();
-                VertexConsumer vertexConsumer = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
-                bakedGlyph.drawRectangle(rectangle, this.matrix, vertexConsumer, this.light);
+                vertexConsumer = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
+                bakedGlyph.drawRectangle(rectangle, this.matrices, vertexConsumer, this.light, true);
             }
 
             this.drawGlyphs();
@@ -113,10 +148,10 @@ public class CustomTextRenderer extends TextRenderer {
                     bakedGlyph = this.textRenderer.getFontStorage(Style.DEFAULT_FONT_ID).getRectangleBakedGlyph();
                 }
 
-                VertexConsumer vertexConsumer2 = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
+                vertexConsumer = this.vertexConsumers.getBuffer(bakedGlyph.getLayer(TextLayerType.NORMAL));
 
                 for(BakedGlyph.Rectangle rectangle2 : this.rectangles) {
-                    bakedGlyph.drawRectangle(rectangle2, this.matrix, vertexConsumer2, this.light);
+                    bakedGlyph.drawRectangle(rectangle2, this.matrices, vertexConsumer, this.light, true);
                 }
             }
 
@@ -124,8 +159,7 @@ public class CustomTextRenderer extends TextRenderer {
         }
 
         public void drawGlyphs() {
-
-            for(BakedGlyph.DrawnGlyph drawnGlyph : this.glyphs) {
+            for(BakedGlyph.DrawnGlyph drawnGlyph : this.drawnGlyphs) {
                 BakedGlyph bakedGlyph = drawnGlyph.glyph();
 
                 RenderLayer templateLayer = bakedGlyph.getLayer(TextLayerType.NORMAL);
@@ -141,7 +175,7 @@ public class CustomTextRenderer extends TextRenderer {
                 CustomRenderLayer.TextLayering constructedLayering = new CustomRenderLayer.TextLayering(this.zOffset, this.layerType, id);
 
                 VertexConsumer vertexConsumer = this.vertexConsumers.getBuffer(constructedLayering.buildRenderLayer());
-                bakedGlyph.draw(drawnGlyph, this.matrix, vertexConsumer, this.light);
+                bakedGlyph.draw(drawnGlyph, this.matrices, vertexConsumer, this.light, true);
             }
         }
 
