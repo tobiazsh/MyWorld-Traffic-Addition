@@ -65,4 +65,9 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
 
         return new BlockPosExtended(x, y, z);
     }
+
+    public BlockPos toBlockPos() {
+        return new BlockPos(this.getX(), this.getY(), this.getZ());
+    }
+
 }
