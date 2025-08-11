@@ -28,6 +28,7 @@ import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
@@ -44,6 +45,13 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
 
+    private static final LRUCache<Pair<String, List<BlockPosExtended>>> CALCULATION_CACHE = new LRUCache<>(
+            "CALCULATION_CACHE",
+            Objects.requireNonNullElse(
+                    ClientPreferences.gameplayPreference.getInt("calculationCacheSize"), // Get the size from the config
+                    DEFAULT_CALCULATION_CACHE_SIZE
+            )
+    );
 
     private final BakedModelManager bakedModelManager;
     private int rotation = 0;
@@ -69,6 +77,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         ); // Initialize the border renderer with the baked model manager
     }
 
+
+
     /**
      * Calculates the position of a BlockPosExtended. Basically just adds the distance to the master position.
      * @return a list of BlockPosExtended which represent the position of the signs.
@@ -82,6 +92,18 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     private List<BlockPosExtended> getSignDistances(CustomizableSignBlockEntity entity) {
         String signDistancesStringEncoded = entity.getSignDistancesString();
         List<BlockPosExtended> signDistances;
+
+        // If already calculated, return the cached value
+        if (CALCULATION_CACHE.anyMatch(match ->
+                match.getLeft().equals(signDistancesStringEncoded) &&
+                !match.getRight().isEmpty()
+        )) {
+            // If the sign distances are already calculated, return them from the cache
+            return CALCULATION_CACHE.filter(match ->
+                    match.getLeft().equals(signDistancesStringEncoded) &&
+                    !match.getRight().isEmpty())
+                    .getFirst().get().getRight();
+        }
 
         if(signDistancesStringEncoded.isEmpty())
             return new ArrayList<>(); // If there are no signs, return an empty list
@@ -98,6 +120,9 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             MyWorldTrafficAddition.LOGGER.error("Failed to decode sign distances string: {}", signDistancesStringEncoded, e);
             return new ArrayList<>();
         }
+
+        // Cache the calculated sign distances for later use
+        CALCULATION_CACHE.access(new Pair<>(signDistancesStringEncoded, signDistances));
 
         return signDistances;
     }
