@@ -68,7 +68,9 @@
         "General Settings": "Allgemeine Einstellungen",
         "Text RenderLayer Cache Size": "Text RenderLayer Cache Größe",
         "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "Die Entfernung, in der die Schilder sichtbar sind.\nReduziert Flackern zwischen Hintergrund und Block.\nKann die Leistung beeinträchtigen.",
-        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "Die Anzahl der RenderLayers, die im LRU Cache gespeichert sind. Jedes Element hat seinen eigenen RenderLayer. Bei niedrigeren Werten ist die CPU-Auslastung höher, aber die RAM-Auslastung niedriger. Bei höheren Werten umgekehrt."
+        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "Die Anzahl der RenderLayers, die im LRU Cache gespeichert sind. Jedes Element hat seinen eigenen RenderLayer. Bei niedrigeren Werten ist die CPU-Auslastung höher, aber die RAM-Auslastung niedriger. Bei höheren Werten umgekehrt.",
+        "Calculation cache size": "Berechnungs-Cache Größe",
+        "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation.": "Anpassbare Schilder und Schildpfähle werden basierend auf ihrer Entfernung im NBT des Master-Schildes gespeichert, das in Base64 kodiert ist. Um ihre Position aus der Entfernung zu berechnen, muss MyWorld Traffic Addition den Wert dekodieren und dann in ihre Positionen umwandeln. Dies ist eine intensive Operation."
       },
       "Pref": {
         "Title": {
