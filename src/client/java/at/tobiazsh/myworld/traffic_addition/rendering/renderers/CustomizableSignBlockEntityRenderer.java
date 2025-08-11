@@ -93,6 +93,9 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         String signDistancesStringEncoded = entity.getSignDistancesString();
         List<BlockPosExtended> signDistances;
 
+        if(signDistancesStringEncoded.isEmpty())
+            return new ArrayList<>(); // If there are no signs, return an empty list
+
         // If already calculated, return the cached value
         if (CALCULATION_CACHE.anyMatch(match ->
                 match.getLeft().equals(signDistancesStringEncoded) &&
