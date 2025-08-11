@@ -92,18 +92,6 @@ public class LRUCache <C> { // LRU = Least Recently Used
         return this.id;
     }
 
-    public static class CacheItem <O> {
-        O val;
-
-        CacheItem(O val) {
-            this.val = val;
-        }
-
-        public O get() {
-            return val;
-        }
-    }
-
     public static void registerCache(String id, LRUCache cache) {
         CACHE_REGISTRAR.put(id, cache);
     }
@@ -127,6 +115,18 @@ public class LRUCache <C> { // LRU = Least Recently Used
     public static void clearCache(String id) {
         if (CACHE_REGISTRAR.containsKey(id))
             CACHE_REGISTRAR.get(id).cache.clear();
+    }
+
+    public static class CacheItem <O> {
+        O val;
+
+        CacheItem(O val) {
+            this.val = val;
+        }
+
+        public O get() {
+            return val;
+        }
     }
 
 }
