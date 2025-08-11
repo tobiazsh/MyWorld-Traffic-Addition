@@ -30,6 +30,7 @@ public class PreferencesWindow {
     private static float[] elementDistancingCustomizableSigns = {0};
     private static int[] imageRenderLayerCacheSize = {0};
     private static int[] textRenderLayerCacheSize = {0};
+    private static int[] calculationCacheSize = {0}; // Cache size for sign coordinate calculations
 
     // SIGN
     private static float[] viewDistanceSigns = {0};
@@ -201,7 +202,7 @@ public class PreferencesWindow {
 
         if (ImGui.button(tr("Global", "Clear"))) LRUCache.clearAllCaches(); // Clear
 
-        ImGui.separator();
+        ImGui.separator(); // ------------------------------------------------------------------------------------------------------------------------
 
         drawClearCachePage();
 
@@ -212,7 +213,7 @@ public class PreferencesWindow {
 
         if (ImGui.button(tr("ImGui.Main.PreferencesWindow", "Clear Cache") + " ...")) ImGui.openPopup(tr("ImGui.Main.PreferencesWindow", "Clear Cache"));
 
-        ImGui.separator();
+        ImGui.separator(); // ------------------------------------------------------------------------------------------------------------------------
 
         drawTitleAndDescription(
                 tr("ImGui.Main.PreferencesWindow", "Image RenderLayer Cache Size"), // Image Render Layer Cache Size
@@ -225,7 +226,7 @@ public class PreferencesWindow {
         ImGui.text(tr("ImGui.Main.PreferencesWindow", "If you change this value, you need to restart the game for it to take effect."));
         ImGui.popFont();
 
-        ImGui.separator();
+        ImGui.separator(); // ------------------------------------------------------------------------------------------------------------------------
 
         drawTitleAndDescription(
                 tr("ImGui.Main.PreferencesWindow", "Text RenderLayer Cache Size"),
