@@ -21,14 +21,14 @@ import static net.minecraft.client.render.RenderPhase.*;
  */
 public class CustomRenderLayer {
 
-    public static final int defaultImageCacheSize = 200;
-    public static final int defaultTextCacheSize = 100;
+    public static final int DEFAULT_IMAGE_CACHE_SIZE = 200;
+    public static final int DEFAULT_TEXT_CACHE_SIZE = 100;
 
     public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
         "BUILT_TEXT_LAYERING",
         Objects.requireNonNullElse(
             gameplayPreference.getInt("textRenderLayerCacheSize"),
-            defaultTextCacheSize
+                DEFAULT_TEXT_CACHE_SIZE
         )
     ); // Stores all the built text render layers of all fonts
 
@@ -36,7 +36,7 @@ public class CustomRenderLayer {
         "BUILT_IMAGE_LAYERING",
         Objects.requireNonNullElse(
                 gameplayPreference.getInt("imageRenderLayerCacheSize"),
-                defaultImageCacheSize
+                DEFAULT_IMAGE_CACHE_SIZE
         )
     ); // Stores all the built image render layers of all textures
 
