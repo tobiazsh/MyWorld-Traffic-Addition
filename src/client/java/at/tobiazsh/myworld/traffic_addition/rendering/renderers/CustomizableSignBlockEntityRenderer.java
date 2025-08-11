@@ -108,9 +108,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     .getFirst().get().getRight();
         }
 
-        if(signDistancesStringEncoded.isEmpty())
-            return new ArrayList<>(); // If there are no signs, return an empty list
-
         try {
             // Decode the string to a list of BlockPosExtended which represent the distance to the master position
             List<String> signDistancingList = ListUtils.fromByteArray(Base64.getDecoder().decode(signDistancesStringEncoded));
@@ -258,6 +255,21 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         String signPolePositionsString = entity.getSignPoleDistancesString();
         if (signPolePositionsString.isEmpty()) return; // If there are no sign poles, exit function
 
+        // If already cached, return the cached value
+        if (CALCULATION_CACHE.anyMatch(match ->
+                match.getLeft().equals(signPolePositionsString) &&
+                !match.getRight().isEmpty()
+        )) {
+            // If the sign pole positions are already calculated, return them from the cache
+            List<BlockPosExtended> cachedPositions = CALCULATION_CACHE.filter(match ->
+                    match.getLeft().equals(signPolePositionsString) &&
+                    !match.getRight().isEmpty())
+                    .getFirst().get().getRight();
+
+            cachedPositions.forEach(pos -> renderSignPole(entity, bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState()), matrices, vertexConsumers, light, overlay, pos));
+            return;
+        }
+
         List<BlockPosExtended> polePositions;
 
         try {
@@ -276,6 +288,9 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // If there are no sign poles, don't do anything
         if(polePositions.isEmpty()) return;
+
+        // Cache the calculated sign pole positions for later use
+        CALCULATION_CACHE.access(new Pair<>(signPolePositionsString, polePositions));
 
         // Define the BakedModel for the sign poles
         BlockStateModel signPoleStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState());
