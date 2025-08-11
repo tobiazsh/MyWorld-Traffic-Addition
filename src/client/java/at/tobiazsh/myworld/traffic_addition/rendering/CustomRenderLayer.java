@@ -28,7 +28,7 @@ public class CustomRenderLayer {
         "BUILT_TEXT_LAYERING",
         Objects.requireNonNullElse(
             gameplayPreference.getInt("textRenderLayerCacheSize"),
-                DEFAULT_TEXT_CACHE_SIZE
+            DEFAULT_TEXT_CACHE_SIZE
         )
     ); // Stores all the built text render layers of all fonts
 
