@@ -42,6 +42,9 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity> {
 
+    public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
+
+
     private final BakedModelManager bakedModelManager;
     private int rotation = 0;
 
