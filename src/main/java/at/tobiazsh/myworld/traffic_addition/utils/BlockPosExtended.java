@@ -70,4 +70,11 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
         return new BlockPos(this.getX(), this.getY(), this.getZ());
     }
 
+    /**
+     * Inverts the coordinates of this BlockPosExtended.
+     * @return a new BlockPosExtended with inverted coordinates.
+     */
+    public BlockPosExtended invert() {
+        return new BlockPosExtended(-this.getX(), -this.getY(), -this.getZ());
+    }
 }
