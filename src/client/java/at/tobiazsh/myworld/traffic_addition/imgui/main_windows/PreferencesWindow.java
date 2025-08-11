@@ -16,8 +16,8 @@ import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools.*;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.defaultImageCacheSize;
-import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.defaultTextCacheSize;
+import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.DEFAULT_IMAGE_CACHE_SIZE;
+import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.DEFAULT_TEXT_CACHE_SIZE;
 import static at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences.gameplayPreference;
 
 public class PreferencesWindow {
@@ -56,12 +56,12 @@ public class PreferencesWindow {
 
         imageRenderLayerCacheSize[0] = Objects.requireNonNullElse(
             gameplayPreference.getInt("textRenderLayerCacheSize"),
-            defaultImageCacheSize
+                DEFAULT_IMAGE_CACHE_SIZE
         );
 
         textRenderLayerCacheSize[0] = Objects.requireNonNullElse(
                 gameplayPreference.getInt("imageRenderLayerCacheSize"),
-                defaultTextCacheSize
+                DEFAULT_TEXT_CACHE_SIZE
         );
 
         // SIGN
@@ -234,6 +234,20 @@ public class PreferencesWindow {
         );
 
         ImGui.dragInt("##textRenderLayerCacheSize", textRenderLayerCacheSize, 1, 1, 512);
+
+        ImGui.pushFont(ImGuiImpl.RobotoBold);
+        ImGui.text(tr("ImGui.Main.PreferencesWindow", "If you change this value, you need to restart the game for it to take effect.")); // "If you change this value, you need to restart the game for it to take effect."
+        ImGui.popFont();
+
+
+        ImGui.separator(); // ------------------------------------------------------------------------------------------------------------------------
+
+        drawTitleAndDescription(
+                tr("ImGui.Main.PreferencesWindow", "Calculation cache size"),
+                tr("ImGui.Main.PreferencesWindow", "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation.")
+        );
+
+        ImGui.dragInt("##calculationCacheSize", calculationCacheSize, 1, 1, 512);
 
         ImGui.pushFont(ImGuiImpl.RobotoBold);
         ImGui.text(tr("ImGui.Main.PreferencesWindow", "If you change this value, you need to restart the game for it to take effect.")); // "If you change this value, you need to restart the game for it to take effect."
