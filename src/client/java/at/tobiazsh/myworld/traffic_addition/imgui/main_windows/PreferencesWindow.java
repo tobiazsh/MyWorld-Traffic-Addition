@@ -64,6 +64,11 @@ public class PreferencesWindow {
                 DEFAULT_TEXT_CACHE_SIZE
         );
 
+        calculationCacheSize[0] = Objects.requireNonNullElse(
+                gameplayPreference.getInt("calculationCacheSize"),
+                CustomizableSignBlockEntityRenderer.DEFAULT_CALCULATION_CACHE_SIZE
+        );
+
         // SIGN
         viewDistanceSigns[0] = SignBlockEntityRenderer.zOffsetRenderLayer * 128;
 
