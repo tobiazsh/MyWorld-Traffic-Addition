@@ -60,7 +60,7 @@ dependencies {
 	include implementation("io.github.spair:imgui-java-natives-macos:${project.imgui_version}")
 
 	// Other dependencies
-	implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}"); // Jengua; Translation library
+	include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}"); // Jengua; Translation library
 }
 
 processResources {
