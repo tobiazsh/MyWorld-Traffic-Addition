@@ -45,7 +45,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
 
-    private static final LRUCache<Pair<String, List<BlockPosExtended>>> CALCULATION_CACHE = new LRUCache<>(
+    private static final LRUCache<AbstractMap.SimpleEntry<String, List<BlockPosExtended>>> CALCULATION_CACHE = new LRUCache<>(
             "CALCULATION_CACHE",
             Objects.requireNonNullElse(
                     ClientPreferences.gameplayPreference.getInt("calculationCacheSize"), // Get the size from the config
@@ -98,14 +98,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // If already calculated, return the cached value
         if (CALCULATION_CACHE.anyMatch(match ->
-                match.getLeft().equals(signDistancesStringEncoded) &&
-                !match.getRight().isEmpty()
+                match.getKey().equals(signDistancesStringEncoded) &&
+                !match.getValue().isEmpty()
         )) {
             // If the sign distances are already calculated, return them from the cache
             return CALCULATION_CACHE.filter(match ->
-                    match.getLeft().equals(signDistancesStringEncoded) &&
-                    !match.getRight().isEmpty())
-                    .getFirst().get().getRight();
+                    match.getKey().equals(signDistancesStringEncoded) &&
+                    !match.getValue().isEmpty())
+                    .getFirst().get().getValue();
         }
 
         try {
@@ -122,7 +122,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
 
         // Cache the calculated sign distances for later use
-        CALCULATION_CACHE.access(new Pair<>(signDistancesStringEncoded, signDistances));
+        CALCULATION_CACHE.access(new AbstractMap.SimpleEntry<>(signDistancesStringEncoded, signDistances));
 
         return signDistances;
     }
@@ -257,14 +257,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // If already cached, return the cached value
         if (CALCULATION_CACHE.anyMatch(match ->
-                match.getLeft().equals(signPolePositionsString) &&
-                !match.getRight().isEmpty()
+                match.getKey().equals(signPolePositionsString) &&
+                !match.getValue().isEmpty()
         )) {
             // If the sign pole positions are already calculated, return them from the cache
             List<BlockPosExtended> cachedPositions = CALCULATION_CACHE.filter(match ->
-                    match.getLeft().equals(signPolePositionsString) &&
-                    !match.getRight().isEmpty())
-                    .getFirst().get().getRight();
+                    match.getKey().equals(signPolePositionsString) &&
+                    !match.getValue().isEmpty())
+                    .getFirst().get().getValue();
 
             cachedPositions.forEach(pos -> renderSignPole(entity, bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState()), matrices, vertexConsumers, light, overlay, pos));
             return;
@@ -290,7 +290,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         if(polePositions.isEmpty()) return;
 
         // Cache the calculated sign pole positions for later use
-        CALCULATION_CACHE.access(new Pair<>(signPolePositionsString, polePositions));
+        CALCULATION_CACHE.access(new AbstractMap.SimpleEntry<>(signPolePositionsString, polePositions));
 
         // Define the BakedModel for the sign poles
         BlockStateModel signPoleStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState());
