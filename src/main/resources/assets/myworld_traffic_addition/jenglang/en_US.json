@@ -68,7 +68,10 @@
         "General Settings": "General Settings",
         "Text RenderLayer Cache Size": "Text RenderLayer Cache Size",
         "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.",
-        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa."
+        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.",
+        "Calculation cache size": "Calculation cache size",
+        "The size of the calculation cache. Higher values may improve performance but use more RAM.": "The size of the calculation cache. Higher values may improve performance but use more RAM.",
+        "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation.": "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation."
       },
       "Pref": {
         "Title": {
