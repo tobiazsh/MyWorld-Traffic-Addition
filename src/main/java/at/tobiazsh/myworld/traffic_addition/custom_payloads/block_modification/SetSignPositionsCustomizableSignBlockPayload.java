@@ -16,12 +16,12 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, String blockPosString) implements CustomPayload {
+public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, byte[] signDistances) implements CustomPayload {
     public static final CustomPayload.Id<SetSignPositionsCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_sign_positions_customizable_sign_block_payload"));
 
     public static final PacketCodec<ByteBuf, SetSignPositionsCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
             BlockPos.PACKET_CODEC, SetSignPositionsCustomizableSignBlockPayload::pos,
-            PacketCodecs.STRING, SetSignPositionsCustomizableSignBlockPayload::blockPosString,
+            PacketCodecs.BYTE_ARRAY, SetSignPositionsCustomizableSignBlockPayload::signDistances,
             SetSignPositionsCustomizableSignBlockPayload::new
     );
 
