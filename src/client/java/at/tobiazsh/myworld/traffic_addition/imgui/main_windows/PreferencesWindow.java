@@ -337,6 +337,7 @@ public class PreferencesWindow {
 
         gameplayPreference.saveToDisk("imageRenderLayerCacheSize", imageRenderLayerCacheSize[0]);
         gameplayPreference.saveToDisk("textRenderLayerCacheSize", textRenderLayerCacheSize[0]);
+        gameplayPreference.saveToDisk("calculationCacheSize", calculationCacheSize[0]);
 
         // SIGN
         SignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceSigns[0] / 128;
