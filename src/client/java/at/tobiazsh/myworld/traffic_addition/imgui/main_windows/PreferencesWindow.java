@@ -351,8 +351,9 @@ public class PreferencesWindow {
         viewDistanceCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};
         elementDistancingCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault};
 
-        imageRenderLayerCacheSize = new int[]{defaultImageCacheSize};
-        textRenderLayerCacheSize = new int[]{defaultTextCacheSize};
+        imageRenderLayerCacheSize = new int[]{DEFAULT_IMAGE_CACHE_SIZE};
+        textRenderLayerCacheSize = new int[]{DEFAULT_TEXT_CACHE_SIZE};
+        calculationCacheSize = new int[]{CustomizableSignBlockEntityRenderer.DEFAULT_CALCULATION_CACHE_SIZE};
 
         // SIGN
         viewDistanceSigns = new float[]{SignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};
