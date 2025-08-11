@@ -98,9 +98,11 @@
   "Minecraft": {
     "MWTA": {
       "Warn": {
-        "SignNotComplete": {
-          "Sign is not complete! Please check the structure": "Schild ist nicht vollständig! Bitte überprüfe die Struktur"
-        }
+        "Sign is not complete! Please check the structure": "Schild ist nicht vollständig! Bitte überprüfe die Struktur",
+        "No sign found at one or more of the positions! Please check the structure!": "Kein Schild an einer oder mehreren Positionen gefunden! Bitte überprüfe die Struktur!"
+      },
+      "Error": {
+        "Failed to initialize sign structure!": "Fehler beim Initialisieren der Schildstruktur!"
       }
     }
   },

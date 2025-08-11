@@ -99,8 +99,12 @@
     "MWTA": {
       "Warn": {
         "SignNotComplete": {
-          "Sign is not complete! Please check the structure": "Sign is not complete! Please check the structure"
+          "Sign is not complete! Please check the structure": "Sign is not complete! Please check the structure",
+          "No sign found at one or more of the positions! Please check the structure!": "No sign found at one or more of the positions! Please check the structure!"
         }
+      },
+      "Error": {
+        "Failed to initialize sign structure!": "Failed to initialize sign structure!"
       }
     }
   },
