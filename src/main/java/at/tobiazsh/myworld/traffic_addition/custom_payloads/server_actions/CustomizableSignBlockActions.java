@@ -54,19 +54,19 @@ public class CustomizableSignBlockActions {
     public static void handleSetSignPositions(SetSignPositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
         GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
         BlockPos pos = payload.pos();
-        String blockPosString = payload.blockPosString();
+        byte[] bytes = payload.signDistances();
 
         if (defaults.world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity customizableSignBlockEntity)
-            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setSignPositions(blockPosString));
+            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setSignDistances(bytes));
     }
 
     public static void handleSetSignPolePositions(SetSignPolePositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
         GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
         BlockPos pos = payload.pos();
-        String blockPosString = payload.blockPosString();
+        byte[] bytes = payload.bytes();
 
         if (defaults.world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity customizableSignBlockEntity)
-            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setSignPolePositions(blockPosString));
+            defaults.world.getServer().execute(() -> customizableSignBlockEntity.setSignPoleDistances(bytes));
     }
 
     public static void handleSetBorderType(SetBorderTypeCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
@@ -76,7 +76,7 @@ public class CustomizableSignBlockActions {
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
         if (blockEntity instanceof CustomizableSignBlockEntity csbeBlockEntity)
-            defaults.world.getServer().execute(() -> csbeBlockEntity.setBorderType(BorderProperty.valueOf(borders)));
+            defaults.world.getServer().execute(() -> csbeBlockEntity.setBorderType(BorderProperty.INSTANCE.fromString(borders)));
     }
 
     public static void handleSetMaster(SetMasterCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {

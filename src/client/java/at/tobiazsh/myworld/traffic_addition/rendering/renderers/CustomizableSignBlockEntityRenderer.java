@@ -11,21 +11,17 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockModelRenderer;
-import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.BakedModelManager;
@@ -37,6 +33,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
+import java.io.IOException;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
@@ -69,10 +66,37 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         ); // Initialize the border renderer with the baked model manager
     }
 
-    private List<BlockPos> getSignPositions(CustomizableSignBlockEntity entity) {
-        String constructedSignPositions = entity.getSignPositions();
-        if (constructedSignPositions.isEmpty()) return new ArrayList<>();
-        return CustomizableSignBlockEntity.deconstructBlockPosListString(constructedSignPositions);
+    /**
+     * Calculates the position of a BlockPosExtended. Basically just adds the distance to the master position.
+     * @return a list of BlockPosExtended which represent the position of the signs.
+     */
+    private List<BlockPosExtended> calculatePosition(List<BlockPosExtended> distances, BlockPosExtended masterPos) {
+        return distances.stream()
+                .map(distance -> masterPos.addOffset(distance.invert())) // Add the distance to the master position
+                .toList();
+    }
+
+    private List<BlockPosExtended> getSignDistances(CustomizableSignBlockEntity entity) {
+        String signDistancesStringEncoded = entity.getSignDistancesString();
+        List<BlockPosExtended> signDistances;
+
+        if(signDistancesStringEncoded.isEmpty())
+            return new ArrayList<>(); // If there are no signs, return an empty list
+
+        try {
+            // Decode the string to a list of BlockPosExtended which represent the distance to the master position
+            List<String> signDistancingList = ListUtils.fromByteArray(Base64.getDecoder().decode(signDistancesStringEncoded));
+
+            signDistances = signDistancingList.stream().map(BlockPosExtended.INSTANCE::fromString).toList();
+
+            // If there are no signs, return an empty list
+            if (signDistances.isEmpty()) return new ArrayList<>();
+        } catch (IOException | ClassNotFoundException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to decode sign distances string: {}", signDistancesStringEncoded, e);
+            return new ArrayList<>();
+        }
+
+        return signDistances;
     }
 
 
@@ -133,18 +157,19 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private void renderSigns(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
         // Get the sign positions as a list of BlockPos
-        List<BlockPos> signPositions = getSignPositions(entity);
+        List<BlockPosExtended> signDistances = getSignDistances(entity);
+        List<BlockPosExtended> signPositions = calculatePosition(signDistances, new BlockPosExtended(entity.getPos()));
 
         // Render each sign
-        for (BlockPos sign : signPositions) {
-            if (Objects.requireNonNull(entity.getWorld()).getBlockEntity(sign) instanceof CustomizableSignBlockEntity signBlockEntity)
+        for (int i = 0; i < signPositions.size(); i++) {
+            if (Objects.requireNonNull(entity.getWorld()).getBlockEntity(signPositions.get(i)) instanceof CustomizableSignBlockEntity signBlockEntity)
                 renderSign(
                         signBlockEntity,
                         blockStateModel,
                         matrices,
                         vertexConsumers,
                         light, overlay,
-                        facing
+                        facing, signDistances.get(i).invert()
                 );
         }
     }
@@ -153,13 +178,9 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    private void renderSign(CustomizableSignBlockEntity entity, BlockStateModel blockStateModel, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing, BlockPosExtended offset) {
         matrices.push();
 
-        // Position of the master block
-        BlockPos masterPos = entity.getMasterPos();
-        BlockPos offset = BlockPosExtended.getOffset(masterPos, entity.getPos()); // Offset of the sign.
-        offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1)); // Offset correction relative to the sign
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
 
         // Render sign block
@@ -203,19 +224,33 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     // Render the sign poles that hold the sign
     private void renderSignPoles(CustomizableSignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         // Get the position of each sign pole compacted in one string
-        String signPolePositionsString = entity.getSignPolePositions();
+        String signPolePositionsString = entity.getSignPoleDistancesString();
+        if (signPolePositionsString.isEmpty()) return; // If there are no sign poles, exit function
+
+        List<BlockPosExtended> polePositions;
+
+        try {
+            // Convert the string to a list of BlockPosExtended which represent the distance to the master position
+            List<BlockPosExtended> distances = ListUtils.fromByteArray(Base64.getDecoder().decode(signPolePositionsString)).stream().map(distance -> BlockPosExtended.INSTANCE.fromString((String) distance)).toList();
+
+            // Add distance to master position to get the actual position of the sign pole
+            polePositions = distances.stream()
+                    .map(distance -> (new BlockPosExtended(entity.getPos())).addOffset(distance.invert()))
+                    .toList();
+
+        } catch (IOException | ClassNotFoundException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to decode sign pole positions string: {}", signPolePositionsString, e);
+            throw new RuntimeException("Failed to decode sign pole positions string", e);
+        }
 
         // If there are no sign poles, don't do anything
-        if(signPolePositionsString.isEmpty()) return;
+        if(polePositions.isEmpty()) return;
 
         // Define the BakedModel for the sign poles
         BlockStateModel signPoleStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState());
 
-        // Deconstruct the string into a list of BlockPos
-        List<BlockPos> positions = CustomizableSignBlockEntity.deconstructBlockPosListString(signPolePositionsString);
-
         // Render each sign pole
-        positions.forEach(pos -> renderSignPole(entity, signPoleStateModel, matrices, vertexConsumers, light, overlay, pos));
+        polePositions.forEach(pos -> renderSignPole(entity, signPoleStateModel, matrices, vertexConsumers, light, overlay, pos));
     }
 
 

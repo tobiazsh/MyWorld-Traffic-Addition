@@ -8,10 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
@@ -35,6 +32,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
@@ -55,9 +53,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             true, true, true, true
     );
 
-    private BlockPos masterPos;
-    private String signPolePositions = "";
-    private String signPositions = "";
+    private BlockPosExtended masterPos;
+    private String signPoleDistances = "";
+    private String signDistances = "";
     private String signTextureJson = "";
 
     private int rotation = 0;
@@ -79,7 +77,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
         super(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, pos, state);
 
-        this.masterPos = pos;
+        this.masterPos = new BlockPosExtended(pos);
     }
 
 
@@ -167,21 +165,24 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return this.rotation;
     }
 
-    public void setSignPositions(String signPositions) {
-        this.signPositions = signPositions;
+    public void setSignDistances(byte[] signDistances) {
+        this.signDistances = Base64.getEncoder().encodeToString(signDistances);
         updateGame();
     }
 
-    public String getSignPositions() {
-        return signPositions;
+    /**
+     * Returns the raw encoded string of the sign distances.
+     */
+    public String getSignDistancesString() {
+        return signDistances;
     }
 
-    public String getSignPolePositions() {
-        return signPolePositions;
+    public String getSignPoleDistancesString() {
+        return signPoleDistances;
     }
 
-    public void setSignPolePositions(String signPolePositions) {
-        this.signPolePositions = signPolePositions;
+    public void setSignPoleDistances(byte[] signPolePositions) {
+        this.signPoleDistances = Base64.getEncoder().encodeToString(signPolePositions);
         updateGame();
     }
 
@@ -213,7 +214,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
     public void setMasterPos(BlockPos masterPos) {
-        this.masterPos = masterPos;
+        this.masterPos = new BlockPosExtended(masterPos);
         updateGame();
     }
 
@@ -230,23 +231,22 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return this.signTextureJson;
     }
 
-    private String constructMasterPosString(BlockPos pos) {
-        String[] posList = { String.valueOf(pos.getX()), String.valueOf(pos.getY()), String.valueOf(pos.getZ()) };
-        return String.join("%", posList);
+    private BlockPosExtended deconstructMasterPosString(String posStr) {
+        String[] posList = posStr.split("%");
+        return new BlockPosExtended(Integer.parseInt(posList[0]), Integer.parseInt(posList[1]), Integer.parseInt(posList[2]));
     }
 
-    private BlockPos deconstructMasterPosString(String posStr) {
-        String[] posList = posStr.split("%");
-        return new BlockPos(Integer.parseInt(posList[0]), Integer.parseInt(posList[1]), Integer.parseInt(posList[2]));
-    }
+
+    // NBT Methods -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private void nbtWrite(WriteView view) {
-        view.putString("Borders", borders.toString());
+        view.putString("Borders", borders.toObjectString());
         view.putBoolean("IsMaster", isMaster);
-        view.putString("MasterPos", constructMasterPosString(masterPos));
-        view.putString("SignPolePositions", signPolePositions);
+        view.putString("MasterPos", masterPos.toObjectString());
+        view.putString("SignPoleDistances", signPoleDistances);
         view.putBoolean("RenderingState", isRendered);
-        view.putString("SignPositions", signPositions);
+        view.putString("SignDistances", signDistances);
         view.putInt("Rotation", rotation);
         view.putInt("Width", width);
         view.putInt("Height", height);
@@ -254,6 +254,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         view.putString("SignTexture", signTextureJson);
     }
+
 
     @Override
     protected void writeData(WriteView view) {
@@ -265,22 +266,37 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     protected void readData(ReadView readView) {
         super.readData(readView);
 
-        BorderProperty borders;
-
         if (readView.getOptionalString("Borders").isEmpty() && !OptionalUtils.getOrDefault("BorderModelPath", readView::getOptionalString, "", "CustomizableSignBlockEntity.BorderModelPath").isBlank()) { // If old border string is present, convert it to new BorderProperty
-            borders = convertOldBorderStringToBorderProperty(OptionalUtils.getOrDefault("BorderModelPath", readView::getOptionalString, "", "CustomizableSignBlockEntity.BorderModelPath"), "customizable_sign_block");
+            this.borders = convertOldBorderStringToBorderProperty(OptionalUtils.getOrDefault("BorderModelPath", readView::getOptionalString, "", "CustomizableSignBlockEntity.BorderModelPath"), "customizable_sign_block");
         } else {
-            borders = BorderProperty.valueOf(OptionalUtils.getOrDefault("Borders", readView::getOptionalString, BorderProperty.DEFAULT, "CustomizableSignBlockEntity.Borders"));
+            this.borders = BorderProperty.INSTANCE.fromString(OptionalUtils.getOrDefault("Borders", readView::getOptionalString, BorderProperty.DEFAULT, "CustomizableSignBlockEntity.Borders"));
         } // CONVERSION TO NEW VERSION
 
-        this.borders = borders;
+        if (readView.getOptionalString("SignPoleDistances").isEmpty() && !OptionalUtils.getOrDefault("SignPolePositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPolePositions").isBlank()) { // If old sign pole positions are present, convert them to new distances
+            this.signPoleDistances = convertPositionsToDistances(OptionalUtils.getOrDefault("SignPolePositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPolePositions"), masterPos);
+        } else {
+            this.signPoleDistances = OptionalUtils.getOrDefault("SignPoleDistances", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPoleDistances");
+        } // CONVERSION TO NEW VERSION
+
+        if (readView.getOptionalString("SignDistances").isEmpty() && !OptionalUtils.getOrDefault("SignPositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignDistances").isBlank()) { // If old sign positions are present, convert them to new distances
+            this.signDistances = convertPositionsToDistances(OptionalUtils.getOrDefault("SignPositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPositions"), masterPos);
+        } else {
+            this.signDistances = OptionalUtils.getOrDefault("SignDistances", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignDistances");
+        } // CONVERSION TO NEW VERSION
+
+
+        String masterPosString = OptionalUtils.getOrDefault("MasterPos", readView::getOptionalString, "", "CustomizableSignBlockEntity.MasterPos");
+
+        if (masterStringHasOldFormat(masterPosString)) { // If old master position string is present, convert it to new format
+            masterPos = deconstructMasterPosString(masterPosString);
+        } else {
+            masterPos = BlockPosExtended.INSTANCE.fromString(masterPosString);
+        } // CONVERSION TO NEW VERSION
+
         isMaster = readView.getBoolean("IsMaster", true);
         isRendered = readView.getBoolean("RenderingState", true);
         isInitialized = readView.getBoolean("IsInitialized", false);
 
-        masterPos = deconstructMasterPosString(OptionalUtils.getOrDefault("MasterPos", readView::getOptionalString, constructMasterPosString(getPos()), "CustomizableSignBlockEntity.MasterPos"));
-        signPolePositions = OptionalUtils.getOrDefault("SignPolePositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPolePositions");
-        signPositions = OptionalUtils.getOrDefault("SignPositions", readView::getOptionalString, "", "CustomizableSignBlockEntity.SignPositions");
         signTextureJson = OptionalUtils.getOrDefault("SignTexture", readView::getOptionalString, "{}", "CustomizableSignBlockEntity.SignTexture");
 
         rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "CustomizableSignBlockEntity.Rotation");
@@ -297,8 +313,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     @Override
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return createNbt(registryLookup); // TODO: If anything fails, I suspect you.
+        return createNbt(registryLookup);
     }
+
+    // Everything else -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * Returns a BorderProperty object that represents the bounding box of the CustomizableSignBlockEntity based on the surrounding blocks.
@@ -397,6 +416,90 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         );
     }
 
+    public static String constructBlockPosListString(List<BlockPos> blockPosList) {
+        List<String> blockPoses = new ArrayList<>();
+
+        for (BlockPos pos : blockPosList) {
+            List<String> blockPosPiece = new ArrayList<>();
+            blockPosPiece.add(java.lang.String.valueOf(pos.getX()));
+            blockPosPiece.add(java.lang.String.valueOf(pos.getY()));
+            blockPosPiece.add(java.lang.String.valueOf(pos.getZ()));
+
+            String blockPosString = java.lang.String.join("?", blockPosPiece);
+
+            blockPoses.add(blockPosString);
+        }
+
+        return java.lang.String.join("%", blockPoses);
+    }
+
+    public static List<BlockPos> deconstructBlockPosListString(String blockPosListString) {
+        List<String> blockPoses;
+        List<BlockPos> blockPosList = new ArrayList<>();
+
+        blockPoses = List.of(blockPosListString.split("%"));
+
+        for (String blockPos : blockPoses) {
+            List<String> blockCoordinates;
+
+            blockCoordinates = List.of(blockPos.split("\\?"));
+
+            BlockPos pos = new BlockPos(Integer.parseInt(blockCoordinates.get(0)), Integer.parseInt(blockCoordinates.get(1)), Integer.parseInt(blockCoordinates.get(2)));
+
+            blockPosList.add(pos);
+        }
+
+        return blockPosList;
+    }
+
+    private void updateGame() {
+        markDirty();
+
+        if (this.getWorld() == null) return; // Cannot update if world is null
+
+        this.getWorld().emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
+        this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+    }
+
+	public boolean isInitialized() {
+		return isInitialized;
+	}
+
+	public void setInitialized(boolean initialized) {
+		isInitialized = initialized;
+	}
+
+    public boolean shouldUpdateBackgroundTexture() {
+        return updateBackgroundTexture;
+    }
+
+    public void setUpdateBackgroundTexture(boolean var) {
+        this.updateBackgroundTexture = var;
+    }
+
+    public Direction getFacing() {
+        return this.getCachedState().get(CustomizableSignBlock.FACING);
+    }
+
+    /**
+     * Checks if block entity at given position is a usable CustomizableSignBlockEntity. Usable implies that it's not locked.
+     * The check for locking and the locking itself will be implemented in the future.
+     * Right now, it only checks if the block entity is an instance of CustomizableSignBlockEntity and if the block is facing the same direction.
+     */
+    public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, World world, Direction shouldFace) {
+        return
+            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity && shouldFace == ((CustomizableSignBlockEntity) world.getBlockEntity(pos)).getFacing();
+    }
+
+
+
+
+
+
+
+    // CONVERSION METHODS -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     /**
      * Converts the old border string format to a BorderProperty object.
      *
@@ -404,7 +507,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * @param name The name prefix that is used in the border string. For example: "customizable_sign" or "sign".
      * @return A BorderProperty object representing the border configuration.
      */
-    public static BorderProperty convertOldBorderStringToBorderProperty(String borderString, String name) {
+    private static BorderProperty convertOldBorderStringToBorderProperty(String borderString, String name) {
         String withoutName = borderString.replaceFirst(name + "_border_", ""); // Counts the number of underscores in the name and removes the prefix including the underscore
 
         boolean left = false;
@@ -489,78 +592,27 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         );
     }
 
-    public static String constructBlockPosListString(List<BlockPos> blockPosList) {
-        List<String> blockPoses = new ArrayList<>();
+    private static String convertPositionsToDistances(String oldPositions, BlockPos masterPos) {
+        List<BlockPos> positions = CustomizableSignBlockEntity.deconstructBlockPosListString(oldPositions);
+        List<String> distances = new ArrayList<>();
 
-        for (BlockPos pos : blockPosList) {
-            List<String> blockPosPiece = new ArrayList<>();
-            blockPosPiece.add(java.lang.String.valueOf(pos.getX()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getY()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getZ()));
-
-            String blockPosString = java.lang.String.join("?", blockPosPiece);
-
-            blockPoses.add(blockPosString);
+        for (BlockPos pos : positions) {
+            BlockPosExtended offset = BlockPosExtended.getOffset(masterPos, pos);
+            distances.add(offset.toObjectString());
         }
 
-        return java.lang.String.join("%", blockPoses);
-    }
+        String distanceBlockPosStrings = "";
 
-    public static List<BlockPos> deconstructBlockPosListString(String blockPosListString) {
-        List<String> blockPoses;
-        List<BlockPos> blockPosList = new ArrayList<>();
-
-        blockPoses = List.of(blockPosListString.split("%"));
-
-        for (String blockPos : blockPoses) {
-            List<String> blockCoordinates;
-
-            blockCoordinates = List.of(blockPos.split("\\?"));
-
-            BlockPos pos = new BlockPos(Integer.parseInt(blockCoordinates.get(0)), Integer.parseInt(blockCoordinates.get(1)), Integer.parseInt(blockCoordinates.get(2)));
-
-            blockPosList.add(pos);
+        try {
+            distanceBlockPosStrings = Base64.getEncoder().encodeToString(ListUtils.toByteArray(distances));
+        } catch (IOException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to convert old pole positions to distances! Error: {}", e.getMessage());
         }
 
-        return blockPosList;
+        return distanceBlockPosStrings;
     }
 
-    private void updateGame() {
-        markDirty();
-
-        if (this.getWorld() == null) return; // Cannot update if world is null
-
-        this.getWorld().emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
-        this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
-    }
-
-	public boolean isInitialized() {
-		return isInitialized;
-	}
-
-	public void setInitialized(boolean initialized) {
-		isInitialized = initialized;
-	}
-
-    public boolean shouldUpdateBackgroundTexture() {
-        return updateBackgroundTexture;
-    }
-
-    public void setUpdateBackgroundTexture(boolean var) {
-        this.updateBackgroundTexture = var;
-    }
-
-    public Direction getFacing() {
-        return this.getCachedState().get(CustomizableSignBlock.FACING);
-    }
-
-    /**
-     * Checks if block entity at given position is a usable CustomizableSignBlockEntity. Usable implies that it's not locked.
-     * The check for locking and the locking itself will be implemented in the future.
-     * Right now, it only checks if the block entity is an instance of CustomizableSignBlockEntity and if the block is facing the same direction.
-     */
-    public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, World world, Direction shouldFace) {
-        return
-            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity && shouldFace == ((CustomizableSignBlockEntity) world.getBlockEntity(pos)).getFacing();
+    private static boolean masterStringHasOldFormat(String masterString) {
+        return masterString.contains("%");
     }
 }
