@@ -59,8 +59,6 @@ fonts themselves.
 For **Spain, Mexico, USA, Portugal: *Highway Gothic*** by Tom Oetken<br>--<br>
 For **Germany, Czech Republic: *DIN 1451 Mittelschrift*** by Peter Wiegel (SIL OFL)<br>--<br>
 For **Austria, Slovakia: *Paneuropa*** by Peter Wiegel (SIL OFL)<br>--<br>
-For **Poland: *Drogowskaz*** by Emil Wojtacki<br>--<br>
-~~For **Slovenia, Croatia, Serbia, Montenegro, Bulgaria, Romania: *Gliscor Gothic*** by Tom Oetken~~ **Removed for now** ~~<br>(MODIFIED by me; I got the permission to from Tom Oetken)~~<br>--<br>
 **For Your own made up country there are a few neutral fonts included: *Roboto (Mono), Funnel Sans and Deja Vu Sans* !**
 
 You can always add more fonts yourself by just opening the .jar with a zipping program and adding the .ttf file under `assets/myworld_traffic_addition/textures/imgui/fonts/` **BUT**
