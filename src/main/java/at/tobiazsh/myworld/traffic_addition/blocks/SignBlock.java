@@ -25,10 +25,11 @@ public abstract class SignBlock extends BlockWithEntity {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    private VoxelShape SHAPE_N;
-    private VoxelShape SHAPE_E;
-    private VoxelShape SHAPE_S;
-    private VoxelShape SHAPE_W;
+    private final VoxelShape SHAPE_N;
+    private final VoxelShape SHAPE_E;
+    private final VoxelShape SHAPE_S;
+    private final VoxelShape SHAPE_W;
+    public final SIGN_SHAPE shape;
 
     public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw) {
         super(settings);
