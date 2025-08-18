@@ -40,17 +40,4 @@ public class TriangularSignBlock extends SignBlock {
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new TriangularSignBlockEntity(pos, state);
     }
-
-    @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
-            BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof TriangularSignBlockEntity) {
-                MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.TRIANGULAR_UPSIDE_UP));
-                return ActionResult.SUCCESS;
-            }
-        }
-
-        return ActionResult.PASS;
-    }
 }
