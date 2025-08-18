@@ -127,10 +127,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ServerPlayNetworking.send(player, new OpenSignPoleRotationScreenPayload(pos));
 	}
 
-	public static void sendOpenSignSelectionScreenPacket (ServerPlayerEntity player, BlockPos pos, int type) {
-		ServerPlayNetworking.send(player, new OpenSignSelectionPayload(pos, type));
-	}
-
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
 	}
