@@ -8,8 +8,6 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.ModVars;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.OctagonalSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
@@ -17,11 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
@@ -42,20 +36,6 @@ public class OctagonalSignBlock extends SignBlock {
     @Override
     protected MapCodec<? extends BlockWithEntity> getCodec() {
         return CODEC;
-    }
-
-    @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
-            BlockEntity entity = world.getBlockEntity(pos);
-
-            if (entity instanceof OctagonalSignBlockEntity blockEntity) {
-                MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.OCTAGONAL));
-                return ActionResult.SUCCESS;
-            }
-        }
-
-        return ActionResult.PASS;
     }
 
     @Override
