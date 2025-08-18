@@ -31,7 +31,7 @@ public abstract class SignBlock extends BlockWithEntity {
     private final VoxelShape SHAPE_W;
     public final SIGN_SHAPE shape;
 
-    public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw) {
+    public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw, SIGN_SHAPE shape) {
         super(settings);
 
         SHAPE_N = vn;
