@@ -37,19 +37,6 @@ public class UpsideDownTriangularSignBlock extends SignBlock {
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
-            BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof UpsideDownTriangularSignBlockEntity) {
-                MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.TRIANGULAR_UPSIDE_DOWN));
-                return ActionResult.SUCCESS;
-            }
-        }
-
-        return ActionResult.PASS;
-    }
-
-    @Override
     protected MapCodec<? extends BlockWithEntity> getCodec() {
         return CODEC;
     }
