@@ -94,6 +94,8 @@ public abstract class SignBlock extends BlockWithEntity {
                         getSignSelectionEnumInt(this.shape)
                 )
         );
+
+        return ActionResult.SUCCESS;
     }
 
     public static BlockPos getBehindPos(BlockPos pos, BlockState state) {
