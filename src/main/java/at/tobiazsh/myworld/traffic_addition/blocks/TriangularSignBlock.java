@@ -19,9 +19,6 @@ public class TriangularSignBlock extends SignBlock {
 
     private static final MapCodec<TriangularSignBlock> CODEC = createCodec(TriangularSignBlock::new);
 
-    // TODO: Somehow render a holder for the sign if it's behind a sign pole
-    // TODO: Fuck it and drink a bottle of Vodka
-
     private static final VoxelShape SHAPE_N = Block.createCuboidShape(0, 0, 14.5, 16, 16, 16);
     private static final VoxelShape SHAPE_W = Block.createCuboidShape(14.5, 0, 0, 16, 16, 16);
     private static final VoxelShape SHAPE_S = Block.createCuboidShape(0, 0, 0, 16, 16, 1.5);
