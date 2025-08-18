@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
-import at.tobiazsh.myworld.traffic_addition.ModVars;
+import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.block.Block;
@@ -48,9 +48,9 @@ public class SignBlockEntity extends BlockEntity {
         return this.rotation;
     }
 
-    public SignBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ModVars.SIGN_SELECTION_TYPE shapeType, String textureId) {
+    public SignBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, SignBlock.SIGN_SHAPE shapeType, String textureId) {
         super(type, pos, state);
-        this.shapeType = ModVars.getSignSelectionEnumInt(shapeType);
+        this.shapeType = SignBlock.getSignSelectionEnumInt(shapeType);
         this.textureId = textureId;
     }
 
