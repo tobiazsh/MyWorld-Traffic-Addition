@@ -59,7 +59,7 @@ public class ModVars {
             case "rect_stretch_small" -> { return SIGN_SELECTION_TYPE.RECT_STRETCH_SMALL; }
             case "rect_stretch_medium" -> { return SIGN_SELECTION_TYPE.RECT_STRETCH_MEDIUM; }
             case "rect_stretch_large" -> { return SIGN_SELECTION_TYPE.RECT_STRETCH_LARGE; }
-            case "sqaure_turn_45" -> { return SIGN_SELECTION_TYPE.SQUARE_TURN_45; }
+            case "square_turn_45" -> { return SIGN_SELECTION_TYPE.SQUARE_TURN_45; }
             default -> { return SIGN_SELECTION_TYPE.ROUND; }
         }
     }
