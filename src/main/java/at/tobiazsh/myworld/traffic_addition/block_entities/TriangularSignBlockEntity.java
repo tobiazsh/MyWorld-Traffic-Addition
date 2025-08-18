@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
-import at.tobiazsh.myworld.traffic_addition.ModVars;
+import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -9,7 +9,7 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.TRIANGULAR_S
 public class TriangularSignBlockEntity extends SignBlockEntity {
 
     public TriangularSignBlockEntity(BlockPos pos, BlockState state) {
-        super(TRIANGULAR_SIGN_BLOCK_ENTITY, pos, state, ModVars.SIGN_SELECTION_TYPE.TRIANGULAR_UPSIDE_UP, "textures/sign_pngs/aut/triangular/other_danger.png");
+        super(TRIANGULAR_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.TRIANGULAR_UPSIDE_UP, "textures/sign_pngs/aut/triangular/other_danger.png");
     }
 
 }
