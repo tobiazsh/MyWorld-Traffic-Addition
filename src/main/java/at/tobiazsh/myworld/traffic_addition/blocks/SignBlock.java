@@ -38,6 +38,8 @@ public abstract class SignBlock extends BlockWithEntity {
         SHAPE_E = ve;
         SHAPE_S = vs;
         SHAPE_W = vw;
+
+        this.shape = shape;
     }
 
     @Override
