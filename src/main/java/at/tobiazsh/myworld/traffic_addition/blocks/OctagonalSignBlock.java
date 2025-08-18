@@ -30,7 +30,7 @@ public class OctagonalSignBlock extends SignBlock {
     private static final VoxelShape SHAPE_W = Block.createCuboidShape(0, 0, 0, 1.5, 16, 16);
 
     public OctagonalSignBlock(Settings settings) {
-        super(settings, SHAPE_N, SHAPE_W, SHAPE_S, SHAPE_E);
+        super(settings, SHAPE_N, SHAPE_W, SHAPE_S, SHAPE_E, SIGN_SHAPE.OCTAGONAL);
     }
 
     @Override
