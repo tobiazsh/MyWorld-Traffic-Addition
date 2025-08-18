@@ -47,17 +47,4 @@ public class RoundSignBlock extends SignBlock {
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new RoundSignBlockEntity(pos, state);
     }
-
-    @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
-            BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof RoundSignBlockEntity) {
-                MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.ROUND));
-                return ActionResult.SUCCESS;
-            }
-        }
-
-        return ActionResult.PASS;
-    }
 }
