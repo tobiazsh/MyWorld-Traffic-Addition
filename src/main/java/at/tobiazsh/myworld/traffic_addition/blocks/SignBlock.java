@@ -82,6 +82,20 @@ public abstract class SignBlock extends BlockWithEntity {
         }
     }
 
+    @Override
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (!world.isClient() && !player.isSneaking())
+            return ActionResult.PASS;
+
+        ServerPlayNetworking.send(
+                (ServerPlayerEntity) player,
+                new OpenSignSelectionPayload(
+                        pos,
+                        getSignSelectionEnumInt(this.shape)
+                )
+        );
+    }
+
     public static BlockPos getBehindPos(BlockPos pos, BlockState state) {
         switch(state.get(FACING)) {
             case EAST -> { return pos.west(); }
