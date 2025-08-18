@@ -115,4 +115,67 @@ public abstract class SignBlock extends BlockWithEntity {
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return null;
     }
+
+    public static int getSignSelectionEnumInt (SIGN_SHAPE type) {
+        switch (type) {
+            case TRIANGULAR_UPSIDE_UP -> { return 0; }
+            case TRIANGULAR_UPSIDE_DOWN -> { return 1; }
+            case OCTAGONAL -> { return 3; }
+            case RECT_SMALL -> { return 4; }
+            case RECT_MEDIUM -> { return 5; }
+            case RECT_LARGE -> { return 6; }
+            case RECT_STRETCH_SMALL -> { return 7; }
+            case RECT_STRETCH_MEDIUM -> { return 8; }
+            case RECT_STRETCH_LARGE -> { return 9; }
+            case SQUARE_TURN_45 -> { return 10; }
+            default -> { return 2; }
+        }
+    }
+
+    public static SIGN_SHAPE getSignSelectionEnum (int num) {
+        switch (num) {
+            case 0 -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_UP; }
+            case 1 -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_DOWN; }
+            case 3 -> { return SIGN_SHAPE.OCTAGONAL; }
+            case 4 -> { return SIGN_SHAPE.RECT_SMALL; }
+            case 5 -> { return SIGN_SHAPE.RECT_MEDIUM; }
+            case 6 -> { return SIGN_SHAPE.RECT_LARGE; }
+            case 7 -> { return SIGN_SHAPE.RECT_STRETCH_SMALL; }
+            case 8 -> { return SIGN_SHAPE.RECT_STRETCH_MEDIUM; }
+            case 9 -> { return SIGN_SHAPE.RECT_STRETCH_LARGE; }
+            case 10 -> { return SIGN_SHAPE.SQUARE_TURN_45; }
+            default -> { return SIGN_SHAPE.ROUND; }
+        }
+    }
+
+    public static SIGN_SHAPE getSignSelectionEnumFromString (String str) {
+        switch (str) {
+            case "triangular" -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_UP; }
+            case "upside_down_triangular" -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_DOWN; }
+            case "octagonal" -> { return SIGN_SHAPE.OCTAGONAL; }
+            case "rect_small" -> { return SIGN_SHAPE.RECT_SMALL; }
+            case "rect_medium" -> { return SIGN_SHAPE.RECT_MEDIUM; }
+            case "rect_large" -> { return SIGN_SHAPE.RECT_LARGE; }
+            case "rect_stretch_small" -> { return SIGN_SHAPE.RECT_STRETCH_SMALL; }
+            case "rect_stretch_medium" -> { return SIGN_SHAPE.RECT_STRETCH_MEDIUM; }
+            case "rect_stretch_large" -> { return SIGN_SHAPE.RECT_STRETCH_LARGE; }
+            case "square_turn_45" -> { return SIGN_SHAPE.SQUARE_TURN_45; }
+            default -> { return SIGN_SHAPE.ROUND; }
+        }
+    }
+
+    public enum SIGN_SHAPE {
+        TRIANGULAR_UPSIDE_UP,
+        TRIANGULAR_UPSIDE_DOWN,
+        ROUND,
+        OCTAGONAL,
+        RECT_SMALL,
+        RECT_MEDIUM,
+        RECT_LARGE,
+        RECT_STRETCH_SMALL,
+        RECT_STRETCH_MEDIUM,
+        RECT_STRETCH_LARGE,
+        SQUARE_TURN_45
+    }
+
 }
