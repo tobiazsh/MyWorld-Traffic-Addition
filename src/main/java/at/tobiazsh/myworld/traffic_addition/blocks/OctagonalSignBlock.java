@@ -28,7 +28,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class OctagonalSignBlock extends SignBlock {
-    private MapCodec<OctagonalSignBlock> CODEC = createCodec(OctagonalSignBlock::new);
+    private final MapCodec<OctagonalSignBlock> CODEC = createCodec(OctagonalSignBlock::new);
 
     private static final VoxelShape SHAPE_N = Block.createCuboidShape(0, 0, 14.5, 16, 16, 16);
     private static final VoxelShape SHAPE_E = Block.createCuboidShape(14.5, 0, 0, 16, 16, 16);
