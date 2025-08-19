@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopu
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.AboutWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
+import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import imgui.ImGui;
 import imgui.flag.ImGuiKey;
 import net.minecraft.client.MinecraftClient;
@@ -46,6 +47,8 @@ public class ImGuiRenderer {
             }
 
             if (showSignEditor) SignEditor.render(); // If the sign editor has to be rendered, do so
+
+            SignSelector.render();
 
             ImGui.popFont(); // Pop default font
         });
