@@ -37,10 +37,6 @@ public class ImGuiRenderer {
             if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so
             if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
 
-            if (ImGui.isKeyPressed(ImGuiKey.F12)) {
-                // ... Do something
-            }
-
             if (shouldSnap) {
                 float width = MinecraftClient.getInstance().getWindow().getWidth();
                 float height = MinecraftClient.getInstance().getWindow().getHeight();
