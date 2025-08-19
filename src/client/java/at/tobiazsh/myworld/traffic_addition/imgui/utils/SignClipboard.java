@@ -6,11 +6,11 @@ import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Clipboard {
+public class SignClipboard {
 
-    private static final Clipboard INSTANCE = new Clipboard();
+    private static final SignClipboard INSTANCE = new SignClipboard();
 
-    public static Clipboard getInstance() {
+    public static SignClipboard getInstance() {
         return INSTANCE;
     }
 
