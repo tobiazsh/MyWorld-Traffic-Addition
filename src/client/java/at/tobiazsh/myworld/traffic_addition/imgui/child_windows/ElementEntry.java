@@ -12,7 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.FileDialogPopup;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.Clipboard;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.utils.Saves;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import com.google.gson.JsonObject;
@@ -189,12 +189,12 @@ public abstract class ElementEntry {
 		if (ImGui.beginPopupContextItem("ElementEntryContextMenu##" + renderObject.getId())) {
 
 			if (ImGui.button(tr("Global", "Copy"))) { // "Copy" button
-				Clipboard.getInstance().setCopiedElement(renderObject.copy());
+				SignClipboard.getInstance().setCopiedElement(renderObject.copy());
 				ImGui.closeCurrentPopup();
 			}
 
 			if (ImGui.button(tr("Global", "Cut"))) { // "Cut" button
-				Clipboard.getInstance().setCopiedElement(renderObject.copy());
+				SignClipboard.getInstance().setCopiedElement(renderObject.copy());
 				deleteElement(renderObject);
 				ImGui.closeCurrentPopup();
 			}
