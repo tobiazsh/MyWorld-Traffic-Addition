@@ -90,7 +90,10 @@ public abstract class SignBlock extends BlockWithEntity {
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient() && !player.isSneaking())
+        if (
+                !(world instanceof ServerWorld) ||
+                !(player instanceof ServerPlayerEntity)
+        )
             return ActionResult.PASS;
 
         ServerPlayNetworking.send(
