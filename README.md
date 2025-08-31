@@ -2,6 +2,8 @@
 
 ### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.6, 1.21.7 and 1.21.8<br>
 
+## [View on Modrinth](https://modrinth.com/mod/myworld-traffic-addition)
+
 ### **Current features:**
  - Place signs and rotate
  - Apply different textures to sign
