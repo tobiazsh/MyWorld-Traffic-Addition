@@ -156,7 +156,6 @@ public abstract class SignBlock extends BlockWithEntity {
             case RECT_STRETCH_MEDIUM -> { return 8; }
             case RECT_STRETCH_LARGE -> { return 9; }
             case SQUARE_TURN_45 -> { return 10; }
-            case ALL -> { return 11; }
             default -> { return 2; }
         }
     }
@@ -173,7 +172,6 @@ public abstract class SignBlock extends BlockWithEntity {
             case 8 -> { return SIGN_SHAPE.RECT_STRETCH_MEDIUM; }
             case 9 -> { return SIGN_SHAPE.RECT_STRETCH_LARGE; }
             case 10 -> { return SIGN_SHAPE.SQUARE_TURN_45; }
-            case 11 -> { return SIGN_SHAPE.ALL; }
             default -> { return SIGN_SHAPE.ROUND; }
         }
     }
@@ -190,7 +188,6 @@ public abstract class SignBlock extends BlockWithEntity {
             case "rect_stretch_medium" -> { return SIGN_SHAPE.RECT_STRETCH_MEDIUM; }
             case "rect_stretch_large" -> { return SIGN_SHAPE.RECT_STRETCH_LARGE; }
             case "square_turn_45" -> { return SIGN_SHAPE.SQUARE_TURN_45; }
-            case "all" -> { return SIGN_SHAPE.ALL; }
             default -> { return SIGN_SHAPE.ROUND; }
         }
     }
@@ -207,7 +204,6 @@ public abstract class SignBlock extends BlockWithEntity {
         RECT_STRETCH_MEDIUM,
         RECT_STRETCH_LARGE,
         SQUARE_TURN_45,
-        ALL
     }
 
 }
