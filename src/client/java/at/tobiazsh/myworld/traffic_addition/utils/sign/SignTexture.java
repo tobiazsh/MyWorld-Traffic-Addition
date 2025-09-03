@@ -43,6 +43,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
      * @param category The category of the sign. If missing, a {@link SignTextureParseException} is thrown. CANNOT be null.
      * @param isInModJar Whether the path is relative to the mod jar's assets
      * @param country The country the sign belongs to. CANNOT be null.
+     * @param relativeTo The path of the entry file (textures.json). Must be either an absolute path on the filesystem or relative path to the mod's jar-assets folder!
      */
     public static SignTexture parse(
             @Nullable JsonObject defaults,
@@ -72,10 +73,15 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
 
         // Now parse the fields
         name = entry.get("name").getAsString();
-        path = relativeTo.resolve(Path.of(entry.get("path").getAsString()));
 
-        if (entry.has("shape"))
-            shape = SignBlock.SIGN_SHAPE.valueOf(entry.get("shape").getAsString().toUpperCase());
+        String raw = entry.get("path").getAsString().trim().replace('\\', '/');
+
+
+        // Following "/" means root-relative to the resource folder
+        if (raw.startsWith("/"))
+            raw = raw.substring(1); // Remove first slash
+
+        path = relativeTo.resolve(raw).normalize();
 
         return new SignTexture(name, path, isInModJar, category, shape, country);
     }
