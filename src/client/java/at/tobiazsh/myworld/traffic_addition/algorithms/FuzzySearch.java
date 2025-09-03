@@ -42,7 +42,7 @@ public class FuzzySearch<T> {
 
             if (text == null) continue; // Skip null texts
 
-            // Partial or exact match (case insensitive)
+            // Partial or exact match (case-insensitive)
             if (text.equalsIgnoreCase(query) || text.toLowerCase().contains(query.toLowerCase())) {
                 matches.add(item);
                 continue;
