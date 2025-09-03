@@ -157,6 +157,7 @@ public class SignSelector {
     public void open(SignBlock.SIGN_SHAPE signType) {
         shouldRender = true;
         this.signType = signType;
+        this.filter = new SignFilter(null, null, signType); // Filter for the current sign type
         refresh();
     }
 
