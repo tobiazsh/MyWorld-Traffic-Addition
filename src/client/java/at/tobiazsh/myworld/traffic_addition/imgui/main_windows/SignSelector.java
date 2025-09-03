@@ -124,7 +124,7 @@ public class SignSelector {
 
     private final ImInt selectedIndex = new ImInt(0);
 
-    public void selectionList() {
+    private void selectionList() {
         ImGui.text(tr("Global", "Results"));
         ImGui.listBox("##resultBox", selectedIndex, resultNames, 15);
     }
