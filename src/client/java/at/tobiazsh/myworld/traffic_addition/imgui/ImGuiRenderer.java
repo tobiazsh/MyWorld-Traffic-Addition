@@ -48,7 +48,7 @@ public class ImGuiRenderer {
 
             if (showSignEditor) SignEditor.render(); // If the sign editor has to be rendered, do so
 
-            SignSelector.render();
+            SignSelector.signSelectors.forEach(SignSelector::render); // Render all sign selectors
 
             ImGui.popFont(); // Pop default font
         });

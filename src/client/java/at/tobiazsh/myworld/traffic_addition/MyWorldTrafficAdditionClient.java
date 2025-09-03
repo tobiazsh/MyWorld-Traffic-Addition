@@ -1,11 +1,14 @@
 package at.tobiazsh.myworld.traffic_addition;
 
+import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
+import at.tobiazsh.myworld.traffic_addition.screens.EmptyScreen;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
@@ -24,6 +27,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -36,11 +40,16 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	public static CustomizableSignSettingScreen customizableSignSettingScreen;
+    public static final SignSelector signSelector = new SignSelector();
 
 	private static final List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
 
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
+
+    static {
+        SignSelector.signSelectors.add(signSelector);
+    }
 
 	@Override
 	public void onInitializeClient() {
@@ -103,14 +112,13 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 				}),
 
 				new GlobalReceiverClient<>(OpenSignSelectionPayload.Id, (payload) -> {
-					BlockPos pos = payload.pos();
-
 					if (MinecraftClient.getInstance().world == null || MinecraftClient.getInstance().player == null) {
 						MyWorldTrafficAddition.LOGGER.warn("Cannot open SignSelectionScreen because world or player is null!");
 						return;
 					}
 
-					MinecraftClient.getInstance().setScreen(new SignSelectionScreen(MinecraftClient.getInstance().world, pos, MinecraftClient.getInstance().player, ModVars.getSignSelectionEnum(payload.selection_type())));
+					MinecraftClient.getInstance().setScreen(new EmptyScreen(Text.literal("Sign Selection"), signSelector::close));
+                    signSelector.open(SignBlock.getSignSelectionEnum(payload.selection_type()));
 				}),
 
 				new GlobalReceiverClient<>(OpenCustomizableSignEditScreen.Id, (payload) -> {
