@@ -87,6 +87,9 @@
         "THANK YOU FOR DOWNLOADING \u003c3!": "DANKE FÜR'S HERUNTERLADEN \u003c3!",
         "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯": "Während ich das schreibe, sollte ich wahrscheinlich für die Schule lernen, aber wen juckt's ¯\\_(^_^)_/¯",
         "Made in Austria": "Hergestellt in Österreich"
+      },
+      "SignSelector": {
+        "SignSelector": "Schilderauswahl"
       }
     },
     "Global": {
@@ -152,6 +155,8 @@
     "Zoom In": "Hineinzoomen",
     "File": "Datei",
     "Other": "Andere",
+    "Search": "Suchen",
+    "Results": "Ergebnisse",
     "Lang": {
       "auto": "Standardsprache",
       "en_US": "Englisch (US)",

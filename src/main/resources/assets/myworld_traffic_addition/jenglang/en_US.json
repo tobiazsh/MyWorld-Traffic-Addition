@@ -88,6 +88,9 @@
         "THANK YOU FOR DOWNLOADING \u003c3!": "THANK YOU FOR DOWNLOADING \u003c3!",
         "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯": "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯",
         "Made in Austria": "Made in Austria"
+      },
+      "SignSelector": {
+        "Sign Selector": "Sign Selector"
       }
     },
     "Global": {
@@ -155,6 +158,8 @@
     "Zoom In": "Zoom In",
     "File": "File",
     "Other": "Other",
+    "Search": "Search",
+    "Results": "Results",
     "Lang": {
       "auto": "Default Language",
       "en_US": "English (US)",
