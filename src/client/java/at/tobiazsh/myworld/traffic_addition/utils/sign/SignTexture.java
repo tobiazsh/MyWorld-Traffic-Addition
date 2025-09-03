@@ -88,7 +88,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
      * @throws SignTextureParseException If an error occurs while parsing the file.
      */
     @SuppressWarnings("ConstantConditions")
-    public static List<SignTexture> parseFile(Path file, boolean isInModJar) throws SignTextureParseException {
+    public static @NotNull List<SignTexture> parseFile(Path file, boolean isInModJar) throws SignTextureParseException {
         StringBuilder fileContent = new StringBuilder();
 
         try (BufferedReader reader = isInModJar
