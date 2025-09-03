@@ -122,7 +122,7 @@ public class SignSelector {
     }
 
 
-    private ImInt selectedIndex = new ImInt(0);
+    private final ImInt selectedIndex = new ImInt(0);
 
     public void selectionList() {
         ImGui.text(tr("Global", "Results"));
