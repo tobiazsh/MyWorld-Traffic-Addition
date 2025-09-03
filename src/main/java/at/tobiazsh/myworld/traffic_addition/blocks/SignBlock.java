@@ -146,7 +146,7 @@ public abstract class SignBlock extends BlockWithEntity {
 
     public static int getSignSelectionEnumInt (SIGN_SHAPE type) {
         switch (type) {
-            case TRIANGULAR_UPSIDE_UP -> { return 0; }
+            case TRIANGULAR -> { return 0; }
             case TRIANGULAR_UPSIDE_DOWN -> { return 1; }
             case OCTAGONAL -> { return 3; }
             case RECT_SMALL -> { return 4; }
@@ -162,7 +162,7 @@ public abstract class SignBlock extends BlockWithEntity {
 
     public static SIGN_SHAPE getSignSelectionEnum (int num) {
         switch (num) {
-            case 0 -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_UP; }
+            case 0 -> { return SIGN_SHAPE.TRIANGULAR; }
             case 1 -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_DOWN; }
             case 3 -> { return SIGN_SHAPE.OCTAGONAL; }
             case 4 -> { return SIGN_SHAPE.RECT_SMALL; }
@@ -177,7 +177,7 @@ public abstract class SignBlock extends BlockWithEntity {
     }
 
     public enum SIGN_SHAPE {
-        TRIANGULAR_UPSIDE_UP,
+        TRIANGULAR,
         TRIANGULAR_UPSIDE_DOWN,
         ROUND,
         OCTAGONAL,

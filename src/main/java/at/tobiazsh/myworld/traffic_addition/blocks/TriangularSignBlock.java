@@ -18,7 +18,7 @@ public class TriangularSignBlock extends SignBlock {
     private static final VoxelShape SHAPE_E = Block.createCuboidShape(0, 0, 0, 1.5, 16, 16);
 
     public TriangularSignBlock(Settings settings) {
-        super(settings, SHAPE_N, SHAPE_E, SHAPE_S, SHAPE_W, SIGN_SHAPE.TRIANGULAR_UPSIDE_UP);
+        super(settings, SHAPE_N, SHAPE_E, SHAPE_S, SHAPE_W, SIGN_SHAPE.TRIANGULAR);
     }
 
     @Override

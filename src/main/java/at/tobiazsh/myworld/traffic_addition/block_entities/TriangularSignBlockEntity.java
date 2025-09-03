@@ -9,7 +9,7 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.TRIANGULAR_S
 public class TriangularSignBlockEntity extends SignBlockEntity {
 
     public TriangularSignBlockEntity(BlockPos pos, BlockState state) {
-        super(TRIANGULAR_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.TRIANGULAR_UPSIDE_UP, "textures/sign_pngs/aut/triangular/other_danger.png");
+        super(TRIANGULAR_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.TRIANGULAR, "textures/sign_pngs/aut/triangular/other_danger.png");
     }
 
 }
