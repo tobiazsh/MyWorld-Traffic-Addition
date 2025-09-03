@@ -152,7 +152,8 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
                         entry.getAsJsonObject(),
                         category,
                         isInModJar,
-                        country
+                        country,
+                        file.getParent()
                 );
 
                 parsedTextures.add(texture);
