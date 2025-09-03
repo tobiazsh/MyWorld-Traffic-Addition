@@ -146,8 +146,7 @@ public class SignSelector {
         ImGui.beginChild("##texturePreview", w, w, true); // Square ratio across available width
         ImVec2 windowPadding = ImGui.getStyle().getWindowPadding();
 
-        if (previewTexture != null)
-            ImGui.image(previewTexture.getTextureId(), w - (windowPadding.x * 2), w - (windowPadding.y * 2));
+        ImGui.image(previewTexture.getTextureId(), w - (windowPadding.x * 2), w - (windowPadding.y * 2));
 
         ImGui.endChild();
     }
