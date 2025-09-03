@@ -72,7 +72,7 @@ public class SignSelector {
                                 .path;
 
                         if (filePath == null) {
-                            MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: " + textureFolder.name);
+                            MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name);
                         } else {
                             // Finally, parse the textures.json
                             try {
