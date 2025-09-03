@@ -49,7 +49,8 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
             @NotNull JsonObject entry,
             @NotNull CATEGORY category,
             boolean isInModJar,
-            @NotNull String country
+            @NotNull String country,
+            @NotNull Path relativeTo
     ) throws SignTextureParseException {
 
         String name;
@@ -71,7 +72,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
 
         // Now parse the fields
         name = entry.get("name").getAsString();
-        path = Path.of(entry.get("path").getAsString());
+        path = relativeTo.resolve(Path.of(entry.get("path").getAsString()));
 
         if (entry.has("shape"))
             shape = SignBlock.SIGN_SHAPE.valueOf(entry.get("shape").getAsString().toUpperCase());
