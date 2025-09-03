@@ -17,7 +17,7 @@
   "textures": {
     "priority": [
       { "name": "stop", "path": "/priority/stop.png", "shape": "octagonal" },
-      { "name": "yield", "path": "/priority/yield.png", "shape": "upside_down_triangular" }
+      { "name": "yield", "path": "/priority/yield.png", "shape": "triangular_upside_down" }
     ],
     "regulatory": [
       { "name": "all_allowed", "path": "/regulatory/no_entry.png" },
