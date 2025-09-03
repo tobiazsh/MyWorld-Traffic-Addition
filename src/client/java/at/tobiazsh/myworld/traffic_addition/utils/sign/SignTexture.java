@@ -87,6 +87,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
      * @param isInModJar Whether the path is relative to the mod jar's assets folder (true) or an absolute path on the filesystem (false).
      * @throws SignTextureParseException If an error occurs while parsing the file.
      */
+    @SuppressWarnings("ConstantConditions")
     public static List<SignTexture> parseFile(Path file, boolean isInModJar) throws SignTextureParseException {
         StringBuilder fileContent = new StringBuilder();
 
