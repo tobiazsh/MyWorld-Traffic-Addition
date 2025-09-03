@@ -60,7 +60,7 @@ public class FuzzySearch<T> {
                 String substring = text.substring(i, i + queryLen);
                 int score = LevenshteinDistance.getDistance(query, substring);
 
-                if (score <= 2) { // Allow a maximum of 2 character differences
+                if (score <= maxDistance) { // Allow a maximum of ... character differences
                     matches.add(item);
                     break;
                 }
