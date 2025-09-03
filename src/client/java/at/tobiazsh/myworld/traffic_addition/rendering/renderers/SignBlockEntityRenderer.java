@@ -61,7 +61,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
 
         BlockEntity blockEntityBehind = MinecraftClient.getInstance().world.getBlockEntity(attachmentBlockPos);
 
-        textureIdentifier = entity.getTextureId();
+        textureIdentifier = entity.getTexturePath();
 
         matrices.push();
 

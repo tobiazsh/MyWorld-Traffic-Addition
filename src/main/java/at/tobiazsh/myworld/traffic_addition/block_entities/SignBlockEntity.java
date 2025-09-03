@@ -24,18 +24,18 @@ public class SignBlockEntity extends BlockEntity {
     private Coordinates backstepCoords = new Coordinates(0f, 0f, 0.55f, Direction.NORTH);
     private int rotation = 0;
     private int shapeType;
-    private String textureId;
+    private String texturePath;
 
-    public void setTextureId(String textureId) {
-        this.textureId = textureId;
+    public void setTexturePath(String texturePath) {
+        this.texturePath = texturePath;
 
         markDirty();
         world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
         this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
     }
 
-    public String getTextureId() {
-        return textureId;
+    public String getTexturePath() {
+        return texturePath;
     }
 
     public void setRotation(int rotation) {
@@ -48,10 +48,10 @@ public class SignBlockEntity extends BlockEntity {
         return this.rotation;
     }
 
-    public SignBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, SignBlock.SIGN_SHAPE shapeType, String textureId) {
+    public SignBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, SignBlock.SIGN_SHAPE shapeType, String texturePath) {
         super(type, pos, state);
         this.shapeType = SignBlock.getSignSelectionEnumInt(shapeType);
-        this.textureId = textureId;
+        this.texturePath = texturePath;
     }
 
     public Coordinates getBackstepCoords() {
@@ -67,7 +67,7 @@ public class SignBlockEntity extends BlockEntity {
         super.writeData(writeView);
         writeView.putInt("Rotation", this.rotation);
         writeView.putInt("ShapeType", this.shapeType);
-        writeView.putString("Texture", this.textureId);
+        writeView.putString("Texture", this.texturePath);
         writeView.putString("Backstep", constructBackstepString(this.backstepCoords));
     }
 
@@ -76,7 +76,7 @@ public class SignBlockEntity extends BlockEntity {
         super.readData(readView);
         this.rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "SignBlockEntity.readNbt");
         this.shapeType = OptionalUtils.getOrDefault("ShapeType", readView::getOptionalInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
-        this.textureId = OptionalUtils.getOrDefault("Texture", readView::getOptionalString, "", "SignBlockEntity.readNbt");
+        this.texturePath = OptionalUtils.getOrDefault("Texture", readView::getOptionalString, "", "SignBlockEntity.readNbt");
         this.backstepCoords = deconstructBackstepString(OptionalUtils.getOrDefault("Backstep", readView::getOptionalString, "", "SignBlockEntity.readNbt"));
     }
 

@@ -18,7 +18,7 @@ public class SignBlockActions {
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
         if (blockEntity instanceof SignBlockEntity signBlockEntity)
-            defaults.world.getServer().execute(() -> signBlockEntity.setTextureId(textureId));
+            defaults.world.getServer().execute(() -> signBlockEntity.setTexturePath(textureId));
     }
 
     public static void handleRotationChange(SignBlockRotationPayload payload, ServerPlayNetworking.Context ctx) {
