@@ -110,7 +110,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
         JsonObject root = JsonParser.parseString(fileContent.toString()).getAsJsonObject();
 
         if (!root.has("textures")) { // No textures = No need to do anything :)
-            MyWorldTrafficAddition.LOGGER.warn("No textures found in sign texture file: " + file);
+            MyWorldTrafficAddition.LOGGER.warn("No textures found in sign texture file: {}", file);
             return new ArrayList<>();
         }
 
@@ -134,7 +134,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
             try {
                 category = CATEGORY.valueOf(categoryName.toUpperCase());
             } catch (IllegalArgumentException e) {
-                MyWorldTrafficAddition.LOGGER.warn("Unknown category: " + categoryName);
+                MyWorldTrafficAddition.LOGGER.warn("Unknown category: {}", categoryName);
                 continue; // Invalid category, skip
             }
 
@@ -142,7 +142,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
 
             categoryArray.forEach(entry -> {
                 if (!entry.isJsonObject()) {
-                    MyWorldTrafficAddition.LOGGER.warn("Invalid entry in sign texture file: " + file + " Entry: " + entry);
+                    MyWorldTrafficAddition.LOGGER.warn("Invalid entry in sign texture file: {} Entry: {}", file, entry);
                     return; // Invalid entry, skip
                 }
 
