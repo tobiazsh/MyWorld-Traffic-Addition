@@ -32,6 +32,7 @@ public class SignSelector {
     private SignBlock.SIGN_SHAPE signType;
     private List<SignTexture> textureDatabase = new ArrayList<>();
     private SignFilter filter = new SignFilter(null, null, null);
+    private final Texture previewTexture = new Texture();
 
     public void render() {
         if (!shouldRender)
@@ -44,6 +45,17 @@ public class SignSelector {
 
         searchBar();
         selectionList();
+        ImGui.sameLine();
+        texturePreview(ImGui.getContentRegionAvailX());
+
+        if (lastIndex != selectedIndex.get()) {
+            // Update anything related to that
+            lastIndex = selectedIndex.get();
+
+            // Load texture into ImGui
+
+            previewTexture.loadTexturePath(results.get(selectedIndex.get()).path().toString().replaceAll("\\\\", "/"));
+        }
 
         if (ImGui.button("Select")) {
             System.out.println("Selected texture: " + results.get(selectedIndex.get()));
@@ -123,10 +135,21 @@ public class SignSelector {
 
 
     private final ImInt selectedIndex = new ImInt(0);
+    private int lastIndex = 0;
 
     private void selectionList() {
         ImGui.text(tr("Global", "Results"));
         ImGui.listBox("##resultBox", selectedIndex, resultNames, 15);
+    }
+
+    private void texturePreview(float w) {
+        ImGui.beginChild("##texturePreview", w, w, true); // Square ratio across available width
+        ImVec2 windowPadding = ImGui.getStyle().getWindowPadding();
+
+        if (previewTexture != null)
+            ImGui.image(previewTexture.getTextureId(), w - (windowPadding.x * 2), w - (windowPadding.y * 2));
+
+        ImGui.endChild();
     }
 
     /**
