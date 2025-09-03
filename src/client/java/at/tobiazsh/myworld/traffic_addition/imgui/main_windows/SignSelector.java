@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,6 +44,10 @@ public class SignSelector {
 
         searchBar();
         selectionList();
+
+        if (ImGui.button("Select")) {
+            System.out.println("Selected texture: " + results.get(selectedIndex.get()));
+        }
 
         ImGui.end();
     }
@@ -87,10 +92,9 @@ public class SignSelector {
         textureDatabase = filterResults(textures.get(), filter);
     }
 
-    private ImString searchQuery = new ImString(128);
-    private String[] results = textureDatabase.stream().map(SignTexture::name).toArray(String[]::new);
-
-    // TODO: Make results functional and map with ID so each entry can be uniquely identified!
+    private final ImString searchQuery = new ImString(128);
+    private List<SignTexture> results = textureDatabase;
+    private String[] resultNames = new String[0];
 
     private void searchBar() {
         ImGui.beginChild("##searchbar", 0, 50, false);
@@ -99,19 +103,21 @@ public class SignSelector {
         ImGui.sameLine();
         if (ImGui.button(tr("Global", "Search"))) {
             if (searchQuery.get().isBlank()) {
-                results = this.textureDatabase.stream().map(SignTexture::name).toArray(String[]::new);
+                results = this.textureDatabase;
             } else {
                 System.out.println("Searching for: " + searchQuery.get());
 
-                FuzzySearch search = new FuzzySearch(textureDatabase.stream().map(SignTexture::name).toList());
-                results = filterResults((List<String>) search.search(searchQuery.get()), filter).stream().map(SignTexture::name).toArray(new String[0]);
+                FuzzySearch<SignTexture> search = new FuzzySearch<>(textureDatabase, SignTexture::name, 1);
+                results = filterResults(search.search(searchQuery.get()), filter);
             }
+
+            resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
         }
 
         ImGui.endChild();
     }
 
-    private List<SignTexture> filterResults(List<SignTexture> textures, SignFilter filter) {
+    private List<SignTexture> filterResults(Collection<SignTexture> textures, SignFilter filter) {
         return textures.stream().filter(filter::matches).toList();
     }
 
@@ -120,7 +126,7 @@ public class SignSelector {
 
     public void selectionList() {
         ImGui.text(tr("Global", "Results"));
-        ImGui.listBox("##resultBox", selectedIndex, results, 15);
+        ImGui.listBox("##resultBox", selectedIndex, resultNames, 15);
     }
 
     /**
@@ -129,7 +135,7 @@ public class SignSelector {
     public void open(SignBlock.SIGN_SHAPE signType) {
         shouldRender = true;
         this.signType = signType;
-        refresh(new SignFilter(null, null, signType));
+        refresh();
     }
 
     /**
