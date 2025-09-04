@@ -14,7 +14,7 @@ public class SignBlockActions {
     public static void handleTextureChange(SignBlockTextureChangePayload payload, ServerPlayNetworking.Context ctx) {
         GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
         BlockPos pos = payload.pos();
-        String textureId = payload.textureId();
+        String textureId = payload.texturePath();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
         if (blockEntity instanceof SignBlockEntity signBlockEntity)

@@ -101,7 +101,8 @@ public abstract class SignBlock extends BlockWithEntity {
                 (ServerPlayerEntity) player,
                 new OpenSignSelectionPayload(
                         pos,
-                        getSignSelectionEnumInt(this.shape)
+                        getSignSelectionEnumInt(this.shape),
+                        world.getRegistryKey()
                 )
         );
 
