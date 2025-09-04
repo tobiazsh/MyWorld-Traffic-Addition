@@ -170,11 +170,13 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 
 
-	public static Identifier createId(String id) {
+	@Contract("_ -> new")
+    public static @NotNull Identifier createId(String id) {
 		return Identifier.of(MOD_ID, id);
 	}
 
-    public static Path relativizeResourcePath(Path absoluteResourcePath) {
+    @Contract(pure = true)
+    public static @NotNull Path relativizeResourcePath(Path absoluteResourcePath) {
         return MOD_RESOURCES.relativize(absoluteResourcePath);
     }
 }
