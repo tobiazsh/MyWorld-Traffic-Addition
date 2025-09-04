@@ -162,10 +162,12 @@ public class SignSelector {
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
-    public void open(SignBlock.SIGN_SHAPE signType) {
+    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, World world) {
         shouldRender = true;
         this.signType = signType;
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type
+        this.signPos = signPos;
+        this.world = world;
         refresh();
     }
 
