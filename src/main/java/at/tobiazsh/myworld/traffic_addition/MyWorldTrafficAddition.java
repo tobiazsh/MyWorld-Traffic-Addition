@@ -175,8 +175,4 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		return Identifier.of(MOD_ID, id);
 	}
 
-    @Contract(pure = true)
-    public static @NotNull Path relativizeResourcePath(Path absoluteResourcePath) {
-        return MOD_RESOURCES.relativize(absoluteResourcePath);
-    }
 }
