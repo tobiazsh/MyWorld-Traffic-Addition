@@ -2,15 +2,22 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.algorithms.FuzzySearch;
+import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.utils.exception.SignTextureParseException;
 import at.tobiazsh.myworld.traffic_addition.utils.sign.SignTexture;
+import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import imgui.ImGui;
+import imgui.ImVec2;
 import imgui.type.ImInt;
 import imgui.type.ImString;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,6 +28,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
+import static at.tobiazsh.myworld.traffic_addition.utils.PathUtils.relativizeResourcePath;
+import static at.tobiazsh.myworld.traffic_addition.utils.PathUtils.windowsToUnixPath;
 
 /**
  * The window used to select the texture of the sign on a normal sign block (not customizable!)
@@ -33,6 +42,8 @@ public class SignSelector {
     private List<SignTexture> textureDatabase = new ArrayList<>();
     private SignFilter filter = new SignFilter(null, null, null);
     private final Texture previewTexture = new Texture();
+    private BlockPos signPos;
+    private World world;
 
     public void render() {
         if (!shouldRender)
@@ -59,6 +70,7 @@ public class SignSelector {
 
         if (ImGui.button("Select")) {
             System.out.println("Selected texture: " + results.get(selectedIndex.get()));
+            apply();
         }
 
         ImGui.end();
