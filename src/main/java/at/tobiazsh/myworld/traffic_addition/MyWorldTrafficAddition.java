@@ -173,4 +173,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	public static Identifier createId(String id) {
 		return Identifier.of(MOD_ID, id);
 	}
+
+    public static Path relativizeResourcePath(Path absoluteResourcePath) {
+        return MOD_RESOURCES.relativize(absoluteResourcePath);
+    }
 }
