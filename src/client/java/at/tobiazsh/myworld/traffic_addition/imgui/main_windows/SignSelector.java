@@ -151,6 +151,14 @@ public class SignSelector {
         ImGui.endChild();
     }
 
+    private void apply() {
+        ClientPlayNetworking.send(
+                new SignBlockTextureChangePayload(
+                        signPos,
+                        windowsToUnixPath(relativizeResourcePath(results.get(selectedIndex.get()).path()).toString()),
+                        world.getRegistryKey()));
+    }
+
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
