@@ -16,7 +16,7 @@ public record SignFilter(SignTexture.CATEGORY category, String country, SignBloc
      */
     public boolean matches(SignTexture signTexture) {
 
-        if (category != null && category != SignTexture.CATEGORY.OTHER)
+        if (category != null && category != signTexture.category())
             return false; // No match
 
         if (country != null && !signTexture.country().equalsIgnoreCase(country))
