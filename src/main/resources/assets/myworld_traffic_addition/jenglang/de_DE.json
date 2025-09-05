@@ -50,7 +50,7 @@
         "Save to Sign": "Auf Schild speichern",
         "Show Json": "Json anzeigen",
         "Add Text Element": "Neues Textelement hinzufügen",
-        "Choose Background": "Hintergrund auswählen",
+        "Choose Background": "Hintergrund auswählen"
       },
       "PreferencesWindow": {
         "If you change this value, you need to restart the game for it to take effect.": "Wenn du diesen Wert änderst, musst du das Spiel neu starten, damit die Änderung wirksam wird.",
@@ -159,6 +159,8 @@
     "Search": "Suchen",
     "Results": "Ergebnisse",
     "Preview": "Vorschau",
+    "Shape": "Form",
+    "Category": "Kategorie",
     "Lang": {
       "auto": "Standardsprache",
       "en_US": "Englisch (US)",
