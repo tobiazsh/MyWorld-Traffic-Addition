@@ -2,41 +2,52 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
 import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class SignBlock extends BlockWithEntity {
 
     public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 
-    private VoxelShape SHAPE_N;
-    private VoxelShape SHAPE_E;
-    private VoxelShape SHAPE_S;
-    private VoxelShape SHAPE_W;
+    private final VoxelShape SHAPE_N;
+    private final VoxelShape SHAPE_E;
+    private final VoxelShape SHAPE_S;
+    private final VoxelShape SHAPE_W;
+    public final SIGN_SHAPE shape;
 
-    public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw) {
+    public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw, SIGN_SHAPE shape) {
         super(settings);
 
         SHAPE_N = vn;
         SHAPE_E = ve;
         SHAPE_S = vs;
         SHAPE_W = vw;
+
+        this.shape = shape;
     }
 
     @Override
@@ -79,6 +90,27 @@ public abstract class SignBlock extends BlockWithEntity {
         }
     }
 
+    @Override
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (
+                !(world instanceof ServerWorld) ||
+                !(player instanceof ServerPlayerEntity) ||
+                !player.isSneaking()
+        )
+            return ActionResult.PASS;
+
+        ServerPlayNetworking.send(
+                (ServerPlayerEntity) player,
+                new OpenSignSelectionPayload(
+                        pos,
+                        getSignSelectionEnumInt(this.shape),
+                        world.getRegistryKey()
+                )
+        );
+
+        return ActionResult.SUCCESS;
+    }
+
     public static BlockPos getBehindPos(BlockPos pos, BlockState state) {
         switch(state.get(FACING)) {
             case EAST -> { return pos.west(); }
@@ -114,4 +146,51 @@ public abstract class SignBlock extends BlockWithEntity {
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return null;
     }
+
+    public static int getSignSelectionEnumInt (SIGN_SHAPE type) {
+        switch (type) {
+            case TRIANGULAR -> { return 0; }
+            case TRIANGULAR_UPSIDE_DOWN -> { return 1; }
+            case OCTAGONAL -> { return 3; }
+            case RECT_SMALL -> { return 4; }
+            case RECT_MEDIUM -> { return 5; }
+            case RECT_LARGE -> { return 6; }
+            case RECT_STRETCH_SMALL -> { return 7; }
+            case RECT_STRETCH_MEDIUM -> { return 8; }
+            case RECT_STRETCH_LARGE -> { return 9; }
+            case SQUARE_TURN_45 -> { return 10; }
+            default -> { return 2; }
+        }
+    }
+
+    public static SIGN_SHAPE getSignSelectionEnum (int num) {
+        switch (num) {
+            case 0 -> { return SIGN_SHAPE.TRIANGULAR; }
+            case 1 -> { return SIGN_SHAPE.TRIANGULAR_UPSIDE_DOWN; }
+            case 3 -> { return SIGN_SHAPE.OCTAGONAL; }
+            case 4 -> { return SIGN_SHAPE.RECT_SMALL; }
+            case 5 -> { return SIGN_SHAPE.RECT_MEDIUM; }
+            case 6 -> { return SIGN_SHAPE.RECT_LARGE; }
+            case 7 -> { return SIGN_SHAPE.RECT_STRETCH_SMALL; }
+            case 8 -> { return SIGN_SHAPE.RECT_STRETCH_MEDIUM; }
+            case 9 -> { return SIGN_SHAPE.RECT_STRETCH_LARGE; }
+            case 10 -> { return SIGN_SHAPE.SQUARE_TURN_45; }
+            default -> { return SIGN_SHAPE.ROUND; }
+        }
+    }
+
+    public enum SIGN_SHAPE {
+        TRIANGULAR,
+        TRIANGULAR_UPSIDE_DOWN,
+        ROUND,
+        OCTAGONAL,
+        RECT_SMALL,
+        RECT_MEDIUM,
+        RECT_LARGE,
+        RECT_STRETCH_SMALL,
+        RECT_STRETCH_MEDIUM,
+        RECT_STRETCH_LARGE,
+        SQUARE_TURN_45,
+    }
+
 }

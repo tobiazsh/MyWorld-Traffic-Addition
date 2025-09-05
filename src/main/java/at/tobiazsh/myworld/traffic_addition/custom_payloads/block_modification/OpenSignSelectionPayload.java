@@ -5,15 +5,19 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-public record OpenSignSelectionPayload(BlockPos pos, int selection_type) implements CustomPayload {
+public record OpenSignSelectionPayload(BlockPos pos, int selection_type, RegistryKey<World> dimensionRegistryKey) implements CustomPayload {
 
     public static final CustomPayload.Id<OpenSignSelectionPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "open_sign_selection_screen"));
     public static final PacketCodec<ByteBuf, OpenSignSelectionPayload> CODEC = PacketCodec.tuple(
         BlockPos.PACKET_CODEC, OpenSignSelectionPayload::pos,
         PacketCodecs.INTEGER, OpenSignSelectionPayload::selection_type,
+        RegistryKey.createPacketCodec(RegistryKeys.WORLD), OpenSignSelectionPayload::dimensionRegistryKey,
         OpenSignSelectionPayload::new
     );
 

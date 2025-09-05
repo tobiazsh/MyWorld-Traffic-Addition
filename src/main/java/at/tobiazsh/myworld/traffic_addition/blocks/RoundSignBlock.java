@@ -7,22 +7,14 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
  * @author Tobias
  */
 
-
-import at.tobiazsh.myworld.traffic_addition.ModVars;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.RoundSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class RoundSignBlock extends SignBlock {
@@ -35,7 +27,7 @@ public class RoundSignBlock extends SignBlock {
     private static final VoxelShape SHAPE_E = Block.createCuboidShape(0, 0, 0, 1.5, 16, 16);
 
     public RoundSignBlock(Settings settings) {
-        super(settings, SHAPE_N, SHAPE_E, SHAPE_S, SHAPE_W);
+        super(settings, SHAPE_N, SHAPE_E, SHAPE_S, SHAPE_W, SIGN_SHAPE.ROUND);
     }
 
     @Override
@@ -46,18 +38,5 @@ public class RoundSignBlock extends SignBlock {
     @Override
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new RoundSignBlockEntity(pos, state);
-    }
-
-    @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
-            BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof RoundSignBlockEntity) {
-                MyWorldTrafficAddition.sendOpenSignSelectionScreenPacket((ServerPlayerEntity) player, pos, ModVars.getSignSelectionEnumInt(ModVars.SIGN_SELECTION_TYPE.ROUND));
-                return ActionResult.SUCCESS;
-            }
-        }
-
-        return ActionResult.PASS;
     }
 }

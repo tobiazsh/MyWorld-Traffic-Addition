@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopu
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.AboutWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
+import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import imgui.ImGui;
 import imgui.flag.ImGuiKey;
 import net.minecraft.client.MinecraftClient;
@@ -37,10 +38,6 @@ public class ImGuiRenderer {
             if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so
             if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
 
-            if (ImGui.isKeyPressed(ImGuiKey.F12)) {
-                // ... Do something
-            }
-
             if (shouldSnap) {
                 float width = MinecraftClient.getInstance().getWindow().getWidth();
                 float height = MinecraftClient.getInstance().getWindow().getHeight();
@@ -50,6 +47,8 @@ public class ImGuiRenderer {
             }
 
             if (showSignEditor) SignEditor.render(); // If the sign editor has to be rendered, do so
+
+            SignSelector.signSelectors.forEach(SignSelector::render); // Render all sign selectors
 
             ImGui.popFont(); // Pop default font
         });

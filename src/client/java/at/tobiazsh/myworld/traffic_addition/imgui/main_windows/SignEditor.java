@@ -17,7 +17,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.Clipboard;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.*;
@@ -120,8 +120,8 @@ public class SignEditor {
 
         backgroundTexturePath = "";
 
-        Clipboard.getInstance().clearUndoStack();
-        Clipboard.getInstance().clearRedoStack();
+        SignClipboard.getInstance().clearUndoStack();
+        SignClipboard.getInstance().clearRedoStack();
 
         // Read from sign block entity
         ClientElementManager.getInstance().importFromSign(blockEntity);
@@ -336,7 +336,7 @@ public class SignEditor {
     }
 
     private static void pasteElement() {
-        ClientElementInterface elementToPaste = Clipboard.getInstance().getCopiedElement();
+        ClientElementInterface elementToPaste = SignClipboard.getInstance().getCopiedElement();
 
         if (elementToPaste == null) return; // Can't paste if empty or no ID
 
@@ -348,31 +348,31 @@ public class SignEditor {
         ClientElementManager.getInstance().updateRawData();
         if (ClientElementManager.getInstance().rawData.json.isEmpty()) return; // Can't copy if empty
 
-        Clipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().rawData);
     }
 
     private static void pasteSign() {
-        if (Clipboard.getInstance().getCopiedSign() == null || Clipboard.getInstance().getCopiedSign().json.isEmpty()) return; // Can't paste if empty
+        if (SignClipboard.getInstance().getCopiedSign() == null || SignClipboard.getInstance().getCopiedSign().json.isEmpty()) return; // Can't paste if empty
 
-        ClientElementManager.getInstance().setData(Clipboard.getInstance().getCopiedSign(), blockEntity);
+        ClientElementManager.getInstance().setData(SignClipboard.getInstance().getCopiedSign(), blockEntity);
     }
 
     public static void addUndo() {
-        Clipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
     }
 
     private static void undo() {
-        if (Clipboard.getInstance().undoEmpty()) return; // Can't undo if empty
+        if (SignClipboard.getInstance().undoEmpty()) return; // Can't undo if empty
 
-        Clipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().rawData);
-        ClientElementManager.getInstance().setData(Clipboard.getInstance().popUndoStack(), blockEntity);
+        SignClipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().rawData);
+        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popUndoStack(), blockEntity);
     }
 
     private static void redo() {
-        if (Clipboard.getInstance().redoEmpty()) return; // Can't redo if empty
+        if (SignClipboard.getInstance().redoEmpty()) return; // Can't redo if empty
 
-        Clipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
-        ClientElementManager.getInstance().setData(Clipboard.getInstance().popRedoStack(), blockEntity);
+        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
+        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popRedoStack(), blockEntity);
     }
 
     private static void handleHotKeys() {

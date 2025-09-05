@@ -18,9 +18,12 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,8 +40,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("MyWorld Traffic Addition");
 
 	public static final String MOD_ID = "myworld_traffic_addition";
+    public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.5.1";
+	public static final String MODVER = "v1.5.2";
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
@@ -127,10 +131,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ServerPlayNetworking.send(player, new OpenSignPoleRotationScreenPayload(pos));
 	}
 
-	public static void sendOpenSignSelectionScreenPacket (ServerPlayerEntity player, BlockPos pos, int type) {
-		ServerPlayNetworking.send(player, new OpenSignSelectionPayload(pos, type));
-	}
-
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
 	}
@@ -173,7 +173,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 
 
-	public static Identifier createId(String id) {
+	@Contract("_ -> new")
+    public static @NotNull Identifier createId(String id) {
 		return Identifier.of(MOD_ID, id);
 	}
+
 }

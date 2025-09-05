@@ -47,8 +47,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
         this.bakedModelMgr = bakedModelMgr;
     }
 
-    private boolean hasReloaded = false;
-
     @Override
     public void render(T entity, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d cameraPos) {
 
@@ -63,7 +61,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
 
         BlockEntity blockEntityBehind = MinecraftClient.getInstance().world.getBlockEntity(attachmentBlockPos);
 
-        textureIdentifier = entity.getTextureId();
+        textureIdentifier = entity.getTexturePath();
 
         matrices.push();
 
