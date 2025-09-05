@@ -17,7 +17,7 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.ROUND_SIGN_B
 public class RoundSignBlockEntity extends SignBlockEntity {
 
     public RoundSignBlockEntity(BlockPos pos, BlockState state) {
-        super(ROUND_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.ROUND, "textures/sign_pngs/aut/round/lane_right_side.png");
+        super(ROUND_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.ROUND, "textures/sign/austria/regulatory/lane_right_side.png");
     }
 
 }

@@ -16,6 +16,6 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.OCTAGONAL_SI
 
 public class OctagonalSignBlockEntity extends SignBlockEntity {
     public OctagonalSignBlockEntity(BlockPos pos, BlockState state) {
-        super(OCTAGONAL_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.OCTAGONAL, "textures/sign_pngs/aut/octagonal/stop.png");
+        super(OCTAGONAL_SIGN_BLOCK_ENTITY, pos, state, SignBlock.SIGN_SHAPE.OCTAGONAL, "textures/sign/austria/priority/stop.png");
     }
 }
