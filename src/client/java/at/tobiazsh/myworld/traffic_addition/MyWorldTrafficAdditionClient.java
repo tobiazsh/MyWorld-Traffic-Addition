@@ -113,14 +113,13 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 				}),
 
 				new GlobalReceiverClient<>(OpenSignSelectionPayload.Id, (payload) -> {
-                    World world = MinecraftClient.getInstance().getServer().getWorld(payload.dimensionRegistryKey());
-					if (world == null || MinecraftClient.getInstance().player == null) {
+					if (MinecraftClient.getInstance().player == null) {
 						MyWorldTrafficAddition.LOGGER.warn("Cannot open SignSelectionScreen because world or player is null!");
 						return;
 					}
 
 					MinecraftClient.getInstance().setScreen(new EmptyScreen(Text.literal("Sign Selection"), signSelector::close));
-                    signSelector.open(SignBlock.getSignSelectionEnum(payload.selection_type()), payload.pos(), MinecraftClient.getInstance().getServer().getWorld(payload.dimensionRegistryKey()));
+                    signSelector.open(SignBlock.getSignSelectionEnum(payload.selection_type()), payload.pos(), payload.dimensionRegistryKey());
 				}),
 
 				new GlobalReceiverClient<>(OpenCustomizableSignEditScreen.Id, (payload) -> {

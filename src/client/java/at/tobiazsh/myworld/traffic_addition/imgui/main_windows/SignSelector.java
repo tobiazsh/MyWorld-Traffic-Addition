@@ -15,6 +15,7 @@ import imgui.ImVec2;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +44,7 @@ public class SignSelector {
     private SignFilter filter = new SignFilter(null, null, null);
     private final Texture previewTexture = new Texture();
     private BlockPos signPos;
-    private World world;
+    private RegistryKey<World> worldRegistryKey;
     private final String windowId;
 
     private FilterWindow filterWindow;
@@ -201,18 +202,18 @@ public class SignSelector {
                 new SignBlockTextureChangePayload(
                         signPos,
                         windowsToUnixPath(relativizeResourcePath(results.get(selectedIndex.get()).path()).toString()),
-                        world.getRegistryKey()));
+                        worldRegistryKey));
     }
 
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
-    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, World world) {
+    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, RegistryKey<World> world) {
         shouldRender = true;
         this.signType = signType;
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type
         this.signPos = signPos;
-        this.world = world;
+        this.worldRegistryKey = world;
         refresh();
         resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
     }
