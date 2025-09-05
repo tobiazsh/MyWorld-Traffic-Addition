@@ -93,7 +93,8 @@ public abstract class SignBlock extends BlockWithEntity {
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (
                 !(world instanceof ServerWorld) ||
-                !(player instanceof ServerPlayerEntity)
+                !(player instanceof ServerPlayerEntity) ||
+                !player.isSneaking()
         )
             return ActionResult.PASS;
 
