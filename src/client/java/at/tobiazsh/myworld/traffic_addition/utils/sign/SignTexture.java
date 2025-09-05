@@ -6,6 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.exception.SignTextureParseExce
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +15,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 /**
  * A record for storing texture information for a sign.
@@ -72,7 +75,7 @@ public record SignTexture (String name, Path path, boolean isInModJar, CATEGORY 
             throw new SignTextureParseException("Missing obligatory field in sign texture entry: " + entry);
 
         // Now parse the fields
-        name = entry.get("name").getAsString();
+        name = tr("SignTextures", entry.get("name").getAsString());
 
         String raw = entry.get("path").getAsString().trim().replace('\\', '/');
 

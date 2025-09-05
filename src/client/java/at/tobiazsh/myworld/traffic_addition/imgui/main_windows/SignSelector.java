@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.algorithms.FuzzySearch;
-import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
@@ -18,6 +17,7 @@ import imgui.type.ImString;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -44,15 +44,27 @@ public class SignSelector {
     private final Texture previewTexture = new Texture();
     private BlockPos signPos;
     private World world;
+    private final String windowId;
+
+    private FilterWindow filterWindow;
+
+    public SignSelector(String windowId) {
+        this.windowId = windowId;
+
+        filterWindow = new FilterWindow(() -> {
+        }, () -> {
+        }, () -> {
+            this.filter = filterWindow.getFilter();
+            refresh();
+            resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
+        }, true, true, windowId);
+    }
 
     public void render() {
         if (!shouldRender)
             return;
 
-        ImGui.begin(tr("Main.SignSelector", "Sign Selector"));
-
-        if (ImGui.button(tr("Global", "Close")))
-            close();
+        ImGui.begin(tr("Main.SignSelector", "Sign Selector") + "###SignSelector" + windowId);
 
         searchBar();
         selectionList();
@@ -64,14 +76,23 @@ public class SignSelector {
             lastIndex = selectedIndex.get();
 
             // Load texture into ImGui
-
             previewTexture.loadTexturePath(results.get(selectedIndex.get()).path().toString().replaceAll("\\\\", "/"));
         }
+
+        ImGui.separator();
 
         if (ImGui.button("Select")) {
             System.out.println("Selected texture: " + results.get(selectedIndex.get()));
             apply();
         }
+
+        ImGui.sameLine();
+
+        if (ImGui.button(tr("Global", "Close")))
+            close();
+
+
+        filterWindow.render();
 
         ImGui.end();
     }
@@ -113,7 +134,10 @@ public class SignSelector {
             close();
         }
 
-        textureDatabase = filterResults(textures.get(), filter);
+        List<SignTexture> parsed = textures.get();
+        if (parsed == null) parsed = List.of();
+        textureDatabase = filterResults(parsed, filter);
+        results = textureDatabase;
     }
 
     private final ImString searchQuery = new ImString(128);
@@ -136,6 +160,15 @@ public class SignSelector {
             }
 
             resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
+        }
+        ImGui.sameLine();
+        if (ImGui.button(tr("Global", "Filter") + "...")) {
+            filterWindow.open(
+                    filter,
+                    List.of(SignTexture.CATEGORY.values()),
+                    SignTexture.getCountries().stream().toList(),
+                    List.of(SignBlock.SIGN_SHAPE.values())
+            );
         }
 
         ImGui.endChild();
@@ -181,6 +214,7 @@ public class SignSelector {
         this.signPos = signPos;
         this.world = world;
         refresh();
+        resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
     }
 
     /**
@@ -202,5 +236,177 @@ public class SignSelector {
      */
     public SignBlock.SIGN_SHAPE getSignSelectionType() {
         return this.signType;
+    }
+
+
+    /**
+     * The little filtering window where you can choose which signs you'd like to see out of so many
+     */
+    private static class FilterWindow {
+
+        private final Runnable onOpen, onClose, onApply;
+        private final boolean closeOnApply, disableShape;
+        private SignFilter currentFilter = new SignFilter(null, null, null);
+
+        private final String windowId;
+
+        private boolean shouldOpen = false;
+
+        String[] availCountries, availCategories, availShapes;
+
+        /**
+         * Creates a new FilterWindow Instance.
+         *
+         * @param onOpen Whatever should happen when opening the window.
+         *               By default, only the window will open. This functionality cannot be disabled.
+         * @param onClose Whatever should happen when closing the window.
+         *                By default, only the window will close. This functionality cannot be disabled.
+         * @param onApply Whatever should happen when clicking the "Apply" button.
+         *                By default, nothing will happen.
+         * @param closeOnApply Whether the window should close when clicking the "Apply" button.
+         * @param disableShape Whether the shape filter should be disabled (e.g. when selecting a sign texture for a specific sign block)
+         * @param windowId The ID of the filter window. Must be unique if you have multiple filter windows.
+         */
+        public FilterWindow(
+                @NotNull Runnable onOpen,
+                @NotNull Runnable onClose,
+                @NotNull Runnable onApply,
+                boolean closeOnApply,
+                boolean disableShape,
+                @NotNull String windowId
+        ) {
+            this.onOpen = onOpen;
+            this.onClose = onClose;
+            this.onApply = onApply;
+            this.closeOnApply = closeOnApply;
+            this.disableShape = disableShape;
+            this.windowId = windowId;
+        }
+
+        private final ImInt shapeComboIndex = new ImInt(0);
+        private final ImInt catComboIndex = new ImInt(0);
+        private final ImInt countComboIndex = new ImInt(0);
+
+        public void render() {
+            if (ImGui.beginPopupModal(getWindowId())) {
+
+                // Filtering Options
+
+                // Shape
+                if (availShapes != null) {
+                    if (disableShape)
+                        ImGui.beginDisabled();
+
+                    ImGui.text(tr("Global", "Shape"));
+                    ImGui.combo("##shapeCombo", shapeComboIndex, availShapes);
+
+                    if (disableShape)
+                        ImGui.endDisabled();
+                }
+
+                ImGui.spacing();
+
+                // Category
+                if (availCategories != null) {
+                    ImGui.text(tr("Global", "Category"));
+                    ImGui.combo("##categoryCombo", catComboIndex, availCategories);
+                }
+
+                ImGui.spacing();
+
+                // Country
+                if (availCountries != null) {
+                    ImGui.text(tr("Global", "Country"));
+                    ImGui.combo("##countryCombo", countComboIndex, availCountries);
+                }
+
+                // Controls (Close & Apply)
+
+                ImGui.separator();
+
+                if (ImGui.button(tr("Global", "Close")))
+                    close();
+
+                ImGui.sameLine();
+
+                if (ImGui.button(tr("Global", "Apply")))
+                    apply();
+
+                ImGui.endPopup();
+            }
+
+            if (shouldOpen) {
+                ImGui.openPopup(getWindowId());
+                shouldOpen = false;
+            }
+        }
+
+        public void open(
+                SignFilter initialFilter,
+                List<SignTexture.CATEGORY> availCategories,
+                List<String> availCountries,
+                List<SignBlock.SIGN_SHAPE> availShapes
+        ) {
+            shouldOpen = true;
+            onOpen.run();
+            this.currentFilter = initialFilter;
+
+            // Add "any" option to the beginning of each list
+            List<String> categoryNames = availCategories.stream()
+                    .map(SignTexture.CATEGORY::name)
+                    .toList();
+            List<String> categories = new ArrayList<>(categoryNames);
+            categories.add(0, "*");
+            this.availCategories = categories.toArray(new String[0]);
+
+            // Also sort countries alphabetically
+            List<String> sortedCountries = new ArrayList<>(availCountries);
+            sortedCountries.sort(String::compareTo);
+            List<String> countries = new ArrayList<>(sortedCountries);
+            countries.add(0, "*");
+            this.availCountries = countries.toArray(new String[0]);
+
+            List<String> shapeNames = availShapes.stream()
+                    .map(Enum::name)
+                    .toList();
+            List<String> shapes = new ArrayList<>(shapeNames);
+            shapes.add(0, "*");
+            this.availShapes = shapes.toArray(new String[0]);
+
+            // Combo Indices
+            int shapeIdx = (initialFilter.shape() == null) ? 0 : shapes.indexOf(initialFilter.shape().name());
+            this.shapeComboIndex.set(Math.max(shapeIdx, 0));
+
+            int catIdx = (initialFilter.category() == null) ? 0 : categories.indexOf(initialFilter.category().name());
+            this.catComboIndex.set(Math.max(catIdx, 0));
+
+            int countryIdx = (initialFilter.country() == null) ? 0 : countries.indexOf(initialFilter.country());
+            this.countComboIndex.set(Math.max(countryIdx, 0));
+        }
+
+        public void close() {
+            onClose.run();
+            ImGui.closeCurrentPopup();
+        }
+
+        public void apply() {
+            currentFilter = new SignFilter(
+                    availCategories[(catComboIndex.get())].equals("*") ? null : SignTexture.CATEGORY.valueOf(availCategories[catComboIndex.get()]),
+                    availCountries[(countComboIndex.get())].equals("*") ? null : availCountries[countComboIndex.get()],
+                    availShapes[(shapeComboIndex.get())].equals("*") ? null : SignBlock.SIGN_SHAPE.valueOf(availShapes[shapeComboIndex.get()])
+            );
+            onApply.run();
+
+            if (closeOnApply)
+                close();
+        }
+
+        public SignFilter getFilter() {
+            return currentFilter;
+        }
+
+        private String getWindowId() {
+            return tr("Main.SignSelector", "Filter") + "...###FilterWindow" + windowId;
+        }
     }
 }

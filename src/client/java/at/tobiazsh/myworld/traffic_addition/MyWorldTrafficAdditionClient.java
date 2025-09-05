@@ -41,7 +41,7 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	public static CustomizableSignSettingScreen customizableSignSettingScreen;
-    public static final SignSelector signSelector = new SignSelector();
+    public static final SignSelector signSelector = new SignSelector("NormalSignSelector");
 
 	private static final List<GlobalReceiverClient<? extends CustomPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends BlockEntity>> blockEntityRenderers = new ArrayList<>();
