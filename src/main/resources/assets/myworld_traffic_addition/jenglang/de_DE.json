@@ -174,20 +174,20 @@
 
 
   "SignTextures": {
-    "speedlimit_allowed_5": "Ende der Bregrenzung (5 km/h)",
-    "speedlimit_allowed_10": "Ende der Bregrenzung (10 km/h)",
-    "speedlimit_allowed_20": "Ende der Bregrenzung (20 km/h)",
-    "speedlimit_allowed_30": "Ende der Bregrenzung (30 km/h)",
-    "speedlimit_allowed_40": "Ende der Bregrenzung (40 km/h)",
-    "speedlimit_allowed_50": "Ende der Bregrenzung (50 km/h)",
-    "speedlimit_allowed_60": "Ende der Bregrenzung (60 km/h)",
-    "speedlimit_allowed_70": "Ende der Bregrenzung (70 km/h)",
-    "speedlimit_allowed_80": "Ende der Bregrenzung (80 km/h)",
-    "speedlimit_allowed_90": "Ende der Bregrenzung (90 km/h)",
-    "speedlimit_allowed_100": "Ende der Bregrenzung (100 km/h)",
-    "speedlimit_allowed_110": "Ende der Bregrenzung (110 km/h)",
-    "speedlimit_allowed_120": "Ende der Bregrenzung (120 km/h)",
-    "speedlimit_allowed_130": "Ende der Bregrenzung (130 km/h)",
+    "speedlimit_end_5": "Ende der Bregrenzung (5 km/h)",
+    "speedlimit_end_10": "Ende der Bregrenzung (10 km/h)",
+    "speedlimit_end_20": "Ende der Bregrenzung (20 km/h)",
+    "speedlimit_end_30": "Ende der Bregrenzung (30 km/h)",
+    "speedlimit_end_40": "Ende der Bregrenzung (40 km/h)",
+    "speedlimit_end_50": "Ende der Bregrenzung (50 km/h)",
+    "speedlimit_end_60": "Ende der Bregrenzung (60 km/h)",
+    "speedlimit_end_70": "Ende der Bregrenzung (70 km/h)",
+    "speedlimit_end_80": "Ende der Bregrenzung (80 km/h)",
+    "speedlimit_end_90": "Ende der Bregrenzung (90 km/h)",
+    "speedlimit_end_100": "Ende der Bregrenzung (100 km/h)",
+    "speedlimit_end_110": "Ende der Bregrenzung (110 km/h)",
+    "speedlimit_end_120": "Ende der Bregrenzung (120 km/h)",
+    "speedlimit_end_130": "Ende der Bregrenzung (130 km/h)",
 
     "speedlimit_5": "Begrenzung (5 km/h)",
     "speedlimit_10": "Begrenzung (10 km/h)",
@@ -215,11 +215,11 @@
 
     "left_side": "Nur Links",
     "right_side": "Nur Rechts",
-    "straight": "Nur Gerade",
+    "straight_only": "Nur Gerade",
 
     "no_left_turn": "Linksabbiegen verboten",
     "no_right_turn": "Rechtsabbiegen verboten",
-    "no_u_turns": "Wenden verboten",
+    "no_u_turn": "Wenden verboten",
 
     "wait_for_oncoming_traffic": "Wartepflicht",
 

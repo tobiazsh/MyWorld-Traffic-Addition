@@ -177,20 +177,20 @@
 
 
   "SignTextures": {
-    "speedlimit_allowed_5": "End of restriction (5 km/h)",
-    "speedlimit_allowed_10": "End of restriction (10 km/h)",
-    "speedlimit_allowed_20": "End of restriction (20 km/h)",
-    "speedlimit_allowed_30": "End of restriction (30 km/h)",
-    "speedlimit_allowed_40": "End of restriction (40 km/h)",
-    "speedlimit_allowed_50": "End of restriction (50 km/h)",
-    "speedlimit_allowed_60": "End of restriction (60 km/h)",
-    "speedlimit_allowed_70": "End of restriction (70 km/h)",
-    "speedlimit_allowed_80": "End of restriction (80 km/h)",
-    "speedlimit_allowed_90": "End of restriction (90 km/h)",
-    "speedlimit_allowed_100": "End of restriction (100 km/h)",
-    "speedlimit_allowed_110": "End of restriction (110 km/h)",
-    "speedlimit_allowed_120": "End of restriction (120 km/h)",
-    "speedlimit_allowed_130": "End of restriction (130 km/h)",
+    "speedlimit_end_5": "End of restriction (5 km/h)",
+    "speedlimit_end_10": "End of restriction (10 km/h)",
+    "speedlimit_end_20": "End of restriction (20 km/h)",
+    "speedlimit_end_30": "End of restriction (30 km/h)",
+    "speedlimit_end_40": "End of restriction (40 km/h)",
+    "speedlimit_end_50": "End of restriction (50 km/h)",
+    "speedlimit_end_60": "End of restriction (60 km/h)",
+    "speedlimit_end_70": "End of restriction (70 km/h)",
+    "speedlimit_end_80": "End of restriction (80 km/h)",
+    "speedlimit_end_90": "End of restriction (90 km/h)",
+    "speedlimit_end_100": "End of restriction (100 km/h)",
+    "speedlimit_end_110": "End of restriction (110 km/h)",
+    "speedlimit_end_120": "End of restriction (120 km/h)",
+    "speedlimit_end_130": "End of restriction (130 km/h)",
 
     "speedlimit_5": "Speed Limit (5 km/h)",
     "speedlimit_10": "Speed Limit (10 km/h)",
@@ -218,19 +218,19 @@
 
     "left_side": "Left only",
     "right_side": "Right only",
-    "straight": "Straight only",
+    "straight_only": "Straight only",
 
     "no_left_turn": "Left Turn prohibited",
     "no_right_turn": "Right Turn prohibited",
-    "no_u_turns": "U-Turns prohibited",
+    "no_u_turn": "U-Turns prohibited",
 
     "wait_for_oncoming_traffic": "Give way for oncoming traffic",
 
     "overtaking_allowed": "End of overtaking restriction",
     "overtaking_prohibited": "Overtaking prohibited",
 
-    "cyclist_track": "Cycle track",
-    "cyclist_track_end": "End of cycle track",
+    "cyclist_track": "Cyclist track",
+    "cyclist_track_end": "End of cyclist track",
 
     "left_only": "Left turn prescribed",
     "right_only": "Right turn prescribed",
@@ -241,11 +241,11 @@
     "pedestrian_track": "Pedestrian track",
     "pedestrian_track_end": "End of pedestrian track",
 
-    "pedestrians_and_cyclist_track": "Pedestrian and cycle track",
-    "pedestrians_and_cyclist_track_end": "End of pedestrian and cycle track",
+    "pedestrians_and_cyclist_track": "Pedestrian and cyclist track",
+    "pedestrians_and_cyclist_track_end": "End of pedestrian and cyclist track",
 
-    "separated_tracks": "Separated track (Cycle and pedestrian)",
-    "separated_tracks_end": "End of separated track (Cycle and pedestrian)",
+    "separated_tracks": "Separated track (Cyclist and pedestrian)",
+    "separated_tracks_end": "End of separated track (Cyclist and pedestrian)",
 
     "other_danger": "Other Danger ahead",
     "children": "Children ahead",
