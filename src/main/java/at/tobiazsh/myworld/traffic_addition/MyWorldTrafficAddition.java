@@ -42,7 +42,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	public static final String MOD_ID = "myworld_traffic_addition";
     public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.5.2";
+	public static final String MODVER = "v1.5.3";
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
