@@ -30,41 +30,37 @@ loom {
 	accessWidenerPath = file("src/main/resources/myworld_traffic_addition.accesswidener")
 }
 
-shadowJar {
-	relocate "org.lwjgl.stb", "at.tobias.myworld_traffic_addition.lwjgl.stb"
-}
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// LWJGL restriction since macOS doesn't like ver 3.3.4 that imgui uses...
-	//implementation(group: 'org.lwjgl', name: 'lwjgl-freetype', classifier: 'natives-macos-patch') {
-	//	version{
-	//		strictly "[3.3.3]"
-	//	}
-	//}
-	// Deleted for now since I ain't working on macOS for now
+    // Dear ImGui Implementation
+    include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
 
-	// Dear ImGui Implementation
-	include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
-	include implementation("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}")
+    include implementation("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}") {
+        exclude group: "org.lwjgl"
+    }
 
-	include implementation("io.github.spair:imgui-java-natives-windows:${project.imgui_version}")
-	include implementation("io.github.spair:imgui-java-natives-linux:${project.imgui_version}")
-	include implementation("io.github.spair:imgui-java-natives-macos:${project.imgui_version}")
+    include implementation("io.github.spair:imgui-java-natives-windows:${project.imgui_version}")
+    include implementation("io.github.spair:imgui-java-natives-linux:${project.imgui_version}")
+    include implementation("io.github.spair:imgui-java-natives-macos:${project.imgui_version}")
 
-	// Other dependencies
-	include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}"); // Jengua; Translation library
+    // Other dependencies
+    include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}"); // Jengua; Translation library
+}
+
+shadowJar {
+    relocate "org.lwjgl", "at.tobias.myworld_traffic_addition.lwjgl"
 }
 
 processResources {
-	inputs.property "version", project.version
+    inputs.property "version", project.version
 
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
