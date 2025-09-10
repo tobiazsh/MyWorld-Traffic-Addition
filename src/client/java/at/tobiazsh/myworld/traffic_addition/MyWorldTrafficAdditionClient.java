@@ -30,7 +30,6 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,7 +152,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		// Get maximum image upload size
 		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), bytes -> {
 			String maximumSize_str = new String(bytes);
-            OnlineImageDialog.maximumUploadSize = Long.parseLong(maximumSize_str);
+            OnlineImageDialog.setMaximumUploadSize(Long.parseLong(maximumSize_str));
 		});
 
 		// Get total number of uploaded images

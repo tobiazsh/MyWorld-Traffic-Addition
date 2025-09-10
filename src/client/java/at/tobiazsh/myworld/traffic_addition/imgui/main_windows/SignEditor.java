@@ -64,6 +64,8 @@ public class SignEditor {
     public static ImVec2 signRatio; // Initialized when screen is opened;
     public static boolean showDebug = false;
 
+    private static OnlineImageDialog onlineImageDialog = new OnlineImageDialog("@SignEditor");
+
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
@@ -85,7 +87,8 @@ public class SignEditor {
         BackgroundSelectorPopup.render(allBackgrounds, blockEntity);
         ConfirmationPopup.render();
         FileDialogPopup.render();
-        OnlineImageDialog.render();
+
+        onlineImageDialog.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -288,7 +291,7 @@ public class SignEditor {
         if(ImGui.beginMenu(tr("Global", "Elements"))) {
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Image Element") + "...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Text Element") + "...", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            //if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Upload Image") + "...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Upload Image") + "...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
 
             ImGui.separator();
 
@@ -464,6 +467,6 @@ public class SignEditor {
 
     // Used Later for the online image dialog
     private static void openOnlineImageDialog() {
-        OnlineImageDialog.startDialog();
+        onlineImageDialog.startDialog();
     }
 }
