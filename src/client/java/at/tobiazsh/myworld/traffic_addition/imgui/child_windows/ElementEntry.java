@@ -80,6 +80,8 @@ public abstract class ElementEntry {
 	private final float buttonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
 
 	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, ClientElementInterface selectedOption) {
+        if (!(renderObject instanceof ClientElementInterface)) return; // Prevent non-client elements from rendering here because otherwise it'll crash
+
 		float entryWidth = (windowWidth - (this.padding * 2));
 		controlsWidth = 0;
 		float framePadding = ImGui.getStyle().getFramePadding().y;
