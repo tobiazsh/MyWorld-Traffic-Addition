@@ -620,8 +620,14 @@ public class OnlineImageDialog {
      * @param deleteBackup true if the backup should be deleted too, false otherwise
      */
     private void deleteImageData(boolean deleteBackup) {
-        imageData = null;
-        if (deleteBackup) originalImageData = null;
+        if (imageData != null) {
+            MemoryUtil.memFree(imageData);
+            imageData = null;
+        }
+        if (deleteBackup && originalImageData != null) {
+            MemoryUtil.memFree(originalImageData);
+            originalImageData = null;
+        }
     }
 
     private void createImageBackup() {
