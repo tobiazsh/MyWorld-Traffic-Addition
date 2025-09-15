@@ -287,7 +287,7 @@ public abstract class ElementEntry {
 		// Preview
 		ImGui.setCursorPosY((entryHeight - previewSize) / 2);
 		ImGui.setCursorPosX(ImGui.getCursorPosX() + 2 * this.padding);
-		if (renderObject instanceof ImageElementClient) ImGui.image(texId, previewSize, previewSize);
+		if (renderObject instanceof ImageElementClient) ImGui.image(previewTextureId, previewSize, previewSize);
 		else if (renderObject instanceof TextElementClient) ImGui.image(textIconId, previewSize, previewSize);
 		else if (renderObject instanceof GroupElementClient) ImGui.image(groupIconId, previewSize, previewSize);
 	}
