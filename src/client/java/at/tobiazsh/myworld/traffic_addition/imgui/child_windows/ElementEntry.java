@@ -93,6 +93,7 @@ public abstract class ElementEntry {
         boolean isClicked = false;
         ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.getId(), entryWidth, entryHeight + (renderObject instanceof GroupElementClient && ((GroupElementClient) renderObject).isExpanded() ? getGroupContentHeight((GroupElementClient) renderObject) : 0), isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
+        // incl. Preview
 		// Base element content rendering
 		renderBaseElementContent(framePadding, selectedOption);
 
