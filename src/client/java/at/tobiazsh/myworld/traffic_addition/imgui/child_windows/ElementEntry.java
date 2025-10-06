@@ -14,6 +14,9 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.utils.Saves;
+import at.tobiazsh.myworld.traffic_addition.utils.elements.GroupElement;
+import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
@@ -37,7 +40,7 @@ public abstract class ElementEntry {
 	private ClientElementInterface renderObject;
 	private UUID parentId;
 
-    private int texId;
+    private int previewTextureId;
 	private final int previewSize = 50;
 	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 	private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
@@ -53,7 +56,7 @@ public abstract class ElementEntry {
 		renderObject = element;
 		this.parentId = parentId;
 
-		if (element instanceof ImageElementClient) this.texId = ((ImageElementClient) element).getTexture().getTextureId();
+		if (element instanceof TexturableElementInterface) this.previewTextureId = ((TexturableElementInterface) element).getTexture().getTextureId();
     }
 
 	public abstract void moveEntryUp();
@@ -290,9 +293,9 @@ public abstract class ElementEntry {
 		// Preview
 		ImGui.setCursorPosY((entryHeight - previewSize) / 2);
 		ImGui.setCursorPosX(ImGui.getCursorPosX() + 2 * this.padding);
-		if (renderObject instanceof ImageElementClient) ImGui.image(previewTextureId, previewSize, previewSize);
-		else if (renderObject instanceof TextElementClient) ImGui.image(textIconId, previewSize, previewSize);
-		else if (renderObject instanceof GroupElementClient) ImGui.image(groupIconId, previewSize, previewSize);
+		if (renderObject instanceof ImageElement) ImGui.image(previewTextureId, previewSize, previewSize);
+		else if (renderObject instanceof TextElement) ImGui.image(textIconId, previewSize, previewSize);
+		else if (renderObject instanceof GroupElement) ImGui.image(groupIconId, previewSize, previewSize);
 	}
 
 	private ElementEntry createChildElementEntry(ClientElementInterface element, GroupElementClient grpElement) {

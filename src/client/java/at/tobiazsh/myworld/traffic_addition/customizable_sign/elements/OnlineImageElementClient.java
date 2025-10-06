@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface {
+public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface, TexturableElementInterface {
 
     public boolean textureLoaded = false;
     private boolean shouldRegisterTexture = false;
@@ -51,14 +51,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     @Override
     public void renderImGui(float scale) {
 
-        if (shouldRegisterTexture) {
-            elementTexture = Textures.smartRegisterTexture(resourcePath);
-            textureLoaded = true;
-            shouldRegisterTexture = false; // Only register once
-        }
+        loadTexture(); // Ensure texture is loaded
 
         if (textureLoaded) {
-            //toImageElementCL().renderImGui();
+            toImageElementCL().renderImGui(scale);
             return; // Texture is loaded, render normally
         }
 
@@ -75,11 +71,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     @Override
     public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
-        if (shouldRegisterTexture) {
-            elementTexture = Textures.smartRegisterTexture(resourcePath);
-            textureLoaded = true;
-            shouldRegisterTexture = false; // Only register once
-        }
+        loadTexture(); // Ensure texture is loaded
 
         if (textureLoaded) {
             toImageElementCL().renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing);
@@ -105,6 +97,32 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 elementTexture,
                 getParentId()
         );
+    }
+
+    // TEXTURES
+
+    @Override // TexturableElementInterface
+    public boolean isTextureLoaded() {
+        return textureLoaded;
+    }
+
+    @Override // TexturableElementInterface
+    public void setTexture(Texture texture) {
+        this.elementTexture = texture;
+    }
+
+    @Override
+    public Texture getTexture() {
+        return this.elementTexture;
+    }
+
+    @Override
+    public void loadTexture() {
+        if (shouldRegisterTexture) {
+            elementTexture = Textures.smartRegisterTexture(resourcePath);
+            textureLoaded = true;
+            shouldRegisterTexture = false;
+        }
     }
 
     // Sends request with
@@ -149,12 +167,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override
     public void onPaste() {
-//        ClientElementManager.getInstance().registerElement(this);
     }
 
     @Override
     public void onImport() {
-//        ClientElementManager.getInstance().registerElement(this);
     }
 
     @Override

@@ -6,7 +6,6 @@ import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
-import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.ImDrawList;
@@ -24,7 +23,7 @@ import java.util.UUID;
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
-public class ImageElementClient extends ImageElement implements ClientElementInterface {
+public class ImageElementClient extends ImageElement implements ClientElementInterface, TexturableElementInterface {
 
     public boolean textureLoaded = false;
 
@@ -100,7 +99,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         rotateTexture(
                 rotation,
-                windowPos,
                 new ImVec2(
                         windowPos.x + (this.x + this.width / 2) * scale,
                         windowPos.y + (this.y + this.height / 2) * scale
@@ -235,9 +233,9 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     /**
      * Rotates the texture by a given angle
      * @param angle The angle to rotate by
-     * @param windowPos The position of the window
+     * @param center The center point to rotate around
      */
-    public void rotateTexture(float angle, ImVec2 windowPos, ImVec2 center){
+    public void rotateTexture(float angle, ImVec2 center){
         // For efficiency
         if (angle == 0) return;
 
@@ -249,10 +247,12 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         p3 = rotatePivot(p3, center, radians);
     }
 
+    @Override // TexturableElementInterface
     public Texture getTexture() {
         return elementTexture;
     }
 
+    @Override // TexturableElementInterface
     public void loadTexture() {
         if (resourcePath == null || resourcePath.isEmpty()) {
             MyWorldTrafficAddition.LOGGER.debug("Error (Loading texture on ImageElement): Couldn't load texture because resource path is empty!");
@@ -263,8 +263,14 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         textureLoaded = true;
     }
 
-    public void setCustomTexture(Texture texture) {
+    @Override // TexturableElementInterface
+    public void setTexture(Texture texture) {
         this.elementTexture = texture;
+    }
+
+    @Override // TexturableElementInterface
+    public boolean isTextureLoaded() {
+        return textureLoaded;
     }
 
     // Always call after loadTexture() was called!
