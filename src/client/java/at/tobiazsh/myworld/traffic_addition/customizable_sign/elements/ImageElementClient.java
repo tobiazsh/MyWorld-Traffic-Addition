@@ -183,7 +183,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         // Top left
         vertexConsumer.vertex(positionMatrix, 0 , 0, 0)
-                    .texture(0, 1)
+                .texture(0, 1)
                 .color(color[0], color[1], color[2], color[3])
                 .light(light)
                 .overlay(overlay)
