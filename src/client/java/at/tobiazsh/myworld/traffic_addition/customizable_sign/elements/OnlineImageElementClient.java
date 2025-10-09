@@ -50,42 +50,12 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override
     public void renderImGui(float scale) {
-
-        loadTexture(); // Ensure texture is loaded
-
-        if (textureLoaded) {
-            toImageElementCL().renderImGui(scale);
-            return; // Texture is loaded, render normally
-        }
-
-        if (mayDownload) {
-            requestImageDownload();
-        }
-
-        if (getResourcePath() == null || getResourcePath().isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.debug("No resource path set for OnlineImageElementClient with ID {}! Probably the image hasn't finished downloading yet but it could be caused by a different issue! Not rendering imgui!", getId());
-            return; // No resource path set, nothing to render
-        }
+        initiateRender(() -> toImageElementCL().renderImGui(scale));
     }
 
     @Override
     public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-
-        loadTexture(); // Ensure texture is loaded
-
-        if (textureLoaded) {
-            toImageElementCL().renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing);
-            return; // Texture is loaded, render normally
-        }
-
-        if (mayDownload) {
-            requestImageDownload();
-        }
-
-        if (getResourcePath() == null || getResourcePath().isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.debug("No resource path set for OnlineImageElementClient with ID {}! Probably the image hasn't finished downloading yet but it could be caused by a different issue! Not rendering Minecarft!", getId());
-            return; // No resource path set, nothing to render
-        }
+        initiateRender(() -> toImageElementCL().renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing));
     }
 
     public ImageElementClient toImageElementCL() {
@@ -163,6 +133,31 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 MyWorldTrafficAddition.LOGGER.error("Exception while downloading image for OnlineImageElementClient with ID: {}", getId(), e);
                 return null;
         });
+    }
+
+    /**
+     * Helper method to initiate rendering, handling texture loading and download requests.
+     * @param onTextureLoaded Executed once the texture has been loaded successfully.
+     * @return True if successful, false if not.
+     */
+    private boolean initiateRender(Runnable onTextureLoaded) {
+        loadTexture(); // Ensure texture is loaded
+
+        if (textureLoaded) {
+            onTextureLoaded.run();
+            return true; // Texture is loaded, render normally
+        }
+
+        if (mayDownload) {
+            requestImageDownload();
+        }
+
+        if (getResourcePath() == null || getResourcePath().isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.debug("No resource path set for OnlineImageElementClient with ID {}! Probably the image hasn't finished downloading yet but it could be caused by a different issue! Not rendering Minecarft!", getId());
+            return false; // No resource path set, nothing to render
+        }
+
+        return true;
     }
 
     @Override
