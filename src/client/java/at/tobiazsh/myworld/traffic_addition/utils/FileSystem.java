@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,6 +21,7 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class FileSystem {
 
@@ -466,6 +468,17 @@ public class FileSystem {
 		public String getFileType() {
 			return this.filetype;
 		}
+
+
+        public byte[] readContent() throws IOException, NullPointerException {
+            if (isResource) {
+                try (InputStream stream = Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream()) {
+                    return stream.readAllBytes();
+                }
+            }
+
+            return Files.readAllBytes(Path.of(path));
+        }
 	}
 }
 
