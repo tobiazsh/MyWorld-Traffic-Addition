@@ -15,8 +15,8 @@ import java.util.Objects;
 public class DynamicTexture extends AbstractTexture {
 
     // private
-    private int subscribers = 0;
-    private boolean deleteWhenPossible = false;
+    private int subscribers;
+    private boolean deleteWhenPossible;
 
     // private final
     private final Identifier id;
