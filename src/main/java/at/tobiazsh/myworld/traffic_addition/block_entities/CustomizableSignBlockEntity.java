@@ -416,23 +416,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         );
     }
 
-    public static String constructBlockPosListString(List<BlockPos> blockPosList) {
-        List<String> blockPoses = new ArrayList<>();
-
-        for (BlockPos pos : blockPosList) {
-            List<String> blockPosPiece = new ArrayList<>();
-            blockPosPiece.add(java.lang.String.valueOf(pos.getX()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getY()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getZ()));
-
-            String blockPosString = java.lang.String.join("?", blockPosPiece);
-
-            blockPoses.add(blockPosString);
-        }
-
-        return java.lang.String.join("%", blockPoses);
-    }
-
     public static List<BlockPos> deconstructBlockPosListString(String blockPosListString) {
         List<String> blockPoses;
         List<BlockPos> blockPosList = new ArrayList<>();
