@@ -5,7 +5,7 @@ import java.util.Base64;
 public class Crypto {
 
     /**
-     * Encrypts a string using Base64 and also makes it URL-safe by replacing certain characters. Only decode with the decode method from this class.
+     * Encodes a string using Base64 and also makes it URL-safe by replacing certain characters. Only decode with the decode method from this class.
      * @param plainText The string to be encoded
      * @return The encoded string
      */
@@ -16,8 +16,8 @@ public class Crypto {
     }
 
     /**
-     * Decrypts a string that was encoded using the encryptBase64 method. Only use this method to decode.
-     * @param encodedText The string to be decrypted
+     * Decodes a string that was encoded using the encryptBase64 method. Only use this method to decode.
+     * @param encodedText The string to be decoded
      * @return The decrypted string
      */
     public static String decodeBase64(String encodedText) {
