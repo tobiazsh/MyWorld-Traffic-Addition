@@ -114,7 +114,7 @@ public class SignSelector {
                                 .stream()
                                 .filter(dirElem -> dirElem.name.matches("textures.json"))
                                 .findAny()
-                                .orElse(new FileSystem.DirectoryElement(null, null))
+                                .orElse(new FileSystem.DirectoryElement(null, null, false))
                                 .path;
 
                         if (filePath == null) {

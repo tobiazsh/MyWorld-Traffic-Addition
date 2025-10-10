@@ -55,7 +55,7 @@ public class FileSystem {
 		try (CustomFileSystem ignored = initializeFileSystem(uri)) {
 			Path newPath = Paths.get(uri);
 			String folderName = newPath.getFileName() != null ? newPath.getFileName().toString() : newPath.toString();
-			rootDir = new Folder(folderName, path);
+			rootDir = new Folder(folderName, path, fromResource);
 
 			// Populate the directory structure non-recursively
 			try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(newPath)) {
@@ -65,9 +65,9 @@ public class FileSystem {
 
 					if (Files.isDirectory(entry)) {
 						entryPath = entryPath.concat("/");
-						rootDir.addContent(new Folder(fileName, entryPath));
+						rootDir.addContent(new Folder(fileName, entryPath, fromResource));
 					} else {
-						rootDir.addContent(new File(fileName, entryPath).initFileType());
+						rootDir.addContent(new File(fileName, entryPath, fromResource).initFileType());
 					}
 				}
 			}
@@ -169,7 +169,7 @@ public class FileSystem {
 
 		try (CustomFileSystem ignored = initializeFileSystem(uri)) {
 			Path newPath = Paths.get(uri);
-			rootDir = new Folder(newPath.getFileName().toString(), path);
+			rootDir = new Folder(newPath.getFileName().toString(), path, fromResource);
 
 			// Populate the directory structure
 			populateDirectory(rootDir, newPath, path);
@@ -203,7 +203,7 @@ public class FileSystem {
 	}
 
 	/**
-	 * Populate the directory structure from the specified path
+	 * Populate the directory structure from the specified path in resources
 	 * @param rootDir Original directory
 	 * @param resourcePath Path to the resource
 	 * @param basePath Base path of the resource
@@ -224,7 +224,7 @@ public class FileSystem {
 					Folder subDir = crawlDirectory(entryPath, true);
 					rootDir.addContent(subDir);
 				} else {
-					rootDir.addContent(new File(fileName, entryPath).initFileType());
+					rootDir.addContent(new File(fileName, entryPath, true).initFileType());
 				}
 			}
 		}
@@ -248,12 +248,14 @@ public class FileSystem {
 	}
 
 	public static class DirectoryElement {
-		public String path;
-		public String name;
+		public final String path;
+		public final String name;
+        public final boolean isResource;
 
-		public DirectoryElement(String name, String path) {
+		public DirectoryElement(String name, String path, boolean isResource) {
 			this.path = path;
 			this.name = name;
+            this.isResource = isResource;
 		}
 
 		/**
@@ -271,6 +273,14 @@ public class FileSystem {
 		public boolean isFile() {
 			return this instanceof File;
 		}
+
+        /**
+         * Check if the element is a resource (from within the JAR)
+         * @return boolean
+         */
+        public boolean isResource() {
+            return this.isResource;
+        }
 
 		/**
 		 * Get the size of the element.
@@ -300,8 +310,8 @@ public class FileSystem {
 	public static class Folder extends DirectoryElement implements Iterable<DirectoryElement> {
 		public List<DirectoryElement> content = new ArrayList<>();
 
-		public Folder(String name, String path) {
-			super(name, path);
+		public Folder(String name, String path, boolean isResource) {
+			super(name, path, isResource);
 		}
 
 		/**
@@ -422,13 +432,13 @@ public class FileSystem {
 	public static class File extends DirectoryElement {
 		private String filetype;
 
-		public File(String name, String path, String filetype) {
-			super(name, path);
+		public File(String name, String path, String filetype, boolean isResource) {
+			super(name, path, isResource);
 			this.filetype = filetype;
 		}
 
-		public File(String name, String path) {
-			super(name, path);
+		public File(String name, String path, boolean isResource) {
+			super(name, path, isResource);
 		}
 
 		/**
