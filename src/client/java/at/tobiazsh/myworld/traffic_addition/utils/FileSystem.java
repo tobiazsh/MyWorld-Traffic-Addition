@@ -69,7 +69,7 @@ public class FileSystem {
 						entryPath = entryPath.concat("/");
 						rootDir.addContent(new Folder(fileName, entryPath, fromResource));
 					} else {
-						rootDir.addContent(new File(fileName, entryPath, fromResource).initFileType());
+						rootDir.addContent(new File(fileName, entryPath, fromResource).evaluateFileType());
 					}
 				}
 			}
@@ -226,7 +226,7 @@ public class FileSystem {
 					Folder subDir = crawlDirectory(entryPath, true);
 					rootDir.addContent(subDir);
 				} else {
-					rootDir.addContent(new File(fileName, entryPath, true).initFileType());
+					rootDir.addContent(new File(fileName, entryPath, true).evaluateFileType());
 				}
 			}
 		}
@@ -443,6 +443,10 @@ public class FileSystem {
 			super(name, path, isResource);
 		}
 
+        public File(String path, boolean isResource) {
+            super(evaluateFileName(path), path, isResource);
+        }
+
 		/**
 		 * Returns the filetype of a given filename
 		 * @param name Name of the file
@@ -453,13 +457,26 @@ public class FileSystem {
 		}
 
 		/**
-		 * Initialize the filetype of the file
+		 * Evaluates the filetype of the file
 		 * @return This File with Filetype
 		 */
-		public File initFileType() {
+		public File evaluateFileType() {
 			this.filetype = readFileType(name);
 			return this;
 		}
+
+        /**
+         * Evaluate the filename from a given path
+         * @param path Path to the file
+         * @return The filename with the filetype
+         */
+        public static String evaluateFileName(String path) throws IllegalArgumentException {
+            if (path.endsWith("/"))
+                throw new IllegalArgumentException("The provided path is a folder, not a file: " + path);
+
+            String[] parts = path.replaceAll("\\\\", "/").split("/");
+            return parts[parts.length - 1];
+        }
 
 		/**
 		 * Get the filetype of this File
@@ -470,7 +487,7 @@ public class FileSystem {
 		}
 
 
-        public byte[] readContent() throws IOException, NullPointerException {
+        public byte[] readBytes() throws IOException, NullPointerException {
             if (isResource) {
                 try (InputStream stream = Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream()) {
                     return stream.readAllBytes();
