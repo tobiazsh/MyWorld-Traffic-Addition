@@ -110,3 +110,10 @@ modrinth {
 tasks.register("publishAll") {
     dependsOn("modrinth")
 }
+
+
+// JAVADOC
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
