@@ -42,9 +42,9 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     /**
-     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded.
+     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
      */
-    public void registerTexture(boolean blur, boolean clamp) {
+    public DynamicTexture registerTexture(boolean blur, boolean clamp) {
         this.close();
 
         try (NativeImage image = this.getImage(isResource)){
@@ -56,24 +56,64 @@ public class DynamicTexture extends AbstractTexture {
         } catch (IOException e) {
             throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture!", e);
         }
+
+        return this;
+    }
+
+    public DynamicTexture smartRegisterTexture(boolean blur, boolean clamp) {
+        if (MinecraftClient.getInstance().getTextureManager().getTexture(id) != null) // Already registered in TextureManager
+            return this;
+
+        if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
+            return this;
+
+        return this.registerTexture(blur, clamp).register();
+    }
+
+    /**
+     * Registers the texture in the DynamicTextureManager. If a texture with the same id already exists, it won't be replaced. Note, this does NOT register the texture in Minecraft's TextureManager!
+     * @return this DynamicTexture instance
+     */
+    public DynamicTexture register() {
+        DynamicTextureManager.addTexture(this.id, this);
+        return this;
+    }
+
+    /**
+     * Replaces the texture in the DynamicTextureManager. If a texture with the same id doesn't exist yet, it won't be added. Note, this does NOT register the texture in Minecraft's TextureManager!
+     * @return this DynamicTexture instance
+     */
+    public DynamicTexture replace() {
+        DynamicTextureManager.replaceTexture(this.id, this);
+        return this;
+    }
+
+    /**
+     * Unregisters the texture from the DynamicTextureManager. Note, this does NOT unregister the texture from Minecraft's TextureManager!
+     */
+    public void unregister() {
+        DynamicTextureManager.removeTexture(this.id);
     }
 
     /**
      * Subscribes to this texture (so it won't get deleted while in use).
      */
-    public void subscribe() {
+    public DynamicTexture subscribe() {
         subscribers++;
+        return this;
     }
 
     /**
      * Unsubscribes from this texture (so it can get deleted when not in use anymore).
      */
-    public void unsubscribe() {
+    public DynamicTexture unsubscribe() {
         subscribers--;
         if (subscribers < 0) subscribers = 0; // Safety guards
 
         if (subscribers == 0 && deleteWhenPossible)
             destroy();
+
+        return this;
     }
 
     // Get number of subscribers
@@ -96,6 +136,7 @@ public class DynamicTexture extends AbstractTexture {
             return;
         }
 
+        this.unregister();
         this.close();
     }
 
