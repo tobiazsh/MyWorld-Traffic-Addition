@@ -60,6 +60,12 @@ public class DynamicTexture extends AbstractTexture {
         return this;
     }
 
+    /**
+     * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
+     * @param blur whether to use blur filtering (or linear filtering)
+     * @param clamp whether to use clamp wrapping
+     * @return this DynamicTexture instance
+     */
     public DynamicTexture smartRegisterTexture(boolean blur, boolean clamp) {
         if (MinecraftClient.getInstance().getTextureManager().getTexture(id) != null) // Already registered in TextureManager
             return this;
