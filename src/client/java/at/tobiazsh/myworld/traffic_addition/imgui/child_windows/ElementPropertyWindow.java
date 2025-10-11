@@ -143,28 +143,38 @@ public class ElementPropertyWindow {
 			float aspectRatioH = elemW[0] / elemH[0];
 
 			// Width Drag
-			if (ImGui.dragFloat(tr("Global", "Width"), elemW, 1.0f, 0.1f, ratioedSignSize.x)) { // Translatable text for "Width"
+            if (ImGui.dragFloat(tr("Global", "Width"), elemW, 1.0f, 0.1f, ratioedSignSize.x - element.getX())) {
 
-				if (relateSize) {
-					elemH[0] = elemW[0] * aspectRatioW; // Adjust height based on new width
-					element.setHeight(elemH[0]);
-				}
+                if (relateSize) {
+                    float maxHeight = Math.max(0f, ratioedSignSize.y - element.getY());
+                    float safeAspect = Math.max(1e-6f, aspectRatioW);
+                    if (elemW[0] * safeAspect > maxHeight)
+                        elemW[0] = maxHeight / safeAspect;
 
-				element.setWidth(elemW[0]);
-			}
+                    elemH[0] = elemW[0] * safeAspect;
+                    element.setHeight(elemH[0]);
+                }
+
+                element.setWidth(elemW[0]);
+            }
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
 			// Height Drag
-			if (ImGui.dragFloat(tr("Global", "Height"), elemH, 1.0f, 0.1f, ratioedSignSize.y)) { // Translatable text for "Height"
+            if (ImGui.dragFloat(tr("Global", "Height"), elemH, 1.0f, 0.1f, ratioedSignSize.y - element.getY())) {
 
-				if (relateSize) {
-					elemW[0] = elemH[0] * aspectRatioH; // Adjust height based on new width
-					element.setWidth(elemW[0]);
-				}
+                if (relateSize) {
+                    float maxWidth = Math.max(0f, ratioedSignSize.x - element.getX());
+                    float safeAspect = Math.max(1e-6f, aspectRatioH);
+                    if (elemH[0] * safeAspect > maxWidth)
+                        elemH[0] = maxWidth / safeAspect;
 
-				element.setHeight(elemH[0]);
-			}
+                    elemW[0] = elemH[0] * safeAspect;
+                    element.setWidth(elemW[0]);
+                }
+
+                element.setHeight(elemH[0]);
+            }
 
 			if (ImGui.isItemDeactivated()) SignEditor.addUndo();
 
