@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils.graphics;
 
+import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -67,7 +68,7 @@ public class DynamicTexture extends AbstractTexture {
      * @return this DynamicTexture instance
      */
     public DynamicTexture smartRegisterTexture(boolean blur, boolean clamp) {
-        if (MinecraftClient.getInstance().getTextureManager().getTexture(id) != null) // Already registered in TextureManager
+        if (((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures().containsKey(id)) // Already registered in TextureManager
             return this;
 
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
@@ -148,6 +149,14 @@ public class DynamicTexture extends AbstractTexture {
 
     public void dontDestroyWhenPossible() {
         deleteWhenPossible = false;
+    }
+
+    public Identifier getId() {
+        return id;
+    }
+
+    public String getPath() {
+        return path;
     }
 
     /**
