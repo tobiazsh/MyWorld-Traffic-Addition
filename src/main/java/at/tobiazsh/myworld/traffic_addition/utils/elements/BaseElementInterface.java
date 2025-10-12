@@ -122,8 +122,8 @@ public interface BaseElementInterface {
 
         BaseElement.ELEMENT_TYPE type = BaseElement.ELEMENT_TYPE.values()[object.get("ElementType").getAsInt()];
 
-        if (type == BaseElement.ELEMENT_TYPE.IMAGE_ELEMENT) {
-            element = new ImageElement(
+        switch(type) {
+            case IMAGE_ELEMENT -> element = new ImageElement(
                     elementPosition[0], elementPosition[1],
                     size[0], size[1],
                     factor,
@@ -132,8 +132,8 @@ public interface BaseElementInterface {
                     MAIN_CANVAS_ID,
                     id
             );
-        } else if (type == BaseElement.ELEMENT_TYPE.TEXT_ELEMENT) {
-            element = new TextElement(
+
+            case TEXT_ELEMENT -> element = new TextElement(
                     elementPosition[0], elementPosition[1],
                     size[0], size[1],
                     rotation,
@@ -149,34 +149,47 @@ public interface BaseElementInterface {
                     MAIN_CANVAS_ID,
                     id
             );
-        } else if (type == BaseElement.ELEMENT_TYPE.GROUP_ELEMENT) {
-            element = new GroupElement(
+
+            case GROUP_ELEMENT -> {
+                element = new GroupElement(
+                        elementPosition[0], elementPosition[1],
+                        size[0], size[1],
+                        rotation,
+                        name,
+                        MAIN_CANVAS_ID,
+                        id
+                );
+
+                JsonArray elementsArray = object.getAsJsonArray("Elements");
+                for (int i = 0; i < elementsArray.size(); i++) {
+                    JsonObject elementObject = elementsArray.get(i).getAsJsonObject();
+                    BaseElement childElement = fromJson(elementObject);
+
+                    if (childElement == null) {
+                        MyWorldTrafficAddition.LOGGER.error("Couldn't recognize ChildElement with name {} from GroupElement with ID {} because it could not be read from JSON! It is likely that no ID for this element has been found and thus couldn't target the right element!", elementObject.get("Name").getAsString(), id);
+                        continue;
+                    }
+
+                    ((GroupElement) element).addElement(childElement);
+                }
+
+                ((GroupElement) element).setChildrenParentElementId();
+            }
+
+            case ONLINE_IMAGE_ELEMENT -> element = new OnlineImageElement(
                     elementPosition[0], elementPosition[1],
                     size[0], size[1],
+                    factor,
                     rotation,
-                    name,
+                    UUID.fromString(object.get("PictureReference").getAsString()),
                     MAIN_CANVAS_ID,
                     id
             );
 
-            JsonArray elementsArray = object.getAsJsonArray("Elements");
-            for (int i = 0; i < elementsArray.size(); i++) {
-                JsonObject elementObject = elementsArray.get(i).getAsJsonObject();
-                BaseElement childElement = fromJson(elementObject);
-
-                if (childElement == null) {
-                    MyWorldTrafficAddition.LOGGER.error("Couldn't recognize ChildElement with name {} from GroupElement with ID {} because it could not be read from JSON! It is likely that no ID for this element has been found and thus couldn't target the right element!", elementObject.get("Name").getAsString(), id);
-                    continue;
-                }
-
-                ((GroupElement) element).addElement(childElement);
+            default -> {
+                MyWorldTrafficAddition.LOGGER.error("Error: Couldn't deconstruct elements to JSON! Element type is invalid.");
+                return null;
             }
-
-            ((GroupElement) element).setChildrenParentElementId();
-
-        } else {
-            MyWorldTrafficAddition.LOGGER.error("Error: Couldn't deconstruct elements to JSON! Element type is invalid.");
-            return null;
         }
 
         // Migration from old codebase (old codebase didn't have the parent id stored; introduced because of ungrouping)

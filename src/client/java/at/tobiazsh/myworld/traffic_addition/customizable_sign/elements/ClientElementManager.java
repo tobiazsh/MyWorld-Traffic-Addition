@@ -136,7 +136,14 @@ public class ClientElementManager {
     }
 
     public void removeElement(int index) {
-        unregisterElement(elements.get(index)); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
+        ClientElementInterface element = elements.get(index);
+
+        unregisterElement(element); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
+
+        if (element instanceof TexturableElementInterface) {
+            ((TexturableElementInterface) element).markTextureStale();
+        }
+
         elements.remove(index);
         registerUnregistered();
     }

@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
@@ -21,8 +22,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
 
-    private static final String defaultResourcePath = "assets/myworld_traffic_addition/textures/imgui/icons/not_found_placeholder.png";
+    private static final String defaultResourcePath = "/assets/myworld_traffic_addition/textures/imgui/icons/not_found_placeholder.png";
     private static final Texture defaultTexture = Textures.smartRegisterTexture(defaultResourcePath);
+
+    DynamicTexture dynamicTexture = null;
 
     private boolean mayDownload = true; // Flag to control if the image should be downloaded
 
@@ -66,10 +69,16 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 getRotation(),
                 elementTexture,
                 getParentId()
-        );
+        ).fromOnlineImage(this);
     }
 
     // TEXTURES
+
+
+    @Override
+    public DynamicTexture getDynamicTexture() {
+        return dynamicTexture;
+    }
 
     @Override // TexturableElementInterface
     public boolean isTextureLoaded() {
@@ -133,6 +142,18 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 MyWorldTrafficAddition.LOGGER.error("Exception while downloading image for OnlineImageElementClient with ID: {}", getId(), e);
                 return null;
         });
+    }
+
+    @Override
+    public void markTextureStale() {
+        if (dynamicTexture == null) return;
+        try {
+            dynamicTexture.unsubscribe();
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.warn("Failed to unsubscribe dynamic texture", e);
+        }
+        dynamicTexture = null;
+        textureLoaded = false; // Force reload
     }
 
     /**

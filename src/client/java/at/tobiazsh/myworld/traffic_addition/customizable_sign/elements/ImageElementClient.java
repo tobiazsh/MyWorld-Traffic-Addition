@@ -3,8 +3,11 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.IdentifierUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
@@ -26,6 +29,11 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 public class ImageElementClient extends ImageElement implements ClientElementInterface, TexturableElementInterface {
 
     public boolean textureLoaded = false;
+
+    private boolean isFromOnlineImage = false;
+    private OnlineImageElementClient reference = null;
+
+    DynamicTexture dynamicTexture = null;
 
     public ImageElementClient(
             float x, float y,
@@ -134,6 +142,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * @param overlay Overlay level
      * @param facing Direction the element should face
      */
+    @SuppressWarnings("resource")
     @Override
     public void renderMinecraft(
             int indexInList,
@@ -162,9 +171,27 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
         // Bind texture to vertices
-        Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath());
+        DynamicTexture texture = isFromOnlineImage ? reference.dynamicTexture : dynamicTexture;
 
-        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture); // Custom Render Layer to prevent z-fighting
+        if (texture == null) {
+            if (isFromOnlineImage) {
+                texture = new DynamicTexture(this.getResourcePath(), Identifier.of(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
+                        .smartRegisterTexture(false, false)
+                        .register()
+                        .subscribe();
+
+                reference.dynamicTexture = texture;
+            } else {
+                texture = new DynamicTexture(this.getResourcePath(), IdentifierUtils.trimAssets(Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath())), true); // Do not register
+                dynamicTexture = texture;
+            }
+        }
+
+        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(
+                zOffset,
+                CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
+                texture.getId()); // Custom Render Layer to prevent z-fighting
+
         RenderLayer renderLayer = imageLayering.buildRenderLayer();
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
@@ -216,6 +243,11 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         matrices.pop();
     }
 
+    @Override
+    public void markTextureStale() {
+        // Do not mark as stale if it's a normal image element as those are static and should always be available
+    }
+
     /**
      * Sets the UV coordinates of the image element
      * @param p0tl Top left UV coordinate
@@ -245,6 +277,11 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         p1 = rotatePivot(p1, center, radians);
         p2 = rotatePivot(p2, center, radians);
         p3 = rotatePivot(p3, center, radians);
+    }
+
+    @Override
+    public DynamicTexture getDynamicTexture() {
+        return dynamicTexture;
     }
 
     @Override // TexturableElementInterface
@@ -322,5 +359,13 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         copy.setColor(this.getColor());
 
         return copy;
+    }
+
+    public ImageElementClient fromOnlineImage(OnlineImageElementClient reference) {
+        this.resourcePath = reference.getResourcePath();
+        this.isFromOnlineImage = true;
+        this.resourcePath = reference.getResourcePath();
+        this.reference = reference;
+        return this;
     }
 }
