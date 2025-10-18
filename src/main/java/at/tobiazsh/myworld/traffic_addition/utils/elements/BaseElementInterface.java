@@ -87,7 +87,7 @@ public interface BaseElementInterface {
 
         // Array
 
-        JsonArray jsonColor = object.getAsJsonArray("Color");
+        JsonArray jsonColor = object.get("Color").getAsJsonArray();
         float[] color = new float[]{jsonColor.get(0).getAsFloat(), jsonColor.get(1).getAsFloat(), jsonColor.get(2).getAsFloat(), jsonColor.get(3).getAsFloat()}; // R, G, B, A
 
         JsonArray jsonSize = object.getAsJsonArray("Size");
