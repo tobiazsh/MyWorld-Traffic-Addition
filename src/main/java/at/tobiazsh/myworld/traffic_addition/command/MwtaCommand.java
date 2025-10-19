@@ -24,6 +24,8 @@ public class MwtaCommand {
                 .then(CommandManager.literal("ToggleImGuiTestScreen").executes(MwtaCommand::toggleImGuiTestScreen))
                 .then(CommandManager.literal("about").executes(MwtaCommand::openAboutWindow))
                 .then(CommandManager.literal("pref").executes(MwtaCommand::openPreferencesWindow))
+                .then(CommandManager.literal("custom_images")
+                        .then(CommandManager.literal("set")))
                 .executes(MwtaCommand::displayInfo));
     }
 
