@@ -82,6 +82,11 @@ public abstract class ElementEntry {
 	private final float entryHeight = 64;
 	private final float buttonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
 
+
+
+
+
+
 	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, ClientElementInterface selectedOption) {
         if (!(renderObject instanceof ClientElementInterface)) return; // Prevent non-client elements from rendering here because otherwise it'll crash
 
@@ -107,11 +112,11 @@ public abstract class ElementEntry {
 			ImGui.sameLine();
 			ImGui.setCursorPosY((entryHeight - buttonSize) / 2 - ImGui.getStyle().getFramePadding().y); // Center Button Y
 			if (((GroupElementClient) renderObject).isExpanded()) {
-				if (ImGui.arrowButton("##expand", ImGuiDir.Up)) {
+				if (ImGui.arrowButton("##expand_" + renderObject.getId(), ImGuiDir.Up)) {
 					((GroupElementClient) renderObject).setExpanded(false);
 				}
 			} else {
-				if (ImGui.arrowButton("##expand", ImGuiDir.Down)) {
+				if (ImGui.arrowButton("##expand_" + renderObject.getId(), ImGuiDir.Down)) {
 					((GroupElementClient) renderObject).setExpanded(true);
 				}
 			}
@@ -153,6 +158,14 @@ public abstract class ElementEntry {
 		ImGui.popStyleVar();
 	}
 
+
+
+
+
+
+
+
+
 	/**
 	 * Renders the control buttons on the right side of the entry
 	 */
@@ -177,16 +190,23 @@ public abstract class ElementEntry {
 
 		// Up button
 		if (disableUp) ImGui.beginDisabled();
-		if (ImGui.arrowButton("##up", ImGuiDir.Up)) moveEntryUp();
+		if (ImGui.arrowButton("##up_" + renderObject.getId(), ImGuiDir.Up)) moveEntryUp();
 		if (disableUp) ImGui.endDisabled();
 
 		ImGui.sameLine();
 
 		// Down button
 		if (disableDown) ImGui.beginDisabled();
-		if (ImGui.arrowButton("##down", ImGuiDir.Down)) moveEntryDown();
+		if (ImGui.arrowButton("##down_" + renderObject.getId(), ImGuiDir.Down)) moveEntryDown();
 		if (disableDown) ImGui.endDisabled();
 	}
+
+
+
+
+
+
+
 
 	/**
 	 * Renders the button with the three dots (...) on the right (it's called contextual menu because I couldn't come up with something better, and it's a context menu and I must admit that I quite like it :D )
@@ -219,6 +239,13 @@ public abstract class ElementEntry {
 			ImGui.endPopup();
 		}
 	}
+
+
+
+
+
+
+
 
 	private void renderGroupControls(int indexInList) {
 
@@ -269,6 +296,12 @@ public abstract class ElementEntry {
 		}
 	}
 
+
+
+
+
+
+
 	private float getGroupContentHeight(GroupElementClient group) {
 		if (!group.isExpanded()) return 0;
 
@@ -282,11 +315,17 @@ public abstract class ElementEntry {
 		return height;
 	}
 
+
+
+
+
+
+
 	private void renderBaseElementContent(float framePadding, ClientElementInterface selectedOption) {
 		// Selection Button
 		ImGui.setCursorPosX(this.padding * 2);
 		ImGui.setCursorPosY((entryHeight - imgui.calcTextSize("T").y) / 2 - framePadding);
-		if (ImGui.radioButton("##radioButton", Objects.equals(selectedOption, renderObject))) elementSelectedAction();
+		if (ImGui.radioButton("##radioButton_" + renderObject.getId(), Objects.equals(selectedOption, renderObject))) elementSelectedAction();
 
 		ImGui.sameLine();
 
@@ -297,6 +336,12 @@ public abstract class ElementEntry {
 		else if (renderObject instanceof TextElement) ImGui.image(textIconId, previewSize, previewSize);
 		else if (renderObject instanceof GroupElement) ImGui.image(groupIconId, previewSize, previewSize);
 	}
+
+
+
+
+
+
 
 	private ElementEntry createChildElementEntry(ClientElementInterface element, GroupElementClient grpElement) {
 		return new ElementEntry(element, grpElement.getId()) {
@@ -382,6 +427,11 @@ public abstract class ElementEntry {
 		};
 	}
 
+
+
+
+
+
 	private void exportElement() {
 		Saves.createSavesDir();
 
@@ -397,4 +447,9 @@ public abstract class ElementEntry {
 				"MWTACSELEMENT", "JSON"
 		);
 	}
+
+
+
+
+
 }
