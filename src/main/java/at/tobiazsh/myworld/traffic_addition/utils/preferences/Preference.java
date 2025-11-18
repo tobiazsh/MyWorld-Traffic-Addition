@@ -12,13 +12,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class Preference {
-
-    protected final String CONFIG_FILE_PATH;
-
-    public Preference(String path) {
-        this.CONFIG_FILE_PATH = path;
-    }
+public record Preference(String CONFIG_FILE_PATH) {
 
     public void saveToDisk(String key, String value) {
         saveToDisk(key, new JsonPrimitive(value));
