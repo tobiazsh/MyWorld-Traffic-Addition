@@ -10,6 +10,9 @@ public class ServerPreferences {
     public static long maximumThumbnailUploadSize = 1024 * 512; // 512KB; Default
     public static final long maximumThumbnailUploadSizeDefault = 1024 * 512; // 512KB; Default
 
+    public static long maximumMetadataSize = 1024 * 100; // 100KB; Default
+    public static final long maximumMetadataSizeDefault = 1024 * 100; //
+
     public static void loadPreferences() {
         // Load server preferences
         maximumImageUploadSize = generalServerPreferences.getLong("maximumImageUploadSize");
@@ -19,5 +22,9 @@ public class ServerPreferences {
         maximumThumbnailUploadSize = generalServerPreferences.getLong("maximumThumbnailUploadSize");
         if (maximumThumbnailUploadSize == Preference.INVALID_LONG)
             maximumThumbnailUploadSize = maximumThumbnailUploadSizeDefault; // Fallback to default
+
+        maximumMetadataSize = generalServerPreferences.getLong("maximumMetadataSize");
+        if (maximumMetadataSize == Preference.INVALID_LONG)
+            maximumMetadataSize = maximumMetadataSizeDefault; // Fallback to default
     }
 }
