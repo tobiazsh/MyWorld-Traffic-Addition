@@ -251,7 +251,7 @@ public class OnlineImageDialog {
 
                 if (!hasError) {
                     currentPage = OnlineImageDialogPage.EDIT; // Go to next page
-                    uploadImage(); // Upload image to GPU
+                    uploadImageToGPU(); // Upload image to GPU
                     createImageBackup();
                 }
 
@@ -367,7 +367,7 @@ public class OnlineImageDialog {
     /**
      * Uploads downloaded image to GPU
      */
-    private void uploadImage() {
+    private void uploadImageToGPU() {
         // Test if imagePath is valid
         if (imageData == null || imageData.remaining() == 0) {
             MyWorldTrafficAddition.LOGGER.error("Image data is not present!");
