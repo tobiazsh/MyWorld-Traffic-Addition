@@ -299,10 +299,10 @@ public class OnlineImageServerLogic {
 
 
     /**
-     * Reads the image image from the custom image directories and returns it as a byte array (encoded in whatever format the image is in). Also supports hidden images
+     * Reads the image from the custom image directories and returns it as a byte array (encoded in whatever format the image is in). Also supports hidden images
      * @param uuid The UUID of the image to read
      * @param suffix MUST match exactly type (like ".png" or ".jpeg"), otherwise the image will NOT be found. Can help get specific types of the image if the suffix is included (for example for thumbnails: "_thumbnail.png").
-     * @return Image image as byte array
+     * @return Image as byte array
      */
     private static byte[] readCustomImageData(String uuid, @NotNull @NotBlank String suffix) {
         String imageName = uuid + suffix;
