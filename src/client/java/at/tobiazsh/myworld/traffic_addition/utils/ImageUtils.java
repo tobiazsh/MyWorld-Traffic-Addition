@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.ImageOperations;
-import org.lwjgl.stb.STBImageResize;
+import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -73,5 +74,47 @@ public class ImageUtils {
         }
 
         return new Triplet<>(newWidth, newHeight, scaledImage);
+    }
+
+    /**
+     * Encodes raw pixel data to PNG format
+     * @param imageData Raw pixel data
+     * @param width Width of the image
+     * @param height Height of the image
+     * @param channels Number of channels
+     * @return The PNG encoded image as byte array
+     */
+    public static byte[] encodePNG(ByteBuffer imageData, int width, int height, int channels) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        STBIWriteCallbackI callback = new STBIWriteCallback() {
+            @Override
+            public void invoke(long context, long data, int size) {
+                byte[] buffer = new byte[size];
+                MemoryUtil.memCopy(data, MemoryUtil.memAddress(MemoryUtil.memAlloc(size)), size);
+                MemoryUtil.memByteBuffer(data, size).get(buffer);
+                outputStream.write(buffer, 0, buffer.length);
+            }
+        };
+
+        int stride = width * channels;
+
+        boolean success = STBImageWrite.stbi_write_png_to_func(
+                callback,
+                0,
+                width,
+                height,
+                channels,
+                imageData,
+                stride
+        );
+
+        if (!success) {
+            String failureReason = STBImage.stbi_failure_reason();
+            MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
+            throw new RuntimeException(failureReason);
+        }
+
+        return outputStream.toByteArray();
     }
 }

@@ -400,7 +400,7 @@ public class OnlineImageDialog {
 
         Thread thread = new Thread(() -> {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding image to PNG");
-            byte[] imagePngData = encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0));
+            byte[] imagePngData = ImageUtils.encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0));
             operationProgress = 0.2f;
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Thumbnail");
@@ -416,7 +416,7 @@ public class OnlineImageDialog {
             }
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding thumbnail to PNG");
-            byte[] thumbnailPngData = encodePNG(thumbnail.getC(), thumbnail.getA(), thumbnail.getB(), imgC.get(0));
+            byte[] thumbnailPngData = ImageUtils.encodePNG(thumbnail.getC(), thumbnail.getA(), thumbnail.getB(), imgC.get(0));
             operationProgress = 0.6f;
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Metadata");
@@ -519,40 +519,6 @@ public class OnlineImageDialog {
     private static Triplet<Integer, Integer, ByteBuffer> getThumbnail(ByteBuffer imageData, ByteBuffer originalImageData, IntBuffer imgW, IntBuffer imgH, IntBuffer imgC, Runnable onAbort) {
         float scale = 128f / (Math.max(imgH.get(0), imgW.get(0)));
         return ImageUtils.scaleImage(imageData, originalImageData, scale, imgW.get(0), imgH.get(0), imgC.get(0), onAbort);
-    }
-
-    private static byte[] encodePNG(ByteBuffer imageData, int width, int height, int channels) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        STBIWriteCallbackI callback = new STBIWriteCallback() {
-            @Override
-            public void invoke(long context, long data, int size) {
-                byte[] buffer = new byte[size];
-                MemoryUtil.memCopy(data, MemoryUtil.memAddress(MemoryUtil.memAlloc(size)), size);
-                MemoryUtil.memByteBuffer(data, size).get(buffer);
-                outputStream.write(buffer, 0, buffer.length);
-            }
-        };
-
-        int stride = width * channels;
-
-        boolean success = STBImageWrite.stbi_write_png_to_func(
-                callback,
-                0,
-                width,
-                height,
-                channels,
-                imageData,
-                stride
-        );
-
-        if (!success) {
-            String failureReason = STBImage.stbi_failure_reason();
-            MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
-            throw new RuntimeException(failureReason);
-        }
-
-        return outputStream.toByteArray();
     }
 
     private void restoreOriginal() {
