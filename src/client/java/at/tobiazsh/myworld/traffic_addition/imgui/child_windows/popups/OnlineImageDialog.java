@@ -512,10 +512,10 @@ public class OnlineImageDialog {
      * @param channels The channels of the image. This will later correlate to STBImageResize formats "stbir_pixel_formats". For more information, please take a look at {@link STBImageResize}
      * @return Triplet(A, B, C)
      * <li>
-     *     A = Width of the thumbnail (Integer)
+     *     A = Width of the scaled image (Integer)
      * </li>
      * <li>
-     *     B = Height of the thumbnail (Integer)
+     *     B = Height of the scaled image (Integer)
      * </li>
      * <li>
      *     C = ByteBuffer containing the raw pixel data
