@@ -3,6 +3,9 @@ package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
+import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -41,16 +44,55 @@ public class OnlineImageServerLogic {
      * Processes an uploaded image.
      * @param image The byte array containing the image data, thumbnail, metadata, and hidden status.
      */
-    public static void processUploadedImage(byte[] image) {
+    public static void processUploadedImage(ServerPlayerEntity source, byte[] image) {
         // Extract image
         executorService.submit(() -> {
             ByteBuffer buffer = ByteBuffer.wrap(image);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             buffer.rewind();
 
+            if (image.length < 16) { // 3 ints (12) + hidden byte (1) + padding
+                CustomServerNetworking.getInstance().sendBytesToClient(
+                        source,
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        new Error("Image Upload Error", "Malformed package!").toBytes(),
+                        -1,
+                        -1);
+
+                return;
+            }
+
             int imageSize = buffer.getInt();
             int thumbnailSize = buffer.getInt();
             int metadataSize = buffer.getInt();
+
+            // Hard rejection if any of the sizes exceed maximum allowed size
+            if (
+                    imageSize < 0 || thumbnailSize < 0 || metadataSize < 0 ||
+                    imageSize > ServerPreferences.maximumImageUploadSize ||
+                    thumbnailSize > ServerPreferences.maximumThumbnailUploadSize ||
+                    metadataSize > ServerPreferences.maximumMetadataUploadSize) {
+                CustomServerNetworking.getInstance().sendBytesToClient(
+                        source,
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_image_upload_error"),
+                        new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + ServerPreferences.maximumImageUploadSize + " bytes.").toBytes(),
+                        -1,
+                        -1);
+
+                return;
+            }
+
+            long expectedTotalSize = 12L + 1L + imageSize + thumbnailSize + metadataSize; // 3 ints (12 bytes) + 1 byte for hidden + sizes
+            if (image.length != expectedTotalSize) {
+                CustomServerNetworking.getInstance().sendBytesToClient(
+                        source,
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        new Error("Image Upload Error", "Malformed package! Expected size: " + expectedTotalSize + ", actual size: " + image.length).toBytes(),
+                        -1,
+                        -1);
+
+                return;
+            }
 
             byte hiddenByte = buffer.get();
             boolean hidden = hiddenByte == 0;
@@ -60,6 +102,19 @@ public class OnlineImageServerLogic {
 
             byte[] thumbnailData = new byte[thumbnailSize];
             buffer.get(thumbnailData);
+
+            String imageFormat = ImageUtils.getImageFormat(imageData);
+            String thumbnailFormat = ImageUtils.getImageFormat(thumbnailData);
+            if (thumbnailFormat == null || imageFormat == null ||
+                !isOfValidFormat(thumbnailFormat) || !isOfValidFormat(imageFormat)) {
+
+                CustomServerNetworking.getInstance().sendBytesToClient(
+                        source,
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        new Error("Image Upload Error", "Uploaded image or thumbnail is not of a valid format! Supported formats are PNG, JPEG, JPG and BMP.").toBytes(),
+                        -1,
+                        -1);
+            }
 
             byte[] metadataData = new byte[metadataSize];
             buffer.get(metadataData);
@@ -480,5 +535,9 @@ public class OnlineImageServerLogic {
      */
     private static UUID byteToUUID(byte[] uuidBytes) {
         return UUID.fromString(new String(uuidBytes, StandardCharsets.UTF_8));
+    }
+
+    private static boolean isOfValidFormat(String format) {
+        return format.equals("png") || format.equals("jpeg") || format.equals("jpg") || format.equals("bmp");
     }
 }

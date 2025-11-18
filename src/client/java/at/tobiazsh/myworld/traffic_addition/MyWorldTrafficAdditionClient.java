@@ -19,6 +19,7 @@ import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.O
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
 import imgui.ImGui;
@@ -163,6 +164,10 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 			String maximumSize_str = new String(bytes);
             OnlineImageDialog.setMaximumUploadSize(Long.parseLong(maximumSize_str));
 		});
+
+        CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_image_upload_error"), bytes -> {
+            OnlineImageDialog.setError(Error.fromBytes(bytes));
+        });
 
 		// Get total number of uploaded images
 		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageLogic::setImageCount);

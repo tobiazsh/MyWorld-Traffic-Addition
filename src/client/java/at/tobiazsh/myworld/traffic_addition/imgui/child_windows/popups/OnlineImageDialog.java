@@ -43,6 +43,7 @@ public class OnlineImageDialog {
     // Server things
     public static long maximumUploadSize = 1024 * 1024 * 5; // 5 MiB
     public static float[] imageScale = { 1.0f };
+    private static Error serverError;
 
     // Regarding Download
     volatile private boolean isOperating = false;
@@ -458,6 +459,12 @@ public class OnlineImageDialog {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Upload complete! If everything went right, you are now able to see your image in the gallery");
             isOperationComplete = true;
             isOperating = false;
+
+            if (serverError != null && !serverError.isHandled()) {
+                hasError = true;
+                currentError = serverError;
+                serverError.handled();
+            }
         });
 
         thread.setName("ImageUploadThread");
@@ -586,8 +593,8 @@ public class OnlineImageDialog {
         }
     }
 
-    public static void setError(String title, String message) {
-        MyWorldTrafficAddition.LOGGER.debug("Set error in OnlineImageDialog to '{}': '{}'", title, message);
-
+    public static void setError(Error error) {
+        MyWorldTrafficAddition.LOGGER.debug("Set error in OnlineImageDialog to '{}': '{}'", error.getTitle(), error.getMessage());
+        serverError = error;
     }
 }

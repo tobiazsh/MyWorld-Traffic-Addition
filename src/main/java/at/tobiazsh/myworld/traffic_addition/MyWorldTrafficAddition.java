@@ -147,7 +147,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		// Send custom image to server (client -> server as always)
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"), (player, data) -> {
 			byte[] imageData = Arrays.copyOfRange(data, 0, data.length);
-			OnlineImageServerLogic.processUploadedImage(imageData);
+			OnlineImageServerLogic.processUploadedImage(player, imageData);
 		});
 
 		// Request the total number of uploaded images
