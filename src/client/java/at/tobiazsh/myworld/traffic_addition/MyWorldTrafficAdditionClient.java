@@ -22,6 +22,7 @@ import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
+import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
@@ -208,6 +209,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
      * Deletes all unused textures of the given CustomizableSignBlockEntity (if no elements are using them anymore). This is to prevent memory leaks.
      * @param blockEntity The CustomizableSignBlockEntity to delete unused textures from.
      */
+    @SuppressWarnings("resource")
     private static void customizableSignDeleteUnusedTextures(CustomizableSignBlockEntity blockEntity) {
         Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elementMap = CustomizableSignBlockEntityRenderer.elements;
         List<ClientElementInterface> elements = elementMap.get(blockEntity);
@@ -222,13 +224,24 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
             if (!texturableElement.isTextureLoaded())
                 continue;
 
-            if (texturableElement.getDynamicTexture() == null)
+            DynamicTexture texture = texturableElement.getDynamicTexture();
+            if (texture == null)
                 continue;
 
-            texturableElement.markTextureStale();
+            try {
+                texturableElement.markTextureStale();
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.warn("Could not mark texture stale for {}", texturableElement, e);
+            }
 
-            if (texturableElement.getDynamicTexture().getSubscribers() == 0)
-                texturableElement.getDynamicTexture().destroy();
+            try {
+                if (texturableElement.getDynamicTexture().getSubscribers() == 0) {
+                    texturableElement.getDynamicTexture().destroy();
+                    MyWorldTrafficAddition.LOGGER.info("Destroyed dynamic texture {} for element {}", texture.getId(), element);
+                }
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.warn("Failed to destroy dynamic texture {} for element {}", texture != null ? texture.getId() : "<null>", element, e);
+            }
         }
     }
 }

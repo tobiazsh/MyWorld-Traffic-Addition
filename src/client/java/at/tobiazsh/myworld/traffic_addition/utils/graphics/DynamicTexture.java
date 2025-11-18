@@ -8,6 +8,7 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.TextureManager;
 import net.minecraft.util.Identifier;
 
 import java.io.IOException;
@@ -184,7 +185,6 @@ public class DynamicTexture extends AbstractTexture {
      * @throws IOException if an I/O error occurs while reading the image
      */
     private NativeImage getImage(boolean isResource) throws IOException {
-        byte[] imageBytes;
         FileSystem.File imageFile = new FileSystem.File(path, isResource).evaluateFileType();
         if (imageFile == null) return null;
 
