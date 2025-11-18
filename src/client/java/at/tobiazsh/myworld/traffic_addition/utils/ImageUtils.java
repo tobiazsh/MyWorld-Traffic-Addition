@@ -17,6 +17,11 @@ import java.util.Iterator;
 
 public class ImageUtils {
 
+    /**
+     * Gets the image format from the given image bytes
+     * @param imageBytes Image bytes
+     * @return Image format (e.g. "png", "jpeg", etc.) or null if the format could not be determined
+     */
     public static String getImageFormat(byte[] imageBytes) {
         try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageBytes))) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
