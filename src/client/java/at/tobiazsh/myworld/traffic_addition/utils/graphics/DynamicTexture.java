@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils.graphics;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -100,6 +101,13 @@ public class DynamicTexture extends AbstractTexture {
      * Unregisters the texture from the DynamicTextureManager. Note, this does NOT unregister the texture from Minecraft's TextureManager!
      */
     public void unregister() {
+        try {
+            TextureManager tm = MinecraftClient.getInstance().getTextureManager();
+            ((TextureManagerAccessor) tm).getTextures().remove(this.id);
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.warn("Could not unregister texture \"{}\" with path \"{}\" from TextureManager!", this.id, this.path, e);
+        }
+
         DynamicTextureManager.removeTexture(this.id);
     }
 
@@ -145,7 +153,12 @@ public class DynamicTexture extends AbstractTexture {
         }
 
         this.unregister();
-        this.close();
+
+        try {
+            this.close();
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.warn("Could not destroy dynamic texture {} with path \"{}\"!", id, this.path, e);
+        }
     }
 
     public void dontDestroyWhenPossible() {

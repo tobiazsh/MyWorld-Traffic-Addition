@@ -229,18 +229,10 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
                 continue;
 
             try {
-                texturableElement.markTextureStale();
+                texture.destroy(); // Won't destroy just yet if there are subscribers
+                texturableElement.markTextureStale(); // Mark texture as stale. NOW it get's destroyed if no subscribers are left
             } catch (Exception e) {
                 MyWorldTrafficAddition.LOGGER.warn("Could not mark texture stale for {}", texturableElement, e);
-            }
-
-            try {
-                if (texturableElement.getDynamicTexture().getSubscribers() == 0) {
-                    texturableElement.getDynamicTexture().destroy();
-                    MyWorldTrafficAddition.LOGGER.info("Destroyed dynamic texture {} for element {}", texture.getId(), element);
-                }
-            } catch (Exception e) {
-                MyWorldTrafficAddition.LOGGER.warn("Failed to destroy dynamic texture {} for element {}", texture != null ? texture.getId() : "<null>", element, e);
             }
         }
     }
