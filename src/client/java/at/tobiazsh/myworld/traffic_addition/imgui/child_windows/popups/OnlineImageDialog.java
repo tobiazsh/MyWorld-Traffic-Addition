@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ClientCustomImageDirectory;
 import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ImageDownloader;
@@ -338,7 +339,7 @@ public class OnlineImageDialog {
 
     private void applySettings() {
         if (imageScale[0] != 1.0f) {
-            Triplet<Integer, Integer, ByteBuffer> result = scaleImage(imageData, originalImageData, imageScale[0], imgW.get(0), imgH.get(0), imgC.get(0), this::abort);
+            Triplet<Integer, Integer, ByteBuffer> result = ImageUtils.scaleImage(imageData, originalImageData, imageScale[0], imgW.get(0), imgH.get(0), imgC.get(0), this::abort);
 
             if (result.getC() == null) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to scale image! Aborting...");
@@ -502,46 +503,6 @@ public class OnlineImageDialog {
     }
 
     /**
-     * Scales image down to specified scale
-     *
-     * @param imageData Raw pixel data to scale
-     * @param originalImageData ensures that the original image buffer is not accidentally freed when deallocating the imageData buffer during image scaling.
-     * @param scale Scale to scale the image to
-     * @param width Current width
-     * @param height Current height
-     * @param channels The channels of the image. This will later correlate to STBImageResize formats "stbir_pixel_formats". For more information, please take a look at {@link STBImageResize}
-     * @return Triplet(A, B, C)
-     * <li>
-     *     A = Width of the scaled image (Integer)
-     * </li>
-     * <li>
-     *     B = Height of the scaled image (Integer)
-     * </li>
-     * <li>
-     *     C = ByteBuffer containing the raw pixel data
-     * </li>
-     */
-    private static Triplet<Integer, Integer, ByteBuffer> scaleImage(ByteBuffer imageData, ByteBuffer originalImageData, float scale, int width, int height, int channels, Runnable onAbort) {
-        int newWidth = (int) Math.ceil(width * scale);
-        int newHeight = (int) Math.ceil(height * scale);
-
-        if (imageData != null && imageData != originalImageData) {
-            MemoryUtil.memFree(imageData);
-        }
-
-        ByteBuffer scaledImage = MemoryUtil.memAlloc(newWidth * newHeight * channels);
-        boolean state = ImageOperations.bilinearResize(imageData, width, height, scaledImage, newWidth, newHeight, channels);
-
-        if (!state) { // Abort if unsuccessful (empty)
-            MyWorldTrafficAddition.LOGGER.error("Failed to resize image! Aborting...");
-            onAbort.run();
-            return new Triplet<>(0, 0, null);
-        }
-
-        return new Triplet<>(newWidth, newHeight, scaledImage);
-    }
-
-    /**
      * Returns a thumbnail of the provided imageData that is 128 pixels on the longest side
      * @param imageData The raw pixel data of the image
      * @return Triplet(A, B, C)
@@ -557,7 +518,7 @@ public class OnlineImageDialog {
      */
     private static Triplet<Integer, Integer, ByteBuffer> getThumbnail(ByteBuffer imageData, ByteBuffer originalImageData, IntBuffer imgW, IntBuffer imgH, IntBuffer imgC, Runnable onAbort) {
         float scale = 128f / (Math.max(imgH.get(0), imgW.get(0)));
-        return scaleImage(imageData, originalImageData, scale, imgW.get(0), imgH.get(0), imgC.get(0), onAbort);
+        return ImageUtils.scaleImage(imageData, originalImageData, scale, imgW.get(0), imgH.get(0), imgC.get(0), onAbort);
     }
 
     private static byte[] encodePNG(ByteBuffer imageData, int width, int height, int channels) {
