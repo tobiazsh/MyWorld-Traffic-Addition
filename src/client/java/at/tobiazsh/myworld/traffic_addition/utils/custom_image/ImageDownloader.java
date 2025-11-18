@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import net.minecraft.util.Pair;
 
@@ -23,8 +24,7 @@ import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 public class ImageDownloader {
 
-    private final Function<String, String> errorTitleSetter;
-    private final Function<String, String> errorMessageSetter;
+    private final Function<Error, Error> errorHandler;
     private final Function<String, String> operationMessageSetter;
     private final Function<Float, Float> operationProgressSetter;
 
@@ -33,13 +33,11 @@ public class ImageDownloader {
     volatile private ByteBuffer imageData = null;
 
     public ImageDownloader(
-            Function<String, String> errorTitleSetter,
-            Function<String, String> errorMessageSetter,
+            Function<Error, Error> errorHandler,
             Function<String, String> operationMessageSetter,
             Function<Float, Float> operationProgressSetter
     ) {
-        this.errorTitleSetter = errorTitleSetter;
-        this.errorMessageSetter = errorMessageSetter;
+        this.errorHandler = errorHandler;
         this.operationMessageSetter = operationMessageSetter;
         this.operationProgressSetter = operationProgressSetter;
     }
@@ -57,8 +55,9 @@ public class ImageDownloader {
 
         // Handle Empty URL
         if (url == null || url.isEmpty()) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Please provide a valid URL to download the image from"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Please provide a valid URL to download the image from"));
 
             return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"));
         }
@@ -67,8 +66,9 @@ public class ImageDownloader {
         try {
             imageUrl = URI.create(url).toURL();
         } catch (MalformedURLException e) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Malformed URL"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The URL you provided is malformed. Download action has been aborted! Please check the URL and try again. Otherwise, please check the logs"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Malformed URL"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The URL you provided is malformed. Download action has been aborted! Please check the URL and try again. Otherwise, please check the logs"));
 
             return new Pair<>(1, "Malformed image URL!\nURL: " + url + "\nJava's Nonsense: " + e.getMessage());
         }
@@ -81,8 +81,9 @@ public class ImageDownloader {
         try {
             connection = imageUrl.openConnection();
         } catch (IOException e) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Connection Failed"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open a connection to the URL. Download Action has been aborted! Please check your Internet and try again"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Connection Failed"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open a connection to the URL. Download Action has been aborted! Please check your Internet and try again"));
 
             return new Pair<>(1, "Couldn't open connection to URL! Java's Nonsense: " + e.getMessage());
         }
@@ -93,8 +94,9 @@ public class ImageDownloader {
         }
 
         if (totalBytes > maximumUploadSize) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "File Too Large"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The file is too large to be downloaded. Maximum size is ") + (maximumUploadSize / 1024) + " KiB.");
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "File Too Large"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The file is too large to be downloaded. Maximum size is ") + (maximumUploadSize / 1024) + " KiB.");
 
             return new Pair<>(1, "File too large! File size: " + (totalBytes / 1024) + " KiB");
         }
@@ -108,8 +110,9 @@ public class ImageDownloader {
         try {
             inputStream = new BufferedInputStream(connection.getInputStream());
         } catch (IOException e) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Input Stream Failed"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open an input stream to the URL. Download Action has been aborted! Please check your Internet and the URL and try again"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Input Stream Failed"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open an input stream to the URL. Download Action has been aborted! Please check your Internet and the URL and try again"));
 
             return new Pair<>(1, "Couldn't open input stream to URL! URL: " + url + "\nJava's Nonsense: " + e.getMessage());
         }
@@ -139,8 +142,9 @@ public class ImageDownloader {
             inputStream.close();
             imageData = byteBuffer;
         } catch (IOException e) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Download Failed"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while downloading the file. Please check your Internet connection and try again"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Download Failed"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while downloading the file. Please check your Internet connection and try again"));
 
             return new Pair<>(1, "Error downloading file from URL " + url + "\nJava's Nonsense: " + e.getMessage());
         }
@@ -156,15 +160,17 @@ public class ImageDownloader {
 
         try (InputStream validationStream = new ByteArrayInputStream(imageBytes)) {
             if (ImageIO.read(validationStream) == null || (Objects.equals(ImageUtils.getImageFormat(imageBytes), "webp"))) {
-                errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Invalid Image"));
-                errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The downloaded file is not a valid or supported image. Please check the URL and format and try again"));
+                applyError(
+                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Invalid Image"),
+                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The downloaded file is not a valid or supported image. Please check the URL and format and try again"));
 
                 deleteImageData();
                 return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Downloaded file is not a valid image"));
             }
         } catch (IOException e) {
-            errorTitleSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Validation Failed"));
-            errorMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while validating the image. Please check the link and try again"));
+            applyError(
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Validation Failed"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while validating the image. Please check the link and try again"));
 
             return new Pair<>(1, "Error validating image file!\nJava's Nonsense: " + e.getMessage());
         }
@@ -177,6 +183,10 @@ public class ImageDownloader {
         orgImgH.put(0, imgH.get(0));
 
         return new Pair<>(0, "");
+    }
+
+    private void applyError(String title, String message) {
+        errorHandler.apply(new Error(title, message));
     }
 
     public void cancelDownload() {

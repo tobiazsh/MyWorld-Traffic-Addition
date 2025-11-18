@@ -4,11 +4,11 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ClientCustomImageDirectory;
 import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ImageDownloader;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.ImageOperations;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import com.google.gson.JsonObject;
@@ -52,8 +52,7 @@ public class OnlineImageDialog {
     volatile private String operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Message Default");
 
     private final ImageDownloader downloader = new ImageDownloader(
-            error -> errorTitle = error,
-            errorMsg -> errorMessage = errorMsg,
+            curErr -> currentError = curErr,
             message -> operationMessage = message,
             progress -> operationProgress = progress
     );
@@ -61,8 +60,7 @@ public class OnlineImageDialog {
     private ImString imageUrl = new ImString(512);
 
     // Regarding error handling after the download in the main thread
-    private String errorTitle = "";
-    private String errorMessage = "";
+    private Error currentError = null;
     private boolean hasError = false;
 
     // Image things
@@ -138,7 +136,7 @@ public class OnlineImageDialog {
             Pair<Integer, String> result = downloader.downloadImage(imageUrl.get(), orgImgW, orgImgH, imgW, imgH, imgC);
             isOperationComplete = true;
 
-            if (result.getLeft() == 1) {
+            if (result.getLeft() == 1) { // Error occurred
                 MyWorldTrafficAddition.LOGGER.error(result.getRight());
                 hasError = true;
             } else {
@@ -212,9 +210,9 @@ public class OnlineImageDialog {
                     progressPopupHeight = 300;
                     ImGui.separator();
                     ImGui.pushFont(ImGuiImpl.RobotoBold);
-                    ImGui.textWrapped(errorTitle);
+                    ImGui.textWrapped(currentError.getTitle());
                     ImGui.popFont();
-                    ImGui.textWrapped(errorMessage);
+                    ImGui.textWrapped(currentError.getMessage());
                 }
             }
 
@@ -398,7 +396,7 @@ public class OnlineImageDialog {
         progressPopupTitle = tr("Global", "Upload");
         operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Uploading image to server");
 
-        Thread thread = new Thread(() -> {
+        Thread thread = new Thread(() -> { // Upload in a new thread
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding image to PNG");
             byte[] imagePngData = ImageUtils.encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0));
             operationProgress = 0.2f;
@@ -586,5 +584,10 @@ public class OnlineImageDialog {
         if (maximumUploadSize > 0) {
             OnlineImageDialog.maximumUploadSize = maximumUploadSize;
         }
+    }
+
+    public static void setError(String title, String message) {
+        MyWorldTrafficAddition.LOGGER.debug("Set error in OnlineImageDialog to '{}': '{}'", title, message);
+
     }
 }
