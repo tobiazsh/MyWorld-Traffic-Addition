@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlock
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TexturableElementInterface;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
@@ -166,8 +167,9 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
             OnlineImageDialog.setMaximumUploadSize(Long.parseLong(maximumSize_str));
 		});
 
-        CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_image_upload_error"), bytes -> {
-            OnlineImageDialog.setError(Error.fromBytes(bytes));
+        CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"), bytes -> {
+            Error error = Error.fromBytes(bytes);
+            ErrorPopup.open(error, null);
         });
 
 		// Get total number of uploaded images

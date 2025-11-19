@@ -24,7 +24,7 @@ import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 public class ImageDownloader {
 
-    private final Function<Error, Error> errorHandler;
+    private Error error;
     private final Function<String, String> operationMessageSetter;
     private final Function<Float, Float> operationProgressSetter;
 
@@ -33,11 +33,9 @@ public class ImageDownloader {
     volatile private ByteBuffer imageData = null;
 
     public ImageDownloader(
-            Function<Error, Error> errorHandler,
             Function<String, String> operationMessageSetter,
             Function<Float, Float> operationProgressSetter
     ) {
-        this.errorHandler = errorHandler;
         this.operationMessageSetter = operationMessageSetter;
         this.operationProgressSetter = operationProgressSetter;
     }
@@ -186,7 +184,15 @@ public class ImageDownloader {
     }
 
     private void applyError(String title, String message) {
-        errorHandler.apply(new Error(title, message));
+        error = new Error(title, message);
+    }
+
+    public Error getError() {
+        return error;
+    }
+
+    public boolean hasError() {
+        return error != null;
     }
 
     public void cancelDownload() {

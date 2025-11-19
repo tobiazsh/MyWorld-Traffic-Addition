@@ -19,7 +19,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -45,7 +44,6 @@ public class OnlineImageDialog {
     // Server things
     public static long maximumUploadSize = 1024 * 1024 * 5; // 5 MiB
     public static float[] imageScale = { 1.0f };
-    private static Error serverError;
 
     // Regarding Download
     volatile private boolean isOperating = false;
@@ -55,16 +53,11 @@ public class OnlineImageDialog {
     volatile private String operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Message Default");
 
     private final ImageDownloader downloader = new ImageDownloader(
-            curErr -> currentError = curErr,
             message -> operationMessage = message,
             progress -> operationProgress = progress
     );
 
     private ImString imageUrl = new ImString(512);
-
-    // Regarding error handling after the download in the main thread
-    private Error currentError = null;
-    private boolean hasError = false;
 
     // Image things
     private ByteBuffer imageData;
@@ -137,15 +130,16 @@ public class OnlineImageDialog {
         // Execute download in separate thread to prevent blocking the UI and giving feedback to the user
         new Thread(() -> {
             Pair<Integer, String> result = downloader.downloadImage(imageUrl.get(), orgImgW, orgImgH, imgW, imgH, imgC);
-            isOperationComplete = true;
 
             if (result.getLeft() == 1) { // Error occurred
                 MyWorldTrafficAddition.LOGGER.error(result.getRight());
-                hasError = true;
+                Error e = downloader.getError();
+                ErrorPopup.open(e, null);
             } else {
-                hasError = false;
                 imageData = downloader.getDownloadedImageData();
             }
+
+            isOperationComplete = true;
         }).start();
     }
 
@@ -177,7 +171,6 @@ public class OnlineImageDialog {
         isOperationComplete = false;
         progressPopupWidth = 500;
         progressPopupHeight = 160;
-        hasError = false;
     }
 
     private static String progressPopupTitle = tr("Global", "Download");
@@ -206,16 +199,6 @@ public class OnlineImageDialog {
             } else {
                 if (ImGui.button(tr("Global", "Close"))) {
                     onClose.run();
-                }
-
-                if (hasError) {
-                    operationMessage = tr("Global", "Error");
-                    progressPopupHeight = 300;
-                    ImGui.separator();
-                    ImGui.pushFont(ImGuiImpl.RobotoBold);
-                    ImGui.textWrapped(currentError.getTitle());
-                    ImGui.popFont();
-                    ImGui.textWrapped(currentError.getMessage());
                 }
             }
 
@@ -251,7 +234,7 @@ public class OnlineImageDialog {
             renderProgressPopup(true, () -> {
                 ImGui.closeCurrentPopup();
 
-                if (!hasError) {
+                if (!downloader.hasError()) {
                     currentPage = OnlineImageDialogPage.EDIT; // Go to next page
                     uploadImageToGPU(); // Upload image to GPU
                     createImageBackup();
@@ -272,8 +255,23 @@ public class OnlineImageDialog {
         ImGui.popFont(); // Pop Font
 
         ImGui.separator();
-        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Current Image Size") + ": " + (imageData.remaining() >> 10) + " KiB");
+
+        int sizeKiB = (imageData != null) ? (imageData.remaining() >> 10) : 0;
+        ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Current Image Size") + ": " + sizeKiB + " KiB");
         ImGui.separator();
+
+        if (imageData == null) {
+            MyWorldTrafficAddition.LOGGER.error("Image data is null! Aborting...");
+            resetValues();
+            ImGui.closeCurrentPopup();
+
+            ErrorPopup.open(
+                    new Error(
+                            "An error occured!",
+                            "MyWorld Traffic Addition has failed at loading the image data. Please check the logs for more details."
+                    ), this::abort);
+            return;
+        }
 
         if (currentTexture != null) {
             ImGui.setCursorPosX((ImGui.getWindowSizeX() - (float) (currentTexture.getWidth() * 400) / currentTexture.getHeight()) / 2); // Center image
@@ -461,12 +459,6 @@ public class OnlineImageDialog {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Upload complete! If everything went right, you are now able to see your image in the gallery");
             isOperationComplete = true;
             isOperating = false;
-
-            if (serverError != null && !serverError.isHandled()) {
-                hasError = true;
-                currentError = serverError;
-                serverError.handled();
-            }
         });
 
         thread.setName("ImageUploadThread");
@@ -595,8 +587,4 @@ public class OnlineImageDialog {
         }
     }
 
-    public static void setError(Error error) {
-        MyWorldTrafficAddition.LOGGER.debug("Set error in OnlineImageDialog to '{}': '{}'", error.getTitle(), error.getMessage());
-        serverError = error;
-    }
 }

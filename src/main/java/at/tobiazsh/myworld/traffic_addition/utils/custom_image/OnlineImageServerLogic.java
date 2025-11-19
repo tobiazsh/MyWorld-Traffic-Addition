@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerBlacklist;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -47,6 +48,20 @@ public class OnlineImageServerLogic {
     public static void processUploadedImage(ServerPlayerEntity source, byte[] image) {
         // Extract image
         executorService.submit(() -> {
+
+            if (ServerBlacklist.bannedImageUploadPlayers.contains(source.getUuid())) {
+                CustomServerNetworking.getInstance().sendBytesToClient(
+                        source,
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
+                        new Error("Image Upload Error", "You are banned from uploading images to this server!").toBytes(),
+                        -1,
+                        -1);
+
+                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from blacklisted player with UUID {}!", source.getUuid());
+
+                return;
+            }
+
             ByteBuffer buffer = ByteBuffer.wrap(image);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             buffer.rewind();
@@ -54,7 +69,7 @@ public class OnlineImageServerLogic {
             if (image.length < 16) { // 3 ints (12) + hidden byte (1) + padding
                 CustomServerNetworking.getInstance().sendBytesToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
                         new Error("Image Upload Error", "Malformed package!").toBytes(),
                         -1,
                         -1);
@@ -74,7 +89,7 @@ public class OnlineImageServerLogic {
                     metadataSize > ServerPreferences.maximumMetadataUploadSize) {
                 CustomServerNetworking.getInstance().sendBytesToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_image_upload_error"),
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
                         new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + ServerPreferences.maximumImageUploadSize + " bytes.").toBytes(),
                         -1,
                         -1);
@@ -86,7 +101,7 @@ public class OnlineImageServerLogic {
             if (image.length != expectedTotalSize) {
                 CustomServerNetworking.getInstance().sendBytesToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
                         new Error("Image Upload Error", "Malformed package! Expected size: " + expectedTotalSize + ", actual size: " + image.length).toBytes(),
                         -1,
                         -1);
@@ -110,7 +125,7 @@ public class OnlineImageServerLogic {
 
                 CustomServerNetworking.getInstance().sendBytesToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID + "get_server_image_upload_error"),
+                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
                         new Error("Image Upload Error", "Uploaded image or thumbnail is not of a valid format! Supported formats are PNG, JPEG, JPG and BMP.").toBytes(),
                         -1,
                         -1);
