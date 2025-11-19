@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*
 import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageServerLogic;
+import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerBlacklist;
 import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
@@ -13,6 +14,7 @@ import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignP
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -68,10 +70,14 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		bulkRegisterPayloads(smartPayloads);
 		registerCustomProtocols();
 
+        MyWorldTrafficAddition.LOGGER.info("Registering events...");
+        registerEvents();
+
 		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 
 		MyWorldTrafficAddition.LOGGER.info("Loading preferences...");
 		ServerPreferences.loadPreferences();
+        ServerBlacklist.loadBlacklist();
 
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
@@ -171,7 +177,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
 	}
 
-
+    private static void registerEvents() {
+        ServerLifecycleEvents.AFTER_SAVE.register((server, flush, force) -> {
+            ServerBlacklist.saveBlacklist();
+        });
+    }
 
 	@Contract("_ -> new")
     public static @NotNull Identifier createId(String id) {
