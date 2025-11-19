@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils.preferences;
 
+import java.util.Objects;
+
 public class ServerPreferences {
 
     public static Preference generalServerPreferences = new Preference("myworld_traffic_addition/server_config.json");
@@ -15,16 +17,13 @@ public class ServerPreferences {
 
     public static void loadPreferences() {
         // Load server preferences
-        maximumImageUploadSize = generalServerPreferences.getLong("maximumImageUploadSize");
-        if (maximumImageUploadSize == Preference.INVALID_LONG)
-            maximumImageUploadSize = maximumImageUploadSizeDefault; // Fallback to default
+        Long MImageUP = generalServerPreferences.getLong("maximumImageUploadSize");
+        maximumImageUploadSize = Objects.requireNonNullElse(MImageUP, maximumImageUploadSizeDefault); // Fallback to default
 
-        maximumThumbnailUploadSize = generalServerPreferences.getLong("maximumThumbnailUploadSize");
-        if (maximumThumbnailUploadSize == Preference.INVALID_LONG)
-            maximumThumbnailUploadSize = maximumThumbnailUploadSizeDefault; // Fallback to default
+        Long MThumbnailUP = generalServerPreferences.getLong("maximumThumbnailUploadSize");
+        maximumThumbnailUploadSize = Objects.requireNonNullElse(MThumbnailUP, maximumThumbnailUploadSizeDefault); // Fallback to default
 
-        maximumMetadataUploadSize = generalServerPreferences.getLong("maximumMetadataSize");
-        if (maximumMetadataUploadSize == Preference.INVALID_LONG)
-            maximumMetadataUploadSize = maximumMetadataUploadSizeDefault; // Fallback to default
+        Long MMetadataUP = generalServerPreferences.getLong("maximumMetadataUploadSize");
+        maximumMetadataUploadSize = Objects.requireNonNullElse(MMetadataUP, maximumMetadataUploadSizeDefault); // Fallback to default
     }
 }
