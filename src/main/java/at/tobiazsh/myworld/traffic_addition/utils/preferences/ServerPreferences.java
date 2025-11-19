@@ -11,7 +11,7 @@ public class ServerPreferences {
     public static final long maximumThumbnailUploadSizeDefault = 1024 * 512; // 512KB; Default
 
     public static long maximumMetadataUploadSize = 1024 * 100; // 100KB; Default
-    public static final long maximumMetadataUploadSizeDefault = 1024 * 100; //
+    public static final long maximumMetadataUploadSizeDefault = 1024 * 100; // 100KB; Default
 
     public static void loadPreferences() {
         // Load server preferences
