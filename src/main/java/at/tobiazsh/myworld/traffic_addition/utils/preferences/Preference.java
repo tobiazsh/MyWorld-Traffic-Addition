@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils.preferences;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -36,7 +37,7 @@ public record Preference(String CONFIG_FILE_PATH) {
         saveToDisk(key, new JsonPrimitive(value));
     }
 
-    private void saveToDisk(String key, JsonPrimitive value) {
+    private void saveToDisk(String key, JsonElement value) {
         try {
             createFileIfNotExist();
         } catch (URISyntaxException | IOException e) {
@@ -49,31 +50,31 @@ public record Preference(String CONFIG_FILE_PATH) {
     }
 
     public String getString(String key) {
-        JsonPrimitive prim = loadFromDisk(key);
+        JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsString();
     }
 
     public Integer getInt(String key) {
-        JsonPrimitive prim = loadFromDisk(key);
+        JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsInt();
     }
 
     public Boolean getBoolean(String key) {
-        JsonPrimitive prim = loadFromDisk(key);
+        JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsBoolean();
     }
 
     public Float getFloat(String key) {
-        JsonPrimitive prim = loadFromDisk(key);
+        JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsFloat();
     }
 
     public long getLong(String key) {
-        JsonPrimitive prim = loadFromDisk(key);
+        JsonElement prim = loadFromDisk(key);
         return prim == null ? INVALID_LONG : prim.getAsLong();
     }
 
-    private JsonPrimitive loadFromDisk(String key) {
+    private JsonElement loadFromDisk(String key) {
         JsonObject content = readConfigFile();
 
         if (content == null || !content.has(key)) {
