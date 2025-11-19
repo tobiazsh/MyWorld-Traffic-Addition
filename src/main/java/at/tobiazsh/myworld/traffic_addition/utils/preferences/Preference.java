@@ -83,7 +83,7 @@ public record Preference(String configFilePath) {
     /**
      * Loads the given key from the config file on disk
      * @param key Key to load
-     * @return JsonElement containing the value, or null if not found
+     * @return JsonObject containing the value, or null if not found
      */
     private JsonElement loadFromDisk(String key) {
         JsonObject content = readConfigFile();
@@ -93,7 +93,7 @@ public record Preference(String configFilePath) {
             return null;
         }
 
-        return content.getAsJsonPrimitive(key);
+        return content.get(key);
     }
 
     private JsonObject readConfigFile() {
