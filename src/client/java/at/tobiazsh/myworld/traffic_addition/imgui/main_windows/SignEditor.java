@@ -65,8 +65,6 @@ public class SignEditor {
     public static ImVec2 signRatio; // Initialized when screen is opened;
     public static boolean showDebug = false;
 
-    private static OnlineImageDialog onlineImageDialog = new OnlineImageDialog("@SignEditor");
-
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
@@ -89,7 +87,7 @@ public class SignEditor {
         ConfirmationPopup.render();
         FileDialogPopup.render();
 
-        onlineImageDialog.render();
+        OnlineImageDialog.INSTANCE.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -475,6 +473,6 @@ public class SignEditor {
 
     // Used Later for the online image dialog
     private static void openOnlineImageDialog() {
-        onlineImageDialog.startDialog();
+        OnlineImageDialog.INSTANCE.startDialog();
     }
 }

@@ -35,6 +35,8 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class OnlineImageDialog {
 
+    public static final OnlineImageDialog INSTANCE = new OnlineImageDialog("@GlobalOnlineImageDialog");
+
     private final String key; // For distinguishing multiple instances
 
     private boolean shouldOpen = false;
