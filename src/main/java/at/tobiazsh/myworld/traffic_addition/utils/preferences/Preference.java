@@ -1,11 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.utils.preferences;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +29,6 @@ public record Preference(String configFilePath) {
         saveToDisk(key, new JsonPrimitive(value));
     }
 
-    public static final long INVALID_LONG = -200L;
-
     public void saveToDisk(String key, long value) {
         saveToDisk(key, new JsonPrimitive(value));
     }
@@ -49,31 +45,46 @@ public record Preference(String configFilePath) {
         writeConfigFile(content);
     }
 
+    @Nullable
     public String getString(String key) {
         JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsString();
     }
 
+    @Nullable
     public Integer getInt(String key) {
         JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsInt();
     }
 
+    @Nullable
     public Boolean getBoolean(String key) {
         JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsBoolean();
     }
 
+    @Nullable
     public Float getFloat(String key) {
         JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsFloat();
     }
 
-    public long getLong(String key) {
+    @Nullable
+    public Long getLong(String key) {
         JsonElement prim = loadFromDisk(key);
-        return prim == null ? INVALID_LONG : prim.getAsLong();
+        return prim == null ? null : prim.getAsLong();
     }
 
+    @Nullable
+    public JsonElement getJsonElement(String key) {
+        return loadFromDisk(key);
+    }
+
+    /**
+     * Loads the given key from the config file on disk
+     * @param key Key to load
+     * @return JsonElement containing the value, or null if not found
+     */
     private JsonElement loadFromDisk(String key) {
         JsonObject content = readConfigFile();
 
