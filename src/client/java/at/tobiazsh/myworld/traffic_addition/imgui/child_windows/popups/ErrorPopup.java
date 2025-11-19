@@ -67,7 +67,7 @@ public class ErrorPopup {
         return !errorQueue.isEmpty();
     }
 
-    public static void nextError() {
+    private static void nextError() {
         Pair<Error, Runnable> p = errorQueue.poll();
         if (p == null || p.getLeft() == null) {
             return;
