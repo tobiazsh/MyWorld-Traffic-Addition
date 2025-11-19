@@ -33,7 +33,7 @@ public record Preference(String configFilePath) {
         saveToDisk(key, new JsonPrimitive(value));
     }
 
-    private void saveToDisk(String key, JsonElement value) {
+    public void saveToDisk(String key, JsonElement value) {
         try {
             createFileIfNotExist();
         } catch (URISyntaxException | IOException e) {
