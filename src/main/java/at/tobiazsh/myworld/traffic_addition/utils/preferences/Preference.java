@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public record Preference(String CONFIG_FILE_PATH) {
+public record Preference(String configFilePath) {
 
     public void saveToDisk(String key, String value) {
         saveToDisk(key, new JsonPrimitive(value));
@@ -118,7 +118,7 @@ public record Preference(String CONFIG_FILE_PATH) {
 
     private File getConfigFile() {
         Path configFolder = FabricLoader.getInstance().getConfigDir().toAbsolutePath();
-        return configFolder.resolve(CONFIG_FILE_PATH).toFile();
+        return configFolder.resolve(configFilePath).toFile();
     }
 
     public void createFileIfNotExist() throws URISyntaxException, IOException {
