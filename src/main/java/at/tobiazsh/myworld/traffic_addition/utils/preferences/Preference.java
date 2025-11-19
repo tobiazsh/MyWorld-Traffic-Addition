@@ -80,6 +80,28 @@ public record Preference(String configFilePath) {
         return loadFromDisk(key);
     }
 
+    @Nullable
+    public JsonObject getJsonObject(String key) {
+        JsonElement content = loadFromDisk(key);
+
+        if (content != null && content.isJsonObject()) {
+            return content.getAsJsonObject();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public JsonArray getJsonArray(String key) {
+        JsonElement array = loadFromDisk(key);
+
+        if (array != null && array.isJsonArray()) {
+            return array.getAsJsonArray();
+        }
+
+        return null;
+    }
+
     /**
      * Loads the given key from the config file on disk
      * @param key Key to load
