@@ -3,16 +3,23 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
 import imgui.ImGui;
+import net.minecraft.util.Pair;
+
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
+
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ErrorPopup {
 
-    private static boolean shouldOpen = false;
-    private static String text;
-    private static String message;
     private static final String errorIconPath = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
     private static Runnable onClose;
+    private static final Queue<Pair<Error, Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
+    private static final AtomicReference<String> text = new AtomicReference<>("");
+    private static final AtomicReference<String> message = new AtomicReference<>("");
 
     public static void render() {
         if (ImGui.beginPopupModal(tr("Global", "Error") + "##Popup")) {
@@ -25,35 +32,50 @@ public class ErrorPopup {
             ImGui.spacing();
             ImGui.sameLine();
 
-            ImGui.text(text);
+            ImGui.text(text.get());
             ImGui.separator();
 
             ImGui.text("%s:".formatted(tr("Global", "Message")));
 
             ImGui.popFont();
 
-            ImGui.textWrapped(message);
+            ImGui.textWrapped(message.get());
 
             ImGui.separator();
 
             if (ImGui.button(tr("Global", "Close"))) {
                 ImGui.closeCurrentPopup();
-                onClose.run();
+
+                if (onClose != null)
+                    onClose.run();
             }
 
             ImGui.endPopup();
         }
 
-        if (shouldOpen) {
+        if (hasErrors()) {
+            nextError();
             ImGui.openPopup(tr("Global", "Error") + "##Popup");
-            shouldOpen = false;
         }
     }
 
-    public static void open(String text, String message, Runnable close) {
-        ErrorPopup.shouldOpen = true;
-        ErrorPopup.text = text;
-        ErrorPopup.message = message;
-        ErrorPopup.onClose = close;
+    public static void open(Error error, Runnable close) {
+        errorQueue.add(new Pair<>(error, close));
+    }
+
+    public static boolean hasErrors() {
+        return !errorQueue.isEmpty();
+    }
+
+    public static void nextError() {
+        Pair<Error, Runnable> p = errorQueue.poll();
+        if (p == null || p.getLeft() == null) {
+            return;
+        }
+
+        Error e = p.getLeft();
+        text.set(e.getTitle() != null ? e.getTitle() : "");
+        message.set(e.getMessage() != null ? e.getMessage() : "");
+        onClose = p.getRight();
     }
 }

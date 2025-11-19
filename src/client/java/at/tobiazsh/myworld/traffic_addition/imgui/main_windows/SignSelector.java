@@ -6,6 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.utils.exception.SignTextureParseException;
 import at.tobiazsh.myworld.traffic_addition.utils.sign.SignTexture;
@@ -130,7 +131,10 @@ public class SignSelector {
                     });
 
         } catch (IOException | URISyntaxException e) {
-            ErrorPopup.open("Error", "An error occurred while trying to read the sign textures. Stack Trace is available in the log.", this::close); // No need for translations as this should not happen in normal use
+            ErrorPopup.open(new Error(
+                    "Error",
+                    "An error occurred while trying to read the sign textures. Stack Trace is available in the log."
+            ), this::close); // No need for translations as this should not happen in normal use
             MyWorldTrafficAddition.LOGGER.error("An error occurred while trying to read the sign textures: ", e);
             close();
         }

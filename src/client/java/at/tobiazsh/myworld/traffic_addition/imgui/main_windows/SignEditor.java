@@ -20,6 +20,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.elements.*;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem.Folder;
@@ -94,7 +95,10 @@ public class SignEditor {
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
 
         if (!isInit) {
-            ErrorPopup.open(tr("ImGui.Main.SignEditor.Error", "Sign not initialized!"), tr("ImGui.Main.SignEditor.Error", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!"), SignEditor::quit);
+            ErrorPopup.open(new Error(
+                    tr("ImGui.Main.SignEditor.Error", "Sign not initialized!"),
+                    tr("ImGui.Main.SignEditor.Error", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!")
+            ), SignEditor::quit);
         }
 
         ClientElementManager.getInstance().clearAll();
@@ -326,6 +330,10 @@ public class SignEditor {
             if (ImGui.menuItem("Convert to new syntax")) {
                 CustomizableSignData style = ClientElementManager.getInstance().rawData;
                 updateToNewVersion(style);
+            }
+
+            if (ImGui.menuItem("Test Error Popup")) {
+                ErrorPopup.open(new Error("Test Error", "This is a test error message."), () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed."));
             }
 
             ImGui.endMenu();

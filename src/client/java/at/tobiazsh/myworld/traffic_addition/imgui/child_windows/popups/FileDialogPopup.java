@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.explorer_components.FileView;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -135,8 +136,10 @@ public class FileDialogPopup {
         if (ImGui.inputText("##PathBar", pathBarPath, ImGuiInputTextFlags.EnterReturnsTrue)) {
             if (!updatePath(Paths.get(pathBarPath.get()))) {
                 ErrorPopup.open(
-                        tr("ImGui.Child.PopUps.FileDialog.Error", "Invalid Path"),
-                        "", () -> pathBarPath.set(currentPath.toString())
+                        new Error(
+                            tr("ImGui.Child.PopUps.FileDialog.Error", "Invalid Path"),
+                                ""),
+                        () -> pathBarPath.set(currentPath.toString())
                 );
             } else refresh();
         }
@@ -165,8 +168,10 @@ public class FileDialogPopup {
                 Files.createDirectory(currentPath.resolve(folderName));
             } catch (IOException e) {
                 ErrorPopup.open(
-                        tr("Global", "Error"),
-                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the folder! Please check logs!"),
+                        new Error(
+                            tr("Global", "Error"),
+                            tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the folder! Please check logs!")
+                        ),
                         () -> {}
                 );
 
@@ -247,8 +252,10 @@ public class FileDialogPopup {
             e.printStackTrace();
 
             ErrorPopup.open(
-                    tr("Global", "Error"),
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating parent directories! Please check logs!"),
+                    new Error(
+                        tr("Global", "Error"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating parent directories! Please check logs!")
+                    ),
                     () -> {}
             );
 
@@ -262,8 +269,10 @@ public class FileDialogPopup {
             createdSuccessfully = newFile.createNewFile();
         } catch (IOException e) {
             ErrorPopup.open(
-                    tr("Global", "Error"),
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the file! Please check logs!"),
+                    new Error(
+                        tr("Global", "Error"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while creating the file! Please check logs!")
+                    ),
                     () -> {}
             );
 
@@ -288,8 +297,10 @@ public class FileDialogPopup {
             Files.write(path, data.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             ErrorPopup.open(
-                    tr("Global", "Error"),
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while writing data to file! Please check logs!"),
+                    new Error(
+                        tr("Global", "Error"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while writing data to file! Please check logs!")
+                    ),
                     () -> {}
             );
 
@@ -316,8 +327,10 @@ public class FileDialogPopup {
 
         if (!Files.exists(filePath)) {
             ErrorPopup.open(
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "File not found!"),
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "The file you are trying to open does not exist."),
+                    new Error(
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "File not found!"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "The file you are trying to open does not exist.")
+                    ),
                     () -> {}
             );
             return;
@@ -327,8 +340,10 @@ public class FileDialogPopup {
             fileData = Files.readString(filePath);
         } catch (IOException e) {
             ErrorPopup.open(
-                    tr("Global", "Error"),
-                    tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while reading the file! Please check logs!"),
+                    new Error(
+                        tr("Global", "Error"),
+                        tr("ImGui.Child.PopUps.FileDialog.Error", "A fatal error occurred while reading the file! Please check logs!")
+                    ),
                     () -> {}
             );
 
