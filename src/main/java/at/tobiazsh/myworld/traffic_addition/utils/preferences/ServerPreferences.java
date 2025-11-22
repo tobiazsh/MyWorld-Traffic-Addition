@@ -15,6 +15,12 @@ public class ServerPreferences {
     public static long maximumMetadataUploadSize = 1024 * 100; // 100KB; Default
     public static final long maximumMetadataUploadSizeDefault = 1024 * 100; // 100KB; Default
 
+    public static boolean isPlayerUploadEnabled = true;
+    public static final boolean isPlayerUploadEnabledDefault = true; // Default
+
+    public static boolean isUploadLimitSet = false;
+    public static int maximumUploadsPerPlayer = 0;
+
     public static void loadPreferences() {
         // Load server preferences
         Long MImageUP = generalServerPreferences.getLong("maximumImageUploadSize");
@@ -25,5 +31,17 @@ public class ServerPreferences {
 
         Long MMetadataUP = generalServerPreferences.getLong("maximumMetadataUploadSize");
         maximumMetadataUploadSize = Objects.requireNonNullElse(MMetadataUP, maximumMetadataUploadSizeDefault); // Fallback to default
+
+        Boolean isPUE = generalServerPreferences.getBoolean("isPlayerUploadEnabled");
+        isPlayerUploadEnabled = Objects.requireNonNullElse(isPUE, isPlayerUploadEnabledDefault); // Fallback to default
+
+        Integer MUploadsPP = generalServerPreferences.getInt("maximumUploadsPerPlayer");
+        if (MUploadsPP != null && MUploadsPP > 0) {
+            isUploadLimitSet = true;
+            maximumUploadsPerPlayer = MUploadsPP;
+        } else {
+            isUploadLimitSet = false;
+            maximumUploadsPerPlayer = 0;
+        }
     }
 }

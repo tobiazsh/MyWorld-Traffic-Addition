@@ -51,6 +51,7 @@ public class OnlineImageServerLogic {
         // Extract image
         executorService.submit(() -> {
 
+            // Check if player is blacklisted
             if (ServerBlacklist.bannedImageUploadPlayers.contains(source.getUuid())) {
                 errorToClient(
                         source,
@@ -60,6 +61,30 @@ public class OnlineImageServerLogic {
                 MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from blacklisted player with UUID {}!", source.getUuid());
 
                 return;
+            }
+
+            // Check if uploads are enabled
+            if (!ServerPreferences.isPlayerUploadEnabled) {
+                errorToClient(
+                        source,
+                        new Error("Image Upload Error", "Image uploads are disabled on this server!")
+                );
+                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because uploads are disabled!", source.getUuid());
+                return;
+            }
+
+            // Check if upload limit is set
+            if (ServerPreferences.isUploadLimitSet) {
+                // Check if player maxed out their upload limit
+                AtomicInteger userUploads = perPlayerCounts.getOrDefault(source.getUuid(), new AtomicInteger(0));
+                if (userUploads.get() == ServerPreferences.maximumUploadsPerPlayer) {
+                    errorToClient(
+                            source,
+                            new Error("Image Upload Error", "You have maxed out your upload limit! Delete some of your uploaded images to upload new ones.\nUpload limit per player on server: " + ServerPreferences.maximumUploadsPerPlayer)
+                    );
+                    MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because they maxed out their upload limit!", source.getUuid());
+                    return;
+                }
             }
 
             ByteBuffer buffer = ByteBuffer.wrap(image);
@@ -93,6 +118,7 @@ public class OnlineImageServerLogic {
                 return;
             }
 
+            // Validate total size
             long expectedTotalSize = 12L + 1L + imageSize + thumbnailSize + metadataSize; // 3 ints (12 bytes) + 1 byte for hidden + sizes
             if (image.length != expectedTotalSize) {
                 errorToClient(
@@ -112,6 +138,7 @@ public class OnlineImageServerLogic {
             byte[] thumbnailData = new byte[thumbnailSize];
             buffer.get(thumbnailData);
 
+            // Validate image formats
             String imageFormat = ImageUtils.getImageFormat(imageData);
             String thumbnailFormat = ImageUtils.getImageFormat(thumbnailData);
             if (thumbnailFormat == null || imageFormat == null ||
