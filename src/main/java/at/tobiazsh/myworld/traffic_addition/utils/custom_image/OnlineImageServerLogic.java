@@ -28,17 +28,17 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OnlineImageServerLogic {
 
+    private static final ConcurrentHashMap<UUID, Pair<CustomImageMetadata, Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
     public static AtomicInteger entries = new AtomicInteger(0);
     public static AtomicInteger publicEntries = new AtomicInteger(0);
     public static AtomicInteger hiddenEntries = new AtomicInteger(0);
-    private static final List<Pair<CustomImageMetadata, Boolean>> metadataList = new CopyOnWriteArrayList<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
 
@@ -162,7 +162,7 @@ public class OnlineImageServerLogic {
             else publicEntries.incrementAndGet();
 
             MyWorldTrafficAddition.LOGGER.info("User with UUID {} uploaded custom image with UUID {}!", uploaderUUID, imageUUID);
-            metadataList.add(new Pair<>(new CustomImageMetadata(metadataJson), metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
+            metadataMap.put(UUID.fromString(imageUUID), new Pair<>(new CustomImageMetadata(metadataJson), metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
         });
     }
 
@@ -177,7 +177,7 @@ public class OnlineImageServerLogic {
             int count = 0;
             UUID playerUUID = player.getUuid();
 
-            for (Pair<CustomImageMetadata, Boolean> entry : metadataList) {
+            for (Pair<CustomImageMetadata, Boolean> entry : metadataMap.values()) {
                 if (entry.getLeft().getUploaderUUID().equals(playerUUID)) {
                     count++;
                 }
@@ -232,7 +232,8 @@ public class OnlineImageServerLogic {
                 if (entry.getFileName().toString().endsWith(".json")) {
                     String content = new String(Files.readAllBytes(entry));
                     JsonObject jsonObject = JsonParser.parseString(content).getAsJsonObject();
-                    metadataList.add(new Pair<>(new CustomImageMetadata(jsonObject), jsonObject.get("Hidden").getAsBoolean()));
+                    UUID imageUUID = UUID.fromString(jsonObject.get("ImageUUID").getAsString());
+                    metadataMap.put(imageUUID, new Pair<>(new CustomImageMetadata(jsonObject), jsonObject.get("Hidden").getAsBoolean()));
                     count++;
                 }
             }
@@ -263,12 +264,12 @@ public class OnlineImageServerLogic {
 
             if (privateImagesOnly) {
                 UUID playerUUID = player.getUuid();
-                sendableData = metadataList.stream()
+                sendableData = metadataMap.values().stream()
                         .filter(entry -> entry.getLeft().getUploaderUUID().equals(playerUUID))
                         .map(Pair::getLeft)
                         .toList(); // Get only the Json of the entries that are uploaded by the player
             } else {
-                sendableData = metadataList.stream()
+                sendableData = metadataMap.values().stream()
                         .filter(entry -> !entry.getRight())
                         .map(Pair::getLeft).toList(); // Get only the Json of the entries that are not hidden
             }
@@ -287,7 +288,7 @@ public class OnlineImageServerLogic {
             ByteBuffer responseBuffer = ByteBuffer.allocate(allocatedSize + Integer.BYTES); // Extra Integer for specifying the number of entries
             responseBuffer.putInt(sentEntries);
             for (int i = startIndex; i < endIndex; i++) {
-                if (i >= metadataList.size()) break;
+                if (i >= metadataMap.size()) break;
                 JsonElement jsonElement = sendableData.get(i).getRawData();
                 byte[] jsonBytes = jsonElement.toString().getBytes(StandardCharsets.UTF_8);
                 responseBuffer.putInt(jsonBytes.length);
@@ -501,7 +502,7 @@ public class OnlineImageServerLogic {
 
             // Compare Uploaders UUID with the player's UUID to verify if the player is allowed to delete the image
             UUID playerUUID = player.getUuid();
-            CustomImageMetadata metadata = metadataList.stream()
+            CustomImageMetadata metadata = metadataMap.values().stream()
                     .filter(data -> data.getLeft().getImageUUID().equals(imageUUID))
                     .map(Pair::getLeft)
                     .toList().getFirst(); // Get first match as there should only be one match per UUID (two matches are EXTREMELY (like really extremely) unlikely, but technically possible)
@@ -516,7 +517,7 @@ public class OnlineImageServerLogic {
                     Files.deleteIfExists(metadataPath);
 
                     // Remove from metadata list
-                    metadataList.removeIf(entry -> entry.getLeft().getImageUUID().equals(imageUUID));
+                    metadataMap.remove(imageUUID);
                 } catch (IOException e) {
                     MyWorldTrafficAddition.LOGGER.error("Failed to delete image image for UUID {}: {}", imageUUID, e.getMessage());
                     successful = true; // Still true so the images get deleted on the client side
