@@ -52,8 +52,6 @@ public class OnlineImageGallery {
         MINE
     }
 
-    // TODO: Implement "Add" button
-
     public static void render() {
         if (!shouldRender) return;
 
