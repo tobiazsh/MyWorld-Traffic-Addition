@@ -50,12 +50,10 @@ public class OnlineImageServerLogic {
         executorService.submit(() -> {
 
             if (ServerBlacklist.bannedImageUploadPlayers.contains(source.getUuid())) {
-                CustomServerNetworking.getInstance().sendBytesToClient(
+                errorToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
-                        new Error("Image Upload Error", "You are banned from uploading images to this server!").toBytes(),
-                        -1,
-                        -1);
+                        new Error("Image Upload Error", "You are banned from uploading images to this server!")
+                );
 
                 MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from blacklisted player with UUID {}!", source.getUuid());
 
@@ -67,12 +65,10 @@ public class OnlineImageServerLogic {
             buffer.rewind();
 
             if (image.length < 16) { // 3 ints (12) + hidden byte (1) + padding
-                CustomServerNetworking.getInstance().sendBytesToClient(
+                errorToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
-                        new Error("Image Upload Error", "Malformed package!").toBytes(),
-                        -1,
-                        -1);
+                        new Error("Image Upload Error", "Malformed package!")
+                );
 
                 return;
             }
@@ -87,24 +83,20 @@ public class OnlineImageServerLogic {
                     imageSize > ServerPreferences.maximumImageUploadSize ||
                     thumbnailSize > ServerPreferences.maximumThumbnailUploadSize ||
                     metadataSize > ServerPreferences.maximumMetadataUploadSize) {
-                CustomServerNetworking.getInstance().sendBytesToClient(
+                errorToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
-                        new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + ServerPreferences.maximumImageUploadSize + " bytes.").toBytes(),
-                        -1,
-                        -1);
+                        new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + ServerPreferences.maximumImageUploadSize + " bytes.")
+                );
 
                 return;
             }
 
             long expectedTotalSize = 12L + 1L + imageSize + thumbnailSize + metadataSize; // 3 ints (12 bytes) + 1 byte for hidden + sizes
             if (image.length != expectedTotalSize) {
-                CustomServerNetworking.getInstance().sendBytesToClient(
+                errorToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
-                        new Error("Image Upload Error", "Malformed package! Expected size: " + expectedTotalSize + ", actual size: " + image.length).toBytes(),
-                        -1,
-                        -1);
+                        new Error("Image Upload Error", "Malformed package! Expected size: " + expectedTotalSize + ", actual size: " + image.length)
+                );
 
                 return;
             }
@@ -123,12 +115,10 @@ public class OnlineImageServerLogic {
             if (thumbnailFormat == null || imageFormat == null ||
                 !isOfValidFormat(thumbnailFormat) || !isOfValidFormat(imageFormat)) {
 
-                CustomServerNetworking.getInstance().sendBytesToClient(
+                errorToClient(
                         source,
-                        Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
-                        new Error("Image Upload Error", "Uploaded image or thumbnail is not of a valid format! Supported formats are PNG, JPEG, JPG and BMP.").toBytes(),
-                        -1,
-                        -1);
+                        new Error("Image Upload Error", "Uploaded image or thumbnail is not of a valid format! Supported formats are PNG, JPEG, JPG and BMP.")
+                );
             }
 
             byte[] metadataData = new byte[metadataSize];
@@ -554,5 +544,20 @@ public class OnlineImageServerLogic {
 
     private static boolean isOfValidFormat(String format) {
         return format.equals("png") || format.equals("jpeg") || format.equals("jpg") || format.equals("bmp");
+    }
+
+
+    /**
+     * Sends an error to the client, which is displayed in a GUI.
+     * @param player The player to send the error to.
+     * @param error The error to send.
+     */
+    private static void errorToClient(ServerPlayerEntity player, Error error) {
+        CustomServerNetworking.getInstance().sendBytesToClient(
+                player,
+                Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
+                error.toBytes(),
+                -1,
+                -1);
     }
 }
