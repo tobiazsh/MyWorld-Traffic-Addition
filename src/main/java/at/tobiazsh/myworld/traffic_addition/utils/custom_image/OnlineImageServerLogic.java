@@ -31,12 +31,13 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class OnlineImageServerLogic {
 
-    public static int entries = 0;
-    public static int publicEntries = 0;
-    public static int hiddenEntries = 0;
+    public static AtomicInteger entries = new AtomicInteger(0);
+    public static AtomicInteger publicEntries = new AtomicInteger(0);
+    public static AtomicInteger hiddenEntries = new AtomicInteger(0);
     private static final List<Pair<CustomImageMetadata, Boolean>> metadataList = new CopyOnWriteArrayList<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
@@ -155,10 +156,10 @@ public class OnlineImageServerLogic {
                 throw new RuntimeException("Failed to write metadata", e);
             }
 
-            entries++;
+            entries.incrementAndGet();
 
-            if (hidden) hiddenEntries++;
-            else publicEntries++;
+            if (hidden) hiddenEntries.incrementAndGet();
+            else publicEntries.incrementAndGet();
 
             MyWorldTrafficAddition.LOGGER.info("User with UUID {} uploaded custom image with UUID {}!", uploaderUUID, imageUUID);
             metadataList.add(new Pair<>(new CustomImageMetadata(metadataJson), metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
@@ -210,9 +211,9 @@ public class OnlineImageServerLogic {
             return;
 
         // Count JSON Files in the directory as they represent image entries. For each uploaded image, there's exactly one JSON file.
-        hiddenEntries = processImageDirectory(hiddenImageDir);
-        publicEntries = processImageDirectory(customImageDir);
-        entries = hiddenEntries + publicEntries;
+        hiddenEntries = new AtomicInteger(processImageDirectory(hiddenImageDir));
+        publicEntries = new AtomicInteger(processImageDirectory(customImageDir));
+        entries = new AtomicInteger(hiddenEntries.get() + publicEntries.get());
     }
 
 
