@@ -35,8 +35,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class OnlineImageServerLogic {
 
+    private static final ConcurrentHashMap<UUID, AtomicInteger> perPlayerCounts = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<UUID, Pair<CustomImageMetadata, Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
-    public static AtomicInteger entries = new AtomicInteger(0);
+    public static AtomicInteger totalEntries = new AtomicInteger(0);
     public static AtomicInteger publicEntries = new AtomicInteger(0);
     public static AtomicInteger hiddenEntries = new AtomicInteger(0);
 
@@ -124,10 +125,16 @@ public class OnlineImageServerLogic {
 
             byte[] metadataData = new byte[metadataSize];
             buffer.get(metadataData);
+
             String metadata = new String(metadataData, StandardCharsets.UTF_8);
             JsonObject metadataJson = JsonParser.parseString(metadata).getAsJsonObject();
-            String imageUUID = metadataJson.get("ImageUUID").getAsString();
-            String uploaderUUID = metadataJson.get("UploaderUUID").getAsString();
+            CustomImageMetadata metadataObj = new CustomImageMetadata(metadataJson);
+
+            String imageUUIDStr = metadataJson.get("ImageUUID").getAsString();
+            String uploaderUUIDStr = metadataJson.get("UploaderUUID").getAsString();
+
+            UUID imageUUID = UUID.fromString(imageUUIDStr);
+            UUID uploaderUUID = UUID.fromString(uploaderUUIDStr);
 
             CustomImageDirectory.createCustomImageDir(); // Create custom image directory if it doesn't exist
 
@@ -135,9 +142,9 @@ public class OnlineImageServerLogic {
                     CustomImageDirectory.getHiddenCustomImageDir() :
                     CustomImageDirectory.getCustomImageDir();
 
-            File imageFile = new File(destinationPath.resolve(imageUUID + ".png").toAbsolutePath().toString());
-            File thumbnailFile = new File(destinationPath.resolve(imageUUID + "_thumbnail.png").toAbsolutePath().toString());
-            File metadataFile = new File(destinationPath.resolve(imageUUID + "_metadata.json").toAbsolutePath().toString());
+            File imageFile = new File(destinationPath.resolve(imageUUIDStr + ".png").toAbsolutePath().toString());
+            File thumbnailFile = new File(destinationPath.resolve(imageUUIDStr + "_thumbnail.png").toAbsolutePath().toString());
+            File metadataFile = new File(destinationPath.resolve(imageUUIDStr + "_metadata.json").toAbsolutePath().toString());
 
             // Write files
             try (FileOutputStream imageOutputStream = new FileOutputStream(imageFile);
@@ -156,13 +163,14 @@ public class OnlineImageServerLogic {
                 throw new RuntimeException("Failed to write metadata", e);
             }
 
-            entries.incrementAndGet();
 
-            if (hidden) hiddenEntries.incrementAndGet();
-            else publicEntries.incrementAndGet();
+            metadataMap.put(imageUUID, new Pair<>(metadataObj, metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
+            MyWorldTrafficAddition.LOGGER.info("User with UUID {} uploaded custom image with UUID {}!", uploaderUUIDStr, imageUUIDStr);
 
-            MyWorldTrafficAddition.LOGGER.info("User with UUID {} uploaded custom image with UUID {}!", uploaderUUID, imageUUID);
-            metadataMap.put(UUID.fromString(imageUUID), new Pair<>(new CustomImageMetadata(metadataJson), metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
+            perPlayerCounts.computeIfAbsent(uploaderUUID, k -> new AtomicInteger(0)).incrementAndGet();
+            totalEntries.incrementAndGet(); // Update total entries
+            if (hidden) hiddenEntries.incrementAndGet(); // Update hidden entries
+            else publicEntries.incrementAndGet(); // Update public entries
         });
     }
 
@@ -174,18 +182,11 @@ public class OnlineImageServerLogic {
      */
     public static void getEntryNumberByPlayer(ServerPlayerEntity player) {
         executorService.submit(() -> {
-            int count = 0;
             UUID playerUUID = player.getUuid();
-
-            for (Pair<CustomImageMetadata, Boolean> entry : metadataMap.values()) {
-                if (entry.getLeft().getUploaderUUID().equals(playerUUID)) {
-                    count++;
-                }
-            }
+            int count = perPlayerCounts.getOrDefault(playerUUID, new AtomicInteger(0)).get();
 
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
             buffer.putInt(count);
-
             buffer.flip(); // Prepare the buffer for reading
 
             CustomServerNetworking.getInstance().sendBytesToClient(
@@ -213,31 +214,35 @@ public class OnlineImageServerLogic {
         // Count JSON Files in the directory as they represent image entries. For each uploaded image, there's exactly one JSON file.
         hiddenEntries = new AtomicInteger(processImageDirectory(hiddenImageDir));
         publicEntries = new AtomicInteger(processImageDirectory(customImageDir));
-        entries = new AtomicInteger(hiddenEntries.get() + publicEntries.get());
+        totalEntries = new AtomicInteger(hiddenEntries.get() + publicEntries.get());
     }
 
 
 
     /**
      * Processes the image directory to count entries and read metadata.
-     * @param hiddenImageDir The directory containing the hidden images.
+     * @param dir The directory containing the hidden images.
      * @return The number of entries processed in the directory.
      */
-    private static int processImageDirectory(Path hiddenImageDir) {
+    private static int processImageDirectory(Path dir) {
         int count = 0;
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hiddenImageDir)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
                 if (Files.isDirectory(entry)) continue;
                 if (entry.getFileName().toString().endsWith(".json")) {
                     String content = new String(Files.readAllBytes(entry));
                     JsonObject jsonObject = JsonParser.parseString(content).getAsJsonObject();
-                    UUID imageUUID = UUID.fromString(jsonObject.get("ImageUUID").getAsString());
-                    metadataMap.put(imageUUID, new Pair<>(new CustomImageMetadata(jsonObject), jsonObject.get("Hidden").getAsBoolean()));
+                    CustomImageMetadata metadata = new CustomImageMetadata(jsonObject);
+
+                    metadataMap.put(metadata.getImageUUID(), new Pair<>(metadata, metadata.isHidden()));
+                    perPlayerCounts.computeIfAbsent(metadata.getUploaderUUID(), k -> new AtomicInteger(0)).incrementAndGet();
+
                     count++;
                 }
             }
         } catch (IOException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to process image directory", e);
             throw new RuntimeException(e);
         }
 
@@ -288,7 +293,7 @@ public class OnlineImageServerLogic {
             ByteBuffer responseBuffer = ByteBuffer.allocate(allocatedSize + Integer.BYTES); // Extra Integer for specifying the number of entries
             responseBuffer.putInt(sentEntries);
             for (int i = startIndex; i < endIndex; i++) {
-                if (i >= metadataMap.size()) break;
+                if (i >= metadataMap.size()) break; // Safety check
                 JsonElement jsonElement = sendableData.get(i).getRawData();
                 byte[] jsonBytes = jsonElement.toString().getBytes(StandardCharsets.UTF_8);
                 responseBuffer.putInt(jsonBytes.length);
@@ -490,46 +495,55 @@ public class OnlineImageServerLogic {
         executorService.submit(() -> {
             UUID imageUUID = byteToUUID(imageUUIDBytes);
 
-            boolean existsInPublicDir = Files.exists(CustomImageDirectory.getCustomImageDir().resolve(imageUUID + "_metadata.json"));
+            Pair<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+            if (stored == null) {
+                // not found, error message
+                errorToClient(
+                        player,
+                        new Error("Image Deletion Error", "Image with UUID " + imageUUID + " not found on server!")
+                );
+                return;
+            }
 
-            Path parentDir = existsInPublicDir ? CustomImageDirectory.getCustomImageDir() : CustomImageDirectory.getHiddenCustomImageDir();
+            boolean hidden = stored.getRight();
+            CustomImageMetadata metadata = stored.getLeft();
 
-            boolean successful = true; // We assume that the deletion is going to be successful
+            // Compare uploader's UUID with the player's UUID to verify if the player is allowed to delete the image
+            UUID playerUUID = player.getUuid();
+
+            if (!metadata.getUploaderUUID().equals(playerUUID)) {
+                MyWorldTrafficAddition.LOGGER.warn("Player with UUID {} and NAME {} tried to delete image with UUID {} but is not the original uploader!", player.getUuid(), player.getName(), imageUUID);
+                errorToClient(
+                        player,
+                        new Error("Image Deletion Error", "You are not the original uploader of this image and therefore not allowed to delete it!")
+                );
+                return;
+            }
+
+            Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
 
             Path imagePath = parentDir.resolve(imageUUID + ".png");
             Path thumbnailPath = parentDir.resolve(imageUUID + "_thumbnail.png");
             Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
 
-            // Compare Uploaders UUID with the player's UUID to verify if the player is allowed to delete the image
-            UUID playerUUID = player.getUuid();
-            CustomImageMetadata metadata = metadataMap.values().stream()
-                    .filter(data -> data.getLeft().getImageUUID().equals(imageUUID))
-                    .map(Pair::getLeft)
-                    .toList().getFirst(); // Get first match as there should only be one match per UUID (two matches are EXTREMELY (like really extremely) unlikely, but technically possible)
+            try {
+                Files.deleteIfExists(imagePath);
+                Files.deleteIfExists(thumbnailPath);
+                Files.deleteIfExists(metadataPath);
 
-            if (!metadata.getUploaderUUID().equals(playerUUID)) { // Is not original uploader
-                MyWorldTrafficAddition.LOGGER.warn("Player with UUID {} and NAME {} tried to delete image with UUID {} but is not the original uploader! Please investigate this issue! It is recommended to take actions against the player because this should only be possible if the player runs a modified mod!", player.getUuid(), player.getName(), imageUUID);
-                successful = false; // Deletion was not successful because the player is not the original uploader
-            } else {
-                try {
-                    Files.deleteIfExists(imagePath);
-                    Files.deleteIfExists(thumbnailPath);
-                    Files.deleteIfExists(metadataPath);
+                // Remove from metadata list
+                metadataMap.remove(imageUUID);
+                perPlayerCounts.computeIfPresent(metadata.getUploaderUUID(), (k, v) -> {
+                    v.decrementAndGet();
+                    return v.get() <= 0 ? null : v;
+                });
 
-                    // Remove from metadata list
-                    metadataMap.remove(imageUUID);
-                } catch (IOException e) {
-                    MyWorldTrafficAddition.LOGGER.error("Failed to delete image image for UUID {}: {}", imageUUID, e.getMessage());
-                    successful = true; // Still true so the images get deleted on the client side
-                }
+                totalEntries.decrementAndGet();
+                if (hidden) hiddenEntries.decrementAndGet();
+                else publicEntries.decrementAndGet();
+            } catch (IOException e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to delete image image for UUID {}: {}", imageUUID, e.getMessage());
             }
-
-            CustomServerNetworking.getInstance().sendBytesToClient(
-                    player,
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "delete_image_response"),
-                    new byte[BooleanUtils.toByte(successful)],
-                    -1, -1
-            ); // Send response to client indicating whether the deletion was successful or not
         });
     }
 

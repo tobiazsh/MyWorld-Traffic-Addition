@@ -81,7 +81,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
-		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.entries);
+		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.totalEntries);
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
