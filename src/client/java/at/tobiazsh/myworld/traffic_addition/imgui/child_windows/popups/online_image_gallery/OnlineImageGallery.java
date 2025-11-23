@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_i
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
@@ -52,6 +53,10 @@ public class OnlineImageGallery {
         MINE
     }
 
+    public static void renderSubwindows() {
+        OnlineImageDialog.INSTANCE.render();
+    }
+
     public static void render() {
         if (!shouldRender) return;
 
@@ -62,6 +67,8 @@ public class OnlineImageGallery {
 
         ImGui.setNextWindowSize(windowWidth, windowHeight);
         if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery"))) {
+
+            renderSubwindows();
 
             renderMenuBar();
             renderPageBar();
@@ -129,6 +136,11 @@ public class OnlineImageGallery {
         if (ImGui.button(tr("Global", "Refresh"))) {
             refresh();
         }
+
+        ImGui.sameLine();
+
+        if (ImGui.button(tr("ImGui.Main.SignEditor", "Upload Image") + "..."))
+            OnlineImageDialog.INSTANCE.startDialog();
 
         ImGui.endChild();
         ImGui.popStyleColor();

@@ -17,6 +17,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
@@ -86,8 +87,7 @@ public class SignEditor {
         BackgroundSelectorPopup.render(allBackgrounds, blockEntity);
         ConfirmationPopup.render();
         FileDialogPopup.render();
-
-        OnlineImageDialog.INSTANCE.render();
+        OnlineImageGallery.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
@@ -293,7 +293,7 @@ public class SignEditor {
         if(ImGui.beginMenu(tr("Global", "Elements"))) {
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Image Element") + "...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Text Element") + "...", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Upload Image") + "...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
+            if (ImGui.menuItem(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery") + "...")) OnlineImageGallery.open();
 
             ImGui.separator();
 
@@ -469,10 +469,5 @@ public class SignEditor {
 
             MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
         }, "MWTACSELEMENT", "JSON");
-    }
-
-    // Used Later for the online image dialog
-    private static void openOnlineImageDialog() {
-        OnlineImageDialog.INSTANCE.startDialog();
     }
 }

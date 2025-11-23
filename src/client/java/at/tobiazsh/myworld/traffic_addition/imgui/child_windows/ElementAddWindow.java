@@ -45,11 +45,8 @@ public class ElementAddWindow {
 		ImGui.pushFont(ImGuiImpl.Roboto);
 		if (ImGui.begin(windowId, ImGuiWindowFlags.MenuBar)) {
 
-			OnlineImageGallery.render(); // TODO: Implement online image gallery
-
 			if (ImGui.beginMenuBar()) {
 				if (ImGui.menuItem(tr("Global", "Cancel"))) shouldRender = false; // "Cancel" button
-				if (ImGui.menuItem(tr("ImGui.Child.ElementAddWindow", "Add Online Image") + "...")) OnlineImageGallery.open(); // TODO: Implement online image gallery
 
 				ImGui.endMenuBar();
 			}
