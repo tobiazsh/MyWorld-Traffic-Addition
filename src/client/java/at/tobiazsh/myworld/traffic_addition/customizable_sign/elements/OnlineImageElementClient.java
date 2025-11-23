@@ -19,6 +19,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     public boolean textureLoaded = false;
     private boolean shouldRegisterTexture = false;
+    private boolean shouldLogNotRenderable = true;
 
     private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
 
@@ -174,7 +175,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
         }
 
         if (getResourcePath() == null || getResourcePath().isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.debug("No resource path set for OnlineImageElementClient with ID {}! Probably the image hasn't finished downloading yet but it could be caused by a different issue! Not rendering Minecarft!", getId());
+            if (shouldLogNotRenderable) {
+                MyWorldTrafficAddition.LOGGER.debug("OnlineImageElementClient with ID: {} is not renderable yet (no resource path)", getId());
+                shouldLogNotRenderable = false; // Only log once
+            }
             return false; // No resource path set, nothing to render
         }
 
