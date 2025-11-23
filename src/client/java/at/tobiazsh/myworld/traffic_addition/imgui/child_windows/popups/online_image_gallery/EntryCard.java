@@ -81,7 +81,7 @@ public class EntryCard {
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploader's UUID"), imageEntry.getUploaderUUID())); // Uploader's UUID: ____
 
             // Status display
-            String status = "";
+            String status;
             if (isFetchingName) {
                 status = "Fetching Name...";
             } else if (hadErrorWhileFetching) {
