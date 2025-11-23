@@ -140,22 +140,22 @@ public class Texture {
 				}
 			}
 
-			try (ReadableByteChannel rbc = Channels.newChannel(is)) {
-				ByteBuffer buffer = memAlloc(16 * 1024);
-				while (rbc.read(buffer) != -1) {
-					if (buffer.remaining() == 0) {
-						ByteBuffer newBuffer = memAlloc(buffer.capacity() * 2);
-						buffer.flip();
-						newBuffer.put(buffer);
-						memFree(buffer);
-						buffer = newBuffer;
-					}
-				}
-				buffer.flip();
-				return buffer;
-			} finally {
-				is.close();
-			}
+            try (InputStream _is = is; ReadableByteChannel rbc = Channels.newChannel(_is)) {
+                ByteBuffer buffer = BufferUtils.createByteBuffer(16 * 1024);
+                while (true) {
+                    int read = rbc.read(buffer);
+                    if (read == -1) break;
+
+                    if (!buffer.hasRemaining()) {
+                        ByteBuffer newBuffer = BufferUtils.createByteBuffer(buffer.capacity() * 2);
+                        buffer.flip();
+                        newBuffer.put(buffer);
+                        buffer = newBuffer;
+                    }
+                }
+                buffer.flip();
+                return buffer;
+            }
 		} catch (Exception e) {
 			throw new RuntimeException("Error loading image: " + resourcePath, e);
 		}
