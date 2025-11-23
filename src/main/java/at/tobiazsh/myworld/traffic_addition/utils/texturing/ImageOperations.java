@@ -74,17 +74,14 @@ public class ImageOperations {
     }
 
     private static byte[] getPixel(ByteBuffer buffer, int width, int x, int y, int channels) {
-        // Clamp coordinates to image bounds
         x = Math.max(0, Math.min(x, width - 1));
-        y = Math.max(0, Math.min(y, (buffer.capacity() / (width * channels)) - 1));
+        int height = buffer.capacity() / (width * channels);
+        y = Math.max(0, Math.min(y, height - 1));
 
-        // Calculate position in buffer
         int pos = (y * width + x) * channels;
 
-        // Read pixel
         byte[] pixel = new byte[channels];
-        buffer.position(pos);
-        buffer.get(pixel, 0, channels);
+        buffer.get(pos, pixel, 0, channels);
         return pixel;
     }
 }

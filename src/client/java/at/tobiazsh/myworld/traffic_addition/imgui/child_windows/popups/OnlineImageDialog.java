@@ -139,7 +139,20 @@ public class OnlineImageDialog {
                 Error e = downloader.getError();
                 ErrorPopup.open(e, null);
             } else {
-                imageData = downloader.getDownloadedImageData();
+                ByteBuffer stbBuffer = downloader.getDownloadedImageData();
+
+                // Copy data to heap to prevent issues with STBImage freeing the memory later
+                byte[] pixels = new byte[stbBuffer.remaining()];
+                stbBuffer.get(pixels);
+                STBImage.stbi_image_free(stbBuffer);
+
+                imageData = BufferUtils.createByteBuffer(pixels.length);
+                imageData.put(pixels);
+                imageData.flip();
+
+                originalImageData = BufferUtils.createByteBuffer(pixels.length);
+                originalImageData.put(pixels);
+                originalImageData.flip();
             }
 
             isOperationComplete = true;
@@ -558,18 +571,28 @@ public class OnlineImageDialog {
      * @param deleteBackup true if the backup should be deleted too, false otherwise
      */
     private void deleteImageData(boolean deleteBackup) {
-        // Free imageData if it has a native address
-        if (imageData != null) {
+        // Null out the main image data
+        if (imageData != null && imageData.isDirect()) {
             long addr = MemoryUtil.memAddressSafe(imageData);
-            MyWorldTrafficAddition.LOGGER.info("Freeing imageData addr={}", addr);
-            STBImage.stbi_image_free(imageData);
+            if (addr != 0) {
+                MyWorldTrafficAddition.LOGGER.debug("Releasing LWJGL direct buffer @ 0x{}", Long.toHexString(addr));
+            }
             imageData = null;
         }
 
-        if (deleteBackup && originalImageData != null) {
-            // If backup and imageData are the same reference, don't double free
-            STBImage.stbi_image_free(originalImageData);
+        // Also delete the backup if necessary
+        if (deleteBackup && originalImageData != null && originalImageData.isDirect()) {
+            long addr = MemoryUtil.memAddressSafe(originalImageData);
+            if (addr != 0) {
+                MyWorldTrafficAddition.LOGGER.debug("Freeing manually allocated backup buffer @ 0x{}", Long.toHexString(addr));
+                MemoryUtil.memFree(originalImageData); // ← ONLY for memAlloc'd buffers!
+            }
             originalImageData = null;
+        }
+
+        // Also clean up the texture
+        if (currentTexture != null) {
+            currentTexture = null;
         }
     }
 

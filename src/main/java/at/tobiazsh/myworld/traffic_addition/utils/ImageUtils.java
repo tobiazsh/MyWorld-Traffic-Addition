@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.ImageOperations;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
@@ -65,20 +66,24 @@ public class ImageUtils {
         int newWidth = (int) Math.ceil(width * scale);
         int newHeight = (int) Math.ceil(height * scale);
 
-        if (imageData != null && imageData != originalImageData) {
-            MemoryUtil.memFree(imageData);
-        }
+        ByteBuffer source = (imageData != null) ? imageData : originalImageData;
+        if (source == null || source.remaining() == 0) {
+            MyWorldTrafficAddition.LOGGER.error("No valid image data provided for scaling! Aborting...");
+            onAbort.run();
+            return new Triplet<>(0, 0, null);
+        };
 
-        ByteBuffer scaledImage = MemoryUtil.memAlloc(newWidth * newHeight * channels);
-        boolean state = ImageOperations.bilinearResize(imageData, width, height, scaledImage, newWidth, newHeight, channels);
+        ByteBuffer output = BufferUtils.createByteBuffer(newWidth * newHeight * channels);
+        boolean success = ImageOperations.bilinearResize(source, width, height, output, newWidth, newHeight, channels);
 
-        if (!state) { // Abort if unsuccessful (empty)
+        if (!success) { // Abort if unsuccessful (empty)
             MyWorldTrafficAddition.LOGGER.error("Failed to resize image! Aborting...");
             onAbort.run();
             return new Triplet<>(0, 0, null);
         }
 
-        return new Triplet<>(newWidth, newHeight, scaledImage);
+        //output.flip();
+        return new Triplet<>(newWidth, newHeight, output);
     }
 
     /**
