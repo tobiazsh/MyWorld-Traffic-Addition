@@ -1,14 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition.utils.custom_image;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import net.minecraft.util.Pair;
 
 import javax.imageio.ImageIO;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -23,6 +21,10 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 public class ImageDownloader {
+
+    private static final Pair<String, String> requestProperty = new Pair<>("User-Agent", "Mozilla/5.0 (Compatible) MyWorldTrafficAddon/" + MyWorldTrafficAddition.MODVER);
+    private static final int connectTimeout = 15000; // 15 seconds
+    private static final int readTimeout = 30000; // 15 seconds
 
     private Error error;
     private final Function<String, String> operationMessageSetter;
@@ -86,6 +88,10 @@ public class ImageDownloader {
             return new Pair<>(1, "Couldn't open connection to URL! Java's Nonsense: " + e.getMessage());
         }
 
+        connection.setConnectTimeout(connectTimeout);
+        connection.setReadTimeout(readTimeout);
+        connection.setRequestProperty(requestProperty.getLeft(), requestProperty.getRight());
+
         long totalBytes = connection.getContentLength();
         if (totalBytes <= 0) {
             totalBytes = 1;
@@ -115,20 +121,24 @@ public class ImageDownloader {
             return new Pair<>(1, "Couldn't open input stream to URL! URL: " + url + "\nJava's Nonsense: " + e.getMessage());
         }
 
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect((int) totalBytes);
-
         try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(
+                    totalBytes > 0 ? (int) Math.min(totalBytes, 32 * 1024 * 1024) : 1024 * 1024 // Preallocate up to 32 MiB
+            );
+
             byte[] buffer = new byte[8192];
-            long bytesRead = 0;
             int read;
+            long bytesRead = 0;
 
             while ((read = inputStream.read(buffer)) != -1) {
-                byteBuffer.put(buffer, 0, read);
+                baos.write(buffer, 0, read);
                 bytesRead += read;
 
                 // Update download progress
-                operationProgressSetter.apply((float) bytesRead / totalBytes);
-                operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading") + "... " + (bytesRead / 1024) + " KiB " + tr("Global", "of") + " " + (totalBytes / 1024) + " KiB");
+                float progress = totalBytes > 0 ? (float) bytesRead / totalBytes : 0.5f; // If totalBytes is unknown, just set it to 50%
+                operationProgressSetter.apply(progress);
+                operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading") + "... "
+                        + (bytesRead / 1024) + " KiB " + tr("Global", "of") + " " + (totalBytes / 1024) + " KiB");
 
                 if (cancelDownload) {
                     deleteImageData();
@@ -136,9 +146,13 @@ public class ImageDownloader {
                 }
             }
 
-            byteBuffer.flip();
+            byte[] downloadedBytes = baos.toByteArray();
+            imageData = ByteBuffer.allocateDirect(downloadedBytes.length);
+            imageData.put(downloadedBytes);
+            imageData.flip();
+
+            baos.close();
             inputStream.close();
-            imageData = byteBuffer;
         } catch (IOException e) {
             applyError(
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Download Failed"),
