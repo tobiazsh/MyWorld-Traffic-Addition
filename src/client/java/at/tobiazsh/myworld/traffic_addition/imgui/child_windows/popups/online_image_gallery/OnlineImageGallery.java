@@ -140,7 +140,7 @@ public class OnlineImageGallery {
         ImGui.sameLine();
 
         if (ImGui.button(tr("ImGui.Main.SignEditor", "Upload Image") + "..."))
-            OnlineImageDialog.INSTANCE.startDialog();
+            OnlineImageDialog.INSTANCE.startDialog(); // Open online image dialog and after upload, re-open gallery
 
         ImGui.endChild();
         ImGui.popStyleColor();
