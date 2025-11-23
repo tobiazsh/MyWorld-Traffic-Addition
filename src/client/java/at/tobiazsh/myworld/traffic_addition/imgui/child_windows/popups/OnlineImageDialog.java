@@ -19,6 +19,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -44,6 +45,8 @@ public class OnlineImageDialog {
     // Server things
     public static long maximumUploadSize = 1024 * 1024 * 5; // 5 MiB
     public static float[] imageScale = { 1.0f };
+
+    volatile private Thread uploadThread = null;
 
     // Regarding Download
     volatile private boolean isOperating = false;
@@ -305,8 +308,17 @@ public class OnlineImageDialog {
 
         renderProgressPopup(false, () -> {
             ImGui.closeCurrentPopup();
-            shouldRender = false;
+
+            Thread t = uploadThread;
+            if (t != null && t.isAlive()) {
+                try {
+                    t.join(2000); // Wait for upload thread to finish
+                } catch (InterruptedException e) {
+                    MyWorldTrafficAddition.LOGGER.error("Interrupted while waiting for upload thread to finish: {}", e.getMessage());
+                }
+            }
             resetValues();
+            shouldRender = false;
         }, () -> {});
 
         ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
@@ -397,7 +409,7 @@ public class OnlineImageDialog {
         progressPopupTitle = tr("Global", "Upload");
         operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Uploading image to server");
 
-        Thread thread = new Thread(() -> { // Upload in a new thread
+        uploadThread = new Thread(() -> { // Upload in a new thread
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding image to PNG");
             byte[] imagePngData = ImageUtils.encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0));
             operationProgress = 0.2f;
@@ -461,8 +473,8 @@ public class OnlineImageDialog {
             isOperating = false;
         });
 
-        thread.setName("ImageUploadThread");
-        thread.start();
+        uploadThread.setName("ImageUploadThread");
+        uploadThread.start();
 
         shouldOpenProgressPopup = true;
     }
@@ -546,12 +558,17 @@ public class OnlineImageDialog {
      * @param deleteBackup true if the backup should be deleted too, false otherwise
      */
     private void deleteImageData(boolean deleteBackup) {
+        // Free imageData if it has a native address
         if (imageData != null) {
-            MemoryUtil.memFree(imageData);
+            long addr = MemoryUtil.memAddressSafe(imageData);
+            MyWorldTrafficAddition.LOGGER.info("Freeing imageData addr={}", addr);
+            STBImage.stbi_image_free(imageData);
             imageData = null;
         }
+
         if (deleteBackup && originalImageData != null) {
-            MemoryUtil.memFree(originalImageData);
+            // If backup and imageData are the same reference, don't double free
+            STBImage.stbi_image_free(originalImageData);
             originalImageData = null;
         }
     }
@@ -568,7 +585,13 @@ public class OnlineImageDialog {
                         } else abort();
                     });
         } else {
-            originalImageData = imageData;
+            ByteBuffer src = imageData.asReadOnlyBuffer();
+            src.rewind();
+            ByteBuffer backup = MemoryUtil.memAlloc(src.remaining());
+            backup.put(src);
+            backup.flip();
+
+            originalImageData = backup;
         }
     }
 
