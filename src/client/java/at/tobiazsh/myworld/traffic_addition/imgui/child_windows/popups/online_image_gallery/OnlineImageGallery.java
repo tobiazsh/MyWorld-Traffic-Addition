@@ -317,8 +317,9 @@ public class OnlineImageGallery {
         isLoading = true;
 
         List<UUID> uuids = metadataList.stream().map(CustomImageMetadata::getImageUUID).toList(); // Get UUIDs of all images
-        List<Pair<Integer, UUID>> cachedUuids = splitCached(uuids).getRight(); // Get UUIDs of cached images
-        uuids = splitCached(uuids).getLeft(); // Get UUIDs of non-cached images
+        Pair<List<UUID>, List<Pair<Integer, UUID>>> listPair = splitCached(uuids);
+        List<Pair<Integer, UUID>> cachedUuids = listPair.getRight(); // Get UUIDs of cached images
+        uuids = listPair.getLeft(); // Get UUIDs of non-cached images
 
         // Get Cached thumbnails
         List<Pair<Integer, byte[]>> cachedThumbnails = getFromCachedImages(cachedUuids);
