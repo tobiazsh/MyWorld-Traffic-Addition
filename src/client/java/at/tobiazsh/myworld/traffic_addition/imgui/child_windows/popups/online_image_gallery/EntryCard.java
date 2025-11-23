@@ -127,7 +127,18 @@ public class EntryCard {
     }
 
     private void addToSign() {
-        ClientElementManager.getInstance().addElement(new OnlineImageElementClient(0, 0, -1, -1, 1.0f, 0f, imageEntry.getImageUUID(), ClientElementInterface.MAIN_CANVAS_ID));
+        OnlineImageElementClient oiec = new OnlineImageElementClient(
+                0, 0,
+                -1, -1,
+                1.0f,
+                0f,
+                imageEntry.getImageUUID(),
+                ClientElementInterface.MAIN_CANVAS_ID
+        );
+
+        oiec.setName(imageEntry.getImageName());
+
+        ClientElementManager.getInstance().addElement(oiec);
     }
 
     private void fetchUploaderName() {
