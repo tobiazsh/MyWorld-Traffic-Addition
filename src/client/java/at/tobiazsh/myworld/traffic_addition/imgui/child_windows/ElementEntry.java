@@ -174,7 +174,7 @@ public abstract class ElementEntry {
 		ImGui.setCursorPosX(entryWidth - buttonSize * 4 - padding * 4); // Center Buttons X
 
 		// Context menu button
-		if (ImGui.imageButton(otherIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+		if (ImGui.imageButton("#ContextMenuButton" + renderObject.getId(), otherIcon, new ImVec2(ImGui.getFontSize(), ImGui.getFontSize()))) {
 			ImGui.openPopup("ElementEntryContextMenu##" + renderObject.getId());
 		}
 		contextualMenu();
@@ -182,7 +182,7 @@ public abstract class ElementEntry {
 		ImGui.sameLine();
 
 		// Delete button
-		if (ImGui.imageButton(redXIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+		if (ImGui.imageButton("#DeleteButton" + renderObject.getId(), redXIcon, new ImVec2(ImGui.getFontSize(), ImGui.getFontSize()))) {
 			deleteElement(renderObject);
 		}
 
