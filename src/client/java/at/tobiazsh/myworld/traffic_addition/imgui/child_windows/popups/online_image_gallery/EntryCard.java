@@ -138,7 +138,7 @@ public class EntryCard {
 
         oiec.setName(imageEntry.getImageName());
 
-        ClientElementManager.getInstance().addElement(oiec);
+        ClientElementManager.getInstance().addElementFirst(oiec);
     }
 
     private void fetchUploaderName() {
