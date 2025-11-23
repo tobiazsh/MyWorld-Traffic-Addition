@@ -91,35 +91,48 @@ public class ImageUtils {
      */
     public static byte[] encodePNG(ByteBuffer imageData, int width, int height, int channels) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ByteBuffer direct = null;
+        boolean allocated = false;
+        STBIWriteCallback callback = null;
 
-        STBIWriteCallbackI callback = new STBIWriteCallback() {
-            @Override
-            public void invoke(long context, long data, int size) {
-                byte[] buffer = new byte[size];
-                MemoryUtil.memCopy(data, MemoryUtil.memAddress(MemoryUtil.memAlloc(size)), size);
-                MemoryUtil.memByteBuffer(data, size).get(buffer);
-                outputStream.write(buffer, 0, buffer.length);
+        try {
+            ByteBuffer src = imageData.duplicate();
+            src.rewind();
+
+            if (!src.isDirect()) {
+                direct = MemoryUtil.memAlloc(src.remaining());
+                direct.put(src);
+                direct.flip();
+                allocated = true;
+            } else {
+                direct = src;
             }
-        };
 
-        int stride = width * channels;
+            callback = STBIWriteCallback.create((context, data, size) ->  {
+                if (data == MemoryUtil.NULL || size <= 0) return;
+                ByteBuffer buf = MemoryUtil.memByteBuffer(data, size);
+                byte[] arr = new byte[size];
+                buf.get(arr);
+                try {
+                    outputStream.write(arr);
+                } catch (IOException e) {
+                    MyWorldTrafficAddition.LOGGER.error("Failed to write PNG data to output stream!", e);
+                }
+            });
 
-        boolean success = STBImageWrite.stbi_write_png_to_func(
-                callback,
-                0,
-                width,
-                height,
-                channels,
-                imageData,
-                stride
-        );
+            int stride = width * channels;
+            boolean success = STBImageWrite.stbi_write_png_to_func(callback, 0, width, height, channels, direct, stride);
 
-        if (!success) {
-            String failureReason = STBImage.stbi_failure_reason();
-            MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
-            throw new RuntimeException(failureReason);
+            if (!success) {
+                String failureReason = STBImage.stbi_failure_reason();
+                MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
+                throw new RuntimeException(failureReason);
+            }
+
+            return outputStream.toByteArray();
+        } finally {
+            if (callback != null) callback.free();
+            if (allocated && direct != null) MemoryUtil.memFree(direct);
         }
-
-        return outputStream.toByteArray();
     }
 }
