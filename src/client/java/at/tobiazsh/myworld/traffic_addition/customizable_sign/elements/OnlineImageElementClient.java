@@ -14,13 +14,14 @@ import net.minecraft.util.math.Direction;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface, TexturableElementInterface {
 
-    public boolean textureLoaded = false;
-    private boolean shouldRegisterTexture = false;
+    public AtomicBoolean textureLoaded = new AtomicBoolean(false);
     private boolean shouldLogNotRenderable = true;
 
+    private final AtomicBoolean shouldRegisterTexture = new AtomicBoolean(false);
     private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
 
     private static final String defaultResourcePath = "/assets/myworld_traffic_addition/textures/imgui/icons/not_found_placeholder.png";
@@ -83,7 +84,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override // TexturableElementInterface
     public boolean isTextureLoaded() {
-        return textureLoaded;
+        return textureLoaded.get();
     }
 
     @Override // TexturableElementInterface
@@ -98,10 +99,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override
     public void loadTexture() {
-        if (shouldRegisterTexture) {
+        if (shouldRegisterTexture.get()) {
             elementTexture = Textures.smartRegisterTexture(resourcePath);
-            textureLoaded = true;
-            shouldRegisterTexture = false;
+            textureLoaded.set(true);
+            shouldRegisterTexture.set(false);
         }
     }
 
@@ -118,8 +119,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
         if (OnlineImageCache.isImageCached(this.getPictureReference() + ".png")) {
             resourcePath = OnlineImageCache.getCachedImagePath(getPictureReference().toString() + ".png").toString();
-            elementTexture = Textures.smartRegisterTexture(resourcePath); // Update the texture reference
-            textureLoaded = true;
+            shouldRegisterTexture.set(true);
             return;
         }
 
@@ -128,8 +128,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 if (image != null && image.length > 0) {
                     Path path = OnlineImageCache.cacheImage(image, getPictureReference().toString() + ".png");
                     resourcePath = path.toString();
-                    shouldRegisterTexture = true;
-                    textureLoaded = true;
+                    shouldRegisterTexture.set(true);
+                    textureLoaded.set(false);
                     MyWorldTrafficAddition.LOGGER.info("Image downloaded successfully for OnlineImageElementClient with ID: {}", getId());
                 } else {
                     resourcePath = defaultResourcePath;
@@ -154,7 +154,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             MyWorldTrafficAddition.LOGGER.warn("Failed to unsubscribe dynamic texture", e);
         }
         dynamicTexture = null;
-        textureLoaded = false; // Force reload
+        textureLoaded.set(false); // Force reload
     }
 
     /**
@@ -164,8 +164,9 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
      */
     private boolean initiateRender(Runnable onTextureLoaded) {
         loadTexture(); // Ensure texture is loaded
+        sizeAuto(); // Adjust size if set to -1
 
-        if (textureLoaded) {
+        if (textureLoaded.get()) {
             onTextureLoaded.run();
             return true; // Texture is loaded, render normally
         }
@@ -209,5 +210,19 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
         copy.setColor(color);
 
         return copy;
+    }
+
+    private void sizeAuto() {
+        if (width == -1) {
+            if (elementTexture != null && !elementTexture.isEmpty()) {
+                width = elementTexture.getWidth();
+            }
+        }
+
+        if (height == -1) {
+            if (elementTexture != null && !elementTexture.isEmpty()) {
+                height = elementTexture.getHeight();
+            }
+        }
     }
 }
