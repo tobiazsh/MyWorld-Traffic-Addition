@@ -71,7 +71,7 @@ public class ImageUtils {
             MyWorldTrafficAddition.LOGGER.error("No valid image data provided for scaling! Aborting...");
             onAbort.run();
             return new Triplet<>(0, 0, null);
-        };
+        }
 
         ByteBuffer output = BufferUtils.createByteBuffer(newWidth * newHeight * channels);
         boolean success = ImageOperations.bilinearResize(source, width, height, output, newWidth, newHeight, channels);
