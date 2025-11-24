@@ -142,16 +142,18 @@ public class OnlineImageDialog {
                 MyWorldTrafficAddition.LOGGER.error(e.getMessage());
                 ErrorPopup.open(e, null);
             } else {
-                imageData = result.stbImage();
-                imageDataIsStb = true;
-
-                ByteBuffer src = imageData.asReadOnlyBuffer();
+                ByteBuffer src = result.stbImage().asReadOnlyBuffer();
                 src.rewind();
 
                 if (originalImageData != null) {
                     MemoryUtil.memFree(originalImageData);
                     originalImageData = null;
                 }
+
+                imageData = MemoryUtil.memAlloc(src.remaining());
+                imageData.put(src);
+                imageData.flip();
+                imageDataIsStb = false;
 
                 originalImageData = MemoryUtil.memAlloc(src.remaining());
                 originalImageData.put(src);
