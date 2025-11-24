@@ -173,6 +173,8 @@ public class OnlineImageDialog {
 
                 orgImgW.put(0, result.width());
                 orgImgH.put(0, result.height());
+
+                result.free();
             }
 
             isOperationComplete = true;
