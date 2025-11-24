@@ -10,6 +10,7 @@ version = project.mod_version
 group = project.maven_group
 
 project.ext.imgui_version = "1.90.0"
+project.ext.lwjgl_version = "3.3.4"
 var versions = ["1.21.6", "1.21.7", "1.21.8"]
 
 base {
@@ -54,6 +55,14 @@ dependencies {
     include implementation("io.github.spair:imgui-java-natives-windows:${project.imgui_version}")
     include implementation("io.github.spair:imgui-java-natives-linux:${project.imgui_version}")
     include implementation("io.github.spair:imgui-java-natives-macos:${project.imgui_version}")
+
+    // --- LWJGL Native File Dialog (NFD) ---
+    include implementation("org.lwjgl:lwjgl-nfd:${lwjgl_version}")
+
+    // natives for each platform
+    include implementation("org.lwjgl:lwjgl-nfd:${lwjgl_version}:natives-windows")
+    include implementation("org.lwjgl:lwjgl-nfd:${lwjgl_version}:natives-linux")
+    include implementation("org.lwjgl:lwjgl-nfd:${lwjgl_version}:natives-macos")
 
     // Other dependencies
     include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}") // Jengua; Translation library

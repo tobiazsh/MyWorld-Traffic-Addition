@@ -11,6 +11,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
@@ -50,6 +51,8 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
 import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.updateToNewVersion;
 import static at.tobiazsh.myworld.traffic_addition.utils.Saves.createSavesDir;
+
+import org.lwjgl.util.nfd.*;
 
 public class SignEditor {
 
@@ -333,6 +336,9 @@ public class SignEditor {
             if (ImGui.menuItem("Test Error Popup")) {
                 ErrorPopup.open(new Error("Test Error", "This is a test error message."), () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed."));
             }
+
+            if (ImGui.menuItem("Test TFD Popup O")) DebugFunctions.testNfd_open();
+            if (ImGui.menuItem("Test TFD Popup S")) DebugFunctions.testNfd_save();
 
             ImGui.endMenu();
         }
