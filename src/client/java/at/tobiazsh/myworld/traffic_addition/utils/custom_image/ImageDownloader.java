@@ -50,7 +50,7 @@ public class ImageDownloader {
      * @param url Image URL (make sure it's only the image and not a website)
      * @return DownloadedImage object containing the raw image data and its properties (including error state!)
      */
-    public DownloadedImage downloadImage(String url) {
+    public ByteImage downloadImage(String url) {
         URL imageUrl;
 
         // Set status
@@ -190,7 +190,7 @@ public class ImageDownloader {
 
         freeMemory();
 
-        return new DownloadedImage(
+        return new ByteImage(
                 stbiImage,
                 width,
                 height,
@@ -233,26 +233,6 @@ public class ImageDownloader {
         if (imgChannels != null) {
             MemoryUtil.memFree(imgChannels);
             imgChannels = null;
-        }
-    }
-
-    /**
-     * @param stbImage the raw downloaded bytes
-     * @param width    optional decoded width
-     * @param height   optional decoded height
-     * @param channels optional decoded channels
-     */
-    public record DownloadedImage(ByteBuffer stbImage, int width, int height, int channels) {
-
-        @Override
-        public ByteBuffer stbImage() {
-            return stbImage.asReadOnlyBuffer(); // safe, does not copy underlying memory
-        }
-
-        public void free() {
-            if (stbImage != null) {
-                STBImage.stbi_image_free(stbImage);
-            }
         }
     }
 }

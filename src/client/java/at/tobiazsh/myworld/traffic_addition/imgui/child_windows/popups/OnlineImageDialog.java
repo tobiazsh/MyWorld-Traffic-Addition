@@ -6,17 +6,20 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ByteImage;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ClientCustomImageDirectory;
 import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
+import at.tobiazsh.myworld.traffic_addition.utils.custom_image.FileLoader;
 import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ImageDownloader;
+import at.tobiazsh.myworld.traffic_addition.utils.graphics.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
+import imgui.ImVec2;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
-import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -25,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -61,7 +65,6 @@ public class OnlineImageDialog {
 
     private ByteBuffer originalImageData;
     private ByteBuffer imageData;
-    private boolean imageDataIsStb = true; // true = from STB (stbi_load_from_memory), false = memAlloc
 
     // Image things
     private final Texture currentTexture = new Texture();
@@ -135,52 +138,71 @@ public class OnlineImageDialog {
 
         // Execute download in separate thread to prevent blocking the UI and giving feedback to the user
         new Thread(() -> {
-            ImageDownloader.DownloadedImage result = downloader.downloadImage(imageUrl.get());
+            ByteImage result = downloader.downloadImage(imageUrl.get());
 
             if (downloader.hasError()) { // Error occurred
                 Error e = downloader.getError();
                 MyWorldTrafficAddition.LOGGER.error(e.getMessage());
                 ErrorPopup.open(e, null);
             } else {
-                ByteBuffer src = result.stbImage().asReadOnlyBuffer();
-                src.rewind();
-
-                if (originalImageData != null) {
-                    MemoryUtil.memFree(originalImageData);
-                    originalImageData = null;
-                }
-
-                imageData = MemoryUtil.memAlloc(src.remaining());
-                imageData.put(src);
-                imageData.flip();
-                imageDataIsStb = false;
-
-                originalImageData = MemoryUtil.memAlloc(src.remaining());
-                originalImageData.put(src);
-                originalImageData.flip();
-
-                imageData.rewind();
-                originalImageData.rewind();
-
-                imgW = MemoryUtil.memAllocInt(1);
-                imgH = MemoryUtil.memAllocInt(1);
-                imgC = MemoryUtil.memAllocInt(1);
-
-                imgW.put(0, result.width());
-                imgH.put(0, result.height());
-                imgC.put(0, result.channels());
-
-                orgImgW = MemoryUtil.memAllocInt(1);
-                orgImgH = MemoryUtil.memAllocInt(1);
-
-                orgImgW.put(0, result.width());
-                orgImgH.put(0, result.height());
-
-                result.free();
+                setImageData(result);
             }
 
             isOperationComplete = true;
         }).start();
+    }
+
+    private void handleLocalFile() {
+
+        Thread fileLoadThread;
+
+        fileLoadThread = new Thread(() -> {
+            String path = NativeFileDialogs.open(new NativeFileDialogs.FilterItem[]{
+                    new NativeFileDialogs.FilterItem("Image Files", new String[] { "png", "jpg", "jpeg", "bmp", "gif" })},
+                    System.getProperty("user.home"),
+                    (msg) -> {
+                        isOperationComplete = true;
+                        isOperating = false;
+                        MyWorldTrafficAddition.LOGGER.debug("File dialog aborted: {}", msg);
+                    },
+                    (error) -> ErrorPopup.open(error, null));
+
+            if (path == null || path.isEmpty()) {
+                MyWorldTrafficAddition.LOGGER.debug("No file selected or dialog was cancelled.");
+                return;
+            }
+
+            isOperating = true;
+            shouldOpenProgressPopup = true;
+            operationProgress = 0.0f;
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Loading image from file");
+
+            ByteImage result;
+
+            try {
+                result = FileLoader.loadFileToStbImage(Path.of(path));
+            } catch (IOException e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load image from file: {}", e.getMessage());
+                ErrorPopup.open(
+                        new Error(
+                                tr("ImGui.Child.PopUps.OnlineImageDialog", "Error loading image from file"),
+                                tr("ImGui.Child.PopUps.OnlineImageDialog", "Could not load image from the selected file. Please check the file and try again.")),
+                        null
+                );
+                isOperationComplete = true;
+                isOperating = false;
+                return;
+            }
+
+            setImageData(result);
+
+            isOperationComplete = true;
+            operationProgress = 1.0f;
+            operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Loaded image from file successfully");
+        });
+
+        fileLoadThread.setName("File Load Thread");
+        fileLoadThread.start();
     }
 
     private void handleCancel() {
@@ -219,7 +241,7 @@ public class OnlineImageDialog {
 
     private void renderNewPage() {
         windowWidth = 800;
-        windowHeight = 140;
+        windowHeight = 300;
 
         ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Enter Image URL"))) / 2); // Center title
@@ -228,7 +250,7 @@ public class OnlineImageDialog {
 
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center input field
         ImGui.inputText("##imageUrlDummylabel", imageUrl); // Input field for URL
-        ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center button
+        ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Position button
 
         if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageDialog", "Load from URL"))) handleDownload();
 
@@ -239,6 +261,17 @@ public class OnlineImageDialog {
             ImGui.closeCurrentPopup();
             abort();
         }
+
+        ImGui.spacing();
+        ImGui.separator();
+        ImGui.spacing();
+
+        final float buttonWidth = 500;
+        final float buttonHeight = 40;
+        ImGui.setCursorPosX((ImGui.getWindowSizeX() - buttonWidth) / 2); // Center button
+        ImGui.setCursorPosY((float) (ImGui.getWindowSizeY() - 0.5 * ImGui.getContentRegionAvailY() - buttonHeight)); // Add some vertical spacing
+
+        if (ImGui.button(tr("Global", "Open File"), new ImVec2(buttonWidth, buttonHeight))) handleLocalFile();
 
         if (isOperating) {
             // Show progress in separate window
@@ -383,7 +416,6 @@ public class OnlineImageDialog {
             imgH.put(0, result.getB());
 
             imageData = result.getC();
-            imageDataIsStb = false;
             imageScale[0] = 1.0f; // Reset scale to 1.0f
         }
 
@@ -600,8 +632,6 @@ public class OnlineImageDialog {
             imageData.put(backup);
             imageData.flip();
 
-            imageDataIsStb = false;
-
             // Restore dimensions
             imgW.put(0, orgImgW.get(0));
             imgH.put(0, orgImgH.get(0));
@@ -691,11 +721,49 @@ public class OnlineImageDialog {
         }
     }
 
+    /**
+     * Sets the image data from a ByteImage and fees the ByteImage afterward
+     */
+    private void setImageData(ByteImage image) {
+        ByteBuffer src = image.stbImage().asReadOnlyBuffer();
+        src.rewind();
+
+        if (originalImageData != null) {
+            MemoryUtil.memFree(originalImageData);
+            originalImageData = null;
+        }
+
+        imageData = MemoryUtil.memAlloc(src.remaining());
+        imageData.put(src);
+        imageData.flip();
+
+        originalImageData = MemoryUtil.memAlloc(src.remaining());
+        originalImageData.put(src);
+        originalImageData.flip();
+
+        imageData.rewind();
+        originalImageData.rewind();
+
+        imgW = MemoryUtil.memAllocInt(1);
+        imgH = MemoryUtil.memAllocInt(1);
+        imgC = MemoryUtil.memAllocInt(1);
+
+        imgW.put(0, image.width());
+        imgH.put(0, image.height());
+        imgC.put(0, image.channels());
+
+        orgImgW = MemoryUtil.memAllocInt(1);
+        orgImgH = MemoryUtil.memAllocInt(1);
+
+        orgImgW.put(0, image.width());
+        orgImgH.put(0, image.height());
+
+        image.free();
+    }
+
     private void freeImageData() {
         if (imageData != null) {
-            if (imageDataIsStb) STBImage.stbi_image_free(imageData);
-            else MemoryUtil.memFree(imageData);
-
+            MemoryUtil.memFree(imageData);
             imageData = null;
         }
     }
