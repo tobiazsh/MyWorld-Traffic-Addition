@@ -4,8 +4,9 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.Error;
 import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
 import net.minecraft.util.Pair;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryUtil;
 
-import javax.imageio.ImageIO;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -13,7 +14,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Objects;
 import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog.maximumUploadSize;
@@ -32,8 +32,6 @@ public class ImageDownloader {
 
     volatile private boolean cancelDownload = false;
 
-    volatile private ByteBuffer imageData = null;
-
     public ImageDownloader(
             Function<String, String> operationMessageSetter,
             Function<Float, Float> operationProgressSetter
@@ -42,12 +40,17 @@ public class ImageDownloader {
         this.operationProgressSetter = operationProgressSetter;
     }
 
+    ByteBuffer downloadedData = null;
+    IntBuffer imgWidth = null;
+    IntBuffer imgHeight = null;
+    IntBuffer imgChannels = null;
+
     /**
      * Downloads the image from the given URL into the returned Path
      * @param url Image URL (make sure it's only the image and not a website)
-     * @return Pair<A, B> where A is the status code (0 = success, 1 = error) and B is result. If the status code is 0, B is the Path to the downloaded image, otherwise it's the error message.
+     * @return DownloadedImage object containing the raw image data and its properties (including error state!)
      */
-    public Pair<Integer, String> downloadImage(String url, IntBuffer orgImgW, IntBuffer orgImgH, IntBuffer imgW, IntBuffer imgH, IntBuffer imgC) {
+    public DownloadedImage downloadImage(String url) {
         URL imageUrl;
 
         // Set status
@@ -59,7 +62,7 @@ public class ImageDownloader {
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Please provide a valid URL to download the image from"));
 
-            return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "No URL Provided"));
+            return null;
         }
 
         // Try to create a URL object from the given string
@@ -70,7 +73,7 @@ public class ImageDownloader {
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Malformed URL"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The URL you provided is malformed. Download action has been aborted! Please check the URL and try again. Otherwise, please check the logs"));
 
-            return new Pair<>(1, "Malformed image URL!\nURL: " + url + "\nJava's Nonsense: " + e.getMessage());
+            return null;
         }
 
         operationProgressSetter.apply(0.25f);
@@ -85,7 +88,7 @@ public class ImageDownloader {
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Connection Failed"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open a connection to the URL. Download Action has been aborted! Please check your Internet and try again"));
 
-            return new Pair<>(1, "Couldn't open connection to URL! Java's Nonsense: " + e.getMessage());
+            return null;
         }
 
         connection.setConnectTimeout(connectTimeout);
@@ -102,13 +105,13 @@ public class ImageDownloader {
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "File Too Large"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The file is too large to be downloaded. Maximum size is ") + (maximumUploadSize / 1024) + " KiB.");
 
-            return new Pair<>(1, "File too large! File size: " + (totalBytes / 1024) + " KiB");
+            return null;
         }
 
         operationProgressSetter.apply(0.0f); // Reset for download Progress
         operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading Image"));
 
-        // Validate if the file is an image
+        // Open input stream to read data
         InputStream inputStream;
 
         try {
@@ -118,20 +121,18 @@ public class ImageDownloader {
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Input Stream Failed"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while trying to open an input stream to the URL. Download Action has been aborted! Please check your Internet and the URL and try again"));
 
-            return new Pair<>(1, "Couldn't open input stream to URL! URL: " + url + "\nJava's Nonsense: " + e.getMessage());
+            return null;
         }
 
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(
-                    totalBytes > 0 ? (int) Math.min(totalBytes, 32 * 1024 * 1024) : 1024 * 1024 // Preallocate up to 32 MiB
-            );
+            downloadedData = MemoryUtil.memAlloc((int) totalBytes > 0 ? (int) totalBytes : 1024 * 1024);
 
             byte[] buffer = new byte[8192];
             int read;
             long bytesRead = 0;
 
             while ((read = inputStream.read(buffer)) != -1) {
-                baos.write(buffer, 0, read);
+                downloadedData.put(buffer, 0, read);
                 bytesRead += read;
 
                 // Update download progress
@@ -141,60 +142,60 @@ public class ImageDownloader {
                         + (bytesRead / 1024) + " KiB " + tr("Global", "of") + " " + (totalBytes / 1024) + " KiB");
 
                 if (cancelDownload) {
-                    deleteImageData();
-                    return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog", "Download Cancelled By User"));
+                    freeMemory();
+                    applyError("Cancelled", tr("ImGui.Child.PopUps.OnlineImageDialog", "Download Cancelled By User"));
+                    return null;
                 }
             }
 
-            byte[] downloadedBytes = baos.toByteArray();
-            imageData = ByteBuffer.allocateDirect(downloadedBytes.length);
-            imageData.put(downloadedBytes);
-            imageData.flip();
+            downloadedData.flip();
 
-            baos.close();
             inputStream.close();
         } catch (IOException e) {
             applyError(
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Download Failed"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while downloading the file. Please check your Internet connection and try again"));
 
-            return new Pair<>(1, "Error downloading file from URL " + url + "\nJava's Nonsense: " + e.getMessage());
+            freeMemory(); // Free memory because allocated for the first time above.. EVERY Error will now ALWAYS free memory!
+            return null;
         }
 
         operationProgressSetter.apply(0.75f);
         operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Validating Image"));
 
         // Validate if the file is an image
-        byte[] imageBytes = new byte[imageData.remaining()];
-        imageData.mark();
-        imageData.get(imageBytes);
-        imageData.reset();
+        boolean isValidImage = ImageUtils.isValidImage(downloadedData);
 
-        try (InputStream validationStream = new ByteArrayInputStream(imageBytes)) {
-            if (ImageIO.read(validationStream) == null || (Objects.equals(ImageUtils.getImageFormat(imageBytes), "webp"))) {
-                applyError(
-                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Invalid Image"),
-                        tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The downloaded file is not a valid or supported image. Please check the URL and format and try again"));
-
-                deleteImageData();
-                return new Pair<>(1, tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Downloaded file is not a valid image"));
-            }
-        } catch (IOException e) {
+        if (!isValidImage) {
             applyError(
-                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Validation Failed"),
-                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "An error occurred while validating the image. Please check the link and try again"));
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Invalid Image"),
+                    tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "The downloaded file is not a valid or supported image. Please check the URL and format and try again"));
 
-            return new Pair<>(1, "Error validating image file!\nJava's Nonsense: " + e.getMessage());
+            freeMemory();
+            return null;
         }
 
         operationProgressSetter.apply(1.0f);
         operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloaded Image Successfully"));
 
-        imageData = stbi_load_from_memory(imageData, imgW, imgH, imgC, 0);
-        orgImgW.put(0, imgW.get(0));
-        orgImgH.put(0, imgH.get(0));
+        imgWidth = MemoryUtil.memAllocInt(1);
+        imgHeight = MemoryUtil.memAllocInt(1);
+        imgChannels = MemoryUtil.memAllocInt(1);
 
-        return new Pair<>(0, "");
+        ByteBuffer stbiImage = stbi_load_from_memory(downloadedData, imgWidth, imgHeight, imgChannels, 0);
+
+        int width = imgWidth.get(0);
+        int height = imgHeight.get(0);
+        int channels = imgChannels.get(0);
+
+        freeMemory();
+
+        return new DownloadedImage(
+                stbiImage,
+                width,
+                height,
+                channels
+        );
     }
 
     private void applyError(String title, String message) {
@@ -213,11 +214,45 @@ public class ImageDownloader {
         this.cancelDownload = true;
     }
 
-    public ByteBuffer getDownloadedImageData() {
-        return imageData;
+    private void freeMemory() {
+        if (downloadedData != null) {
+            MemoryUtil.memFree(downloadedData);
+            downloadedData = null;
+        }
+
+        if (imgWidth != null) {
+            MemoryUtil.memFree(imgWidth);
+            imgWidth = null;
+        }
+
+        if (imgHeight != null) {
+            MemoryUtil.memFree(imgHeight);
+            imgHeight = null;
+        }
+
+        if (imgChannels != null) {
+            MemoryUtil.memFree(imgChannels);
+            imgChannels = null;
+        }
     }
 
-    private void deleteImageData() {
-        imageData = null;
+    /**
+     * @param stbImage the raw downloaded bytes
+     * @param width    optional decoded width
+     * @param height   optional decoded height
+     * @param channels optional decoded channels
+     */
+    public record DownloadedImage(ByteBuffer stbImage, int width, int height, int channels) {
+
+        @Override
+        public ByteBuffer stbImage() {
+            return stbImage.asReadOnlyBuffer(); // safe, does not copy underlying memory
+        }
+
+        public void free() {
+            if (stbImage != null) {
+                STBImage.stbi_image_free(stbImage);
+            }
+        }
     }
 }

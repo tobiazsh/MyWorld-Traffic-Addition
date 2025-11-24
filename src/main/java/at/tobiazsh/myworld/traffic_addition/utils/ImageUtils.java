@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.texturing.ImageOperations;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
@@ -14,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Iterator;
 
 public class ImageUtils {
@@ -46,7 +46,6 @@ public class ImageUtils {
      * Scales image down to specified scale
      *
      * @param imageData Raw pixel data to scale
-     * @param originalImageData ensures that the original image buffer is not accidentally freed when deallocating the imageData buffer during image scaling.
      * @param scale Scale to scale the image to
      * @param width Current width
      * @param height Current height
@@ -62,19 +61,18 @@ public class ImageUtils {
      *     C = ByteBuffer containing the raw pixel data
      * </li>
      */
-    public static Triplet<Integer, Integer, ByteBuffer> scaleImage(ByteBuffer imageData, ByteBuffer originalImageData, float scale, int width, int height, int channels, Runnable onAbort) {
+    public static Triplet<Integer, Integer, ByteBuffer> scaleImage(ByteBuffer imageData, float scale, int width, int height, int channels, Runnable onAbort) {
         int newWidth = (int) Math.ceil(width * scale);
         int newHeight = (int) Math.ceil(height * scale);
 
-        ByteBuffer source = (imageData != null) ? imageData : originalImageData;
-        if (source == null || source.remaining() == 0) {
+        if (imageData == null || imageData.remaining() == 0) {
             MyWorldTrafficAddition.LOGGER.error("No valid image data provided for scaling! Aborting...");
             onAbort.run();
             return new Triplet<>(0, 0, null);
         }
 
-        ByteBuffer output = BufferUtils.createByteBuffer(newWidth * newHeight * channels);
-        boolean success = ImageOperations.bilinearResize(source, width, height, output, newWidth, newHeight, channels);
+        ByteBuffer output = MemoryUtil.memAlloc(newWidth * newHeight * channels);
+        boolean success = ImageOperations.bilinearResize(imageData, width, height, output, newWidth, newHeight, channels);
 
         if (!success) { // Abort if unsuccessful (empty)
             MyWorldTrafficAddition.LOGGER.error("Failed to resize image! Aborting...");
@@ -82,49 +80,111 @@ public class ImageUtils {
             return new Triplet<>(0, 0, null);
         }
 
-        //output.flip();
+        // Already flipped in the resize operation
         return new Triplet<>(newWidth, newHeight, output);
     }
 
     /**
      * Encodes raw pixel data to PNG format
-     * @param imageData Raw pixel data
+     * @param pixelData Raw pixel data
      * @param width Width of the image
      * @param height Height of the image
      * @param channels Number of channels
      * @return The PNG encoded image as byte array
      */
-    public static byte[] encodePNG(ByteBuffer imageData, int width, int height, int channels) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    public static byte[] encodePNG(ByteBuffer pixelData, int width, int height, int channels, Runnable onAbort) {
+        if (pixelData == null) {
+            MyWorldTrafficAddition.LOGGER.error("No image data provided for PNG encoding! Aborting...");
+            throw new IllegalArgumentException("pixelData is null");
+        }
 
-        STBIWriteCallbackI callback = STBIWriteCallback.create((context, data, size) ->  {
+        if (channels < 1 || channels > 4) {
+            if (onAbort != null) onAbort.run();
+            MyWorldTrafficAddition.LOGGER.error("Invalid channels on encoding to PNG! Aborting...");
+            return null;
+        }
+
+        int required = width * height * channels;
+        // Create a read-only/duplicated view and rewind to ensure readable bytes from position 0
+        boolean tmpAllocated = false;
+        ByteBuffer pixels = pixelData;
+        pixels = pixels.asReadOnlyBuffer();
+        pixels.rewind();
+
+        if (!pixels.isDirect()) {
+            ByteBuffer tmp = MemoryUtil.memAlloc(pixels.remaining());
+            tmp.put(pixels);
+            tmp.flip();
+            pixels = tmp;
+            tmpAllocated = true;
+        }
+
+        if (pixels.remaining() < required) {
+            MyWorldTrafficAddition.LOGGER.error("Image data has insufficient remaining bytes: {} < {}. Aborting...", pixels.remaining(), required);
+            throw new IllegalArgumentException("Not enough image data bytes for given dimensions");
+        }
+
+        final int stride = width * channels;
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        STBIWriteCallback callback = STBIWriteCallback.create((context, data, size) ->  {
+            if (size <= 0) return;
+            ByteBuffer bb = MemoryUtil.memByteBuffer(data, size);
             byte[] buffer = new byte[size];
-            MemoryUtil.memByteBuffer(data, size).get(buffer);
+            bb.get(buffer);
             try {
-                outputStream.write(buffer, 0, buffer.length);
+                outputStream.write(buffer);
             } catch (Exception e) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to encode image! Aborting...");
+                onAbort.run();
                 throw new RuntimeException(e);
             }
         });
 
-        int stride = width * channels;
-        boolean success = STBImageWrite.stbi_write_png_to_func(
-                callback,
-                0,
-                width,
-                height,
-                channels,
-                imageData,
-                stride
-        );
+        try {
 
-        if (!success) {
-            String failureReason = STBImage.stbi_failure_reason();
-            MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
-            throw new RuntimeException(failureReason);
+            boolean success = STBImageWrite.stbi_write_png_to_func(
+                    callback,
+                    0,
+                    width,
+                    height,
+                    channels,
+                    pixels,
+                    stride
+            );
+
+            if (!success) {
+                String failureReason = STBImage.stbi_failure_reason();
+                MyWorldTrafficAddition.LOGGER.error("Failed to encode image to PNG! Aborting...\nDetails: {}", failureReason);
+                onAbort.run();
+                throw new RuntimeException(failureReason);
+            }
+
+            return outputStream.toByteArray();
+        } finally {
+            callback.free();
+
+            if (tmpAllocated)
+                MemoryUtil.memFree(pixels);
+
+            try { outputStream.close(); } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to close output stream after PNG encoding!", e);
+                onAbort.run();
+            }
         }
+    }
 
-        return outputStream.toByteArray();
+    public static boolean isValidImage(ByteBuffer imageData) {
+        IntBuffer w = MemoryUtil.memAllocInt(1);
+        IntBuffer h = MemoryUtil.memAllocInt(1);
+        IntBuffer c = MemoryUtil.memAllocInt(1);
+
+        boolean valid = STBImage.stbi_info_from_memory(imageData, w, h, c);
+
+        MemoryUtil.memFree(w);
+        MemoryUtil.memFree(h);
+        MemoryUtil.memFree(c);
+
+        return valid;
     }
 }

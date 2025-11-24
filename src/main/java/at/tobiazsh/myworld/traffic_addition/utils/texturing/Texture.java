@@ -177,4 +177,11 @@ public class Texture {
 		if (channels == -1) MyWorldTrafficAddition.LOGGER.error("Texture not loaded for texture id {}: channels undefined.", this.getTextureId());
 		return channels;
 	}
+
+    public void delete() {
+        if (textureId != 0) {
+            glDeleteTextures(textureId);
+            textureId = 0;
+        }
+    }
 }
