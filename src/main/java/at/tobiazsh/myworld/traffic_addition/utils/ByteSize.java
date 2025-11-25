@@ -10,6 +10,10 @@ public class ByteSize {
         B, KB, MB, GB, TB, PB, EB, ZB, YB
     }
 
+    /**
+     * Convert bytes between different units (real, i.e., 1 KiB = 1024 B)
+     * @return Converted byte size
+     */
     public static long convertReal(long bytes, ByteUnitsReal from, ByteUnitsReal to) {
         int conversion = from.ordinal() - to.ordinal();
 
@@ -27,6 +31,10 @@ public class ByteSize {
         return bytes;
     }
 
+    /**
+     * Convert bytes between different units (decimal, i.e., 1 KB = 1000 B)
+     * @return Converted byte size
+     */
     public static long convert(long bytes, ByteUnits from, ByteUnits to) {
         int conversion = from.ordinal() - to.ordinal();
 
