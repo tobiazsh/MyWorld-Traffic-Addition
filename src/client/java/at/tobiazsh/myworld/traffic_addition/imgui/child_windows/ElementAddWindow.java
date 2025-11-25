@@ -22,6 +22,8 @@ import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
 
+import java.util.Objects;
+
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ElementAddWindow {
@@ -95,7 +97,7 @@ public class ElementAddWindow {
 	 */
 	public static void loadPreviews() {
 		try {
-			folder = FileSystem.listFilesRecursive("/assets/%s/textures/imgui/sign_res/icons/".formatted(MyWorldTrafficAddition.MOD_ID), true).concentrateFileType("PNG");
+			folder = Objects.requireNonNull(FileSystem.listFilesRecursive("/assets/%s/textures/imgui/sign_res/icons/".formatted(MyWorldTrafficAddition.MOD_ID), true)).concentrateFileType("PNG");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -154,9 +156,9 @@ public class ElementAddWindow {
 				float overlayHeight = this.height - margin * 3 - ImGui.getFontSize(); // Calculated so that the button still has enough space to not overlap with the overlay
 
 				// Begin a child window for the overlay
-				if (ImGui.beginChild("##Overlay_" + this.path, this.width - margin * 2, overlayHeight, ImGuiWindowFlags.NoScrollbar)) {
+				if (ImGui.beginChild("##Overlay_" + this.path, this.width - margin * 2, overlayHeight, false, ImGuiWindowFlags.NoScrollbar)) {
 					// Begin a child window for the preview
-					if (ImGui.beginChild("##preview_" + this.path, previewSize, previewSize, false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+					if (ImGui.beginChild("##Preview_" + this.path, previewSize, previewSize, false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
 						if (texture != null) {
 							ImGui.image(texture.getTextureId(), previewSize, previewSize);
 						}
