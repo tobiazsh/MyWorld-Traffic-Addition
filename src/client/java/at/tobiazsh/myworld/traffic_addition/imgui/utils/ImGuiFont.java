@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import imgui.*;
 
 public class ImGuiFont extends BasicFont {

@@ -8,7 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import imgui.ImGui;

@@ -14,11 +14,10 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;

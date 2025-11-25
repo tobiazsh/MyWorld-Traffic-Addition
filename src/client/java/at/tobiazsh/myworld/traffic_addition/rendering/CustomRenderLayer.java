@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
-import at.tobiazsh.myworld.traffic_addition.utils.LRUCache;
+import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderPhase;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
 import static net.minecraft.client.render.RenderPhase.*;
 
 /**

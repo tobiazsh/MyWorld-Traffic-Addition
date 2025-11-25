@@ -3,16 +3,16 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.Error;
-import at.tobiazsh.myworld.traffic_addition.utils.ImageUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ByteImage;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ClientCustomImageDirectory;
-import at.tobiazsh.myworld.traffic_addition.utils.Crypto;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.FileLoader;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.ImageDownloader;
-import at.tobiazsh.myworld.traffic_addition.utils.graphics.NativeFileDialogs;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
+import at.tobiazsh.myworld.traffic_addition.image.ByteImage;
+import at.tobiazsh.myworld.traffic_addition.filesystem.ClientCustomImageDirectory;
+import at.tobiazsh.myworld.traffic_addition.utils.crypto.Crypto;
+import at.tobiazsh.myworld.traffic_addition.image.ImageLoader;
+import at.tobiazsh.myworld.traffic_addition.network.ImageDownloader;
+import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -180,7 +180,7 @@ public class OnlineImageDialog {
             ByteImage result;
 
             try {
-                result = FileLoader.loadFileToStbImage(Path.of(path));
+                result = ImageLoader.loadFileToStbImage(Path.of(path));
             } catch (IOException e) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to load image from file: {}", e.getMessage());
                 ErrorPopup.open(

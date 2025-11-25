@@ -12,8 +12,8 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
-import at.tobiazsh.myworld.traffic_addition.utils.BasicFont;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.utils.LinkedHashMapTool;
 import imgui.ImGui;

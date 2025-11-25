@@ -2,12 +2,12 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
-import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageServerLogic;
-import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerBlacklist;
-import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
-import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
+import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageServerNetworking;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignPoleBlockActions;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.utils.SmartPayload.bulkRegisterPayloads;
+import static at.tobiazsh.myworld.traffic_addition.network.SmartPayload.bulkRegisterPayloads;
 
 /*
 	@author Tobias
@@ -80,8 +80,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
         ServerBlacklist.loadBlacklist();
 
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
-		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
-		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.totalEntries);
+		OnlineImageServerNetworking.countEntriesAndReadIntoMemory();
+		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerNetworking.totalEntries);
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
 	}
@@ -153,28 +153,28 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		// Send custom image to server (client -> server as always)
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"), (player, data) -> {
 			byte[] imageData = Arrays.copyOfRange(data, 0, data.length);
-			OnlineImageServerLogic.processUploadedImage(player, imageData);
+			OnlineImageServerNetworking.processUploadedImage(player, imageData);
 		});
 
 		// Request the total number of uploaded images
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
-			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), String.valueOf(OnlineImageServerLogic.publicEntries));
+			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), String.valueOf(OnlineImageServerNetworking.publicEntries));
 		});
 
 		// Request the total number of uploaded images by user
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageServerLogic.getEntryNumberByPlayer(player));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageServerNetworking.getEntryNumberByPlayer(player));
 
 		// Request image entries metadata from server; Used in the online image gallery
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageServerLogic::sendEntryMetadataToClient);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageServerNetworking::sendEntryMetadataToClient);
 
 		// Request thumbnail data (for custom images)
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageServerLogic::sendThumbnailsOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageServerNetworking::sendThumbnailsOf);
 
 		// Request for image deletion
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageServerLogic::deleteImage);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageServerNetworking::deleteImage);
 
 		// Request image
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerNetworking::sendImageDataOf);
 	}
 
     private static void registerEvents() {

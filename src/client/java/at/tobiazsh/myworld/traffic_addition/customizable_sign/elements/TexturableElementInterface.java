@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 
 public interface TexturableElementInterface {
 

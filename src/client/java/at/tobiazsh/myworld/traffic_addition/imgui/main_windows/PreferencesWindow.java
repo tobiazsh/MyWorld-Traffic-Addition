@@ -5,8 +5,8 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer;
-import at.tobiazsh.myworld.traffic_addition.utils.LRUCache;
-import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
+import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImInt;
@@ -18,7 +18,7 @@ import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools.*;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.DEFAULT_IMAGE_CACHE_SIZE;
 import static at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer.DEFAULT_TEXT_CACHE_SIZE;
-import static at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
 
 public class PreferencesWindow {
 

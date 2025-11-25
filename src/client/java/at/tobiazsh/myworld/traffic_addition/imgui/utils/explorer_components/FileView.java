@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.utils.explorer_components;
 
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools;
-import at.tobiazsh.myworld.traffic_addition.utils.ByteSize;
+import at.tobiazsh.myworld.traffic_addition.utils.ByteUtils;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
@@ -158,7 +158,7 @@ public class FileView {
 
             // Size
             ImGui.setColumnWidth(3, 150);
-            ImGui.text(ByteSize.convertReal(size, ByteSize.ByteUnitsReal.B, ByteSize.ByteUnitsReal.MiB) + " MiB");
+            ImGui.text(ByteUtils.convertReal(size, ByteUtils.ByteUnitsReal.B, ByteUtils.ByteUnitsReal.MiB) + " MiB");
             ImGui.nextColumn();
 
             // Type

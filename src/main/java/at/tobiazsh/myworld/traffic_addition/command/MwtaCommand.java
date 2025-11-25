@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.command;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
-import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerBlacklist;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -13,7 +13,6 @@ import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;

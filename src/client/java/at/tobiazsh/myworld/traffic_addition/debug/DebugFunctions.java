@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.debug;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.graphics.NativeFileDialogs;
+import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 
 public class DebugFunctions {
 

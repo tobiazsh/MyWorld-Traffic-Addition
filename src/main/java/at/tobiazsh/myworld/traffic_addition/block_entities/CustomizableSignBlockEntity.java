@@ -8,16 +8,16 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;

@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImGui;
 import net.minecraft.util.Pair;
 
@@ -9,7 +9,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-import at.tobiazsh.myworld.traffic_addition.utils.Error;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 

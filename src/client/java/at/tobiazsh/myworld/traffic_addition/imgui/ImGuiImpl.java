@@ -11,7 +11,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
@@ -60,7 +60,7 @@ public class ImGuiImpl {
         ImGui.getIO().setFontDefault(Roboto);
 
         // Load other stuff
-        CommonImages.loadTextures();
+        CommonTextures.loadTextures();
 
         fontAtlas.build();
 

@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import imgui.ImGui;
 
@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getBackgroundTexturePathList;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getBackgroundTexturePathList;
 
 public class BackgroundSelectorPopup {
 

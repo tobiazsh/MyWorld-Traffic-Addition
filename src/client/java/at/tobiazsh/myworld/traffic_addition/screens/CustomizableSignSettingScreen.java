@@ -7,7 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosExtended;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;

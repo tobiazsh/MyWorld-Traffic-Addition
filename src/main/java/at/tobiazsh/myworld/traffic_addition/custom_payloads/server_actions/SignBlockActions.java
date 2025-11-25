@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
 
-import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
+import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockBackstepCoordsChange;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockRotationPayload;

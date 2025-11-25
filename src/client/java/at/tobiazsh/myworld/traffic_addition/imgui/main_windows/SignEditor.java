@@ -21,12 +21,12 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.utils.Error;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.*;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem.Folder;
-import at.tobiazsh.myworld.traffic_addition.utils.Saves;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem.Folder;
+import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 
 import com.google.gson.*;
@@ -48,11 +48,9 @@ import java.util.Objects;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.clearFontAtlas;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.updateToNewVersion;
-import static at.tobiazsh.myworld.traffic_addition.utils.Saves.createSavesDir;
-
-import org.lwjgl.util.nfd.*;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.updateToNewVersion;
+import static at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory.createSavesDir;
 
 public class SignEditor {
 
@@ -436,7 +434,7 @@ public class SignEditor {
         FileDialogPopup.setData(getPrettyJson(ClientElementManager.getInstance().rawData.jsonString));
 
         FileDialogPopup.open(
-                Saves.getSignSaveDir(),
+                SavesDirectory.getSignSaveDir(),
                 FileDialogPopup.FileDialogType.SAVE,
                 (path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
                 "MWTACSIGN", "JSON"
@@ -446,7 +444,7 @@ public class SignEditor {
     private static void importSign() {
         createSavesDir();
 
-        FileDialogPopup.open(Saves.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+        FileDialogPopup.open(SavesDirectory.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             if (path == null || path.toString().isBlank()) return;
 
             CustomizableSignData style = new CustomizableSignData();
@@ -460,7 +458,7 @@ public class SignEditor {
     private static void importElement() {
         createSavesDir();
 
-        FileDialogPopup.open(Saves.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+        FileDialogPopup.open(SavesDirectory.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
             ClientElementInterface element = ClientElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
 

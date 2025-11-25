@@ -2,10 +2,10 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import net.minecraft.util.Identifier;

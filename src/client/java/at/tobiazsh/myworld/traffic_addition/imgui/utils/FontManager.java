@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import imgui.*;
 
 import java.io.IOException;

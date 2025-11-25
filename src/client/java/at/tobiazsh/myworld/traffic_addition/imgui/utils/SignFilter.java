@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.utils.sign.SignTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.sign.SignTexture;
 
 /**
  * A Filter for the Sign Selector Search

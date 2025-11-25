@@ -1,8 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.language;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
 import io.github.tobiazsh.jengua.Translator;

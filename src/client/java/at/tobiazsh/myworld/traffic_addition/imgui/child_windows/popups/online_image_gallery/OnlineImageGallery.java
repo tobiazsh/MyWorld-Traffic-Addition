@@ -4,12 +4,12 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.Confirmat
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
+import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
@@ -273,7 +273,7 @@ public class OnlineImageGallery {
         isLoading = true;
 
         if (currentTab == TABS.MINE) {
-            OnlineImageLogic.fetchPrivateEntryCount()
+            OnlineImageNetworking.fetchPrivateEntryCount()
                     .thenAccept(count -> {
                         entryCount = count;
                         calculatePage();
@@ -284,7 +284,7 @@ public class OnlineImageGallery {
                         return null;
                     });
         } else if (currentTab == TABS.ALL) {
-            OnlineImageLogic.fetchEntryCount()
+            OnlineImageNetworking.fetchEntryCount()
                     .thenAccept(count -> {
                         entryCount = count;
                         calculatePage();
@@ -311,7 +311,7 @@ public class OnlineImageGallery {
         entryCards.clear();
         currentThumbnails.clear();
 
-        OnlineImageLogic.fetchImageMetadata(startIndex, endIndex, privateEntriesOnly)
+        OnlineImageNetworking.fetchImageMetadata(startIndex, endIndex, privateEntriesOnly)
                 .thenAccept(list -> {
                     metadataList = new CopyOnWriteArrayList<>(list);
                     loadThumbnailsForCurrentPage(list);
@@ -345,7 +345,7 @@ public class OnlineImageGallery {
         }
 
         List<UUID> finalUuids = uuids;
-        OnlineImageLogic.fetchThumbnails(uuids)
+        OnlineImageNetworking.fetchThumbnails(uuids)
                 .thenAccept(thumbnails -> {
                     currentThumbnailData = thumbnails;
                     cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight())); // Add cached thumbnails to the list
@@ -372,7 +372,7 @@ public class OnlineImageGallery {
         for (byte[] bytes : thumbnails) {
             if (bytes == null) {
                 MyWorldTrafficAddition.LOGGER.error("Error (Loading Thumbnails): Texture not found on server!");
-                currentThumbnails.add(CommonImages.NOT_FOUND_PLACEHOLDER);
+                currentThumbnails.add(CommonTextures.NOT_FOUND_PLACEHOLDER);
                 continue;
             }
 

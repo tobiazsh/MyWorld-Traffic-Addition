@@ -4,11 +4,11 @@ import at.tobiazsh.myworld.traffic_addition.imgui.utils.Color;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
-import at.tobiazsh.myworld.traffic_addition.utils.BasicFont;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
 import imgui.ImFont;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont.getTextRendererByPath;
+import static at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont.getTextRendererByPath;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 

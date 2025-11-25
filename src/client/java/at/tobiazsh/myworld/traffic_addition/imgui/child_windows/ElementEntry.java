@@ -13,11 +13,11 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.FileDialo
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
-import at.tobiazsh.myworld.traffic_addition.utils.Saves;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.GroupElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -33,7 +33,7 @@ import java.util.UUID;
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
 	private final String name;
@@ -433,7 +433,7 @@ public abstract class ElementEntry {
 
 
 	private void exportElement() {
-		Saves.createSavesDir();
+		SavesDirectory.createSavesDir();
 
 		JsonObject modifiedJson = renderObject.toJson();
 		modifiedJson.addProperty("Id", "null");
@@ -441,7 +441,7 @@ public abstract class ElementEntry {
 		FileDialogPopup.setData(getPrettyJson(modifiedJson.toString()));
 
 		FileDialogPopup.open(
-				Saves.getElementSaveDir(),
+				SavesDirectory.getElementSaveDir(),
 				FileDialogPopup.FileDialogType.SAVE,
 				(path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
 				"MWTACSELEMENT", "JSON"

@@ -1,12 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.OnlineImageElement;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.OnlineImageElement;
+import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
@@ -123,7 +123,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             return;
         }
 
-        OnlineImageLogic.fetchImage(imageFuture, getPictureReference())
+        OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
             .thenAccept(image -> {
                 if (image != null && image.length > 0) {
                     Path path = OnlineImageCache.cacheImage(image, getPictureReference().toString() + ".png");

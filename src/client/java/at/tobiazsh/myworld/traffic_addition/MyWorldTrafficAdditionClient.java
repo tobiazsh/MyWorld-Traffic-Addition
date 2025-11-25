@@ -9,21 +9,23 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineIma
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
-import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
 import at.tobiazsh.myworld.traffic_addition.screens.EmptyScreen;
-import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
-import at.tobiazsh.myworld.traffic_addition.utils.Error;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
-import at.tobiazsh.myworld.traffic_addition.utils.graphics.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
@@ -173,19 +175,19 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         });
 
 		// Get total number of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageLogic::setImageCount);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageNetworking::setImageCount);
 
 		// Get number of private images uploaded by the player
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"), OnlineImageLogic::setPrivateImageCount);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"), OnlineImageNetworking::setPrivateImageCount);
 
 		// Get metadata of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"), OnlineImageLogic::setMetadataList);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"), OnlineImageNetworking::setMetadataList);
 
 		// Get thumbnail of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"), OnlineImageLogic::setThumbnailData);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"), OnlineImageNetworking::setThumbnailData);
 
 		// Get image data
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageLogic::setImageData);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageNetworking::setImageData);
 	}
 
 	public static void onStopGame() {
