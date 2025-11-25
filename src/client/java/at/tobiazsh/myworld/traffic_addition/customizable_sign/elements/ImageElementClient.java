@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.crypto.Crypto;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
@@ -367,5 +368,11 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         this.resourcePath = reference.getResourcePath();
         this.reference = reference;
         return this;
+    }
+
+    @Override
+    public void renderPreview(float w, float h) {
+        int textureId = this.getTexture().isEmpty() ? CommonTextures.NOT_FOUND_PLACEHOLDER.getTextureId() : this.getTexture().getTextureId();
+        ImGui.image(textureId, w ,h);
     }
 }

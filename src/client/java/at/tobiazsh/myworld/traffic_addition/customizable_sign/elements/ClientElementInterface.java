@@ -26,4 +26,10 @@ public interface ClientElementInterface extends BaseElementInterface {
      * @return a new instance of the element with the same properties.
      */
     ClientElementInterface copy();
+
+    /**
+     * Renders a preview of the element in the sign editor. Used for the element list.
+     * Must be used inside an ImGui window.
+     */
+    void renderPreview(float w, float h);
 }

@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
@@ -32,6 +33,8 @@ import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
+
+    private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 
     private Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont imGuiFont; // Font after future is done
@@ -246,5 +249,10 @@ public class TextElementClient extends TextElement implements ClientElementInter
     public void setFont(BasicFont font) {
         super.setFont(font);
         this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
+    }
+
+    @Override
+    public void renderPreview(float w, float h) {
+        ImGui.image(textIconId, w, h);
     }
 }

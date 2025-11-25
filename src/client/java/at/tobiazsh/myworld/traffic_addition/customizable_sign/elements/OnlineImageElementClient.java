@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
 import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
@@ -7,6 +8,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.OnlineImageElement;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import imgui.ImGui;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
@@ -224,5 +226,38 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 height = elementTexture.getHeight();
             }
         }
+    }
+
+    @Override
+    public void renderPreview(float w, float h) {
+        int textureId;
+
+        if (textureLoaded.get()) {
+            if (!this.getTexture().isEmpty()) {
+                textureId = this.getTexture().getTextureId();
+            } else if (imageFuture.isCompletedExceptionally() || imageFuture.isCancelled()) {
+                textureId = CommonTextures.NOT_FOUND_PLACEHOLDER.getTextureId();
+            } else {
+                textureId = CommonTextures.LOADING_PLACEHOLDER.getTextureId();
+            }
+        } else {
+            textureId = CommonTextures.LOADING_PLACEHOLDER.getTextureId();
+        }
+
+        float startX = ImGui.getCursorScreenPosX();
+        float startY = ImGui.getCursorScreenPosY();
+
+        ImGui.image(textureId, w, h);
+
+        float iconSize = Math.min(32f, Math.min(w / 2f, h / 2f));
+        float padding = 4f;
+
+        float iconX = startX + w - iconSize - padding;
+        float iconY = startY + h - iconSize - padding;
+
+        ImGui.setCursorScreenPos(iconX, iconY); // Set Position to bottom-right corner
+        ImGui.image(CommonTextures.INTERNET_GLOBE.getTextureId(), iconSize, iconSize); // Draw internet globe icon
+
+        ImGui.setCursorScreenPos(startX, startY); // Reset cursor position
     }
 }

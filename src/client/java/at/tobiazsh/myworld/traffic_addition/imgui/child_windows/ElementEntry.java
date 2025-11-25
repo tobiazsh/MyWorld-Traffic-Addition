@@ -42,8 +42,6 @@ public abstract class ElementEntry {
 
     private int previewTextureId;
 	private final int previewSize = 50;
-	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
-	private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
 	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
 	private static final int otherIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/other.png").getTextureId();
 
@@ -332,9 +330,7 @@ public abstract class ElementEntry {
 		// Preview
 		ImGui.setCursorPosY((entryHeight - previewSize) / 2);
 		ImGui.setCursorPosX(ImGui.getCursorPosX() + 2 * this.padding);
-		if (renderObject instanceof ImageElement) ImGui.image(previewTextureId, previewSize, previewSize);
-		else if (renderObject instanceof TextElement) ImGui.image(textIconId, previewSize, previewSize);
-		else if (renderObject instanceof GroupElement) ImGui.image(groupIconId, previewSize, previewSize);
+		renderObject.renderPreview(previewSize, previewSize);
 	}
 
 
