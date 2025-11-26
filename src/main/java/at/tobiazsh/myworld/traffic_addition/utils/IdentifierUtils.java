@@ -15,7 +15,8 @@ public class IdentifierUtils {
         String namespace = id.getNamespace();
         String path = id.getPath();
 
-        String trimAway = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/";
+        boolean isFirstSlash = path.startsWith("/");
+        String trimAway = (isFirstSlash ? "/" : "") + "assets/" + MyWorldTrafficAddition.MOD_ID + "/";
 
         if (path.startsWith(trimAway)) {
             path = path.substring(trimAway.length());
