@@ -21,13 +21,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface, TexturableElementInterface {
 
     public AtomicBoolean textureLoaded = new AtomicBoolean(false);
+    public AtomicBoolean isTexturePlaceholder = new AtomicBoolean(true);
     private boolean shouldLogNotRenderable = true;
 
     private final AtomicBoolean shouldRegisterTexture = new AtomicBoolean(false);
     private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
-
-    private static final String defaultResourcePath = "/assets/myworld_traffic_addition/textures/imgui/icons/not_found_placeholder.png";
-    private static final Texture defaultTexture = Textures.smartRegisterTexture(defaultResourcePath);
 
     DynamicTexture dynamicTexture = null;
 
@@ -57,15 +55,15 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override
     public void renderImGui(float scale) {
-        initiateRender(() -> toImageElementCL().renderImGui(scale));
+        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderImGui(scale));
     }
 
     @Override
     public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-        initiateRender(() -> toImageElementCL().renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing));
+        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing));
     }
 
-    public ImageElementClient toImageElementCL() {
+    public ImageElementClient toImageElementCL(boolean isPlaceholder) {
         return new ImageElementClient(
                 getX(), getY(),
                 getWidth(), getHeight(),
@@ -73,7 +71,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 getRotation(),
                 elementTexture,
                 getParentId()
-        ).fromOnlineImage(this);
+        ).fromOnlineImage(this, isPlaceholder);
     }
 
     // TEXTURES
@@ -125,23 +123,30 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             return;
         }
 
+        resourcePath = CommonTextures.LOADING_PLACEHOLDER.getResourcePath();
+        elementTexture = CommonTextures.LOADING_PLACEHOLDER; // Set to loading placeholder while downloading
+        textureLoaded.set(true); // Mark placeholder as available so render paths display it
+
         OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
             .thenAccept(image -> {
                 if (image != null && image.length > 0) {
                     Path path = OnlineImageCache.cacheImage(image, getPictureReference().toString() + ".png");
                     resourcePath = path.toString();
-                    shouldRegisterTexture.set(true);
-                    textureLoaded.set(false);
+                    textureLoaded.set(false); // Mark as not loaded to trigger loading
+                    shouldRegisterTexture.set(true); // Trigger registration on next loadTexture call
+                    isTexturePlaceholder.set(false);
                     MyWorldTrafficAddition.LOGGER.info("Image downloaded successfully for OnlineImageElementClient with ID: {}", getId());
                 } else {
-                    resourcePath = defaultResourcePath;
-                    elementTexture = defaultTexture; // Update the texture reference
+                    resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
+                    elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Update texture to not found placeholder
+                    textureLoaded.set(true); // Mark placeholder as available so render paths display it
                     MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
                 }
         })
             .exceptionally(e -> {
-                resourcePath = defaultResourcePath;
-                elementTexture = defaultTexture; // Update the texture reference
+                resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
+                elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Update texture to not found placeholder
+                textureLoaded.set(true); // Mark placeholder as available so render paths display it
                 MyWorldTrafficAddition.LOGGER.error("Exception while downloading image for OnlineImageElementClient with ID: {}", getId(), e);
                 return null;
         });

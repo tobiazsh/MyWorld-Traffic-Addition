@@ -31,7 +31,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
     public boolean textureLoaded = false;
 
-    private boolean isFromOnlineImage = false;
+    private boolean isExternal = false;
     private OnlineImageElementClient reference = null;
 
     DynamicTexture dynamicTexture = null;
@@ -171,10 +171,10 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
         matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
-        DynamicTexture texture = isFromOnlineImage ? reference.dynamicTexture : dynamicTexture;
+        DynamicTexture texture = isExternal ? reference.dynamicTexture : dynamicTexture;
 
         if (texture == null) {
-            if (isFromOnlineImage) {
+            if (isExternal) {
                 texture = new DynamicTexture(this.getResourcePath(), Identifier.of(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
                         .smartRegisterTexture(false, false)
                         .register()
@@ -362,9 +362,9 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         return copy;
     }
 
-    public ImageElementClient fromOnlineImage(OnlineImageElementClient reference) {
+    public ImageElementClient fromOnlineImage(OnlineImageElementClient reference, boolean isResource) {
         this.resourcePath = reference.getResourcePath();
-        this.isFromOnlineImage = true;
+        this.isExternal = !isResource;
         this.resourcePath = reference.getResourcePath();
         this.reference = reference;
         return this;

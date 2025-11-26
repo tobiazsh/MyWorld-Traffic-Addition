@@ -27,6 +27,11 @@ import static org.lwjgl.stb.STBImage.*;
 public class Texture {
 	private int textureId;
 	private int width = -1, height = -1, channels = -1;
+    private String resourcePath = null;
+
+    public String getResourcePath() {
+        return resourcePath;
+    }
 
 	public boolean isEmpty() {
 		return textureId == 0;
@@ -37,11 +42,11 @@ public class Texture {
 			textureId = glGenTextures();
 		}
 
-		return loadTextureData(loadImageData(imagePath));
+		return loadTextureData(loadImageData(imagePath, true));
 	}
 
 	public Texture replaceTexture(String imagePath) {
-		return replaceTextureData(loadImageData(imagePath));
+		return replaceTextureData(loadImageData(imagePath, true));
 	}
 
     /**
@@ -137,7 +142,13 @@ public class Texture {
 		return replaceRawPixelData(pixelData, width, height, channels);
 	}
 
-	private ByteBuffer loadImageData(String resourcePath) {
+    /**
+     * Loads image data from a resource path. Tries to load as a classpath resource first, then as a file.
+     * @param resourcePath The path to the image resource.
+     * @param setAsResourcePath If true, sets the resourcePath field to the provided path. Only sets resource path if successfully loaded image.
+     * @return A ByteBuffer containing the image data.
+     */
+	private ByteBuffer loadImageData(String resourcePath, boolean setAsResourcePath) {
 		try {
 			InputStream is;
 			// First try loading as a resource from classpath
@@ -176,6 +187,11 @@ public class Texture {
                 ByteBuffer buffer = MemoryUtil.memAlloc(data.length);
                 buffer.put(data);
                 buffer.flip();
+
+                if (setAsResourcePath) {
+                    this.resourcePath = resourcePath;
+                }
+
                 return buffer;
             }
 		} catch (Exception e) {
