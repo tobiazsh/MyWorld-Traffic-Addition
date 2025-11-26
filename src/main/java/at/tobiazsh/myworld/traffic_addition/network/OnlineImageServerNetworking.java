@@ -26,12 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OnlineImageServerNetworking {
@@ -42,7 +38,24 @@ public class OnlineImageServerNetworking {
     public static AtomicInteger publicEntries = new AtomicInteger(0);
     public static AtomicInteger hiddenEntries = new AtomicInteger(0);
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(32);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(32, r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        t.setName("OnlineImageServerNetworking-Worker-" + t.getId());
+        return t;
+    });
+
+    public static void shutdown() {
+        try {
+            executorService.shutdown();
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
 
     /**
      * Processes an uploaded image.
@@ -237,12 +250,46 @@ public class OnlineImageServerNetworking {
         Path customImageDir = CustomImageDirectory.getCustomImageDir();
 
         if (!hiddenImageDir.toFile().exists()) // If dir doesn't exist, no uploads have been made; return
-            return;
+            hiddenEntries.set(0);
+        else
+            hiddenEntries.set(processImageDirectory(customImageDir));
+
+        if (!customImageDir.toFile().exists())
+            publicEntries.set(0);
+        else
+            publicEntries.set(processImageDirectory(customImageDir));
+
+        totalEntries.set(hiddenEntries.get() + publicEntries.get());
 
         // Count JSON Files in the directory as they represent image entries. For each uploaded image, there's exactly one JSON file.
         hiddenEntries = new AtomicInteger(processImageDirectory(hiddenImageDir));
         publicEntries = new AtomicInteger(processImageDirectory(customImageDir));
         totalEntries = new AtomicInteger(hiddenEntries.get() + publicEntries.get());
+
+        cleanupMetadataMap();
+    }
+
+
+
+    private static void cleanupMetadataMap() {
+        Iterator<Map.Entry<UUID, Pair<CustomImageMetadata, Boolean>>> iterator = metadataMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, Pair<CustomImageMetadata, Boolean>> entry = iterator.next();
+            UUID imageUUID = entry.getKey();
+            boolean hidden = entry.getValue().getRight();
+
+            Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
+            Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
+
+            // If metadata file does not exist, remove entry from map
+            if (!Files.exists(metadataPath)) {
+                iterator.remove();
+                perPlayerCounts.computeIfPresent(entry.getValue().getLeft().getUploaderUUID(), (k, v) -> {
+                    v.decrementAndGet();
+                    return v.get() <= 0 ? null : v;
+                });
+            }
+        }
     }
 
 

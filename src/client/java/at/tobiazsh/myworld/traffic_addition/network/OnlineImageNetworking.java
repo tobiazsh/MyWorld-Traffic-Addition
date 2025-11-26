@@ -206,6 +206,9 @@ public class OnlineImageNetworking {
             UUID requestId = UUID.randomUUID();
             imageRequests.put(requestId, future);
 
+            // Remove request from map if future is completed exceptionally or cancelled
+            future.whenComplete((res, ex) -> imageRequests.remove(requestId));
+
             byte[] uuidBytes = imageUUID.toString().getBytes();
             byte[] requestIdBytes = requestId.toString().getBytes();
 
@@ -243,19 +246,26 @@ public class OnlineImageNetworking {
 
             UUID requestId = UUID.fromString(new String(requestIdBytes));
 
-            if (!success || imageDataLength <= 0 || !imageRequests.containsKey(requestId)) {
-                String message = "Failed to fetch image data for request ID: " + requestId + "! Cause is unknown, but likely the request doesn't exist anymore or the image doesn't exist on the server anymore! Make sure the image exists and isn't empty!";
+            // Remove the future from the map
+            CompletableFuture<byte[]> requestFuture = imageRequests.remove(requestId);
 
+            String message = "Failed to fetch image data for request ID: " + requestId + "! Cause is unknown, but likely the request doesn't exist anymore or the image doesn't exist on the server anymore! Make sure the image exists and isn't empty!";
+
+            if (requestFuture == null) {
+                MyWorldTrafficAddition.LOGGER.error("No pending image request found for ID {} - {}", requestId, message);
+                return;
+            }
+
+            if (!success || imageDataLength <= 0) {
                 MyWorldTrafficAddition.LOGGER.error(message);
-                imageRequests.get(requestId).completeExceptionally(new Exception(message));
-
-                return; // Handle failure case
+                requestFuture.completeExceptionally(new Exception(message));
+                return;
             }
 
             byte[] imageData = new byte[imageDataLength];
             data.get(imageData);
 
-            imageRequests.get(requestId).complete(imageData);
+            requestFuture.complete(imageData);
         });
     }
 }

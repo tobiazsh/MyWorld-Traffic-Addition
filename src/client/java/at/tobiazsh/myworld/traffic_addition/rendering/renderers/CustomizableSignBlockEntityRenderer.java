@@ -66,7 +66,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     public static float elementDistancingRenderLayer = 0.75f;
     public static final float elementDistancingRenderLayerDefault = 0.75f;
 
-    public static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements = new HashMap<>();
+    public static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     // Constructor
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {

@@ -280,7 +280,7 @@ public class OnlineImageDialog {
 
                 if (!downloader.hasError()) {
                     currentPage = OnlineImageDialogPage.EDIT; // Go to next page
-                    uploadImageToGPU(); // Upload image to GPU
+                    MinecraftClient.getInstance().execute(this::uploadImageToGPU); // Upload image to GPU
                     createImageBackup();
                 }
 
@@ -727,6 +727,11 @@ public class OnlineImageDialog {
     private void setImageData(ByteImage image) {
         ByteBuffer src = image.stbImage().asReadOnlyBuffer();
         src.rewind();
+
+        if (imageData != null) {
+            MemoryUtil.memFree(imageData);
+            imageData = null;
+        }
 
         if (originalImageData != null) {
             MemoryUtil.memFree(originalImageData);

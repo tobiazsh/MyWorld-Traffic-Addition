@@ -14,6 +14,7 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.opengl.GL11;
@@ -340,7 +341,7 @@ public class OnlineImageGallery {
         if (uuids.isEmpty()) {
             List<byte[]> thumbnails = new ArrayList<>();
             cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight()));
-            loadThumbnails(thumbnails);
+            MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
             return;
         }
 
@@ -356,7 +357,7 @@ public class OnlineImageGallery {
                         cacheThumbnail(new Pair<>(uuid, data));
                     }
 
-                    loadThumbnails(thumbnails);
+                    MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
                 })
                 .exceptionally(ex -> {
                     MyWorldTrafficAddition.LOGGER.error("Failed to fetch thumbnails: {}", ex.getMessage());

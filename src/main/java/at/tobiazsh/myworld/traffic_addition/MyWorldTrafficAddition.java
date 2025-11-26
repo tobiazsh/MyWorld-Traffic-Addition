@@ -181,6 +181,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
         ServerLifecycleEvents.AFTER_SAVE.register((server, flush, force) -> {
             ServerBlacklist.saveBlacklist();
         });
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            ServerBlacklist.saveBlacklist();
+            OnlineImageServerNetworking.shutdown();
+        });
     }
 
 	@Contract("_ -> new")

@@ -8,17 +8,17 @@ package at.tobiazsh.myworld.traffic_addition.texture;
  */
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
@@ -44,6 +44,14 @@ public class Texture {
 		return replaceTextureData(loadImageData(imagePath));
 	}
 
+    /**
+     * Replaces the texture data with raw pixel data. Does not free the pixel data buffer.
+     * @param pixelData The raw pixel data as a ByteBuffer.
+     * @param width width of the image
+     * @param height height of the image
+     * @param channels how many channels the image has
+     * @return The Texture object with the replaced data.
+     */
 	public Texture replaceRawPixelData(ByteBuffer pixelData, int width, int height, int channels) {
 
 		if (pixelData == null) {
@@ -76,6 +84,11 @@ public class Texture {
 		return this;
 	}
 
+    /**
+     * Loads texture data from an encoded image (e.g., PNG, JPEG). Also frees the encoded image buffer after loading.
+     * @param encodedImage The encoded image data as a ByteBuffer.
+     * @return The Texture object with the loaded data.
+     */
 	public Texture loadTextureData(ByteBuffer encodedImage) {
 		if (textureId == 0) {
 			textureId = glGenTextures();
@@ -84,21 +97,36 @@ public class Texture {
 		return replaceTextureData(encodedImage);
 	}
 
+    /**
+     * Replaces texture data from an encoded image (e.g., PNG, JPEG). Also frees the encoded image buffer after loading.
+     * @param encodedImage The encoded image data as a ByteBuffer.
+     * @return The Texture object with the replaced data.
+     */
 	public Texture replaceTextureData(ByteBuffer encodedImage) {
 		IntBuffer w = BufferUtils.createIntBuffer(1);
 		IntBuffer h = BufferUtils.createIntBuffer(1);
 		IntBuffer c = BufferUtils.createIntBuffer(1);
 
-		ByteBuffer decImage = stbi_load_from_memory(encodedImage, w ,h ,c, 0); // decoded image
-		Texture tex = replaceRawPixelData(decImage, w.get(0), h.get(0), c.get(0));
+		ByteBuffer decImage = null;
+        try {
+            decImage = stbi_load_from_memory(encodedImage, w ,h ,c, 0); // decoded image
+            Texture tex = replaceRawPixelData(decImage, w.get(0), h.get(0), c.get(0));
 
-		if (tex == null) {
-			MyWorldTrafficAddition.LOGGER.error("Failed to load image! Decoded image is empty, invalid or corrupted!");
-			return null;
-		}
+            if (tex == null) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load image! Decoded image is empty, invalid or corrupted!");
+                return null;
+            }
 
-		stbi_image_free(decImage);
-		return tex;
+            return tex;
+        } finally {
+            if (decImage != null) {
+                stbi_image_free(decImage);
+            }
+
+            if (encodedImage != null) {
+                MemoryUtil.memFree(encodedImage);
+            }
+        }
 	}
 
 	public Texture loadRawPixelData(ByteBuffer pixelData, int width, int height, int channels) {
@@ -138,19 +166,15 @@ public class Texture {
 				}
 			}
 
-            try (InputStream _is = is; ReadableByteChannel rbc = Channels.newChannel(_is)) {
-                ByteBuffer buffer = BufferUtils.createByteBuffer(16 * 1024);
-                while (true) {
-                    int read = rbc.read(buffer);
-                    if (read == -1) break;
-
-                    if (!buffer.hasRemaining()) {
-                        ByteBuffer newBuffer = BufferUtils.createByteBuffer(buffer.capacity() * 2);
-                        buffer.flip();
-                        newBuffer.put(buffer);
-                        buffer = newBuffer;
-                    }
+            try (InputStream _is = is; ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                byte[] tmp = new byte[81921];
+                int read;
+                while ((read = _is.read(tmp)) != -1) {
+                    baos.write(tmp, 0, read);
                 }
+                byte[] data = baos.toByteArray();
+                ByteBuffer buffer = MemoryUtil.memAlloc(data.length);
+                buffer.put(data);
                 buffer.flip();
                 return buffer;
             }
