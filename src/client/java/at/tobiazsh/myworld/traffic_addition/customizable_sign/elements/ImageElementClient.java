@@ -57,7 +57,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     ) {
         super(x, y, width, height, factor, rotation, null, parentId);
         this.elementTexture = texture;
-        this.textureLoaded = true; // Assume texture is loaded if provided
+        this.textureLoaded = true; // Assume dynTexture is loaded if provided
     }
 
     public ImageElementClient(
@@ -171,7 +171,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
         matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
-        // Bind texture to vertices
         DynamicTexture texture = isFromOnlineImage ? reference.dynamicTexture : dynamicTexture;
 
         if (texture == null) {
@@ -188,6 +187,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             }
         }
 
+        // Bind texture to vertices
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(
                 zOffset,
                 CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
@@ -264,7 +264,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     }
 
     /**
-     * Rotates the texture by a given angle
+     * Rotates the dynTexture by a given angle
      * @param angle The angle to rotate by
      * @param center The center point to rotate around
      */
@@ -293,7 +293,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     @Override // TexturableElementInterface
     public void loadTexture() {
         if (resourcePath == null || resourcePath.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.debug("Error (Loading texture on ImageElement): Couldn't load texture because resource path is empty!");
+            MyWorldTrafficAddition.LOGGER.debug("Error (Loading dynTexture on ImageElement): Couldn't load dynTexture because resource path is empty!");
             return;
         }
 
@@ -315,7 +315,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
     public void sizeAuto() {
         if (elementTexture.isEmpty()) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine size because texture hasn't been initialized! Initialize with ImageElement.loadTexture()!");
+            System.err.println("Error (Loading ImageElement size): Couldn't determine size because dynTexture hasn't been initialized! Initialize with ImageElement.loadTexture()!");
             return;
         }
 
@@ -323,12 +323,12 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         float h = elementTexture.getHeight();
 
         if (w == -1) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine width because width in Texture class is -1. Possible cause: No texture ID has been associated with that resource path. Make sure that the texture has been registered!");
+            System.err.println("Error (Loading ImageElement size): Couldn't determine width because width in Texture class is -1. Possible cause: No dynTexture ID has been associated with that resource path. Make sure that the dynTexture has been registered!");
             return;
         }
 
         if (h == -1) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine height because height in Texture class is -1. Possible cause: No texture ID has been associated with that resource path. Make sure that the texture has been registered!");
+            System.err.println("Error (Loading ImageElement size): Couldn't determine height because height in Texture class is -1. Possible cause: No dynTexture ID has been associated with that resource path. Make sure that the dynTexture has been registered!");
             return;
         }
 
