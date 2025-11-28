@@ -31,6 +31,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     private boolean mayDownload = true; // Flag to control if the image should be downloaded
 
+    private static final long DOWNLOAD_TIMEOUT_MS = 15000; // 15 seconds timeout
+
     public OnlineImageElementClient(
             float x, float y,
             float width, float height,
@@ -140,8 +142,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                     MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
                 }
         })
+            .orTimeout(DOWNLOAD_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS)
             .exceptionally(e -> {
                 setErrorTexture();
+                MyWorldTrafficAddition.LOGGER.error("Image download completed exceptionally for OnlineImageElementClient with ID: {}\nMaybe image does not exist anymore or connection timed out!", getId(), e);
                 return null;
         });
     }
