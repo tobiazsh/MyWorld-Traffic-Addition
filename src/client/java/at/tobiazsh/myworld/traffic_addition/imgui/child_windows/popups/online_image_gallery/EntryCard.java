@@ -77,8 +77,17 @@ public class EntryCard {
 
             ImGui.text("%s: %s".formatted(tr("Global", "Name"), imageEntry.getImageName())); // Name: ____
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Encoded Name"), imageEntry.getImageNameEncoded())); // Encoded Name: ____
+
+            ImGui.separator();
+            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Image UUID"), imageEntry.getImageUUID())); // Image UUID: ____
+            ImGui.sameLine();
+            if (ImGui.button(tr("Global", "Copy")))
+                ImGui.setClipboardText(imageEntry.getImageUUID().toString());
+
             ImGui.separator();
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploader's UUID"), imageEntry.getUploaderUUID())); // Uploader's UUID: ____
+            if (ImGui.button(tr("Global", "Copy")))
+                ImGui.setClipboardText(imageEntry.getUploaderUUID().toString());
 
             // Status display
             String status;
