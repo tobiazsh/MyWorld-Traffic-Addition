@@ -260,12 +260,6 @@ public class OnlineImageServerNetworking {
             publicEntries.set(processImageDirectory(customImageDir));
 
         totalEntries.set(hiddenEntries.get() + publicEntries.get());
-
-        // Count JSON Files in the directory as they represent image entries. For each uploaded image, there's exactly one JSON file.
-        hiddenEntries = new AtomicInteger(processImageDirectory(hiddenImageDir));
-        publicEntries = new AtomicInteger(processImageDirectory(customImageDir));
-        totalEntries = new AtomicInteger(hiddenEntries.get() + publicEntries.get());
-
         cleanupMetadataMap();
     }
 
