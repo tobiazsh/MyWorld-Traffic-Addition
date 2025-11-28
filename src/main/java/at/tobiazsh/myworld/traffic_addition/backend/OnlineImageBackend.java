@@ -1,7 +1,8 @@
-package at.tobiazsh.myworld.traffic_addition.network;
+package at.tobiazsh.myworld.traffic_addition.backend;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.filesystem.CustomImageDirectory;
+import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
@@ -30,7 +31,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class OnlineImageServerNetworking {
+public class OnlineImageBackend {
 
     private static final ConcurrentHashMap<UUID, AtomicInteger> perPlayerCounts = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<UUID, Pair<CustomImageMetadata, Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
@@ -589,31 +590,43 @@ public class OnlineImageServerNetworking {
                 return;
             }
 
-            Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
-
-            Path imagePath = parentDir.resolve(imageUUID + ".png");
-            Path thumbnailPath = parentDir.resolve(imageUUID + "_thumbnail.png");
-            Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
-
-            try {
-                Files.deleteIfExists(imagePath);
-                Files.deleteIfExists(thumbnailPath);
-                Files.deleteIfExists(metadataPath);
-
-                // Remove from metadata list
-                metadataMap.remove(imageUUID);
-                perPlayerCounts.computeIfPresent(metadata.getUploaderUUID(), (k, v) -> {
-                    v.decrementAndGet();
-                    return v.get() <= 0 ? null : v;
-                });
-
-                totalEntries.decrementAndGet();
-                if (hidden) hiddenEntries.decrementAndGet();
-                else publicEntries.decrementAndGet();
-            } catch (IOException e) {
-                MyWorldTrafficAddition.LOGGER.error("Failed to delete image image for UUID {}: {}", imageUUID, e.getMessage());
-            }
+            deleteImage(imageUUID, metadata.getUploaderUUID(), hidden);
         });
+    }
+
+
+
+    /**
+     * Deletes an image entry from the server.
+     * @param imageUUID The UUID of the image to delete.
+     * @param uploaderUUID The UUID of the uploader of the image.
+     * @param hidden Whether the image is hidden or not.
+     */
+    public static void deleteImage(UUID imageUUID, UUID uploaderUUID, boolean hidden) {
+        Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
+
+        Path imagePath = parentDir.resolve(imageUUID + ".png");
+        Path thumbnailPath = parentDir.resolve(imageUUID + "_thumbnail.png");
+        Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
+
+        try {
+            Files.deleteIfExists(imagePath);
+            Files.deleteIfExists(thumbnailPath);
+            Files.deleteIfExists(metadataPath);
+
+            // Remove from metadata list
+            metadataMap.remove(imageUUID);
+            perPlayerCounts.computeIfPresent(uploaderUUID, (k, v) -> {
+                v.decrementAndGet();
+                return v.get() <= 0 ? null : v;
+            });
+
+            totalEntries.decrementAndGet();
+            if (hidden) hiddenEntries.decrementAndGet();
+            else publicEntries.decrementAndGet();
+        } catch (IOException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to delete image image for UUID {}: {}", imageUUID, e.getMessage());
+        }
     }
 
 
