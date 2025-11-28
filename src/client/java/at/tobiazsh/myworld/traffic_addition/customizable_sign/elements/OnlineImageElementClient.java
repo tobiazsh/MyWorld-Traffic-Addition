@@ -119,13 +119,12 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
         if (OnlineImageCache.isImageCached(this.getPictureReference() + ".png")) {
             resourcePath = OnlineImageCache.getCachedImagePath(getPictureReference().toString() + ".png").toString();
+            isTexturePlaceholder.set(false);
             shouldRegisterTexture.set(true);
             return;
         }
 
-        resourcePath = CommonTextures.LOADING_PLACEHOLDER.getResourcePath();
-        elementTexture = CommonTextures.LOADING_PLACEHOLDER; // Set to loading placeholder while downloading
-        textureLoaded.set(true); // Mark placeholder as available so render paths display it
+        setLoadingTexture();
 
         OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
             .thenAccept(image -> {
@@ -137,19 +136,28 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                     isTexturePlaceholder.set(false);
                     MyWorldTrafficAddition.LOGGER.info("Image downloaded successfully for OnlineImageElementClient with ID: {}", getId());
                 } else {
-                    resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
-                    elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Update texture to not found placeholder
-                    textureLoaded.set(true); // Mark placeholder as available so render paths display it
+                    setErrorTexture();
                     MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
                 }
         })
             .exceptionally(e -> {
-                resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
-                elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Update texture to not found placeholder
-                textureLoaded.set(true); // Mark placeholder as available so render paths display it
-                MyWorldTrafficAddition.LOGGER.error("Exception while downloading image for OnlineImageElementClient with ID: {}", getId(), e);
+                setErrorTexture();
                 return null;
         });
+    }
+
+    private void setLoadingTexture() {
+        resourcePath = CommonTextures.LOADING_PLACEHOLDER.getResourcePath();
+        elementTexture = CommonTextures.LOADING_PLACEHOLDER; // Set to loading placeholder while downloading
+        textureLoaded.set(true); // Mark placeholder as available so render paths display it
+        isTexturePlaceholder.set(true); // Mark as placeholder so ImageElementClient knows to load it from resource
+    }
+
+    private void setErrorTexture() {
+        resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
+        elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Set to loading placeholder while downloading
+        textureLoaded.set(true); // Mark placeholder as available so render paths display it
+        isTexturePlaceholder.set(true); // Mark as placeholder so ImageElementClient knows to load it from resource
     }
 
     @Override
