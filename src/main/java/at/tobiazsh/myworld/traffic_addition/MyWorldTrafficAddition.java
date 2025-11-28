@@ -158,7 +158,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request the total number of uploaded images
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
-			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), String.valueOf(OnlineImageBackend.publicEntries));
+            boolean isPlayerMod = player.hasPermissionLevel(2);
+			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), isPlayerMod ? String.valueOf(OnlineImageBackend.totalEntries) : String.valueOf(OnlineImageBackend.publicEntries));
 		});
 
 		// Request the total number of uploaded images by user

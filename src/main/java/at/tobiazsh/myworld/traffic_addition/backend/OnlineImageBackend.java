@@ -328,6 +328,8 @@ public class OnlineImageBackend {
      */
     public static void sendEntryMetadataToClient(ServerPlayerEntity player, byte[] bytes) {
         executorService.submit(() -> {
+            boolean isPlayerMod = player.hasPermissionLevel(2); // Check if player is a moderator (permission level 2 or higher)
+
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             buffer.rewind();
 
@@ -344,9 +346,13 @@ public class OnlineImageBackend {
                         .map(Pair::getLeft)
                         .toList(); // Get only the Json of the entries that are uploaded by the player
             } else {
-                sendableData = metadataMap.values().stream()
-                        .filter(entry -> !entry.getRight())
-                        .map(Pair::getLeft).toList(); // Get only the Json of the entries that are not hidden
+                if (isPlayerMod)
+                    sendableData = metadataMap.values().stream()
+                            .map(Pair::getLeft).toList(); // Get all Json entries including hidden ones
+                else
+                    sendableData = metadataMap.values().stream()
+                            .filter(entry -> !entry.getRight())
+                            .map(Pair::getLeft).toList(); // Get only the Json of the entries that are not hidden
             }
             endIndex = Math.min(endIndex, sendableData.size()); // Ensure we don't go out of bounds
 
