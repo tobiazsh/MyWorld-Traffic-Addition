@@ -25,6 +25,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     private boolean shouldLogNotRenderable = true;
 
     private final AtomicBoolean shouldRegisterTexture = new AtomicBoolean(false);
+    private final AtomicBoolean autoSizeAfterDownload = new AtomicBoolean(false);
+    private final AtomicBoolean shouldAutoSize = new AtomicBoolean(false);
     private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
 
     DynamicTexture dynamicTexture = null;
@@ -136,6 +138,10 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                     textureLoaded.set(false); // Mark as not loaded to trigger loading
                     shouldRegisterTexture.set(true); // Trigger registration on next loadTexture call
                     isTexturePlaceholder.set(false);
+
+                    shouldAutoSize.set(autoSizeAfterDownload.get()); // Trigger auto-size if requested
+                    autoSizeAfterDownload.set(false); // Reset flag
+
                     MyWorldTrafficAddition.LOGGER.info("Image downloaded successfully for OnlineImageElementClient with ID: {}", getId());
                 } else {
                     setErrorTexture();
@@ -183,7 +189,12 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
      */
     private boolean initiateRender(Runnable onTextureLoaded) {
         loadTexture(); // Ensure texture is loaded
-        sizeAuto(); // Adjust size if set to -1
+        autoSizeIfNegative(); // Adjust size if set to -1
+
+        if (shouldAutoSize.get()) {
+            autoSize();
+            shouldAutoSize.set(false);
+        }
 
         if (textureLoaded.get()) {
             onTextureLoaded.run();
@@ -231,7 +242,12 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
         return copy;
     }
 
-    private void sizeAuto() {
+    /**
+     * Sizes auto if width/height are -1.
+     */
+    private void autoSizeIfNegative() {
+        if (elementTexture == null || elementTexture.isEmpty()) return;
+
         if (width == -1) {
             if (elementTexture != null && !elementTexture.isEmpty()) {
                 width = elementTexture.getWidth();
@@ -243,6 +259,20 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 height = elementTexture.getHeight();
             }
         }
+    }
+
+    /**
+     * Sizes auto despite width/height not being -1.
+     */
+    private void autoSize() {
+        if (elementTexture == null || elementTexture.isEmpty()) return;
+        width = elementTexture.getWidth();
+        height = elementTexture.getHeight();
+    }
+
+    public OnlineImageElementClient resizeAfterDownload() {
+        autoSizeAfterDownload.set(true);
+        return this;
     }
 
     @Override

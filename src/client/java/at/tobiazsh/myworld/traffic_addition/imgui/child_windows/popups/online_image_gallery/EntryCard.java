@@ -137,6 +137,7 @@ public class EntryCard {
         );
 
         oiec.setName(imageEntry.getImageName());
+        oiec.resizeAfterDownload();
 
         ClientElementManager.getInstance().addElementFirst(oiec);
     }
