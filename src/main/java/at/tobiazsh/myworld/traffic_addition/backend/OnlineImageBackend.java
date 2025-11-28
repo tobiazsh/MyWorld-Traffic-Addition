@@ -253,7 +253,7 @@ public class OnlineImageBackend {
         if (!hiddenImageDir.toFile().exists()) // If dir doesn't exist, no uploads have been made; return
             hiddenEntries.set(0);
         else
-            hiddenEntries.set(processImageDirectory(customImageDir));
+            hiddenEntries.set(processImageDirectory(hiddenImageDir));
 
         if (!customImageDir.toFile().exists())
             publicEntries.set(0);
