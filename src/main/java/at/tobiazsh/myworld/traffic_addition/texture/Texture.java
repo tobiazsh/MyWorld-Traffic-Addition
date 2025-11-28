@@ -115,6 +115,12 @@ public class Texture {
 		ByteBuffer decImage = null;
         try {
             decImage = stbi_load_from_memory(encodedImage, w ,h ,c, 0); // decoded image
+
+            if (decImage == null) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load image! STBImage could not decode the image data: {}", stbi_failure_reason());
+                return null;
+            }
+            
             Texture tex = replaceRawPixelData(decImage, w.get(0), h.get(0), c.get(0));
 
             if (tex == null) {
