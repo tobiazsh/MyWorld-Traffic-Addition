@@ -18,6 +18,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class OnlineImageGallery {
     private static final List<Texture> currentThumbnails = new CopyOnWriteArrayList<>();
     private static final List<EntryCard> entryCards = new CopyOnWriteArrayList<>();
 
-    private static final List<Integer> texturesToFree = new ArrayList<>();
+    private static final List<Texture> texturesToFree = new ArrayList<>();
 
     private enum TABS {
         ALL,
@@ -62,7 +63,7 @@ public class OnlineImageGallery {
         if (!shouldRender) return;
 
         if (!texturesToFree.isEmpty()) {
-            texturesToFree.forEach(GL11::glDeleteTextures); // Free all textures that are no longer needed
+            texturesToFree.forEach(Texture::delete); // Free all textures that are no longer needed
             texturesToFree.clear();
         }
 
@@ -377,13 +378,20 @@ public class OnlineImageGallery {
                 continue;
             }
 
-            ByteBuffer thumbnailData = ByteBuffer.allocateDirect(bytes.length);
-            thumbnailData.put(bytes);
-            thumbnailData.flip();
+            ByteBuffer thumbnailData = null;
+            try {
+                thumbnailData = MemoryUtil.memAlloc(bytes.length);
+                thumbnailData.put(bytes);
+                thumbnailData.flip();
 
-            Texture tex = new Texture();
-            tex.loadTextureData(thumbnailData);
-            currentThumbnails.add(tex);
+                Texture tex = new Texture();
+                tex.loadTextureData(thumbnailData);
+                currentThumbnails.add(tex);
+            } catch (Throwable t) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to create texture from thumbnail data: {}", t.getMessage());
+                currentThumbnails.add(CommonTextures.NOT_FOUND_PLACEHOLDER);
+            }
+            // DO NOT free thumbnailData here, Texture.loadTextureData already does that
         }
 
         isLoading = false;
@@ -451,10 +459,12 @@ public class OnlineImageGallery {
     }
 
     private static void freeTextureIds() {
-        currentThumbnails.forEach(texture -> texturesToFree.add(texture.getTextureId()));
-
+        for (Texture texture : currentThumbnails) {
+            if (texture != null && !texture.isEmpty()) {
+                texturesToFree.add(texture);
+            }
+        }
         currentThumbnails.clear();
-        entryCards.clear();
     }
 
     private static void calculatePage() {
