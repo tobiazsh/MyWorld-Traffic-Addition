@@ -255,4 +255,17 @@ public class TextElementClient extends TextElement implements ClientElementInter
     public void renderPreview(float w, float h) {
         ImGui.image(textIconId, w, h);
     }
+
+    @Override
+    public void dispose() {
+        try {
+            if (fontFuture != null && !fontFuture.isDone()) {
+                fontFuture.cancel(true);
+            }
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to dispose TextElementClient font future: {}", e.getMessage());
+        }
+        fontFuture = null;
+        imGuiFont = null;
+    }
 }

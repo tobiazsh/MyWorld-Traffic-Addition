@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImGui;
@@ -222,5 +223,18 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     @Override
     public void renderPreview(float w, float h) {
         ImGui.image(groupIconId, w, h);
+    }
+
+    @Override
+    public void dispose() {
+        // recursively dispose children
+        clientElements.forEach(e -> {
+            try {
+                e.dispose();
+            } catch (Exception ex) {
+                MyWorldTrafficAddition.LOGGER.error("Could not dispose element: " + e.getName(), ex);
+            }
+        });
+        clientElements.clear();
     }
 }

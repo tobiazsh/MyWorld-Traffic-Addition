@@ -277,6 +277,14 @@ public class ClientElementManager {
     }
 
     public void clearAll() {
+        getElements().forEach(e -> {
+            try {
+                e.dispose();
+            } catch (Exception ex) {
+                MyWorldTrafficAddition.LOGGER.error("Error disposing element {}: {}", e, ex.getMessage());
+            }
+        });
+
         elements.clear();
         elementIds.clear();
         rawData = new CustomizableSignData(); // Reset the raw data

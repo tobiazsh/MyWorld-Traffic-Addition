@@ -70,8 +70,8 @@ public class SignEditor {
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
-        clearFontAtlas();
         ClientElementManager.getInstance().clearAll();
+        clearFontAtlas();
     }
 
     public static void disposeChildWindows() {

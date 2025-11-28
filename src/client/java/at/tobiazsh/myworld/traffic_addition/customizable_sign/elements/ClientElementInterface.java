@@ -32,4 +32,9 @@ public interface ClientElementInterface extends BaseElementInterface {
      * Must be used inside an ImGui window.
      */
     void renderPreview(float w, float h);
+
+    /**
+     * Disposes resources used by the element.
+     */
+    default void dispose() { }
 }
