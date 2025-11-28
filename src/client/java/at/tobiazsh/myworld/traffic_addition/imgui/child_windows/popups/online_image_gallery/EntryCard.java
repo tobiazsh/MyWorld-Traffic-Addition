@@ -86,6 +86,7 @@ public class EntryCard {
 
             ImGui.separator();
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploader's UUID"), imageEntry.getUploaderUUID())); // Uploader's UUID: ____
+            ImGui.sameLine();
             if (ImGui.button(tr("Global", "Copy")))
                 ImGui.setClipboardText(imageEntry.getUploaderUUID().toString());
 
