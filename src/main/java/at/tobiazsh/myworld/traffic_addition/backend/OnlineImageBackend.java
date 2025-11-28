@@ -632,6 +632,36 @@ public class OnlineImageBackend {
 
 
     /**
+     * Deletes an image entry from the server.
+     * @param imageUUID The UUID of the image to delete.
+     */
+    public static void deleteImage(UUID imageUUID) {
+        Pair<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+        if (stored == null) {
+            MyWorldTrafficAddition.LOGGER.warn("Tried to delete image with UUID {} but it was not found!", imageUUID);
+            return;
+        }
+
+        boolean hidden = stored.getRight();
+        CustomImageMetadata metadata = stored.getLeft();
+
+        deleteImage(imageUUID, metadata.getUploaderUUID(), hidden);
+    }
+
+
+
+    /**
+     * Checks if an image with the given UUID exists.
+     * @param imageUUID The UUID of the image to check.
+     * @return True if the image exists, false otherwise.
+     */
+    public static boolean exists(UUID imageUUID) {
+        return metadataMap.containsKey(imageUUID);
+    }
+
+
+
+    /**
      * Converts a byte array to a UUID.
      * @param uuidBytes The byte array containing the UUID, encoded as a UTF-8 string.
      * @return The UUID represented by the byte array.

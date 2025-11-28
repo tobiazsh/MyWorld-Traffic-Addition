@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.command;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
+import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import com.mojang.brigadier.Command;
@@ -44,7 +45,11 @@ public class MwtaCommand {
                                 .then(CommandManager.literal("list")
                                         .executes(MwtaCommand::blacklistList))
                                 .then(CommandManager.literal("restore")
-                                        .executes(MwtaCommand::blacklistRestore))))
+                                        .executes(MwtaCommand::blacklistRestore)))
+                        .then(CommandManager.literal("delete")
+                                .requires(c -> c.hasPermissionLevel(2))
+                                .then(CommandManager.argument("uuid", UuidArgumentType.uuid())
+                                        .executes(MwtaCommand::deleteImageByUuid))))
                 .executes(MwtaCommand::displayInfo));
     }
 
@@ -180,14 +185,14 @@ public class MwtaCommand {
 
         ServerBlacklist.removeFromBlacklist(targetUuid);
         UUID finalTargetUuid = targetUuid;
-        context.getSource().sendFeedback(() -> Text.literal("Player with UUID " + finalTargetUuid.toString() + " has been added to the custom image upload blacklist.").formatted(Formatting.GREEN), false);
+        context.getSource().sendFeedback(() -> Text.literal("Player with UUID " + finalTargetUuid.toString() + " has been added to the custom image upload blacklist.").formatted(Formatting.GREEN), true);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int blacklistClear(@NotNull CommandContext<ServerCommandSource> context) {
         ServerBlacklist.clearBlacklist();
-        context.getSource().sendFeedback(() -> Text.literal("The custom image upload blacklist has been cleared.").formatted(Formatting.GREEN), false);
+        context.getSource().sendFeedback(() -> Text.literal("The custom image upload blacklist has been cleared.").formatted(Formatting.GREEN), true);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -220,6 +225,29 @@ public class MwtaCommand {
         ServerBlacklist.restoreBlacklist();
         context.getSource().sendFeedback(() -> Text.literal("The custom image upload blacklist has been restored to the state before the last clear command.").formatted(Formatting.GREEN), false);
 
+        return Command.SINGLE_SUCCESS;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // CUSTOM IMAGE COMMANDS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    private static int deleteImageByUuid(@NotNull CommandContext<ServerCommandSource> context) {
+        UUID targetImage;
+
+        try {
+            targetImage = UuidArgumentType.getUuid(context, "uuid");
+        } catch (IllegalArgumentException e) {
+            context.getSource().sendError(Text.literal("Invalid UUID provided!").formatted(Formatting.RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        if (!OnlineImageBackend.exists(targetImage)) {
+            context.getSource().sendError(Text.literal("No image with the provided UUID exists!").formatted(Formatting.RED));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        OnlineImageBackend.deleteImage(targetImage);
+        context.getSource().sendFeedback(() -> Text.literal("Image with UUID " + targetImage.toString() + " has been deleted successfully.").formatted(Formatting.GREEN), true);
         return Command.SINGLE_SUCCESS;
     }
 }
