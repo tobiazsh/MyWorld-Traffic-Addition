@@ -42,7 +42,7 @@ public class OnlineImageBackend {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(32, r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
-        t.setName("OnlineImageServerNetworking-Worker-" + t.getId());
+        t.setName("OnlineImageServerNetworking-Worker-" + t.threadId());
         return t;
     });
 
