@@ -8,7 +8,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
