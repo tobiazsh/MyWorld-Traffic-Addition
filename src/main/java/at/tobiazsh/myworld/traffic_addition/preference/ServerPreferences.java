@@ -7,16 +7,16 @@ public class ServerPreferences {
     public static Preference generalServerPreferences = new Preference("myworld_traffic_addition/server_config.json");
 
     public static long maximumImageUploadSize = 1024 * 1024 * 5; // 5MB; Default
-    public static final long maximumImageUploadSizeDefault = 1024 * 1024 * 5; // 5MB; Default
+    private static final long maximumImageUploadSizeDefault = 1024 * 1024 * 5; // 5MB; Default
 
     public static long maximumThumbnailUploadSize = 1024 * 512; // 512KB; Default
-    public static final long maximumThumbnailUploadSizeDefault = 1024 * 512; // 512KB; Default
+    private static final long maximumThumbnailUploadSizeDefault = 1024 * 512; // 512KB; Default
 
     public static long maximumMetadataUploadSize = 1024 * 100; // 100KB; Default
-    public static final long maximumMetadataUploadSizeDefault = 1024 * 100; // 100KB; Default
+    private static final long maximumMetadataUploadSizeDefault = 1024 * 100; // 100KB; Default
 
     public static boolean isPlayerUploadEnabled = true;
-    public static final boolean isPlayerUploadEnabledDefault = true; // Default
+    private static final boolean isPlayerUploadEnabledDefault = true; // Default
 
     public static boolean isUploadLimitSet = false;
     public static int maximumUploadsPerPlayer = 0;
