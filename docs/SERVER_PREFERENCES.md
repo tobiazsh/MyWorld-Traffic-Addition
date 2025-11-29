@@ -4,13 +4,14 @@ When the mod is installed on a server, the server owner can configure various pr
 
 ## Available Settings
 
-| Setting name                 | Value Type                          | Default Value | Real Value | Description                                                                                        |
-|------------------------------|-------------------------------------|---------------|------------|----------------------------------------------------------------------------------------------------|
-| `maximumImageUploadSize`     | Size in Bytes (Integer)             | 5 242 880     | 5 MiB      | Sets the maximum size of an image the client can upload per image. Exists to avoid exploitation.   |
-| `maximumThumbnailUploadSize` | Size in Bytes (Integer)             | 524 288       | 512 KiB    | Sets the maximum size of a thumbnail the client can upload per image. Exists to avoid exploitation |
-| `maximumMetadataUploadSize`  | Size in Bytes (Integer)             | 102 400       | 100 KiB    | Sets the maximum size of metadata the client can upload. Exists to avoid exploitation.             |
-| `isPlayerUploadEnabled`      | Boolean                             | true          | Yes/No     | Enables or disables the ability for clients to upload images.                                      |
-| `maximumUploadsPerPlayer`    | Number of Images per User (Integer) | No Limit      | N/A        | Sets the maximum number of images a single user can upload. Exists to avoid exploitation.          |
+| Setting name                  | Value Type                          | Default Value | Real Value | Description                                                                                                                 |
+|-------------------------------|-------------------------------------|---------------|------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `maximumImageUploadSize`      | Size in Bytes (Long)                | 5 242 880     | 5 MiB      | Sets the maximum size of an image the client can upload per image. Exists to avoid exploitation.                            |
+| `maximumThumbnailUploadSize`  | Size in Bytes (Long)                | 524 288       | 512 KiB    | Sets the maximum size of a thumbnail the client can upload per image. Exists to avoid exploitation                          |
+| `maximumMetadataUploadSize`   | Size in Bytes (Long)                | 102 400       | 100 KiB    | Sets the maximum size of metadata the client can upload. Exists to avoid exploitation.                                      |
+| `isPlayerUploadEnabled`       | Boolean                             | true          | Yes/No     | Enables or disables the ability for clients to upload images.                                                               |
+| `maximumUploadsPerPlayer`     | Number of Images per User (Integer) | No Limit      | N/A        | Sets the maximum number of images a single user can upload. Exists to avoid exploitation.                                   |
+| `customImagesDownloadTimeout` | Time in milliseconds                | 15 0000       | 15 Seconds | Sets the duration the clients can download a custom image from the server without timeout. Useful if server has big images. |
 
 ## FAQ
 ### My config file doesn't exist!?
