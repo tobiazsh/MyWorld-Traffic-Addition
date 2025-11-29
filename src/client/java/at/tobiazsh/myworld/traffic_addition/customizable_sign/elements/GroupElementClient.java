@@ -30,7 +30,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
     }
 
-    // NOT NECESSARY
+    // NOT NECESSARY --> Groups are unpacked in CustomizableBlockEntity
     @Override
     public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
@@ -232,7 +232,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
             try {
                 e.dispose();
             } catch (Exception ex) {
-                MyWorldTrafficAddition.LOGGER.error("Could not dispose element: " + e.getName(), ex);
+                MyWorldTrafficAddition.LOGGER.error("Could not dispose element: {}", e.getName(), ex);
             }
         });
         clientElements.clear();
