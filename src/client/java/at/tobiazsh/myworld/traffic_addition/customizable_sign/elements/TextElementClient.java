@@ -54,7 +54,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
             UUID id, UUID parentId
     ) {
         super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, parentId, id);
-        this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize());
         this.font = font;
     }
 
@@ -64,7 +63,13 @@ public class TextElementClient extends TextElement implements ClientElementInter
     @Override
     public void renderImGui(float scale) {
 
-        // Without font, no text :)
+        if (imGuiFont == null && fontFuture == null) {
+            if (font != null)
+                fontFuture = registerThisFont(); // No font future yet, register it
+
+            return;
+        }
+
         if (imGuiFont == null && !fontFuture.isDone()) {
             MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
             return;
