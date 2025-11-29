@@ -25,7 +25,7 @@ public class FontManager {
     // Just a few necessary letters that are not included otherwise
     private static final short[] specialCharacters = new short[] {
             0x0110, // Đ (DJ) e.g. Croatian
-            0x010F, // đ (dj) e.g. Croatian
+            0x0111, // đ (dj) e.g. Croatian
             0x0160, // Š (SH) e.g. Croatian
             0x0161, // š (sh) e.g. Croatian
             0x017D, // Ž (ZH) e.g. Croatian
