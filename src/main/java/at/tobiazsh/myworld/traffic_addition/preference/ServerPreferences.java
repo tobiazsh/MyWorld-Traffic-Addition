@@ -21,8 +21,8 @@ public class ServerPreferences {
     public static boolean isUploadLimitSet = false;
     public static int maximumUploadsPerPlayer = 0;
 
-    public static long customImagesDownloadTimeout = 0;
-    private static long customImagesDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
+    public static long customImageDownloadTimeout = 0;
+    private static long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
 
     public static void loadPreferences() {
         // Load server preferences
@@ -47,7 +47,7 @@ public class ServerPreferences {
             maximumUploadsPerPlayer = 0;
         }
 
-        Long CIDT = generalServerPreferences.getLong("customImagesDownloadTimeout");
-        customImagesDownloadTimeout = Objects.requireNonNullElse(CIDT, customImagesDownloadTimeoutDefault); // Fallback to default
+        Long CIDT = generalServerPreferences.getLong("customImageDownloadTimeout");
+        customImageDownloadTimeout = Objects.requireNonNullElse(CIDT, customImageDownloadTimeoutDefault); // Fallback to default
     }
 }
