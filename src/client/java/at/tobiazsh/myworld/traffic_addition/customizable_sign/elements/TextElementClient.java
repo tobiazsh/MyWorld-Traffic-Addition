@@ -296,6 +296,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
         }
 
         super.setFont(font);
+        this.fontFuture = null;
+        this.imGuiFont = null;
         this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
     }
 
