@@ -46,6 +46,7 @@ public class ImGuiImpl {
     public static ImFontAtlas fontAtlas;
 
     public static boolean fontsNeedRebuild = false;
+    public static boolean clearFontAtlasOnRebuild = false;
 
     public static void create(final long handle) {
         ImGui.createContext();
@@ -166,13 +167,14 @@ public class ImGuiImpl {
 
     private static void rebuildFontAtlasIfNeeded() {
         if (fontsNeedRebuild) {
-            rebuildFontAtlas();
+            rebuildFontAtlas(clearFontAtlasOnRebuild);
             fontsNeedRebuild = false;
+            clearFontAtlasOnRebuild = false;
         }
     }
 
     public static void clearFontAtlas() {
-        FontManager.fontCache.clear();
+        clearFontAtlasOnRebuild = true;
         scheduleFontAtlasRebuild();
     }
 

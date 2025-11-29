@@ -4,9 +4,12 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import imgui.*;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ImGuiFont extends BasicFont {
     public String name; // Font name
     public ImFont font; // The font object
+    private final AtomicBoolean invalid = new AtomicBoolean(false);
 
     /**
      * Creates a new ImGuiFont object
@@ -124,5 +127,19 @@ public class ImGuiFont extends BasicFont {
         float rotatedY = center.y + dx * sinTheta + dy * cosTheta;
 
         return new ImVec2(rotatedX, rotatedY);
+    }
+
+    public ImGuiFont invalidate() {
+        this.invalid.set(true);
+        return this;
+    }
+
+    public ImGuiFont validate() {
+        this.invalid.set(false);
+        return this;
+    }
+
+    public boolean isInvalid() {
+        return this.invalid.get() || this.font == null || this.font.isNotValidPtr() || this.font.ptr == 0;
     }
 }

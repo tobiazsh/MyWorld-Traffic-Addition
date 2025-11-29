@@ -21,10 +21,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
-import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
@@ -71,22 +72,46 @@ public class TextElementClient extends TextElement implements ClientElementInter
         }
 
         if (imGuiFont == null && !fontFuture.isDone()) {
-            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
-            return;
+            MyWorldTrafficAddition.LOGGER.debug("Font is not ready yet! Can't render text!");
+            return; // not ready yet
         }
 
-        // For better readability, so I don't have to compact everything in one bracelet
-        boolean isImGuiFontNull = (imGuiFont == null);
-        boolean doFontPathsMatch = !isImGuiFontNull && Objects.equals(font.getFontPath(), imGuiFont.getFontPath());
-        boolean doFontSizesMatch = !isImGuiFontNull && (imGuiFont.getFontSize() == font.getFontSize());
+//        // Without font, no text :)
+//        if (imGuiFont == null && !fontFuture.isDone()) {
+//            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
+//            return;
+//        }
 
-        // Check font for updates/new fonts
-        if (isImGuiFontNull || !doFontPathsMatch || !doFontSizesMatch) {
+        // For better readability, so I don't have to compact everything in one bracelet
+//        boolean isImGuiFontNull = (imGuiFont == null);
+//        boolean doFontPathsMatch = !isImGuiFontNull && Objects.equals(font.getFontPath(), imGuiFont.getFontPath());
+//        boolean doFontSizesMatch = !isImGuiFontNull && (imGuiFont.getFontSize() == font.getFontSize());
+//
+//        // Check font for updates/new fonts
+//        if (isImGuiFontNull || !doFontPathsMatch || !doFontSizesMatch) {
+//            try {
+//                imGuiFont = fontFuture.get();
+//            } catch (Exception e) {
+//                MyWorldTrafficAddition.LOGGER.error("Font is null but async task was completed! Exception produced: {}", e.getMessage());
+//            }
+//        }
+
+        if (imGuiFont == null) {
             try {
-                imGuiFont = fontFuture.get();
+                imGuiFont = fontFuture.get(); // blockiert nicht, weil isDone() true
+                if (imGuiFont == null || imGuiFont.isInvalid()) {
+                    return; // safety
+                }
             } catch (Exception e) {
-                MyWorldTrafficAddition.LOGGER.error("Font is null but async task was completed! Exception produced: {}", e.getMessage());
+                MyWorldTrafficAddition.LOGGER.error("Font loading failed", e);
+                return;
             }
+        }
+
+        // Another check just to be sure nothing changed in the meantime
+        if (imGuiFont.isInvalid() || !imGuiFont.font.isLoaded() || imGuiFont.font.getScale() <= 0) {
+            MyWorldTrafficAddition.LOGGER.error("Font is invalid! Can't render text!");
+            return;
         }
 
         ImGui.pushFont(this.imGuiFont.font);
@@ -220,6 +245,19 @@ public class TextElementClient extends TextElement implements ClientElementInter
         );
     }
 
+    /**
+     * Registers the font of this element asynchronously.
+     * @return A CompletableFuture that will complete with the registered ImGuiFont.
+     */
+    private @Nullable CompletableFuture<ImGuiFont> registerThisFont() {
+        if (font == null || font.getFontPath() == null) {
+            MyWorldTrafficAddition.LOGGER.warn("Tried to register TextElementClient font but font or its properties are null! Operation aborted!");
+            return null;
+        }
+
+        return registerFontAsync(font.getFontPath(), font.getFontSize());
+    }
+
     @Override
     public void onPaste() {
         // ClientElementManager.getInstance().registerElement(this);
@@ -252,6 +290,11 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
     @Override
     public void setFont(BasicFont font) {
+        if (font == null) {
+            MyWorldTrafficAddition.LOGGER.error("Tried to set TextElementClient font to null! Operation aborted!");
+            return;
+        }
+
         super.setFont(font);
         this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
     }
