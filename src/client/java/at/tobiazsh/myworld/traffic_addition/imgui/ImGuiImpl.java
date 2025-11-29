@@ -45,6 +45,8 @@ public class ImGuiImpl {
 
     public static ImFontAtlas fontAtlas;
 
+    public static boolean fontsNeedRebuild = false;
+
     public static void create(final long handle) {
         ImGui.createContext();
         ImPlot.createContext();
@@ -56,15 +58,14 @@ public class ImGuiImpl {
         fontAtlas = io.getFonts();
 
         // Load fonts
+        buildFontRanges();
         registerDefaultFonts();
         ImGui.getIO().setFontDefault(Roboto);
 
+        ImGui.getIO().getFonts().build();
+
         // Load other stuff
         CommonTextures.loadTextures();
-
-        fontAtlas.build();
-
-        buildFontRanges();
 
         io.setConfigFlags(ImGuiConfigFlags.DockingEnable);
 
@@ -93,8 +94,6 @@ public class ImGuiImpl {
         RobotoBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 40, fontConfig, glyphRanges);
         RobotoBoldMedium = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 30, fontConfig, glyphRanges);
     }
-
-    public static boolean fontsNeedRebuild = false;
 
     // I have no fucking clue on how many hours this steaming piece of shit has wasted me... Just wanted to state that here
     public static void uploadFontTexture() {
