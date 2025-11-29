@@ -16,6 +16,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -44,7 +45,14 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	public static final String MOD_ID = "myworld_traffic_addition";
     public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.5.3";
+	public static final String MOD_VERSION =
+            "v" +
+            FabricLoader.getInstance()
+                    .getModContainer(MOD_ID)
+                    .orElseThrow()
+                    .getMetadata()
+                    .getVersion()
+                    .getFriendlyString();
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
@@ -52,7 +60,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		MyWorldTrafficAddition.LOGGER.info("Initializing {} {}", MOD_ID_HUMAN, MODVER);
+		MyWorldTrafficAddition.LOGGER.info("Initializing {} {}", MOD_ID_HUMAN, MOD_VERSION);
 		ModItems.initialize();
 		ModGroups.initialize();
 		ModBlocks.initialize();
@@ -83,7 +91,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		OnlineImageBackend.countEntriesAndReadIntoMemory();
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageBackend.totalEntries);
 
-		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
+		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MOD_VERSION);
 	}
 
 	private static void addSmartPayloadsServer() {

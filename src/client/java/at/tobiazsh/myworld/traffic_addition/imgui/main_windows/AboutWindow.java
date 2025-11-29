@@ -14,7 +14,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
-import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MODVER;
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition.MOD_VERSION;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
@@ -56,7 +56,7 @@ public class AboutWindow {
         ImGui.newLine();
 
         ImGui.text("%s: %s".formatted(tr("Global", "Name"), title)); // "Name: MyWorld Traffic Addition"
-        ImGui.text("%s: %s".formatted(tr("Global", "Version"), MODVER)); // "Version: ..."
+        ImGui.text("%s: %s".formatted(tr("Global", "Version"), MOD_VERSION)); // "Version: ..."
         ImGui.text("%s: %s".formatted(tr("Global", "Author"), author)); // Author: Tobias
         ImGui.text("%s: %s".formatted(tr("Global", "Description"), description)); // Description: -
 
