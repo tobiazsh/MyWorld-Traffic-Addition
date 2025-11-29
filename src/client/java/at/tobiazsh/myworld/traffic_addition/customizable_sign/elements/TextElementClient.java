@@ -76,26 +76,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
             return; // not ready yet
         }
 
-//        // Without font, no text :)
-//        if (imGuiFont == null && !fontFuture.isDone()) {
-//            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
-//            return;
-//        }
-
-        // For better readability, so I don't have to compact everything in one bracelet
-//        boolean isImGuiFontNull = (imGuiFont == null);
-//        boolean doFontPathsMatch = !isImGuiFontNull && Objects.equals(font.getFontPath(), imGuiFont.getFontPath());
-//        boolean doFontSizesMatch = !isImGuiFontNull && (imGuiFont.getFontSize() == font.getFontSize());
-//
-//        // Check font for updates/new fonts
-//        if (isImGuiFontNull || !doFontPathsMatch || !doFontSizesMatch) {
-//            try {
-//                imGuiFont = fontFuture.get();
-//            } catch (Exception e) {
-//                MyWorldTrafficAddition.LOGGER.error("Font is null but async task was completed! Exception produced: {}", e.getMessage());
-//            }
-//        }
-
         if (imGuiFont == null) {
             try {
                 imGuiFont = fontFuture.get(); // blockiert nicht, weil isDone() true
