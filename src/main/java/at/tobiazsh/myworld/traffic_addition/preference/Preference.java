@@ -41,6 +41,11 @@ public record Preference(String configFilePath) {
         }
 
         JsonObject content = readConfigFile() == null ? new JsonObject() : readConfigFile();
+
+        if (content == null) {
+            content = new JsonObject(); // Fallback in case reading fails
+        }
+
         content.add(key, value);
         writeConfigFile(content);
     }
