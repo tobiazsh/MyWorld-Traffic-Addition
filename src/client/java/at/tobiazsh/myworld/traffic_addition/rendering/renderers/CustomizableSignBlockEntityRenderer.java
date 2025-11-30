@@ -420,7 +420,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
 
         List<ClientElementInterface> renderedElements = elements.get(csbe);
-        renderedElements.forEach(element -> renderElement(element, renderedElements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing));
+        if (renderedElements == null) return;
+
+        for (int i = 0; i < renderedElements.size(); i++) {
+            ClientElementInterface element = renderedElements.get(i);
+            renderElement(element, i, height, matrices, vertexConsumers, light, overlay, facing);
+        }
     }
 
     public static void renderElement(ClientElementInterface element, int index, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
