@@ -107,7 +107,7 @@ public class OnlineImageGallery {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.129f, 0.129f, 0.129f, 1.0f));
         ImGui.beginChild("##tabControls", ImGui.getWindowSizeX() - 2 * ImGui.getStyle().getWindowPaddingX(), ImGui.getFrameHeight(), false);
 
-        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Cancel"))) {
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Close"))) {
             shouldClose = true;
             ImGui.closeCurrentPopup();
         }
