@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
