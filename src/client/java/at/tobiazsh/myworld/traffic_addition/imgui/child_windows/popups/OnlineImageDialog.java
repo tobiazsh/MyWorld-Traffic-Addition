@@ -157,15 +157,15 @@ public class OnlineImageDialog {
         Thread fileLoadThread;
 
         fileLoadThread = new Thread(() -> {
-            String path = NativeFileDialogs.open(new NativeFileDialogs.FilterItem[]{
-                    new NativeFileDialogs.FilterItem("Image Files", new String[] { "png", "jpg", "jpeg", "bmp", "gif" })},
+            String path = NativeFileDialogs.open(
+                    "Select an image file to upload",
+                    new NativeFileDialogs.FilterItem("Image Files", new String[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif" }),
                     System.getProperty("user.home"),
                     (msg) -> {
                         isOperationComplete = true;
                         isOperating = false;
                         MyWorldTrafficAddition.LOGGER.debug("File dialog aborted: {}", msg);
-                    },
-                    (error) -> ErrorPopup.open(error, null));
+                    });
 
             if (path == null || path.isEmpty()) {
                 MyWorldTrafficAddition.LOGGER.debug("No file selected or dialog was cancelled.");
