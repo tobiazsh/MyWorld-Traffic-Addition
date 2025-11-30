@@ -107,7 +107,7 @@ public class OnlineImageGallery {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.129f, 0.129f, 0.129f, 1.0f));
         ImGui.beginChild("##tabControls", ImGui.getWindowSizeX() - 2 * ImGui.getStyle().getWindowPaddingX(), ImGui.getFrameHeight(), false);
 
-        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Close"))) close();
+        if (ImGui.button(tr("Global", "Close"))) close();
 
         ImGui.sameLine();
 
@@ -193,7 +193,7 @@ public class OnlineImageGallery {
         if (isLoading) return;
 
         if (metadataList.isEmpty()) {
-            String noImagesFound = tr("ImGui.Child.PopUps.OnlineImageGallery", "No images found.");
+            String noImagesFound = tr("ImGui.Child.PopUps.OnlineImageGallery", "No images found");
             ImGui.setCursorPos(
                     new ImVec2(
                             (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(noImagesFound)) / 2,

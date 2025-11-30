@@ -7,6 +7,16 @@
           "Copy to Clipboard": "Copy to Clipboard",
           "Json Viewer": "Json Viewer"
         },
+        "OnlineImageGallery": {
+          "Online Image Gallery": "Online Image Gallery",
+          "My Images": "My Images",
+          "Loading...": "Loading...",
+          "Next Page": "Next Page",
+          "All Images": "All Images",
+          "Previous Page": "Previous Page",
+          "No images found": "No images found",
+          "Are you sure you want to delete": "Are you sure you want to delete"
+        },
         "OnlineImageDialog": {
           "Image Size Options": "Image Size Options",
           "Online Image Uploader": "Online Image Uploader",

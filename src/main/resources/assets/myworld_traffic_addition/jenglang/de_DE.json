@@ -7,6 +7,16 @@
           "Copy to Clipboard": "In Zwischenablage kopieren",
           "Json Viewer": "Json Veranschaulicher"
         },
+        "OnlineImageGallery": {
+          "Online Image Gallery": "Online Bild Galerie",
+          "My Images": "Meine Bilder",
+          "Loading...": "Lädt...",
+          "Next Page": "Nächste Seite",
+          "All Images": "Alle Bilder",
+          "Previous Page": "Vorherige Seite",
+          "No images found": "Keine Bilder gefunden",
+          "Are you sure you want to delete": "Möchtest du dieses Bild wirklich löschen"
+        },
         "OnlineImageDialog": {
           "Image Size Options": "Bildgrößen Optionen",
           "Online Image Uploader": "Online Bild Uploader",
