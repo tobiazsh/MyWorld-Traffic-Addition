@@ -111,7 +111,7 @@ public record Preference(String configFilePath) {
         JsonObject content = readConfigFile();
 
         if (content == null || !content.has(key)) {
-            MyWorldTrafficAddition.LOGGER.error("Error: Could not read key from config file");
+            MyWorldTrafficAddition.LOGGER.debug("Could not read key \"{}\" from config file", key);
             return null;
         }
 
