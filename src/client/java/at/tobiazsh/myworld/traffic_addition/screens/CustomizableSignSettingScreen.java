@@ -402,8 +402,11 @@ public class CustomizableSignSettingScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        ImGuiRenderer.showSignEditor = false;
-        showChildren = true;
-        return true;
+        boolean close = SignEditor.isClosed();
+
+        if (close)
+            showChildren = true;
+
+        return close;
     }
 }

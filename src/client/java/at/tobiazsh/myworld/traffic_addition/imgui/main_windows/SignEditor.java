@@ -61,6 +61,8 @@ public class SignEditor {
     private static int signWidthBlocks;
     private static int signHeightBlocks;
 
+    private static boolean isClosed = true;
+
     public static String backgroundTexturePath;
     public static ClientElementInterface selectedElement = null;
     private static Folder allBackgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
@@ -70,6 +72,7 @@ public class SignEditor {
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
+        isClosed = true;
         ClientElementManager.getInstance().clearAll();
         clearFontAtlas();
     }
@@ -135,6 +138,7 @@ public class SignEditor {
         calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
 
         ImGuiRenderer.showSignEditor = true;
+        isClosed = false;
     }
 
     private static void getSignSize() {
@@ -473,5 +477,12 @@ public class SignEditor {
 
             MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
         }, "MWTACSELEMENT", "JSON");
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // Getters --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static boolean isClosed() {
+        return isClosed;
     }
 }
