@@ -328,7 +328,7 @@ public class OnlineImageDialog {
 
         float[] scale = new float[]{imageScale[0]*100.0f};
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center slider
-        if (ImGui.sliderFloat(tr("ImGui.Child.PopUps.OnlineImageDialog", "Resolution"), scale, 1.0f, 100.0f, "%.0f%% " + tr("Global", "of") + " " + tr("Global", "Current"))) {
+        if (ImGui.sliderFloat(tr("ImGui.Child.PopUps.OnlineImageDialog", "Resolution"), scale, 1.0f, 100.0f, "%.0f%% " + tr("Global", "Of") + " " + tr("Global", "Current"))) {
             imageScale[0] = scale[0] / 100.0f;
         }
 
@@ -372,7 +372,7 @@ public class OnlineImageDialog {
         ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "Give your image a unique name"));
         ImGui.spacing();
         ImGui.checkbox(tr("ImGui.Child.PopUps.OnlineImageDialog", "Hide for others"), hideForOthers); // Checkbox to hide image for others
-        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "This will hide your image for others. Admins can still see it, so don't be naughty") + "! ;)");
+        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "This will hide your image for others. Admins can still see it, so don\u0027t be naughty") + "! ;)");
 
         ImGui.setCursorPosY(ImGui.getWindowSizeY() - ImGui.getFontSize()*2); // Make things appear all the way at the bottom
         ImGui.beginChild("##confirmPageActionButtonContainer");

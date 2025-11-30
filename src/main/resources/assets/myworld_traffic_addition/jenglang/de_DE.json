@@ -18,7 +18,7 @@
           "Are you sure you want to delete": "Möchtest du dieses Bild wirklich löschen"
         },
         "OnlineImageDialog": {
-          "Image Size Options": "Bildgrößen Optionen",
+          "Image Size Options": "Bildgröße Optionen",
           "Online Image Uploader": "Online Bild Uploader",
           "Creating Thumbnail": "Thumbnail erstellen",
           "Loading image from file": "Lade Bild von Datei",
@@ -26,7 +26,7 @@
           "Encoding image to PNG": "Kodieren des Bildes zu PNG",
           "Operation Message Default": "Standard Vorgangsnachricht",
           "Packing data": "Packe Daten",
-          "This will hide your image for others. Admins can still see it, so don\u0027t be naughty": "Das wird dein Bild für andere verbergen. Admins können es trotzdem sehen, also sei nicht unartig",
+          "This will hide your image for others. Admins can still see it, so don\u0027t be naughty": "Das wird dein Bild für andere verbergen. Administratoren können es trotzdem sehen, also sei nicht unartig",
           "Enter Image URL": "Bild URL eingeben",
           "Waiting": "Warten",
           "Confirm and Upload": "Bestätigen und Hochladen",
@@ -209,7 +209,7 @@
     "Color Picker": "Farbwähler",
     "Zoom In": "Hineinzoomen",
     "File": "Datei",
-    "Current": "Dezeitig",
+    "Current": "Derzeitiges",
     "Other": "Andere",
     "Search": "Suchen",
     "Results": "Ergebnisse",
