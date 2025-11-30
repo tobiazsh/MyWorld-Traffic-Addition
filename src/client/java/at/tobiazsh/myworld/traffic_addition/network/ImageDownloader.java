@@ -139,7 +139,7 @@ public class ImageDownloader {
                 float progress = totalBytes > 0 ? (float) bytesRead / totalBytes : 0.5f; // If totalBytes is unknown, just set it to 50%
                 operationProgressSetter.apply(progress);
                 operationMessageSetter.apply(tr("ImGui.Child.PopUps.OnlineImageDialog", "Downloading") + "... "
-                        + (bytesRead / 1024) + " KiB " + tr("Global", "of") + " " + (totalBytes / 1024) + " KiB");
+                        + (bytesRead / 1024) + " KiB " + tr("Global", "Of") + " " + (totalBytes / 1024) + " KiB");
 
                 if (cancelDownload) {
                     freeMemory();
