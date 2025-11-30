@@ -107,10 +107,7 @@ public class OnlineImageGallery {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.129f, 0.129f, 0.129f, 1.0f));
         ImGui.beginChild("##tabControls", ImGui.getWindowSizeX() - 2 * ImGui.getStyle().getWindowPaddingX(), ImGui.getFrameHeight(), false);
 
-        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Close"))) {
-            shouldClose = true;
-            ImGui.closeCurrentPopup();
-        }
+        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Close"))) close();
 
         ImGui.sameLine();
 
@@ -218,7 +215,7 @@ public class OnlineImageGallery {
                             refresh();
                         }
                     });
-                }));
+                }, OnlineImageGallery::close));
             }
         }
 
@@ -493,5 +490,10 @@ public class OnlineImageGallery {
                 imageUUID.toString().getBytes(),
                 -1, -1
         );
+    }
+
+    private static void close() {
+        shouldClose = true;
+        ImGui.closeCurrentPopup();
     }
 }

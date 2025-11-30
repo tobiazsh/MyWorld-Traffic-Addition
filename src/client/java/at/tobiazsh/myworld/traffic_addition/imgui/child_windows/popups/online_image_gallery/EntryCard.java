@@ -22,12 +22,14 @@ public class EntryCard {
     private String id;
     private final boolean showDeleteButton;
     private final Runnable onDeleteAction;
+    private final Runnable onAddAction;
 
-    public EntryCard(CustomImageMetadata imageEntry, int thumbnailTextureId, boolean showDeleteButton, Runnable onDeleteAction) {
+    public EntryCard(CustomImageMetadata imageEntry, int thumbnailTextureId, boolean showDeleteButton, Runnable onDeleteAction, Runnable onAddAction) {
         this.imageEntry = imageEntry;
         this.thumbnailTextureId = thumbnailTextureId;
         this.showDeleteButton = showDeleteButton;
         this.onDeleteAction = onDeleteAction;
+        this.onAddAction = onAddAction;
         constructId();
     }
 
@@ -150,6 +152,8 @@ public class EntryCard {
         oiec.resizeAfterDownload();
 
         ClientElementManager.getInstance().addElementFirst(oiec);
+
+        this.onAddAction.run();
     }
 
     private void fetchUploaderName() {
