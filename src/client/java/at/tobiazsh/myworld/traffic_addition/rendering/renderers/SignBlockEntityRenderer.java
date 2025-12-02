@@ -13,32 +13,32 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockBackstepCoordsChange;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.render.command.ModelCommandRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.BlockStateModel;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
-public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBlock> implements BlockEntityRenderer<T> {
+public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<T, SignBlockRenderState> {
 
     private final BakedModelManager bakedModelMgr;
-    private Coordinates mountingOffset;
-    private BlockPos attachmentBlockPos;
-    public String textureIdentifier;
 
     public static float zOffsetRenderLayer = 3f;
     public static float zOffsetRenderLayerDefault = 3f;
@@ -48,29 +48,32 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
     }
 
     @Override
-    public void render(T entity, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Vec3d cameraPos) {
+    public void render(SignBlockRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
 
-        G signBlock = (G) entity.getCachedState().getBlock();
-        Coordinates backstepCoords = signBlock.getBackMovementCoordinates(entity.getCachedState());
+        int light = state.lightmapCoordinates;
 
-        if(backstepCoords != entity.getBackstepCoords()) {
-            ClientPlayNetworking.send(new SignBlockBackstepCoordsChange(entity.getPos(), backstepCoords.x, backstepCoords.y, backstepCoords.z, backstepCoords.direction));
-        }
+        VertexConsumerProvider provider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        Direction facing = state.blockState.get(SignBlock.FACING);
 
-        reassignValues(backstepCoords.direction, entity);
+        //Coordinates backstepCoords = Coordinates.getNormalInDirection(-1.55f, facing);
 
-        BlockEntity blockEntityBehind = MinecraftClient.getInstance().world.getBlockEntity(attachmentBlockPos);
+        // Commented out for now; Don't know if it's necessary to constantly sync this value
+//        if(backstepCoords != entity.getBackstepCoords()) {
+//            ClientPlayNetworking.send(new SignBlockBackstepCoordsChange(entity.getPos(), backstepCoords.x, backstepCoords.y, backstepCoords.z, backstepCoords.direction));
+//        }
 
-        textureIdentifier = entity.getTexturePath();
+        BlockEntity blockEntityBehind = MinecraftClient.getInstance().world.getBlockEntity( getBlockPosBehind(facing, state.pos) );
 
         matrices.push();
 
         if(blockEntityBehind instanceof SignPoleBlockEntity signPoleBlockEntity) {
             int rotationDegrees = signPoleBlockEntity.getRotationValue() + 180;
+            Coordinates mountingOffset = Coordinates.getNormalInDirection(facing.getOpposite());
 
-            if (entity.getRotation() != rotationDegrees) {
-                ClientPlayNetworking.send(new SignBlockRotationPayload(entity.getPos(), rotationDegrees));
-            }
+            // Commented out for now; Don't know if it's necessary to constantly sync this value
+//            if (entity.getRotation() != rotationDegrees) {
+//                ClientPlayNetworking.send(new SignBlockRotationPayload(entity.getPos(), rotationDegrees));
+//            }
 
             matrices.translate(mountingOffset.x, mountingOffset.y, mountingOffset.z); // Place it in the correct position
             matrices.translate(0.5, 0, 0.5); // Set it back by half a block in each direction
@@ -85,50 +88,44 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
             matrices.translate(-0.5, 0, -0.5); // Set it back to original position
             // Do not set it back by -1 again. Since the model is right on the side of the next block, it does not need this behaviour.
 
-            renderSignHolder(entity, matrices, vertexConsumers, light, overlay, entity.getCachedState().get(SignBlock.FACING));
+            renderSignHolder(queue, matrices, light, facing);
         }
 
-        BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModels().getModel(entity.getCachedState());
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
-                matrices.peek(),
-                consumer,
+        BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModels().getModel(state.blockState);
+
+        renderTextureOnModel(state.texturePath, matrices, provider, facing, light, OverlayTexture.DEFAULT_UV);
+
+        queue.submitBlockStateModel(
+                matrices,
+                RenderLayer.getSolid(),
                 signBlockStateModel,
                 1.0f, 1.0f, 1.0f,
-                light, overlay
+                light,
+                OverlayTexture.DEFAULT_UV,
+                0
         );
-
-        renderTextureOnModel(entity, matrices, vertexConsumers, light, overlay);
 
         matrices.pop();
     }
 
-    private void reassignValues(Direction offsetDirection, SignBlockEntity entity) {
-        switch (offsetDirection) {
-            case EAST -> {
-                attachmentBlockPos = entity.getPos().west();
-                mountingOffset = new Coordinates(-1, 0, 0, Direction.WEST);
-            }
-
-            case SOUTH -> {
-                attachmentBlockPos = entity.getPos().north();
-                mountingOffset = new Coordinates(0, 0, -1, Direction.NORTH);
-            }
-
-            case WEST -> {
-                attachmentBlockPos = entity.getPos().east();
-                mountingOffset = new Coordinates(1, 0, 0, Direction.EAST);
-            }
-
-            default -> {
-                attachmentBlockPos = entity.getPos().south();
-                mountingOffset = new Coordinates(0, 0, 1, Direction.SOUTH);
-            }
-        }
+    @Override
+    public SignBlockRenderState createRenderState() {
+        return new SignBlockRenderState();
     }
 
-    protected void renderTextureOnModel(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, textureIdentifier);
+    @Override
+    public void updateRenderState(T blockEntity, SignBlockRenderState state, float tickProgress, Vec3d cameraPos, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay) {
+        BlockEntityRenderer.super.updateRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
+        state.texturePath = blockEntity.getTexturePath();
+    }
+
+
+
+    // ----------------------------------------------------
+    // RENDER UTILITY METHODS -----------------------------
+
+    protected void renderTextureOnModel(String texturePath, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Direction facing, int light, int overlay) {
+        Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, texturePath);
 
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
         RenderLayer renderLayer = imageLayering.buildRenderLayer();
@@ -139,7 +136,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
         matrices.translate(-0.5, -0.5, -0.5);
         matrices.translate(0.57, 1, 0);
 
-        rotateTexture(entity, matrices);
+        rotateTexture(facing, matrices);
 
         vertexConsumer.vertex(matrices.peek().getPositionMatrix(), -0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
         vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
@@ -149,12 +146,55 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
         matrices.pop();
     }
 
+    private void renderSignHolder(OrderedRenderCommandQueue queue, MatrixStack matrices, int light, Direction facing) {
+
+        BlockStateModel signHolderModel = bakedModelMgr.getBlockModels().getModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().getDefaultState());
+
+        matrices.push();
+
+        moveHolderBack(facing, matrices);
+
+        matrices.translate(0.5, 0.5, 0.5);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90 * getRotationManeuverCount(facing)));
+        matrices.translate(-0.5, -0.5, -0.5);
+
+        queue.submitBlockStateModel(
+                matrices,
+                RenderLayer.getSolid(),
+                signHolderModel,
+                1.0f, 1.0f, 1.0f,
+                light,
+                OverlayTexture.DEFAULT_UV,
+                0
+        );
+
+        matrices.pop();
+    }
+
+
+
+    // ----------------------------------------------------
+    // HELPER METHODS -------------------------------------
+
+    /**
+     * Gets the block position of the block behind the sign
+     * @param facingDirection In which direction the sign is facing.
+     * @param signBlockPos The position of the sign
+     * @return The block position of the block the sign is attached to.
+     */
+    private BlockPos getBlockPosBehind(Direction facingDirection, BlockPos signBlockPos) {
+        return switch (facingDirection) {
+            case EAST -> signBlockPos.west();
+            case SOUTH -> signBlockPos.north();
+            case WEST -> signBlockPos.east();
+            default -> signBlockPos.south();
+        };
+    }
+
     /**
      * Rotates the texture of the sign block entity based on its facing direction.
      */
-    public static void rotateTexture(SignBlockEntity entity, MatrixStack matrices) {
-        Direction facing = entity.getCachedState().get(SignBlock.FACING);
-
+    public static void rotateTexture(Direction facing, MatrixStack matrices) {
         switch (facing) {
             case EAST -> {
                 matrices.translate(0.5, 0.5, 0.5);
@@ -178,8 +218,8 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
     /**
      * Rotates the holder of the sign block entity based on its facing direction.
      */
-    private static void moveHolderBack(SignBlockEntity entity, MatrixStack matrices) {
-        switch (entity.getCachedState().get(SignBlock.FACING)) {
+    private static void moveHolderBack(Direction facing, MatrixStack matrices) {
+        switch (facing) {
             case SOUTH -> matrices.translate(0, 0, -1);
             case EAST -> matrices.translate(-1, 0, 0);
             case WEST -> matrices.translate(1, 0, 0);
@@ -194,30 +234,5 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity, G extends SignBl
             case WEST -> 3;
             default -> 2; // NORTH
         };
-    }
-
-    private void renderSignHolder(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-
-        BlockStateModel signHolderModel = bakedModelMgr.getBlockModels().getModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().getDefaultState());
-
-        matrices.push();
-
-        moveHolderBack(entity, matrices);
-
-
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90 * getRotationManeuverCount(facing)));
-        matrices.translate(-0.5, -0.5, -0.5);
-
-        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getSolid());
-        MinecraftClient.getInstance().getBlockRenderManager().getModelRenderer().render(
-                matrices.peek(),
-                consumer,
-                signHolderModel,
-                1.0f, 1.0f, 1.0f,
-                light, overlay
-        );
-
-        matrices.pop();
     }
 }

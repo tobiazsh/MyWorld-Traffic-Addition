@@ -9,9 +9,9 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.UpsideDownTriangularSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.UpsideDownTriangularSignBlock;
+import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -21,17 +21,18 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 
 @Environment(EnvType.CLIENT)
-public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity, UpsideDownTriangularSignBlock> {
+public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity> {
 
     public UpsideDownTriangularSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
         super(MinecraftClient.getInstance().getBakedModelManager());
     }
 
     @Override
-    protected void renderTextureOnModel(SignBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        Identifier TEXTURE = Identifier.of(MyWorldTrafficAddition.MOD_ID, this.textureIdentifier);
+    protected void renderTextureOnModel(String texturePath, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Direction facing, int light, int overlay) {
+        Identifier TEXTURE = Identifier.of(MyWorldTrafficAddition.MOD_ID, texturePath);
 
         RenderLayer renderLayer = RenderLayer.getEntityCutout(TEXTURE);
 
@@ -43,7 +44,7 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
         matrices.translate(0.57, 1, 0);
         matrices.translate(0, 0.05, 0);
 
-        rotateTexture(entity, matrices);
+        rotateTexture(facing, matrices);
 
         vertexConsumer.vertex(matrices.peek().getPositionMatrix(), -0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
         vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
