@@ -15,6 +15,7 @@ import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
@@ -189,59 +190,59 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         RenderLayer renderLayer = imageLayering.buildRenderLayer();
 
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers();
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
+
+        matrices.push();
         Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
 
-        queue.submitCustom(matrices, renderLayer, ((matricesEntry, vertexConsumer) -> {
-            matrices.push();
+        matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
+        matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
+        matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
-            matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
-            matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
-            matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
+        // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
+        matrices.translate(0.5, 0.5, 0.5);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        matrices.translate(-0.5, -0.5, -0.5);
 
-            // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
-            matrices.translate(0.5, 0.5, 0.5);
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-            matrices.translate(-0.5, -0.5, -0.5);
+        // Rotate around the element's center
+        matrices.translate(w / 2, h / 2, 0); // Move origin to element center
+        matrices.multiply(RotationAxis.NEGATIVE_Z.rotationDegrees(rotation));
+        matrices.translate(-w / 2, -h / 2, 0); // Move origin back
 
-            // Rotate around the element's center
-            matrices.translate(w / 2, h / 2, 0); // Move origin to element center
-            matrices.multiply(RotationAxis.NEGATIVE_Z.rotationDegrees(rotation));
-            matrices.translate(-w / 2, -h / 2, 0); // Move origin back
+        // Top left
+        vertexConsumer.vertex(positionMatrix, 0 , 0, 0)
+                .texture(0, 1)
+                .color(color[0], color[1], color[2], color[3])
+                .light(light)
+                .overlay(overlay)
+                .normal(0, 0, 1);
 
-            // Top left
-            vertexConsumer.vertex(positionMatrix, 0 , 0, 0)
-                    .texture(0, 1)
-                    .color(color[0], color[1], color[2], color[3])
-                    .light(light)
-                    .overlay(overlay)
-                    .normal(0, 0, 1);
+        // Top right
+        vertexConsumer.vertex(positionMatrix, w, 0, 0)
+                .texture(1, 1)
+                .color(color[0], color[1], color[2], color[3])
+                .light(light)
+                .overlay(overlay)
+                .normal(0, 0, 1);
 
-            // Top right
-            vertexConsumer.vertex(positionMatrix, w, 0, 0)
-                    .texture(1, 1)
-                    .color(color[0], color[1], color[2], color[3])
-                    .light(light)
-                    .overlay(overlay)
-                    .normal(0, 0, 1);
+        // Bottom right
+        vertexConsumer.vertex(positionMatrix, w, h, 0)
+                .texture(1, 0)
+                .color(color[0], color[1], color[2], color[3])
+                .light(light)
+                .overlay(overlay)
+                .normal(0, 0, 1);
 
-            // Bottom right
-            vertexConsumer.vertex(positionMatrix, w, h, 0)
-                    .texture(1, 0)
-                    .color(color[0], color[1], color[2], color[3])
-                    .light(light)
-                    .overlay(overlay)
-                    .normal(0, 0, 1);
+        // Bottom left
+        vertexConsumer.vertex(positionMatrix, 0, h, 0)
+                .texture(0, 0)
+                .color(color[0], color[1], color[2], color[3])
+                .light(light)
+                .overlay(overlay)
+                .normal(0, 0, 1);
 
-            // Bottom left
-            vertexConsumer.vertex(positionMatrix, 0, h, 0)
-                    .texture(0, 0)
-                    .color(color[0], color[1], color[2], color[3])
-                    .light(light)
-                    .overlay(overlay)
-                    .normal(0, 0, 1);
-
-            matrices.pop();
-        }));
+        matrices.pop();
     }
 
     @Override
