@@ -175,6 +175,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
 
         state.signPoleDistancesString = blockEntity.getSignPoleDistancesString();
+        state.signDistancesString = blockEntity.getSignDistancesString();
     }
 
     // Render the sign block
@@ -234,7 +235,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private void renderSigns(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing) {
         // Get the sign positions as a list of BlockPos
-        List<BlockPosExtended> signDistances = getSignDistances(state.signPoleDistancesString);
+        List<BlockPosExtended> signDistances = getSignDistances(state.signDistancesString);
         List<BlockPosExtended> signPositions = calculatePosition(signDistances, new BlockPosExtended(state.pos));
 
         // Render each sign

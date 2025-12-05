@@ -27,4 +27,5 @@ public class CustomizableSignBlockRenderState extends BlockEntityRenderState {
     public List<ClientElementInterface> clientElements = new ArrayList<>();
 
     public String signPoleDistancesString = "";
+    public String signDistancesString = "";
 }
