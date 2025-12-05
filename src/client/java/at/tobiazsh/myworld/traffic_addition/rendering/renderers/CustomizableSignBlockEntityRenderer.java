@@ -240,7 +240,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Render each sign
         for (int i = 0; i < signPositions.size(); i++) {
-            if (Objects.requireNonNull(MinecraftClient.getInstance().world).getBlockEntity(signPositions.get(i)) instanceof CustomizableSignBlockEntity)
+            if (Objects.requireNonNull(MinecraftClient.getInstance().world).getBlockEntity(signPositions.get(i)) instanceof CustomizableSignBlockEntity csbe) {
+                BorderProperty borderType = csbe.getBorderType();
                 renderSign(
                         queue,
                         state,
@@ -248,8 +249,10 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                         matrices,
                         light,
                         facing,
-                        signDistances.get(i).invert()
+                        signDistances.get(i).invert(),
+                        borderType
                 );
+            }
         }
     }
 
@@ -257,7 +260,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset) {
+    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType) {
         matrices.push();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
@@ -274,7 +277,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         );
 
         // Render the border on top of the sign
-        BorderRenderer.render(queue, matrices, state.borders, light, facing);
+        BorderRenderer.render(queue, matrices, borderType, light, facing);
 
         BlockPosFloat blockPosBehind = new BlockPosFloat(state.pos)
                 .offset(
