@@ -190,7 +190,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         RenderLayer renderLayer = imageLayering.buildRenderLayer();
 
-        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers();
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
 
         matrices.push();

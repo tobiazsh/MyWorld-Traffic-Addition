@@ -153,7 +153,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 .offset(Direction.DOWN, y)
                 .offset(Direction.DOWN, h * 0.35f); // Fix Up/Down alignment
 
-        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers();
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
 
         matrices.push();
 
