@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 @Mixin(FontManager.class)
-public class FontManagerMixin {
+public abstract class FontManagerMixin {
 
     // FontManager.ProviderIndex = in access widener!
     @Inject(method = "loadIndex", at = @At("RETURN"), cancellable = true)
