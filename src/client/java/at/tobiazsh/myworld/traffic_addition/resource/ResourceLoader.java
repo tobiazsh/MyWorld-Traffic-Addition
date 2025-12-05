@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.resource;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+
 import java.io.InputStream;
 
 public class ResourceLoader {
@@ -11,7 +13,7 @@ public class ResourceLoader {
             try {
                 return new java.io.FileInputStream(location.getLocation());
             } catch (java.io.FileNotFoundException e) {
-                e.printStackTrace();
+                MyWorldTrafficAddition.LOGGER.error("Could not find resource at {}", location.getLocation(), e);
                 return null;
             }
         }
