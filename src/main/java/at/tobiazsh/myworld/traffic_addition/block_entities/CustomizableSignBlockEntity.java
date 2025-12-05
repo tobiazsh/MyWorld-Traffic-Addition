@@ -41,8 +41,6 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPos
 
 public class CustomizableSignBlockEntity extends BlockEntity {
 
-    private int width = 1;
-
     private boolean isMaster = true;
     private boolean isRendered = true;
     private boolean isInitialized = false;
@@ -60,6 +58,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private int rotation = 0;
     private int height = 1;
+    private int width = 1;
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
