@@ -47,7 +47,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private boolean isRendered = true;
     private boolean isInitialized = false;
     private boolean updateBackgroundTexture = false;
-    private boolean updateOccurred = false;
 
     private BorderProperty borders = new BorderProperty(
             true, true, true, true,
@@ -83,8 +82,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
         elements = BaseElementInterface.unpackList(elements);
-
-        updateOccurred = true;
     }
 
     public static void setTransmittedTexture(String json, ServerPlayerEntity player) {
