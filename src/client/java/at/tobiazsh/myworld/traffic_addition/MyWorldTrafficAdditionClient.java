@@ -1,40 +1,51 @@
 package at.tobiazsh.myworld.traffic_addition;
 
+import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TexturableElementInterface;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
-import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
 import at.tobiazsh.myworld.traffic_addition.screens.EmptyScreen;
-import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenCustomizableSignEditScreen;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignPoleRotationScreenPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.screens.CustomizableSignSettingScreen;
 import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BlockRenderLayer;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 
@@ -61,6 +72,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		RegistrableBlockEntityRender.bulkRegisterBlockEntityRenderers(blockEntityRenderers);
 
 		ClientCommandRegistrationCallback.EVENT.register(ModCommandsClient::initialize);
+
+        registerOnChunkUnload();
 
 		registerCustomProtocols();
 
@@ -153,23 +166,28 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		// Get maximum image upload size
 		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), bytes -> {
 			String maximumSize_str = new String(bytes);
-            OnlineImageDialog.maximumUploadSize = Long.parseLong(maximumSize_str);
+            OnlineImageDialog.setMaximumUploadSize(Long.parseLong(maximumSize_str));
 		});
 
+        CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"), bytes -> {
+            Error error = Error.fromBytes(bytes);
+            ErrorPopup.open(error, null);
+        });
+
 		// Get total number of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageLogic::setImageCount);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), OnlineImageNetworking::setImageCount);
 
 		// Get number of private images uploaded by the player
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"), OnlineImageLogic::setPrivateImageCount);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"), OnlineImageNetworking::setPrivateImageCount);
 
 		// Get metadata of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"), OnlineImageLogic::setMetadataList);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"), OnlineImageNetworking::setMetadataList);
 
 		// Get thumbnail of uploaded images
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"), OnlineImageLogic::setThumbnailData);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"), OnlineImageNetworking::setThumbnailData);
 
 		// Get image data
-		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageLogic::setImageData);
+		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageNetworking::setImageData);
 	}
 
 	public static void onStopGame() {
@@ -180,4 +198,46 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		MyWorldTrafficAddition.LOGGER.info("Thank you for playing MyWorld Traffic Addition! <3");
 	}
+
+    private static void registerOnChunkUnload() {
+        ClientChunkEvents.CHUNK_UNLOAD.register((ClientWorld world, WorldChunk chunk) -> {
+            for (BlockEntity be : chunk.getBlockEntities().values()) {
+                if (be instanceof CustomizableSignBlockEntity csbEntity) {
+                    customizableSignDeleteUnusedTextures(csbEntity);
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes all unused textures of the given CustomizableSignBlockEntity (if no elements are using them anymore). This is to prevent memory leaks.
+     * @param blockEntity The CustomizableSignBlockEntity to delete unused textures from.
+     */
+    @SuppressWarnings("resource")
+    private static void customizableSignDeleteUnusedTextures(CustomizableSignBlockEntity blockEntity) {
+        Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elementMap = CustomizableSignBlockEntityRenderer.elements;
+        List<ClientElementInterface> elements = elementMap.get(blockEntity);
+
+        if (elements == null)
+            return;
+
+        for (ClientElementInterface element : elements) {
+            if (!(element instanceof TexturableElementInterface texturableElement))
+                continue;
+
+            if (!texturableElement.isTextureLoaded())
+                continue;
+
+            DynamicTexture texture = texturableElement.getDynamicTexture();
+            if (texture == null)
+                continue;
+
+            try {
+                texture.destroy(); // Won't destroy just yet if there are subscribers
+                texturableElement.markTextureStale(); // Mark texture as stale. NOW it get's destroyed if no subscribers are left
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.warn("Could not mark texture stale for {}", texturableElement, e);
+            }
+        }
+    }
 }

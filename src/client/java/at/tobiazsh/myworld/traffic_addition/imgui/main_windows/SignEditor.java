@@ -11,19 +11,22 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.*;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem.Folder;
-import at.tobiazsh.myworld.traffic_addition.utils.Saves;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem.Folder;
+import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 
 import com.google.gson.*;
@@ -45,9 +48,9 @@ import java.util.Objects;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.clearFontAtlas;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.updateToNewVersion;
-import static at.tobiazsh.myworld.traffic_addition.utils.Saves.createSavesDir;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.updateToNewVersion;
+import static at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory.createSavesDir;
 
 public class SignEditor {
 
@@ -58,6 +61,8 @@ public class SignEditor {
     private static int signWidthBlocks;
     private static int signHeightBlocks;
 
+    private static boolean isClosed = true;
+
     public static String backgroundTexturePath;
     public static ClientElementInterface selectedElement = null;
     private static Folder allBackgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
@@ -67,8 +72,9 @@ public class SignEditor {
     private static void quit() {
         ImGui.closeCurrentPopup();
         ImGuiRenderer.showSignEditor = false;
-        clearFontAtlas();
+        isClosed = true;
         ClientElementManager.getInstance().clearAll();
+        clearFontAtlas();
     }
 
     public static void disposeChildWindows() {
@@ -85,13 +91,16 @@ public class SignEditor {
         BackgroundSelectorPopup.render(allBackgrounds, blockEntity);
         ConfirmationPopup.render();
         FileDialogPopup.render();
-        OnlineImageDialog.render();
+        OnlineImageGallery.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
 
         if (!isInit) {
-            ErrorPopup.open(tr("ImGui.Main.SignEditor.Error", "Sign not initialized!"), tr("ImGui.Main.SignEditor.Error", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!"), SignEditor::quit);
+            ErrorPopup.open(new Error(
+                    tr("ImGui.Main.SignEditor.Error", "Sign not initialized!"),
+                    tr("ImGui.Main.SignEditor.Error", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!")
+            ), SignEditor::quit);
         }
 
         ClientElementManager.getInstance().clearAll();
@@ -129,6 +138,7 @@ public class SignEditor {
         calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
 
         ImGuiRenderer.showSignEditor = true;
+        isClosed = false;
     }
 
     private static void getSignSize() {
@@ -288,7 +298,7 @@ public class SignEditor {
         if(ImGui.beginMenu(tr("Global", "Elements"))) {
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Image Element") + "...", "CTRL + SHIFT + A")) ElementAddWindow.open();
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Text Element") + "...", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            //if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Upload Image") + "...")) openOnlineImageDialog(); // TODO: Note to myself: FINALLY FINISH THIS MOTHERFUCKER!!
+            if (ImGui.menuItem(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery") + "...")) OnlineImageGallery.open();
 
             ImGui.separator();
 
@@ -324,6 +334,13 @@ public class SignEditor {
                 CustomizableSignData style = ClientElementManager.getInstance().rawData;
                 updateToNewVersion(style);
             }
+
+            if (ImGui.menuItem("Test Error Popup")) {
+                ErrorPopup.open(new Error("Test Error", "This is a test error message."), () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed."));
+            }
+
+            if (ImGui.menuItem("Test TFD Popup O")) DebugFunctions.testNfd_open();
+            if (ImGui.menuItem("Test TFD Popup S")) DebugFunctions.testNfd_save();
 
             ImGui.endMenu();
         }
@@ -421,7 +438,7 @@ public class SignEditor {
         FileDialogPopup.setData(getPrettyJson(ClientElementManager.getInstance().rawData.jsonString));
 
         FileDialogPopup.open(
-                Saves.getSignSaveDir(),
+                SavesDirectory.getSignSaveDir(),
                 FileDialogPopup.FileDialogType.SAVE,
                 (path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
                 "MWTACSIGN", "JSON"
@@ -431,7 +448,7 @@ public class SignEditor {
     private static void importSign() {
         createSavesDir();
 
-        FileDialogPopup.open(Saves.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+        FileDialogPopup.open(SavesDirectory.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             if (path == null || path.toString().isBlank()) return;
 
             CustomizableSignData style = new CustomizableSignData();
@@ -445,7 +462,7 @@ public class SignEditor {
     private static void importElement() {
         createSavesDir();
 
-        FileDialogPopup.open(Saves.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
+        FileDialogPopup.open(SavesDirectory.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
             ClientElementInterface element = ClientElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
 
@@ -462,8 +479,10 @@ public class SignEditor {
         }, "MWTACSELEMENT", "JSON");
     }
 
-    // Used Later for the online image dialog
-    private static void openOnlineImageDialog() {
-        OnlineImageDialog.startDialog();
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // Getters --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static boolean isClosed() {
+        return isClosed;
     }
 }

@@ -2,14 +2,12 @@ package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import imgui.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.*;
@@ -25,7 +23,7 @@ public class FontManager {
     // Just a few necessary letters that are not included otherwise
     private static final short[] specialCharacters = new short[] {
             0x0110, // Đ (DJ) e.g. Croatian
-            0x010F, // đ (dj) e.g. Croatian
+            0x0111, // đ (dj) e.g. Croatian
             0x0160, // Š (SH) e.g. Croatian
             0x0161, // š (sh) e.g. Croatian
             0x017D, // Ž (ZH) e.g. Croatian
@@ -125,13 +123,21 @@ public class FontManager {
     /**
      * Rebuilds the font atlas to include newly registered fonts
      * This method should be called after registering new fonts
+     * Invalidates all existing ImGuiFont objects in the cache
+     * Use {@link ImGuiFont#isInvalid()} to check if a font is still valid
+     * @param clearFontCache Whether to clear the font cache or not.
+     *                       If true, all existing ImGuiFont objects will be invalidated and removed from the cache.
+     *                       If false, existing ImGuiFont objects will be kept and only new fonts will be added.
      */
-    public static void rebuildFontAtlas() {
+    public static void rebuildFontAtlas(boolean clearFontCache) {
         ImFontAtlas fontAtlas = ImGui.getIO().getFonts();
+
+        fontCache.forEach((k, v) -> v.invalidate());
+        if (clearFontCache) fontCache.clear();
 
         // Rebuild the font atlas
         fontAtlas.clear();
-        reRegisterFonts();
+        reRegisterFonts(fontCache.values());
         registerDefaultFonts();
         fontAtlas.build();
 
@@ -140,22 +146,24 @@ public class FontManager {
         // Notify the renderer (OpenGL) to create the font texture
         ImGuiImpl.imGuiImplGl3.createFontsTexture();
 
+        fontCache.forEach((k, v) -> v.validate()); // Validate all fonts again in case font cache didn't get cleared
+
         ImGui.getIO().setFontDefault(Roboto);
     }
 
     /**
      * Re-registers all registered fonts. Used for rebuilding the font atlas
      */
-    private static void reRegisterFonts() {
+    private static void reRegisterFonts(Collection<ImGuiFont> fonts) {
         ImFontConfig fontConfig = new ImFontConfig();
         fontConfig.setOversampleV(2);
         fontConfig.setOversampleH(2);
 
-        for (ImGuiFont font : fontCache.values()) {
+        for (ImGuiFont font : fonts) {
             byte[] fontBytes = ImGuiImpl.loadFromResource(font.getFontPath());
 
             if (fontBytes == null) {
-                MyWorldTrafficAddition.LOGGER.error("Failed to load font ({}) from resource! Maybe file doesn't exist? Using default font!", font.getFontPath());
+                MyWorldTrafficAddition.LOGGER.error("Failed to load font ({})! Maybe file doesn't exist? Using default font!", font.getFontPath());
                 fontBytes = ImGuiImpl.loadFromResource(defaultFontPath);
             }
 
@@ -173,32 +181,31 @@ public class FontManager {
             return;
         }
 
-        //new Thread(() -> {
-            for (FontRequest request : fontRequests) {
-                try {
-                    ImFontConfig fontConfig = new ImFontConfig();
-                    fontConfig.setOversampleV(2);
-                    fontConfig.setOversampleH(2);
+        for (FontRequest request : fontRequests) {
+            try {
+                ImFontConfig fontConfig = new ImFontConfig();
+                fontConfig.setOversampleV(2);
+                fontConfig.setOversampleH(2);
 
-                    byte[] fontBytes = ImGuiImpl.loadFromResource(request.getPath());
+                byte[] fontBytes = ImGuiImpl.loadFromResource(request.getPath());
 
-                    if (fontBytes == null) {
-                        MyWorldTrafficAddition.LOGGER.error("Failed to load font ({}) from resource! Maybe file doesn't exist? Using default font!", request.getPath());
-                        fontBytes = ImGuiImpl.loadFromResource(defaultFontPath);
-                    }
-
-                    ImFont font = ImGui.getIO().getFonts().addFontFromMemoryTTF(fontBytes, request.getFontSize(), fontConfig, defaultGlyphRanges);
-                    ImGuiFont imGuiFont = new ImGuiFont(request.getPath(), font, request.getFontSize());
-                    fontCache.put(request.getKey(), imGuiFont);
-                    request.complete(imGuiFont);
-                } catch (Exception e) {
-                    MyWorldTrafficAddition.LOGGER.error("Failed to register font {} with size {}: {}", request.getPath(), request.getFontSize(), e.getMessage());
+                if (fontBytes == null) {
+                    MyWorldTrafficAddition.LOGGER.error("Failed to load font ({}) from resource! Maybe file doesn't exist? Using default font!", request.getPath());
+                    fontBytes = ImGuiImpl.loadFromResource(defaultFontPath);
                 }
-            }
 
-            fontRequests.clear();
-            scheduleFontAtlasRebuild();
-        //}).start();
+                ImFont font = ImGui.getIO().getFonts().addFontFromMemoryTTF(fontBytes, request.getFontSize(), fontConfig, defaultGlyphRanges);
+                ImGuiFont imGuiFont = new ImGuiFont(request.getPath(), font, request.getFontSize());
+                fontCache.put(request.getKey(), imGuiFont);
+                imGuiFont.invalidate(); // Invalidate until font atlas is rebuilt
+                request.complete(imGuiFont);
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to register font {} with size {}: {}", request.getPath(), request.getFontSize(), e.getMessage());
+            }
+        }
+
+        fontRequests.clear();
+        scheduleFontAtlasRebuild();
     }
 
     public static FileSystem.Folder getAvailableFonts() {

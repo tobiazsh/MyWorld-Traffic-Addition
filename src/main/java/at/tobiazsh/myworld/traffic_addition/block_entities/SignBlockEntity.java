@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.utils.Coordinates;
+import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

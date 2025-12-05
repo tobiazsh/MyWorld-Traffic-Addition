@@ -1,8 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiStyleVar;

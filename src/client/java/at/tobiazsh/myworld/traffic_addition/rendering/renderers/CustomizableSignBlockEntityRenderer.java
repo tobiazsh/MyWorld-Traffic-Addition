@@ -9,13 +9,18 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
+import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -28,7 +33,6 @@ import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
@@ -62,7 +66,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     public static float elementDistancingRenderLayer = 0.75f;
     public static final float elementDistancingRenderLayerDefault = 0.75f;
 
-    private static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements = new HashMap<>();
+    public static final Map<CustomizableSignBlockEntity, List<ClientElementInterface>> elements =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     // Constructor
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
@@ -415,7 +420,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
 
         List<ClientElementInterface> renderedElements = elements.get(csbe);
-        renderedElements.forEach(element -> renderElement(element, renderedElements.indexOf(element), height, matrices, vertexConsumers, light, overlay, facing));
+        if (renderedElements == null) return;
+
+        for (int i = 0; i < renderedElements.size(); i++) {
+            ClientElementInterface element = renderedElements.get(i);
+            renderElement(element, i, height, matrices, vertexConsumers, light, overlay, facing);
+        }
     }
 
     public static void renderElement(ClientElementInterface element, int index, int height, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {

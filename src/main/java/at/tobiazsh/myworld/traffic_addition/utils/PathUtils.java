@@ -11,7 +11,6 @@ public class PathUtils {
 
     @Contract(pure = true)
     public static @NotNull Path relativizeResourcePath(@NotNull Path absoluteResourcePath) {
-        Path normalizedPath = Path.of(absoluteResourcePath.toString().replaceAll("\\\\", "/"));
         return MOD_RESOURCES.relativize(absoluteResourcePath);
     }
 

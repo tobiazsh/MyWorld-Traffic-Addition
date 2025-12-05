@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import net.minecraft.block.BlockState;

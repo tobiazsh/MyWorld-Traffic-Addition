@@ -1,13 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosExtended;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
@@ -402,8 +401,11 @@ public class CustomizableSignSettingScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        ImGuiRenderer.showSignEditor = false;
-        showChildren = true;
-        return true;
+        boolean close = SignEditor.isClosed();
+
+        if (close)
+            showChildren = true;
+
+        return close;
     }
 }

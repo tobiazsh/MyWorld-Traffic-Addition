@@ -6,10 +6,11 @@ import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.utils.exception.SignTextureParseException;
-import at.tobiazsh.myworld.traffic_addition.utils.sign.SignTexture;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.exception.SignTextureParseException;
+import at.tobiazsh.myworld.traffic_addition.texture.sign.SignTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.type.ImInt;
@@ -114,7 +115,7 @@ public class SignSelector {
                                 .stream()
                                 .filter(dirElem -> dirElem.name.matches("textures.json"))
                                 .findAny()
-                                .orElse(new FileSystem.DirectoryElement(null, null))
+                                .orElse(new FileSystem.DirectoryElement(null, null, false))
                                 .path;
 
                         if (filePath == null) {
@@ -130,7 +131,10 @@ public class SignSelector {
                     });
 
         } catch (IOException | URISyntaxException e) {
-            ErrorPopup.open("Error", "An error occurred while trying to read the sign textures. Stack Trace is available in the log.", this::close); // No need for translations as this should not happen in normal use
+            ErrorPopup.open(new Error(
+                    "Error",
+                    "An error occurred while trying to read the sign textures. Stack Trace is available in the log."
+            ), this::close); // No need for translations as this should not happen in normal use
             MyWorldTrafficAddition.LOGGER.error("An error occurred while trying to read the sign textures: ", e);
             close();
         }

@@ -2,10 +2,10 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
 import net.minecraft.util.Identifier;
@@ -136,7 +136,14 @@ public class ClientElementManager {
     }
 
     public void removeElement(int index) {
-        unregisterElement(elements.get(index)); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
+        ClientElementInterface element = elements.get(index);
+
+        unregisterElement(element); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
+
+        if (element instanceof TexturableElementInterface) {
+            ((TexturableElementInterface) element).markTextureStale();
+        }
+
         elements.remove(index);
         registerUnregistered();
     }
@@ -270,6 +277,14 @@ public class ClientElementManager {
     }
 
     public void clearAll() {
+        getElements().forEach(e -> {
+            try {
+                e.dispose();
+            } catch (Exception ex) {
+                MyWorldTrafficAddition.LOGGER.error("Error disposing element {}: {}", e, ex.getMessage());
+            }
+        });
+
         elements.clear();
         elementIds.clear();
         rawData = new CustomizableSignData(); // Reset the raw data

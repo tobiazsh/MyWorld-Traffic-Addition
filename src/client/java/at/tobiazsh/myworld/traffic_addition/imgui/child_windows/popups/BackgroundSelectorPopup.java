@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.utils.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import imgui.ImGui;
 
@@ -10,17 +10,17 @@ import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getBackgroundTexturePathList;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getBackgroundTexturePathList;
 
 public class BackgroundSelectorPopup {
 
     private static boolean shouldOpen = false;
     private static boolean styleSelected = false;
-    private static FileSystem.Folder currentBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal"); // Default to Austria's Road Style
-    private final static FileSystem.Folder defaultBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal");
+    private static FileSystem.Folder currentBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal", true); // Default to Austria's Road Style
+    private final static FileSystem.Folder defaultBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal", true);
     private static FileSystem.Folder oldBackground = null;
-    private static FileSystem.Folder selectedCountry = new FileSystem.Folder("No Country Selected", "/");
-    private static FileSystem.Folder availableBackgrounds = new FileSystem.Folder(null, null);
+    private static FileSystem.Folder selectedCountry = new FileSystem.Folder("No Country Selected", "/", true);
+    private static FileSystem.Folder availableBackgrounds = new FileSystem.Folder(null, null, true);
 
     public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
         ImGui.setNextWindowSize(1000, 750);

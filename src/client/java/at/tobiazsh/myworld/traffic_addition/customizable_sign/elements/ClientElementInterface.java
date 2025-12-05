@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
@@ -26,4 +26,15 @@ public interface ClientElementInterface extends BaseElementInterface {
      * @return a new instance of the element with the same properties.
      */
     ClientElementInterface copy();
+
+    /**
+     * Renders a preview of the element in the sign editor. Used for the element list.
+     * Must be used inside an ImGui window.
+     */
+    void renderPreview(float w, float h);
+
+    /**
+     * Disposes resources used by the element.
+     */
+    default void dispose() { }
 }

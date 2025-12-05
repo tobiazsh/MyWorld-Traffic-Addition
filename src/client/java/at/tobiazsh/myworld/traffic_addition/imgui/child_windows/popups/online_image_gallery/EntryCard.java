@@ -4,7 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.OnlineImageElementClient;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.utils.DateTimeUtility;
 import imgui.ImGui;
 import imgui.ImVec4;
@@ -22,12 +22,14 @@ public class EntryCard {
     private String id;
     private final boolean showDeleteButton;
     private final Runnable onDeleteAction;
+    private final Runnable onAddAction;
 
-    public EntryCard(CustomImageMetadata imageEntry, int thumbnailTextureId, boolean showDeleteButton, Runnable onDeleteAction) {
+    public EntryCard(CustomImageMetadata imageEntry, int thumbnailTextureId, boolean showDeleteButton, Runnable onDeleteAction, Runnable onAddAction) {
         this.imageEntry = imageEntry;
         this.thumbnailTextureId = thumbnailTextureId;
         this.showDeleteButton = showDeleteButton;
         this.onDeleteAction = onDeleteAction;
+        this.onAddAction = onAddAction;
         constructId();
     }
 
@@ -77,11 +79,21 @@ public class EntryCard {
 
             ImGui.text("%s: %s".formatted(tr("Global", "Name"), imageEntry.getImageName())); // Name: ____
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Encoded Name"), imageEntry.getImageNameEncoded())); // Encoded Name: ____
+
+            ImGui.separator();
+            ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Image UUID"), imageEntry.getImageUUID())); // Image UUID: ____
+            ImGui.sameLine();
+            if (ImGui.button(tr("Global", "Copy")))
+                ImGui.setClipboardText(imageEntry.getImageUUID().toString());
+
             ImGui.separator();
             ImGui.text("%s: %s".formatted(tr("ImGui.Child.PopUps.OnlineImageGallery.EntryCard", "Uploader's UUID"), imageEntry.getUploaderUUID())); // Uploader's UUID: ____
+            ImGui.sameLine();
+            if (ImGui.button(tr("Global", "Copy")))
+                ImGui.setClipboardText(imageEntry.getUploaderUUID().toString());
 
             // Status display
-            String status = "";
+            String status;
             if (isFetchingName) {
                 status = "Fetching Name...";
             } else if (hadErrorWhileFetching) {
@@ -127,7 +139,21 @@ public class EntryCard {
     }
 
     private void addToSign() {
-        ClientElementManager.getInstance().addElement(new OnlineImageElementClient(0, 0, -1, -1, 1.0f, 0f, imageEntry.getImageUUID(), ClientElementInterface.MAIN_CANVAS_ID));
+        OnlineImageElementClient oiec = new OnlineImageElementClient(
+                0, 0,
+                -1, -1,
+                1.0f,
+                0f,
+                imageEntry.getImageUUID(),
+                ClientElementInterface.MAIN_CANVAS_ID
+        );
+
+        oiec.setName(imageEntry.getImageName());
+        oiec.resizeAfterDownload();
+
+        ClientElementManager.getInstance().addElementFirst(oiec);
+
+        this.onAddAction.run();
     }
 
     private void fetchUploaderName() {

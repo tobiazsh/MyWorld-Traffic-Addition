@@ -1,6 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.utils.elements.GroupElement;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import imgui.ImGui;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
@@ -11,6 +14,8 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GroupElementClient extends GroupElement implements ClientElementInterface {
+
+    private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
 
     private final List<ClientElementInterface> clientElements;
     private boolean expanded = false;
@@ -25,7 +30,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
     }
 
-    // NOT NECESSARY
+    // NOT NECESSARY --> Groups are unpacked in CustomizableBlockEntity
     @Override
     public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
 
@@ -213,5 +218,23 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         });
 
         super.setWidth(width); // Do so for the super class
+    }
+
+    @Override
+    public void renderPreview(float w, float h) {
+        ImGui.image(groupIconId, w, h);
+    }
+
+    @Override
+    public void dispose() {
+        // recursively dispose children
+        clientElements.forEach(e -> {
+            try {
+                e.dispose();
+            } catch (Exception ex) {
+                MyWorldTrafficAddition.LOGGER.error("Could not dispose element: {}", e.getName(), ex);
+            }
+        });
+        clientElements.clear();
     }
 }

@@ -8,10 +8,9 @@ package at.tobiazsh.myworld.traffic_addition.imgui;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
@@ -45,6 +44,9 @@ public class ImGuiImpl {
 
     public static ImFontAtlas fontAtlas;
 
+    public static boolean fontsNeedRebuild = false;
+    public static boolean clearFontAtlasOnRebuild = false;
+
     public static void create(final long handle) {
         ImGui.createContext();
         ImPlot.createContext();
@@ -56,15 +58,14 @@ public class ImGuiImpl {
         fontAtlas = io.getFonts();
 
         // Load fonts
+        buildFontRanges();
         registerDefaultFonts();
         ImGui.getIO().setFontDefault(Roboto);
 
+        ImGui.getIO().getFonts().build();
+
         // Load other stuff
-        CommonImages.loadTextures();
-
-        fontAtlas.build();
-
-        buildFontRanges();
+        CommonTextures.loadTextures();
 
         io.setConfigFlags(ImGuiConfigFlags.DockingEnable);
 
@@ -93,8 +94,6 @@ public class ImGuiImpl {
         RobotoBoldBig = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 40, fontConfig, glyphRanges);
         RobotoBoldMedium = ImGui.getIO().getFonts().addFontFromMemoryTTF(defaultFontBoldBytes, 30, fontConfig, glyphRanges);
     }
-
-    public static boolean fontsNeedRebuild = false;
 
     // I have no fucking clue on how many hours this steaming piece of shit has wasted me... Just wanted to state that here
     public static void uploadFontTexture() {
@@ -167,13 +166,14 @@ public class ImGuiImpl {
 
     private static void rebuildFontAtlasIfNeeded() {
         if (fontsNeedRebuild) {
-            rebuildFontAtlas();
+            rebuildFontAtlas(clearFontAtlasOnRebuild);
             fontsNeedRebuild = false;
+            clearFontAtlasOnRebuild = false;
         }
     }
 
     public static void clearFontAtlas() {
-        FontManager.fontCache.clear();
+        clearFontAtlasOnRebuild = true;
         scheduleFontAtlasRebuild();
     }
 

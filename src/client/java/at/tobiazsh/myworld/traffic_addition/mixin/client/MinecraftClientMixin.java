@@ -7,13 +7,11 @@ package at.tobiazsh.myworld.traffic_addition.mixin.client;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
-import at.tobiazsh.myworld.traffic_addition.utils.ClientPreferences;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont;
+import at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.FontManager;

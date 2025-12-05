@@ -4,11 +4,12 @@ import at.tobiazsh.myworld.traffic_addition.imgui.utils.Color;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
-import at.tobiazsh.myworld.traffic_addition.utils.BasicFont;
-import at.tobiazsh.myworld.traffic_addition.utils.BlockPosFloat;
+import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
 import imgui.ImFont;
@@ -20,18 +21,21 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
-import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomMinecraftFont.getTextRendererByPath;
+import static at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont.getTextRendererByPath;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
+
+    private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
 
     private Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont imGuiFont; // Font after future is done
@@ -51,7 +55,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
             UUID id, UUID parentId
     ) {
         super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, parentId, id);
-        this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize());
         this.font = font;
     }
 
@@ -61,24 +64,34 @@ public class TextElementClient extends TextElement implements ClientElementInter
     @Override
     public void renderImGui(float scale) {
 
-        // Without font, no text :)
-        if (imGuiFont == null && !fontFuture.isDone()) {
-            MyWorldTrafficAddition.LOGGER.debug("Font is null! Can't render text!");
+        if (imGuiFont == null && fontFuture == null) {
+            if (font != null)
+                fontFuture = registerThisFont(); // No font future yet, register it
+
             return;
         }
 
-        // For better readability, so I don't have to compact everything in one bracelet
-        boolean isImGuiFontNull = (imGuiFont == null);
-        boolean doFontPathsMatch = !isImGuiFontNull && Objects.equals(font.getFontPath(), imGuiFont.getFontPath());
-        boolean doFontSizesMatch = !isImGuiFontNull && (imGuiFont.getFontSize() == font.getFontSize());
+        if (imGuiFont == null && !fontFuture.isDone()) {
+            MyWorldTrafficAddition.LOGGER.debug("Font is not ready yet! Can't render text!");
+            return; // not ready yet
+        }
 
-        // Check font for updates/new fonts
-        if (isImGuiFontNull || !doFontPathsMatch || !doFontSizesMatch) {
+        if (imGuiFont == null) {
             try {
-                imGuiFont = fontFuture.get();
+                imGuiFont = fontFuture.get(); // blockiert nicht, weil isDone() true
+                if (imGuiFont == null || imGuiFont.isInvalid()) {
+                    return; // safety
+                }
             } catch (Exception e) {
-                MyWorldTrafficAddition.LOGGER.error("Font is null but async task was completed! Exception produced: {}", e.getMessage());
+                MyWorldTrafficAddition.LOGGER.error("Font loading failed", e);
+                return;
             }
+        }
+
+        // Another check just to be sure nothing changed in the meantime
+        if (imGuiFont.isInvalid() || !imGuiFont.font.isLoaded() || imGuiFont.font.getScale() <= 0) {
+            MyWorldTrafficAddition.LOGGER.error("Font is invalid! Can't render text!");
+            return;
         }
 
         ImGui.pushFont(this.imGuiFont.font);
@@ -212,6 +225,19 @@ public class TextElementClient extends TextElement implements ClientElementInter
         );
     }
 
+    /**
+     * Registers the font of this element asynchronously.
+     * @return A CompletableFuture that will complete with the registered ImGuiFont.
+     */
+    private @Nullable CompletableFuture<ImGuiFont> registerThisFont() {
+        if (font == null || font.getFontPath() == null) {
+            MyWorldTrafficAddition.LOGGER.warn("Tried to register TextElementClient font but font or its properties are null! Operation aborted!");
+            return null;
+        }
+
+        return registerFontAsync(font.getFontPath(), font.getFontSize());
+    }
+
     @Override
     public void onPaste() {
         // ClientElementManager.getInstance().registerElement(this);
@@ -244,7 +270,32 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
     @Override
     public void setFont(BasicFont font) {
+        if (font == null) {
+            MyWorldTrafficAddition.LOGGER.error("Tried to set TextElementClient font to null! Operation aborted!");
+            return;
+        }
+
         super.setFont(font);
+        this.fontFuture = null;
+        this.imGuiFont = null;
         this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
+    }
+
+    @Override
+    public void renderPreview(float w, float h) {
+        ImGui.image(textIconId, w, h);
+    }
+
+    @Override
+    public void dispose() {
+        try {
+            if (fontFuture != null && !fontFuture.isDone()) {
+                fontFuture.cancel(true);
+            }
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to dispose TextElementClient font future: {}", e.getMessage());
+        }
+        fontFuture = null;
+        imGuiFont = null;
     }
 }

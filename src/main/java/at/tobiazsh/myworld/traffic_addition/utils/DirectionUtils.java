@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;

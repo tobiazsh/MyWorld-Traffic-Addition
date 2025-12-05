@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
 
 import java.util.ArrayList;
 import java.util.List;

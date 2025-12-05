@@ -3,19 +3,21 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_i
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.CommonImages;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.CustomImageMetadata;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageCache;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageLogic;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Texture;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
+import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
+import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
+import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -45,25 +47,29 @@ public class OnlineImageGallery {
     private static final List<Texture> currentThumbnails = new CopyOnWriteArrayList<>();
     private static final List<EntryCard> entryCards = new CopyOnWriteArrayList<>();
 
-    private static final List<Integer> texturesToFree = new ArrayList<>();
+    private static final List<Texture> texturesToFree = new ArrayList<>();
 
     private enum TABS {
         ALL,
         MINE
     }
 
-    // TODO: Implement "Add" button
+    public static void renderSubwindows() {
+        OnlineImageDialog.INSTANCE.render();
+    }
 
     public static void render() {
         if (!shouldRender) return;
 
         if (!texturesToFree.isEmpty()) {
-            texturesToFree.forEach(GL11::glDeleteTextures); // Free all textures that are no longer needed
+            texturesToFree.forEach(Texture::delete); // Free all textures that are no longer needed
             texturesToFree.clear();
         }
 
         ImGui.setNextWindowSize(windowWidth, windowHeight);
         if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery"))) {
+
+            renderSubwindows();
 
             renderMenuBar();
             renderPageBar();
@@ -101,10 +107,7 @@ public class OnlineImageGallery {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.129f, 0.129f, 0.129f, 1.0f));
         ImGui.beginChild("##tabControls", ImGui.getWindowSizeX() - 2 * ImGui.getStyle().getWindowPaddingX(), ImGui.getFrameHeight(), false);
 
-        if (ImGui.button(tr("ImGui.Child.PopUps.OnlineImageGallery", "Cancel"))) {
-            shouldClose = true;
-            ImGui.closeCurrentPopup();
-        }
+        if (ImGui.button(tr("Global", "Close"))) close();
 
         ImGui.sameLine();
 
@@ -131,6 +134,11 @@ public class OnlineImageGallery {
         if (ImGui.button(tr("Global", "Refresh"))) {
             refresh();
         }
+
+        ImGui.sameLine();
+
+        if (ImGui.button(tr("ImGui.Main.SignEditor", "Upload Image") + "..."))
+            OnlineImageDialog.INSTANCE.startDialog(); // Open online image dialog and after upload, re-open gallery
 
         ImGui.endChild();
         ImGui.popStyleColor();
@@ -185,7 +193,7 @@ public class OnlineImageGallery {
         if (isLoading) return;
 
         if (metadataList.isEmpty()) {
-            String noImagesFound = tr("ImGui.Child.PopUps.OnlineImageGallery", "No images found.");
+            String noImagesFound = tr("ImGui.Child.PopUps.OnlineImageGallery", "No images found");
             ImGui.setCursorPos(
                     new ImVec2(
                             (ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(noImagesFound)) / 2,
@@ -207,7 +215,7 @@ public class OnlineImageGallery {
                             refresh();
                         }
                     });
-                }));
+                }, OnlineImageGallery::close));
             }
         }
 
@@ -263,7 +271,7 @@ public class OnlineImageGallery {
         isLoading = true;
 
         if (currentTab == TABS.MINE) {
-            OnlineImageLogic.fetchPrivateEntryCount()
+            OnlineImageNetworking.fetchPrivateEntryCount()
                     .thenAccept(count -> {
                         entryCount = count;
                         calculatePage();
@@ -274,7 +282,7 @@ public class OnlineImageGallery {
                         return null;
                     });
         } else if (currentTab == TABS.ALL) {
-            OnlineImageLogic.fetchEntryCount()
+            OnlineImageNetworking.fetchEntryCount()
                     .thenAccept(count -> {
                         entryCount = count;
                         calculatePage();
@@ -301,7 +309,7 @@ public class OnlineImageGallery {
         entryCards.clear();
         currentThumbnails.clear();
 
-        OnlineImageLogic.fetchImageMetadata(startIndex, endIndex, privateEntriesOnly)
+        OnlineImageNetworking.fetchImageMetadata(startIndex, endIndex, privateEntriesOnly)
                 .thenAccept(list -> {
                     metadataList = new CopyOnWriteArrayList<>(list);
                     loadThumbnailsForCurrentPage(list);
@@ -319,8 +327,9 @@ public class OnlineImageGallery {
         isLoading = true;
 
         List<UUID> uuids = metadataList.stream().map(CustomImageMetadata::getImageUUID).toList(); // Get UUIDs of all images
-        List<Pair<Integer, UUID>> cachedUuids = splitCached(uuids).getRight(); // Get UUIDs of cached images
-        uuids = splitCached(uuids).getLeft(); // Get UUIDs of non-cached images
+        Pair<List<UUID>, List<Pair<Integer, UUID>>> listPair = splitCached(uuids);
+        List<Pair<Integer, UUID>> cachedUuids = listPair.getRight(); // Get UUIDs of cached images
+        uuids = listPair.getLeft(); // Get UUIDs of non-cached images
 
         // Get Cached thumbnails
         List<Pair<Integer, byte[]>> cachedThumbnails = getFromCachedImages(cachedUuids);
@@ -329,12 +338,12 @@ public class OnlineImageGallery {
         if (uuids.isEmpty()) {
             List<byte[]> thumbnails = new ArrayList<>();
             cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight()));
-            loadThumbnails(thumbnails);
+            MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
             return;
         }
 
         List<UUID> finalUuids = uuids;
-        OnlineImageLogic.fetchThumbnails(uuids)
+        OnlineImageNetworking.fetchThumbnails(uuids)
                 .thenAccept(thumbnails -> {
                     currentThumbnailData = thumbnails;
                     cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight())); // Add cached thumbnails to the list
@@ -345,7 +354,7 @@ public class OnlineImageGallery {
                         cacheThumbnail(new Pair<>(uuid, data));
                     }
 
-                    loadThumbnails(thumbnails);
+                    MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
                 })
                 .exceptionally(ex -> {
                     MyWorldTrafficAddition.LOGGER.error("Failed to fetch thumbnails: {}", ex.getMessage());
@@ -361,17 +370,24 @@ public class OnlineImageGallery {
         for (byte[] bytes : thumbnails) {
             if (bytes == null) {
                 MyWorldTrafficAddition.LOGGER.error("Error (Loading Thumbnails): Texture not found on server!");
-                currentThumbnails.add(CommonImages.NOT_FOUND_PLACEHOLDER);
+                currentThumbnails.add(CommonTextures.NOT_FOUND_PLACEHOLDER);
                 continue;
             }
 
-            ByteBuffer thumbnailData = ByteBuffer.allocateDirect(bytes.length);
-            thumbnailData.put(bytes);
-            thumbnailData.flip();
+            ByteBuffer thumbnailData = null;
+            try {
+                thumbnailData = MemoryUtil.memAlloc(bytes.length);
+                thumbnailData.put(bytes);
+                thumbnailData.flip();
 
-            Texture tex = new Texture();
-            tex.loadTextureData(thumbnailData);
-            currentThumbnails.add(tex);
+                Texture tex = new Texture();
+                tex.loadTextureData(thumbnailData);
+                currentThumbnails.add(tex);
+            } catch (Throwable t) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to create texture from thumbnail data: {}", t.getMessage());
+                currentThumbnails.add(CommonTextures.NOT_FOUND_PLACEHOLDER);
+            }
+            // DO NOT free thumbnailData here, Texture.loadTextureData already does that
         }
 
         isLoading = false;
@@ -439,10 +455,12 @@ public class OnlineImageGallery {
     }
 
     private static void freeTextureIds() {
-        currentThumbnails.forEach(texture -> texturesToFree.add(texture.getTextureId()));
-
+        for (Texture texture : currentThumbnails) {
+            if (texture != null && !texture.isEmpty()) {
+                texturesToFree.add(texture);
+            }
+        }
         currentThumbnails.clear();
-        entryCards.clear();
     }
 
     private static void calculatePage() {
@@ -472,5 +490,10 @@ public class OnlineImageGallery {
                 imageUUID.toString().getBytes(),
                 -1, -1
         );
+    }
+
+    private static void close() {
+        shouldClose = true;
+        ImGui.closeCurrentPopup();
     }
 }

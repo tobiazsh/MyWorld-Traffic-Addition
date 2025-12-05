@@ -2,18 +2,21 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
-import at.tobiazsh.myworld.traffic_addition.networking.ChunkedDataPayload;
-import at.tobiazsh.myworld.traffic_addition.networking.CustomServerNetworking;
-import at.tobiazsh.myworld.traffic_addition.utils.custom_image.OnlineImageServerLogic;
-import at.tobiazsh.myworld.traffic_addition.utils.preferences.ServerPreferences;
-import at.tobiazsh.myworld.traffic_addition.utils.SmartPayload;
+import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
+import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
+import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignPoleBlockActions;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -28,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.tobiazsh.myworld.traffic_addition.utils.SmartPayload.bulkRegisterPayloads;
+import static at.tobiazsh.myworld.traffic_addition.network.SmartPayload.bulkRegisterPayloads;
 
 /*
 	@author Tobias
@@ -42,7 +45,14 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	public static final String MOD_ID = "myworld_traffic_addition";
     public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
-	public static final String MODVER = "v1.5.3";
+	public static final String MOD_VERSION =
+            "v" +
+            FabricLoader.getInstance()
+                    .getModContainer(MOD_ID)
+                    .orElseThrow()
+                    .getMetadata()
+                    .getVersion()
+                    .getFriendlyString();
 
 	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
@@ -50,7 +60,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		MyWorldTrafficAddition.LOGGER.info("Initializing {} {}", MOD_ID_HUMAN, MODVER);
+		MyWorldTrafficAddition.LOGGER.info("Initializing {} {}", MOD_ID_HUMAN, MOD_VERSION);
 		ModItems.initialize();
 		ModGroups.initialize();
 		ModBlocks.initialize();
@@ -68,16 +78,20 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		bulkRegisterPayloads(smartPayloads);
 		registerCustomProtocols();
 
+        MyWorldTrafficAddition.LOGGER.info("Registering events...");
+        registerEvents();
+
 		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 
 		MyWorldTrafficAddition.LOGGER.info("Loading preferences...");
 		ServerPreferences.loadPreferences();
+        ServerBlacklist.loadBlacklist();
 
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
-		OnlineImageServerLogic.countEntriesAndReadIntoMemory();
-		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageServerLogic.entries);
+		OnlineImageBackend.countEntriesAndReadIntoMemory();
+		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageBackend.totalEntries);
 
-		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MODVER);
+		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MOD_VERSION);
 	}
 
 	private static void addSmartPayloadsServer() {
@@ -147,31 +161,41 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		// Send custom image to server (client -> server as always)
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"), (player, data) -> {
 			byte[] imageData = Arrays.copyOfRange(data, 0, data.length);
-			OnlineImageServerLogic.processUploadedImage(imageData);
+			OnlineImageBackend.processUploadedImage(player, imageData);
 		});
 
 		// Request the total number of uploaded images
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
-			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), String.valueOf(OnlineImageServerLogic.publicEntries));
+            boolean isPlayerMod = player.hasPermissionLevel(2);
+			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), isPlayerMod ? String.valueOf(OnlineImageBackend.totalEntries) : String.valueOf(OnlineImageBackend.publicEntries));
 		});
 
 		// Request the total number of uploaded images by user
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageServerLogic.getEntryNumberByPlayer(player));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageBackend.getEntryNumberByPlayer(player));
 
 		// Request image entries metadata from server; Used in the online image gallery
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageServerLogic::sendEntryMetadataToClient);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageBackend::sendEntryMetadataToClient);
 
 		// Request thumbnail data (for custom images)
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageServerLogic::sendThumbnailsOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageBackend::sendThumbnailsOf);
 
 		// Request for image deletion
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageServerLogic::deleteImage);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageBackend::deleteImage);
 
 		// Request image
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageServerLogic::sendImageDataOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageBackend::sendImageDataOf);
 	}
 
+    private static void registerEvents() {
+        ServerLifecycleEvents.AFTER_SAVE.register((server, flush, force) -> {
+            ServerBlacklist.saveBlacklist();
+        });
 
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            ServerBlacklist.saveBlacklist();
+            OnlineImageBackend.shutdown();
+        });
+    }
 
 	@Contract("_ -> new")
     public static @NotNull Identifier createId(String id) {

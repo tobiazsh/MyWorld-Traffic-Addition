@@ -8,11 +8,12 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.utils.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.block.Block;
@@ -91,14 +92,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
         elements = BaseElementInterface.unpackList(elements);
-
-        elements.replaceAll(element -> {
-            if (element instanceof ImageElement) {
-                ((ImageElement) element).setResourcePath(((ImageElement)element).getResourcePath().replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
-            }
-
-            return element;
-        });
 
         updateOccurred = true;
     }
@@ -414,23 +407,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
                 up, right, down, left,
                 upRight, upLeft, downRight, downLeft
         );
-    }
-
-    public static String constructBlockPosListString(List<BlockPos> blockPosList) {
-        List<String> blockPoses = new ArrayList<>();
-
-        for (BlockPos pos : blockPosList) {
-            List<String> blockPosPiece = new ArrayList<>();
-            blockPosPiece.add(java.lang.String.valueOf(pos.getX()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getY()));
-            blockPosPiece.add(java.lang.String.valueOf(pos.getZ()));
-
-            String blockPosString = java.lang.String.join("?", blockPosPiece);
-
-            blockPoses.add(blockPosString);
-        }
-
-        return java.lang.String.join("%", blockPoses);
     }
 
     public static List<BlockPos> deconstructBlockPosListString(String blockPosListString) {

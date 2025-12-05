@@ -5,7 +5,8 @@
   "client": [
     "FontManagerAccessor",
     "MinecraftClientMixin",
-    "RenderSystemAccessor"
+    "RenderSystemAccessor",
+    "TextureManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

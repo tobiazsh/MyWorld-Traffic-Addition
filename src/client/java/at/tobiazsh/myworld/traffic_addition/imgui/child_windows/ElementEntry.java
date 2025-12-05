@@ -13,8 +13,11 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.FileDialo
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
-import at.tobiazsh.myworld.traffic_addition.utils.Saves;
-import at.tobiazsh.myworld.traffic_addition.utils.texturing.Textures;
+import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -30,17 +33,15 @@ import java.util.UUID;
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignData.getPrettyJson;
+import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
 	private final String name;
 	private ClientElementInterface renderObject;
 	private UUID parentId;
 
-    private int texId;
+    private int previewTextureId;
 	private final int previewSize = 50;
-	private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
-	private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
 	private static final int redXIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/red_x.png").getTextureId();
 	private static final int otherIcon = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/other.png").getTextureId();
 
@@ -53,7 +54,7 @@ public abstract class ElementEntry {
 		renderObject = element;
 		this.parentId = parentId;
 
-		if (element instanceof ImageElementClient) this.texId = ((ImageElementClient) element).getTexture().getTextureId();
+		if (element instanceof TexturableElementInterface) this.previewTextureId = ((TexturableElementInterface) element).getTexture().getTextureId();
     }
 
 	public abstract void moveEntryUp();
@@ -79,7 +80,14 @@ public abstract class ElementEntry {
 	private final float entryHeight = 64;
 	private final float buttonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
 
+
+
+
+
+
 	public void render(float windowWidth, float padding, boolean disableUp, boolean disableDown, ClientElementInterface selectedOption) {
+        if (!(renderObject instanceof ClientElementInterface)) return; // Prevent non-client elements from rendering here because otherwise it'll crash
+
 		float entryWidth = (windowWidth - (this.padding * 2));
 		controlsWidth = 0;
 		float framePadding = ImGui.getStyle().getFramePadding().y;
@@ -91,6 +99,7 @@ public abstract class ElementEntry {
         boolean isClicked = false;
         ImGui.beginChild("ELEMENT_ENTRY_" + renderObject.getId(), entryWidth, entryHeight + (renderObject instanceof GroupElementClient && ((GroupElementClient) renderObject).isExpanded() ? getGroupContentHeight((GroupElementClient) renderObject) : 0), isClicked, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
 
+        // incl. Preview
 		// Base element content rendering
 		renderBaseElementContent(framePadding, selectedOption);
 
@@ -101,11 +110,11 @@ public abstract class ElementEntry {
 			ImGui.sameLine();
 			ImGui.setCursorPosY((entryHeight - buttonSize) / 2 - ImGui.getStyle().getFramePadding().y); // Center Button Y
 			if (((GroupElementClient) renderObject).isExpanded()) {
-				if (ImGui.arrowButton("##expand", ImGuiDir.Up)) {
+				if (ImGui.arrowButton("##expand_" + renderObject.getId(), ImGuiDir.Up)) {
 					((GroupElementClient) renderObject).setExpanded(false);
 				}
 			} else {
-				if (ImGui.arrowButton("##expand", ImGuiDir.Down)) {
+				if (ImGui.arrowButton("##expand_" + renderObject.getId(), ImGuiDir.Down)) {
 					((GroupElementClient) renderObject).setExpanded(true);
 				}
 			}
@@ -147,6 +156,14 @@ public abstract class ElementEntry {
 		ImGui.popStyleVar();
 	}
 
+
+
+
+
+
+
+
+
 	/**
 	 * Renders the control buttons on the right side of the entry
 	 */
@@ -155,7 +172,7 @@ public abstract class ElementEntry {
 		ImGui.setCursorPosX(entryWidth - buttonSize * 4 - padding * 4); // Center Buttons X
 
 		// Context menu button
-		if (ImGui.imageButton(otherIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+		if (ImGui.imageButton("#ContextMenuButton" + renderObject.getId(), otherIcon, new ImVec2(ImGui.getFontSize(), ImGui.getFontSize()))) {
 			ImGui.openPopup("ElementEntryContextMenu##" + renderObject.getId());
 		}
 		contextualMenu();
@@ -163,7 +180,7 @@ public abstract class ElementEntry {
 		ImGui.sameLine();
 
 		// Delete button
-		if (ImGui.imageButton(redXIcon, ImGui.getFontSize(), ImGui.getFontSize())) {
+		if (ImGui.imageButton("#DeleteButton" + renderObject.getId(), redXIcon, new ImVec2(ImGui.getFontSize(), ImGui.getFontSize()))) {
 			deleteElement(renderObject);
 		}
 
@@ -171,16 +188,23 @@ public abstract class ElementEntry {
 
 		// Up button
 		if (disableUp) ImGui.beginDisabled();
-		if (ImGui.arrowButton("##up", ImGuiDir.Up)) moveEntryUp();
+		if (ImGui.arrowButton("##up_" + renderObject.getId(), ImGuiDir.Up)) moveEntryUp();
 		if (disableUp) ImGui.endDisabled();
 
 		ImGui.sameLine();
 
 		// Down button
 		if (disableDown) ImGui.beginDisabled();
-		if (ImGui.arrowButton("##down", ImGuiDir.Down)) moveEntryDown();
+		if (ImGui.arrowButton("##down_" + renderObject.getId(), ImGuiDir.Down)) moveEntryDown();
 		if (disableDown) ImGui.endDisabled();
 	}
+
+
+
+
+
+
+
 
 	/**
 	 * Renders the button with the three dots (...) on the right (it's called contextual menu because I couldn't come up with something better, and it's a context menu and I must admit that I quite like it :D )
@@ -213,6 +237,13 @@ public abstract class ElementEntry {
 			ImGui.endPopup();
 		}
 	}
+
+
+
+
+
+
+
 
 	private void renderGroupControls(int indexInList) {
 
@@ -263,6 +294,12 @@ public abstract class ElementEntry {
 		}
 	}
 
+
+
+
+
+
+
 	private float getGroupContentHeight(GroupElementClient group) {
 		if (!group.isExpanded()) return 0;
 
@@ -276,21 +313,31 @@ public abstract class ElementEntry {
 		return height;
 	}
 
+
+
+
+
+
+
 	private void renderBaseElementContent(float framePadding, ClientElementInterface selectedOption) {
 		// Selection Button
 		ImGui.setCursorPosX(this.padding * 2);
 		ImGui.setCursorPosY((entryHeight - imgui.calcTextSize("T").y) / 2 - framePadding);
-		if (ImGui.radioButton("##radioButton", Objects.equals(selectedOption, renderObject))) elementSelectedAction();
+		if (ImGui.radioButton("##radioButton_" + renderObject.getId(), Objects.equals(selectedOption, renderObject))) elementSelectedAction();
 
 		ImGui.sameLine();
 
 		// Preview
 		ImGui.setCursorPosY((entryHeight - previewSize) / 2);
 		ImGui.setCursorPosX(ImGui.getCursorPosX() + 2 * this.padding);
-		if (renderObject instanceof ImageElementClient) ImGui.image(texId, previewSize, previewSize);
-		else if (renderObject instanceof TextElementClient) ImGui.image(textIconId, previewSize, previewSize);
-		else if (renderObject instanceof GroupElementClient) ImGui.image(groupIconId, previewSize, previewSize);
+		renderObject.renderPreview(previewSize, previewSize);
 	}
+
+
+
+
+
+
 
 	private ElementEntry createChildElementEntry(ClientElementInterface element, GroupElementClient grpElement) {
 		return new ElementEntry(element, grpElement.getId()) {
@@ -376,8 +423,13 @@ public abstract class ElementEntry {
 		};
 	}
 
+
+
+
+
+
 	private void exportElement() {
-		Saves.createSavesDir();
+		SavesDirectory.createSavesDir();
 
 		JsonObject modifiedJson = renderObject.toJson();
 		modifiedJson.addProperty("Id", "null");
@@ -385,10 +437,15 @@ public abstract class ElementEntry {
 		FileDialogPopup.setData(getPrettyJson(modifiedJson.toString()));
 
 		FileDialogPopup.open(
-				Saves.getElementSaveDir(),
+				SavesDirectory.getElementSaveDir(),
 				FileDialogPopup.FileDialogType.SAVE,
 				(path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
 				"MWTACSELEMENT", "JSON"
 		);
 	}
+
+
+
+
+
 }
