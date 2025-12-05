@@ -41,7 +41,7 @@ public class SignBlockActions {
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
         Coordinates coordinates = new Coordinates(x, y, z, direction);
 
-        if(blockEntity instanceof SignBlockEntity signBlockEntity)
-            defaults.world.getServer().execute(() -> signBlockEntity.setBackstepCoords(coordinates));
+        if(blockEntity instanceof SignBlockEntity signBlockEntity);
+            //defaults.world.getServer().execute(() -> signBlockEntity.set(coordinates));
     }
 }

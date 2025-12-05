@@ -104,6 +104,12 @@ public class CustomizableSignData {
 	 * @return The SignStyleJson object
 	 */
 	public CustomizableSignData setJson(String jsonString) {
+        if (jsonString.isBlank()) {
+            this.json = new JsonObject();
+            this.jsonString = "{}";
+            return this;
+        }
+
 		json = JsonParser.parseString(jsonString).getAsJsonObject();
 		updateString();
 		return this;

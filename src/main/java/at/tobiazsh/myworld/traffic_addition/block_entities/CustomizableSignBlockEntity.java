@@ -64,16 +64,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
-    public List<String> backgroundStylePieces = new ArrayList<>();
     public List<BaseElement> elements = new ArrayList<>();
-
-    public void setUpdateOccurred(boolean updateOccurred) {
-        this.updateOccurred = updateOccurred;
-    }
-
-    public boolean hasUpdateOccured() {
-        return updateOccurred;
-    }
 
     public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
         super(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, pos, state);
@@ -120,14 +111,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         BlockPos pos = new BlockPos(blockEntityData.get("x").getAsInt(), blockEntityData.get("y").getAsInt(), blockEntityData.get("z").getAsInt());
 
-        BlockEntity blockEntity = player.getWorld().getBlockEntity(pos);
+        BlockEntity blockEntity = player.getEntityWorld().getBlockEntity(pos);
 
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) {
             MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because block entity at position {} is not a CustomizableSignBlockEntity!", pos);
             return;
         }
 
-        Objects.requireNonNull(player.getWorld().getServer()).execute(() -> ((CustomizableSignBlockEntity) blockEntity).setSignTextureJson(texture));
+        Objects.requireNonNull(player.getEntityWorld().getServer()).execute(() -> ((CustomizableSignBlockEntity) blockEntity).setSignTextureJson(texture));
         ((CustomizableSignBlockEntity) blockEntity).updateTextureVars();
     }
 
@@ -291,6 +282,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         isInitialized = readView.getBoolean("IsInitialized", false);
 
         signTextureJson = OptionalUtils.getOrDefault("SignTexture", readView::getOptionalString, "{}", "CustomizableSignBlockEntity.SignTexture");
+
+        // Convert old texture JSON to new version if necessary
+        if (CustomizableSignData.styleMatchesOldVersion(new CustomizableSignData().setJson(signTextureJson))) {
+            signTextureJson = CustomizableSignData.updateToNewVersion(new CustomizableSignData().setJson(signTextureJson)).jsonString;
+        }
 
         rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "CustomizableSignBlockEntity.Rotation");
         width = OptionalUtils.getOrDefault("Width", readView::getOptionalInt, 1, "CustomizableSignBlockEntity.Width");

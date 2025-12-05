@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImGui;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 
@@ -32,7 +33,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
     // NOT NECESSARY --> Groups are unpacked in CustomizableBlockEntity
     @Override
-    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    public void renderMinecraft(OrderedRenderCommandQueue queue, int indexInList, int csbeHeight, MatrixStack matrices, int light, Direction facing) {
 
     }
 

@@ -506,7 +506,7 @@ public class OnlineImageDialog {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Metadata");
             JsonObject metadata = createMetadata(
                     imageName.get(),
-                    MinecraftClient.getInstance().getGameProfile().getId(),
+                    MinecraftClient.getInstance().getGameProfile().id(),
                     UUID.randomUUID(),
                     hideForOthers.get(),
                     Instant.now()
