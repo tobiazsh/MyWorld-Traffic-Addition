@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.mixin.client;
+package at.tobiazsh.myworld.traffic_addition.mixin.client.font;
 
 import net.minecraft.client.font.FontManager;
 import net.minecraft.client.font.FontStorage;
@@ -13,6 +13,10 @@ public interface FontManagerAccessor {
     @Accessor("fontStorages")
     Map<Identifier, FontStorage> getFontStorages();
 
+    /**
+     * Gets the missing font storage used as a fallback.
+     * @return The missing FontStorage.
+     */
     @Accessor("missingStorage")
     FontStorage getMissingStorage();
 }
