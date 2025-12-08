@@ -214,7 +214,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
      * Deletes all unused textures of the given CustomizableSignBlockEntity (if no elements are using them anymore). This is to prevent memory leaks.
      * @param blockEntity The CustomizableSignBlockEntity to delete unused textures from.
      */
-    @SuppressWarnings("resource")
     private static void customizableSignDeleteUnusedTextures(CustomizableSignBlockEntity blockEntity) {
         Map<BlockPos, List<ClientElementInterface>> elementMap = CustomizableSignBlockEntityRenderer.elements;
         List<ClientElementInterface> elements = elementMap.get(blockEntity.getPos());
