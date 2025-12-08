@@ -32,7 +32,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     DynamicTexture dynamicTexture = null;
 
-    private boolean mayDownload = true; // Flag to control if the image should be downloaded
+    private final AtomicBoolean mayDownload = new AtomicBoolean(true); // Flag to control if the image should be downloaded
 
     public OnlineImageElementClient(
             float x, float y,
@@ -63,8 +63,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     @Override
     public void renderMinecraft(OrderedRenderCommandQueue queue, int indexInList, int csbeHeight, MatrixStack matrices, int light, Direction facing) {
-        return; // Disabled rendering of online images in Minecraft for now
-        //initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
+        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
     }
 
     public ImageElementClient toImageElementCL(boolean isPlaceholder) {
@@ -119,7 +118,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     //      2) the request id
     //      3) the image data as byte array
     private void requestImageDownload() {
-        mayDownload = false; // Only allow one download request
+        mayDownload.set(false); // Only allow one download request
 
         if (OnlineImageCache.isImageCached(this.getPictureReference() + ".png")) {
             resourcePath = OnlineImageCache.getCachedImagePath(getPictureReference().toString() + ".png").toString();
@@ -201,7 +200,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             return true; // Texture is loaded, render normally
         }
 
-        if (mayDownload) {
+        if (mayDownload.get()) {
             requestImageDownload();
         }
 
