@@ -224,7 +224,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Render the border for the master sign block
         BorderRenderer.render(queue, matrices, state.borders, state.lightmapCoordinates, facing);
-        renderTexture(queue, state, matrices, state.lightmapCoordinates, OverlayTexture.DEFAULT_UV, facing);
+        renderTexture(queue, state, matrices, state.lightmapCoordinates, facing);
 
         // If the entity is master, render the other signs attached to it
         if (state.isMaster) {
@@ -442,7 +442,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the texture of the whole sign
-    private void renderTexture(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light, int overlay, Direction facing) {
+    private void renderTexture(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light, Direction facing) {
         // If the block isn't a master block, exit function because there's nothing to render anyway since non-masters don't hold texture information
         if (!state.isMaster || !state.isInitialized) return;
 
