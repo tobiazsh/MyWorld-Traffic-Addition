@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
@@ -44,7 +45,8 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private boolean isMaster = true;
     private boolean isRendered = true;
     private boolean isInitialized = false;
-    private boolean updateBackgroundTexture = false;
+
+    public AtomicBoolean hasTextureUpdateOccurred = new AtomicBoolean(false); // CLIENT-SIDE ONLY! Indicates whether a texture update has occurred and needs to be processed. Used in BER.
 
     private BorderProperty borders = new BorderProperty(
             true, true, true, true,
@@ -77,7 +79,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         if (signTextureJson == null || signTextureJson.isEmpty()) return;
         if (this.world == null) return;
 
-        setUpdateBackgroundTexture(true);
+        hasTextureUpdateOccurred.set(true);
 
         elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
         elements = BaseElementInterface.unpackList(elements);
@@ -436,14 +438,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 	public void setInitialized(boolean initialized) {
 		isInitialized = initialized;
 	}
-
-    public boolean shouldUpdateBackgroundTexture() {
-        return updateBackgroundTexture;
-    }
-
-    public void setUpdateBackgroundTexture(boolean var) {
-        this.updateBackgroundTexture = var;
-    }
 
     public Direction getFacing() {
         return this.getCachedState().get(CustomizableSignBlock.FACING);

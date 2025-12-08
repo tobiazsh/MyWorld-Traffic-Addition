@@ -239,5 +239,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
                 MyWorldTrafficAddition.LOGGER.warn("Could not mark texture stale for {}", texturableElement, e);
             }
         }
+
+        // Notify renderer that the chunk got unloaded
+        CustomizableSignBlockEntityRenderer.onChunkUnload(blockEntity.getPos());
     }
 }

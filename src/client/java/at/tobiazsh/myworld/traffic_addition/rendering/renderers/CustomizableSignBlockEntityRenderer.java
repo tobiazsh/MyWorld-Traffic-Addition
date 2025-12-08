@@ -14,6 +14,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.CustomizableSignBlockRenderState;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
@@ -133,6 +134,10 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         return signDistances;
     }
 
+    public static void onChunkUnload(BlockPos pos) {
+        elements.remove(pos); // Remove elements associated with the unloaded chunk
+    }
+
 
     @Override
     public CustomizableSignBlockRenderState createRenderState() {
@@ -143,12 +148,15 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     public void updateRenderState(CustomizableSignBlockEntity blockEntity, CustomizableSignBlockRenderState state, float tickProgress, Vec3d cameraPos, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay) {
         BlockEntityRenderer.super.updateRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
 
+        state.isRendering = blockEntity.isRendering();
+        state.isMaster = blockEntity.isMaster();
+
+        if (!blockEntity.isRendering()) return; // If the block shouldn't render, exit function
+
         state.rotation = blockEntity.getRotation();
         state.height = blockEntity.getHeight();
         state.width = blockEntity.getWidth();
 
-        state.isRendering = blockEntity.isRendering();
-        state.isMaster = blockEntity.isMaster();
         state.isInitialized = blockEntity.isInitialized();
 
         state.masterBlockPos = blockEntity.getMasterPos();
@@ -160,23 +168,19 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             state.signData.setJson(state.signDataJsonString);
         }
 
-        // Update sign data JSON string if it has changed
-        if (!Objects.equals(state.signDataJsonString, blockEntity.getSignDataJsonString())) {
-            state.signDataJsonString = blockEntity.getSignDataJsonString();
-            state.signData.setJson(state.signDataJsonString);
-        }
-
-        if (blockEntity.elements != null && !blockEntity.elements.isEmpty()) {
-            List<ClientElementInterface> clientList = blockEntity.elements.reversed().stream()
-                    .map(ClientElementFactory::toClientElement)
-                    .toList();
-            // store either per-position
-            elements.put(blockEntity.getPos(), clientList);
-            // and/or directly in the masterState so render reads it
-            state.clientElements = clientList;
+        if (elements.containsKey(blockEntity.getPos()) && !blockEntity.hasTextureUpdateOccurred.get()) {
+            state.clientElements = elements.get(blockEntity.getPos());
         } else {
-            state.clientElements = Collections.emptyList();
-            elements.remove(blockEntity.getPos());
+            List<ClientElementInterface> clientElements = blockEntity.elements
+                    .reversed()
+                    .stream()
+                    .map(ClientElementFactory::toClientElement)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            state.clientElements = clientElements;
+            elements.put(blockEntity.getPos(), clientElements); // Update the cached elements
+            blockEntity.hasTextureUpdateOccurred.set(false); // Reset the flag
         }
 
         state.signPoleDistancesString = blockEntity.getSignPoleDistancesString();
