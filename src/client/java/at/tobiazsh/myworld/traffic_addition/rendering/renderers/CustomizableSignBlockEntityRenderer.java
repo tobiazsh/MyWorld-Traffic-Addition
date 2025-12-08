@@ -476,7 +476,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.push();
 
         BlockPos holderPos = state.pos.offset(facing, 1); // Position of the sign holder is one block in front of the sign
-        matrices.translate(Vec3d.of(BlockPosExtended.getOffset(state.pos, holderPos))); // Translate the sign holder to the correct position);
+        matrices.translate(Vec3d.of(BlockPosExtended.getOffset(state.pos, holderPos))); // Translate the sign holder to the correct position
 
         matrices.translate(0.5, 0.5, 0.5);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
