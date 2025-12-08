@@ -256,7 +256,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                         facing,
                         signDistances.get(i).invert(),
                         borderType,
-                        OverlayTexture.DEFAULT_UV
+                        OverlayTexture.DEFAULT_UV,
+                        csbe.getPos()
                 );
             }
         }
@@ -266,7 +267,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay) {
+    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay, BlockPos position) {
         matrices.push();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
@@ -293,7 +294,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
 
-        BlockPosFloat blockPosBehind = new BlockPosFloat(masterState.pos)
+        BlockPosFloat blockPosBehind = new BlockPosFloat(position)
                 .offset(
                         masterState.blockState.get(CustomizableSignBlock.FACING).getOpposite(),
                         1f
