@@ -14,7 +14,6 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.CustomizableSignBlockRenderState;
-import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
