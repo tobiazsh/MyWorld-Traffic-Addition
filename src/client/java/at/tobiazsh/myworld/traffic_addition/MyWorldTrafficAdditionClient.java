@@ -222,10 +222,10 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
             return;
 
         for (ClientElementInterface element : elements) {
-            if (!(element instanceof TexturableElementInterface texturableElement))
+            if (!(element instanceof TexturableElementInterface texturableElement)) // If the element is not texturable, skip it
                 continue;
 
-            if (!texturableElement.isTextureLoaded())
+            if (!texturableElement.isTextureLoaded()) // If the texture is not loaded, skip it
                 continue;
 
             DynamicTexture texture = texturableElement.getDynamicTexture();
