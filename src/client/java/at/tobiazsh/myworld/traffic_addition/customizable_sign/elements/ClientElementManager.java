@@ -188,7 +188,7 @@ public class ClientElementManager {
 
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        String jsonString = blockEntity.getSignTextureJson();
+        String jsonString = blockEntity.getSignDataJsonString();
         if (StringUtil.isNullOrEmpty(jsonString)) return; // No JSON found, nothing to import
 
         CustomizableSignData data = new CustomizableSignData();

@@ -25,6 +25,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.command.ModelCommandRenderer;
@@ -41,11 +43,10 @@ import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity, CustomizableSignBlockRenderState> {
 
@@ -153,7 +154,17 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         state.masterBlockPos = blockEntity.getMasterPos();
         state.borders = blockEntity.getBorderType();
 
-        state.signTextureJson = blockEntity.getSignTextureJson();
+        // Initial set for sign data JSON string
+        if (state.signDataJsonString == null || state.signDataJsonString.isEmpty()) {
+            state.signDataJsonString = blockEntity.getSignDataJsonString();
+            state.signData.setJson(state.signDataJsonString);
+        }
+
+        // Update sign data JSON string if it has changed
+        if (!Objects.equals(state.signDataJsonString, blockEntity.getSignDataJsonString())) {
+            state.signDataJsonString = blockEntity.getSignDataJsonString();
+            state.signData.setJson(state.signDataJsonString);
+        }
 
         if (blockEntity.elements != null && !blockEntity.elements.isEmpty()) {
             List<ClientElementInterface> clientList = blockEntity.elements.reversed().stream()
@@ -161,7 +172,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     .toList();
             // store either per-position
             elements.put(blockEntity.getPos(), clientList);
-            // and/or directly in the state so render reads it
+            // and/or directly in the masterState so render reads it
             state.clientElements = clientList;
         } else {
             state.clientElements = Collections.emptyList();
@@ -189,7 +200,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Just a check to avoid errors
         if (masterEntity instanceof CustomizableSignBlockEntity) {
-            // Define the rotation depending on the facing state of the sign
+            // Define the rotation depending on the facing masterState of the sign
             rotation = ((CustomizableSignBlockEntity) masterEntity).getRotation();
         }
 
@@ -244,7 +255,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                         light,
                         facing,
                         signDistances.get(i).invert(),
-                        borderType
+                        borderType,
+                        OverlayTexture.DEFAULT_UV
                 );
             }
         }
@@ -254,7 +266,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType) {
+    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay) {
         matrices.push();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
@@ -270,12 +282,20 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                 0
         );
 
+
+        if (masterState.signData.getStylePath() != null && !masterState.signData.getStylePath().isEmpty())
+            renderBackground(masterState, matrices, light, backgroundOverlay, facing, borderType); // Render the background if there's a texture.
+
+        // Regarding TOP If-Statement:
+        // When the sign is first loaded, the sign's render state hasn't initialised the sign data properly yet. This would cause the game/server to crash
+        // Hence this simple safeguard to check if it's already initialised at all.
+
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
 
-        BlockPosFloat blockPosBehind = new BlockPosFloat(state.pos)
+        BlockPosFloat blockPosBehind = new BlockPosFloat(masterState.pos)
                 .offset(
-                        state.blockState.get(CustomizableSignBlock.FACING).getOpposite(),
+                        masterState.blockState.get(CustomizableSignBlock.FACING).getOpposite(),
                         1f
                 );
 
@@ -289,11 +309,52 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                 );
 
         if (blockBehind instanceof SignPoleBlockEntity) {
-            renderSignHolder(queue, state, matrices, light, facing);
+            renderSignHolder(queue, masterState, matrices, light, facing);
         }
 
         matrices.pop();
     }
+
+
+
+
+    // Render the background texture of one sign
+    private void renderBackground(CustomizableSignBlockRenderState masterState, MatrixStack matrices, int light, int backgroundOverlay, Direction facing, BorderProperty borders) {
+        Path signTexturePath = Path.of(masterState.signData.getStylePath());
+        String textureName = borders.toBackgroundString().concat(".png"); // Construct file name from borders since border are the same on the background and the actual background
+        signTexturePath = Path.of("/assets/" + MyWorldTrafficAddition.MOD_ID).relativize(signTexturePath.resolve(textureName));
+
+        // Construct Identifier from path so Minecraft finds it in resource
+        // For it to be found, the separation of paths should be Unix-Style (/) and not Windows-Style (\), so replace that.
+        Identifier backgroundTexture = Identifier.of(MyWorldTrafficAddition.MOD_ID, signTexturePath.toString().replaceAll("\\\\", "/"));
+
+        // Construct RenderLayer for texture; use my own RenderLayer instead of Minecraft's
+        CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, backgroundTexture);
+        RenderLayer backgroundRenderLayer = backgroundLayer.buildRenderLayer();
+        BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
+
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(backgroundRenderLayer);
+
+        matrices.push();
+
+        // Now render that
+        // Position the vertices
+        // Offest background so it's not directly in side the sign block
+        matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z);
+
+        matrices.translate(0.5, 0.5, 0.5);
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        matrices.translate(-0.5, -0.5, -0.5);
+
+        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
+        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
+        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 0.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
+        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 0.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
+
+        matrices.pop();
+    }
+
 
 
 
@@ -380,92 +441,19 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
 
-    // Render the texture of the sign
+    // Render the texture of the whole sign
     private void renderTexture(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light, int overlay, Direction facing) {
         // If the block isn't a master block, exit function because there's nothing to render anyway since non-masters don't hold texture information
         if (!state.isMaster || !state.isInitialized) return;
 
-        renderBackground(queue, state, state.height, state.width, matrices, light, overlay, facing);
         renderElements(queue, state, state.height, matrices, light, facing);
     }
-
-
-
-
-    // Render the background texture of the sign
-    private void renderBackground(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, int height, int width, MatrixStack matrices, int light, int overlay, Direction facing) {
-        // If there's nothing to render, exit
-        if (state.backgroundPieces.isEmpty()) return;
-
-//        if (!Objects.equals(state.cachedSignTextureJson, state.signTextureJson)) {
-//            state.backgroundPieces = CustomizableSignData.getBackgroundTexturePathList(new CustomizableSignData().setJson(state.signTextureJson)).reversed();
-//            state.backgroundPieces.replaceAll(s -> s.replaceFirst("/assets/".concat(MyWorldTrafficAddition.MOD_ID).concat("/"), ""));
-//            state.cachedSignTextureJson = state.signTextureJson;
-//        }
-
-
-        // Coordinates of the master block
-        BlockPos masterPos = state.masterBlockPos;
-        BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
-
-        matrices.push();
-
-        // Render from top to bottom and from left to right
-        int currentListPos = 0;
-        for (int i = height; i > 0; i--) {
-            for (int j = width; j > 0; j--) {
-                if (currentListPos >= state.backgroundPieces.size()) break; // Prevent out of bounds crashes
-
-                BlockPos renderPos = masterPos.up(i - 1);
-                renderPos = blockPosInDirection(getRightSideDirection(facing.getOpposite()), renderPos, j - 1);
-
-                BlockPos offset = BlockPosExtended.getOffset(masterPos, renderPos);
-                offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1)); // The position of the texture
-
-                Identifier texture = Identifier.of(MyWorldTrafficAddition.MOD_ID, state.backgroundPieces.get(currentListPos));
-
-                CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, texture);
-                RenderLayer renderLayer = imageLayering.buildRenderLayer();
-
-                BlockPos finalOffset = offset;
-                queue.submitCustom(matrices, renderLayer, (ms, vertexConsumer) -> {
-                    matrices.push();
-
-                    matrices.translate(finalOffset.getX(), finalOffset.getY(), finalOffset.getZ()); // Position the texture
-                    matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z); // Forward shift so it's visible and not rendered inside the other textures
-
-                    // Turn to match the facing direction
-                    matrices.translate(0.5, 0.5, 0.5);
-                    matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-                    matrices.translate(-0.5, -0.5, -0.5);
-
-                    // Position the vertices
-                    vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
-                    vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
-                    vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
-                    vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
-
-                    matrices.pop();
-                });
-
-                currentListPos++; // Move to the next texture
-
-            }
-        }
-
-        matrices.pop();
-    }
-
 
 
 
     // Render the elements that were placed when the sign was edited
     private void renderElements(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, int height, MatrixStack matrices, int light, Direction facing) {
         if (state.clientElements.isEmpty()) return; // If there are no elements, exit
-//        if (!Objects.equals(state.cachedSignTextureJson, state.signTextureJson)) {
-//            elements.put(state.pos, .elements.reversed().stream().map(ClientElementFactory::toClientElement).toList()); // Reverse so top most element gets rendered last
-//            csbe.setUpdateOccurred(false); // Reset the update flag
-//        }
 
         List<ClientElementInterface> renderedElements = state.clientElements;
 

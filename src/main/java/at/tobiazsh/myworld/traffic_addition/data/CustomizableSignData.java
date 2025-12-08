@@ -28,6 +28,7 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 
 public class CustomizableSignData {
 	public String jsonString; // JSON as String
+    public String stylePath = ""; // Style path
 	public JsonObject json = new JsonObject(); // JSON
 
 	public static class ElementsContainer {
@@ -68,6 +69,7 @@ public class CustomizableSignData {
 		if (path.charAt(path.length() - 1) == '/') path = path.substring(0, path.length() - 1); // Remove last slash if present
 
 		json.addProperty("Style", path);
+        stylePath = path;
 		updateString();
 
 		return this;
@@ -107,11 +109,15 @@ public class CustomizableSignData {
         if (jsonString.isBlank()) {
             this.json = new JsonObject();
             this.jsonString = "{}";
+            this.stylePath = "";
             return this;
         }
 
 		json = JsonParser.parseString(jsonString).getAsJsonObject();
 		updateString();
+
+        stylePath = extractStylePath();
+
 		return this;
 	}
 
@@ -196,6 +202,25 @@ public class CustomizableSignData {
 	private void updateString() {
 		jsonString = json.toString();
 	}
+
+    /**
+     * Extracts the style path from the JSON. For normal use, use {@link CustomizableSignData#getStylePath()} instead.
+     * @return
+     */
+    public String extractStylePath() {
+        if (json.has("Style")) {
+            return json.get("Style").getAsString();
+        }
+        return "";
+    }
+
+    /**
+     * Gets the style path of the sign
+     * @return
+     */
+    public String getStylePath() {
+        return stylePath;
+    }
 
 	/**
 	 * Checks if the style of the sign is in the old format

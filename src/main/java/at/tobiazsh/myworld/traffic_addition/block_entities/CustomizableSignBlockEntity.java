@@ -207,7 +207,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         updateGame();
     }
 
-    public String getSignTextureJson() {
+    public String getSignDataJsonString() {
         return this.signTextureJson;
     }
 
