@@ -7,19 +7,19 @@ extendable method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse
 
 accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse (Lnet/minecraft/client/gui/Click;)V
 
-# accessible field net/minecraft/client/font/TextRenderer handler Lnet/minecraft/client/font/TextHandler; Maybe necessary?
+# RENDERERS AND RENDERLAYERS
 
-# RENDERERS
+accessible field net/minecraft/client/render/RenderLayer renderSetup Lnet/minecraft/client/render/RenderSetup;
+accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
 
 accessible field net/minecraft/client/render/GameRenderer buffers Lnet/minecraft/client/render/BufferBuilderStorage;
-accessible class net/minecraft/client/font/FontManager$ProviderIndex
-
-# FONT MANAGER
 
 accessible field net/minecraft/client/font/GlyphBaker glyphAtlases Ljava/util/List; # Maybe necessary?
 accessible field net/minecraft/client/font/GlyphAtlasTexture textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
 
-accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
-#accessible field net/minecraft/client/render/RenderLayer$MultiPhase phases Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
-#accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters texture Lnet/minecraft/client/render/RenderPhase$TextureBase;
-#accessible method net/minecraft/client/render/RenderPhase$TextureBase getId ()Ljava/util/Optional;
+accessible field net/minecraft/client/render/RenderSetup textures Ljava/util/Map;
+accessible field net/minecraft/client/render/RenderSetup$TextureSpec location Lnet/minecraft/util/Identifier;
+
+# FONT MANAGER
+
+accessible class net/minecraft/client/font/FontManager$ProviderIndex

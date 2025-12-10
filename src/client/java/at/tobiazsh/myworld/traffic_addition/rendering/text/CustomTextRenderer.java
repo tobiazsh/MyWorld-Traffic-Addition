@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -47,7 +48,7 @@ public class CustomTextRenderer extends TextRenderer {
         static CustomGlyphDrawer drawing(VertexConsumerProvider vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
             return new CustomGlyphDrawer() {
                 @Override
-                public void drawGlyph(TextDrawable glyph) {
+                public void drawGlyph(TextDrawable.DrawnGlyphRect glyph) {
                     this.draw(glyph);
                 }
 
@@ -59,7 +60,7 @@ public class CustomTextRenderer extends TextRenderer {
                 private void draw(TextDrawable glyph) {
                     // Get the id from the default render layer
                     RenderLayer defaultGlyphRenderLayer = glyph.getRenderLayer(TextLayerType.NORMAL);
-                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.getRenderPipeline().getLocation());
+                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.renderSetup.textures.get("Sampler0").location); // TODO: Code name "Sampler0" into CustomRenderLayer class for pairing
 
                     // Construct our custom layering
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.of("missing")));
@@ -71,9 +72,9 @@ public class CustomTextRenderer extends TextRenderer {
             };
         }
 
-        void drawGlyph(TextDrawable glyph);
-
-        void drawRectangle(TextDrawable bakedGlyph);
+        default void drawGlyph(TextDrawable.DrawnGlyphRect glyph) { }
+        default void drawRectangle(TextDrawable rect) { }
+        default void drawEmptyGlyphRect(EmptyGlyphRect rect) { }
     }
 
 //      OLD IMPLEMENTATION USING DRAWER SUBCLASS - KEPT FOR REFERENCE
