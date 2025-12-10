@@ -60,7 +60,7 @@ public class CustomTextRenderer extends TextRenderer {
                 private void draw(TextDrawable glyph) {
                     // Get the id from the default render layer
                     RenderLayer defaultGlyphRenderLayer = glyph.getRenderLayer(TextLayerType.NORMAL);
-                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.renderSetup.textures.get("Sampler0").location); // TODO: Code name "Sampler0" into CustomRenderLayer class for pairing
+                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.renderSetup.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
 
                     // Construct our custom layering
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.of("missing")));

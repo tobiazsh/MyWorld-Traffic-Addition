@@ -24,6 +24,8 @@ public class CustomRenderLayer {
     public static final int DEFAULT_IMAGE_CACHE_SIZE = 200;
     public static final int DEFAULT_TEXT_CACHE_SIZE = 100;
 
+    public static final String TEXTURE_NAME = "Sampler0";
+
     public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
         "BUILT_TEXT_LAYERING",
         Objects.requireNonNullElse(
@@ -72,7 +74,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
-                            .texture("Sampler0", texture)
+                            .texture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .useOverlay()
                             .layeringTransform(Layering.getZLayeringBackward(zOffset))
@@ -85,7 +87,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
-                            .texture("Sampler0", texture)
+                            .texture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .useOverlay()
                             .layeringTransform(Layering.getZLayeringBackward(zOffset))
@@ -166,7 +168,7 @@ public class CustomRenderLayer {
         private final Function<Identifier, RenderLayer> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
                 texture -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.RENDERTYPE_TEXT_INTENSITY)
-                            .texture("Sampler0", texture)
+                            .texture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .layeringTransform(Layering.getZLayeringBackward(zOffset))
                             .build();
@@ -237,7 +239,7 @@ public class CustomRenderLayer {
                 zOff -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK)
                             .useLightmap()
-                            .texture("Sampler0", BLOCK_ATLAS_TEXTURE) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
+                            .texture(TEXTURE_NAME, BLOCK_ATLAS_TEXTURE) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
                             .layeringTransform(Layering.getZLayeringBackward(zOff))
                             .build();
 
