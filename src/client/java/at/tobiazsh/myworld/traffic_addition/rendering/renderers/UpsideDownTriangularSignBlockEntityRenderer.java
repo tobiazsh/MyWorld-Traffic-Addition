@@ -16,6 +16,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -34,7 +35,7 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
     protected void renderTextureOnModel(String texturePath, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Direction facing, int light, int overlay) {
         Identifier TEXTURE = Identifier.of(MyWorldTrafficAddition.MOD_ID, texturePath);
 
-        RenderLayer renderLayer = RenderLayer.getEntityCutout(TEXTURE);
+        RenderLayer renderLayer = RenderLayers.entityCutout(TEXTURE);
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
