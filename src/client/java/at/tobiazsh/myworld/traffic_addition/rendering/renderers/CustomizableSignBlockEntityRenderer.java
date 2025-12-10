@@ -281,12 +281,11 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         );
 
 
+        // When the sign is first loaded, the sign's render state hasn't initialised the sign data properly yet. This would cause the game/server to crash
+        // Hence the following simple safeguard to check if it's already initialised at all.
+
         if (masterState.signData.getStylePath() != null && !masterState.signData.getStylePath().isEmpty())
             renderBackground(masterState, matrices, light, backgroundOverlay, facing, borderType); // Render the background if there's a texture.
-
-        // Regarding TOP If-Statement:
-        // When the sign is first loaded, the sign's render state hasn't initialised the sign data properly yet. This would cause the game/server to crash
-        // Hence this simple safeguard to check if it's already initialised at all.
 
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
