@@ -5,7 +5,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.*;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.Identifier;
@@ -60,10 +59,7 @@ public class CustomTextRenderer extends TextRenderer {
                 private void draw(TextDrawable glyph) {
                     // Get the id from the default render layer
                     RenderLayer defaultGlyphRenderLayer = glyph.getRenderLayer(TextLayerType.NORMAL);
-                    RenderLayer.MultiPhase multiPhase = (RenderLayer.MultiPhase) defaultGlyphRenderLayer;
-                    RenderLayer.MultiPhaseParameters multiPhaseParameters = multiPhase.phases;
-                    RenderPhase.TextureBase textureBase = multiPhaseParameters.texture;
-                    Optional<Identifier> optId = textureBase.getId();
+                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.getRenderPipeline().getLocation());
 
                     // Construct our custom layering
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.of("missing")));
