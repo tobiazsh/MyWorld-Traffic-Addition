@@ -6,10 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignPoleBlock
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -44,7 +41,7 @@ public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPole
 
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getSolid(),
+                RenderLayers.solid(),
                 signPoleModel,
                 1.0f, 1.0f, 1.0f,
                 state.lightmapCoordinates,
