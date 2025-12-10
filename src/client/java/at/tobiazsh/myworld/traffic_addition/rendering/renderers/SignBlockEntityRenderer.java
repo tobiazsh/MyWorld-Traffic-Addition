@@ -18,10 +18,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.command.ModelCommandRenderer;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
@@ -97,7 +94,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getSolid(),
+                RenderLayers.solid(),
                 signBlockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
@@ -160,7 +157,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getSolid(),
+                RenderLayers.solid(),
                 signHolderModel,
                 1.0f, 1.0f, 1.0f,
                 light,
