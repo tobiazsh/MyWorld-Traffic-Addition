@@ -190,10 +190,11 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     @Override
     public void render(CustomizableSignBlockRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
 
-        Direction facing = state.blockState.get(CustomizableSignBlock.FACING);
-
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!state.isRendering) return;
+
+        // Get the facing of the sign block
+        Direction facing = state.blockState.get(CustomizableSignBlock.FACING);
 
         // Get the BlockEntity of the master block
         assert MinecraftClient.getInstance().world != null;
