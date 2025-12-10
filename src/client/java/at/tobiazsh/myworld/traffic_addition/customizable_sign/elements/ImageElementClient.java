@@ -171,7 +171,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         if (texture == null) {
             if (isExternal) {
                 texture = new DynamicTexture(this.getResourcePath(), Identifier.of(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
-                        .smartRegisterTexture(false, false)
+                        .smartRegisterTexture()
                         .register()
                         .subscribe();
 

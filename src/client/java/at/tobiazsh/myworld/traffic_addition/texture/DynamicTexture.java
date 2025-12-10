@@ -47,14 +47,14 @@ public class DynamicTexture extends AbstractTexture {
     /**
      * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
      */
-    public DynamicTexture registerTexture(boolean blur, boolean clamp) {
+    public DynamicTexture registerTexture() {
         this.close();
 
         try (NativeImage image = this.getImage(isResource)){
             if (image == null)
                 throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture, image is null!");
 
-            this.load(image, blur, clamp);
+            this.load(image);
             MinecraftClient.getInstance().getTextureManager().registerTexture(id, this);
         } catch (IOException e) {
             throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture!", e);
@@ -69,14 +69,14 @@ public class DynamicTexture extends AbstractTexture {
      * @param clamp whether to use clamp wrapping
      * @return this DynamicTexture instance
      */
-    public DynamicTexture smartRegisterTexture(boolean blur, boolean clamp) {
+    public DynamicTexture smartRegisterTexture() {
         if (((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures().containsKey(id)) // Already registered in TextureManager
             return this;
 
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
             return this;
 
-        return this.registerTexture(blur, clamp).register();
+        return this.registerTexture().register();
     }
 
     /**
@@ -179,14 +179,12 @@ public class DynamicTexture extends AbstractTexture {
      * @param blur whether to use blur filtering (or linear filtering)
      * @param clamp whether to use clamp wrapping
      */
-    private void load(NativeImage image, boolean blur, boolean clamp) {
+    private void load(NativeImage image) {
         GpuDevice gpu = RenderSystem.getDevice();
         this.close();
         Objects.requireNonNull(this.id);
         this.glTexture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
         this.glTextureView = gpu.createTextureView(this.glTexture);
-        this.setFilter(blur, false);
-        this.setClamp(clamp);
         gpu.createCommandEncoder().writeToTexture(this.glTexture, image);
     }
 
