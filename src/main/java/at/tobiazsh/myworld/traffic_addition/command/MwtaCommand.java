@@ -9,6 +9,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.server.command.CommandManager;
@@ -32,7 +33,7 @@ public class MwtaCommand {
                 .then(CommandManager.literal("pref").executes(MwtaCommand::openPreferencesWindow))
                 .then(CommandManager.literal("customImages")
                         .then(CommandManager.literal("blacklist")
-                                .requires(c -> c.hasPermissionLevel(2))
+                                .requires(c -> c.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
                                 .executes(MwtaCommand::blacklistInfo)
                                 .then(CommandManager.literal("add")
                                         .then(CommandManager.argument("player", EntityArgumentType.player()).executes(MwtaCommand::blacklistAdd))
@@ -47,7 +48,7 @@ public class MwtaCommand {
                                 .then(CommandManager.literal("restore")
                                         .executes(MwtaCommand::blacklistRestore)))
                         .then(CommandManager.literal("delete")
-                                .requires(c -> c.hasPermissionLevel(2))
+                                .requires(c -> c.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
                                 .then(CommandManager.argument("uuid", UuidArgumentType.uuid())
                                         .executes(MwtaCommand::deleteImageByUuid))))
                 .executes(MwtaCommand::displayInfo));
