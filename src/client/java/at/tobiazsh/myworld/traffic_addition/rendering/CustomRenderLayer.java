@@ -235,7 +235,7 @@ public class CustomRenderLayer {
 
         private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 zOff -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK)
                             .useLightmap()
                             .texture("Sampler0", BLOCK_ATLAS_TEXTURE) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
                             .layeringTransform(Layering.getZLayeringBackward(zOff))
