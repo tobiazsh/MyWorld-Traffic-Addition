@@ -200,7 +200,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         assert MinecraftClient.getInstance().world != null;
 
         int rotation = state.rotation;
-        
+
         matrices.push();
 
         // Rotate the sign
@@ -223,8 +223,13 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         BorderRenderer.render(queue, matrices, state.borders, state.lightmapCoordinates, facing);
         renderTexture(queue, state, matrices, state.lightmapCoordinates, facing);
 
+        boolean masterPresent = false;
+        if (MinecraftClient.getInstance().world != null) {
+            masterPresent = MinecraftClient.getInstance().world.getBlockEntity(state.masterBlockPos) instanceof CustomizableSignBlockEntity;
+        }
+
         // If the entity is master, render the other signs attached to it
-        if (state.isMaster) {
+        if (state.isMaster || !masterPresent) {
             renderSignPoles(queue, state, matrices, state.lightmapCoordinates);
             renderSigns(queue, state, csbeStateModel, matrices, state.lightmapCoordinates, facing);
         }
@@ -242,21 +247,27 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // Render each sign
         for (int i = 0; i < signPositions.size(); i++) {
-            if (Objects.requireNonNull(MinecraftClient.getInstance().world).getBlockEntity(signPositions.get(i)) instanceof CustomizableSignBlockEntity csbe) {
-                BorderProperty borderType = csbe.getBorderType();
-                renderSign(
-                        queue,
-                        state,
-                        blockStateModel,
-                        matrices,
-                        light,
-                        facing,
-                        signDistances.get(i).invert(),
-                        borderType,
-                        OverlayTexture.DEFAULT_UV,
-                        csbe.getPos()
-                );
+            BlockPos signPos = signPositions.get(i).toBlockPos();
+            CustomizableSignBlockEntity csbe = null;
+            if (MinecraftClient.getInstance().world != null) {
+                BlockEntity be = MinecraftClient.getInstance().world.getBlockEntity(signPos);
+                if (be instanceof CustomizableSignBlockEntity) csbe = (CustomizableSignBlockEntity) be;
             }
+
+            BorderProperty borderType = (csbe != null) ? csbe.getBorderType() : state.borders;
+
+            renderSign(
+                    queue,
+                    state,
+                    blockStateModel,
+                    matrices,
+                    light,
+                    facing,
+                    signDistances.get(i).invert(),
+                    borderType,
+                    OverlayTexture.DEFAULT_UV,
+                    signPos
+            );
         }
     }
 
@@ -290,22 +301,11 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
 
-        BlockPosFloat blockPosBehind = new BlockPosFloat(position)
-                .offset(
-                        masterState.blockState.get(CustomizableSignBlock.FACING).getOpposite(),
-                        1f
-                );
+        BlockPos blockPosBehind = new BlockPos(position).offset(masterState.blockState.get(CustomizableSignBlock.FACING).getOpposite(), 1);
 
-        BlockEntity blockBehind = Objects.requireNonNull(MinecraftClient.getInstance().world)
-                .getBlockEntity(
-                        new BlockPos(
-                                (int) blockPosBehind.x,
-                                (int) blockPosBehind.y,
-                                (int) blockPosBehind.z
-                        )
-                );
+        if (MinecraftClient.getInstance().world != null &&
+                MinecraftClient.getInstance().world.getBlockEntity(blockPosBehind) instanceof SignPoleBlockEntity) {
 
-        if (blockBehind instanceof SignPoleBlockEntity) {
             renderSignHolder(queue, masterState, matrices, light, facing);
         }
 
