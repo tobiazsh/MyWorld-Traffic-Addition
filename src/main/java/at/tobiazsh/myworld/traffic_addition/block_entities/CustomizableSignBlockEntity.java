@@ -35,19 +35,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.CUSTOMIZABLE_SIGN_BLOCK_ENTITY;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 
 public class CustomizableSignBlockEntity extends BlockEntity {
 
-    private int width = 1;
-
     private boolean isMaster = true;
     private boolean isRendered = true;
     private boolean isInitialized = false;
-    private boolean updateBackgroundTexture = false;
-    private boolean updateOccurred = false;
+
+    public AtomicBoolean hasTextureUpdateOccurred = new AtomicBoolean(false); // CLIENT-SIDE ONLY! Indicates whether a texture update has occurred and needs to be processed. Used in BER.
 
     private BorderProperty borders = new BorderProperty(
             true, true, true, true,
@@ -61,19 +60,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private int rotation = 0;
     private int height = 1;
+    private int width = 1;
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
-    public List<String> backgroundStylePieces = new ArrayList<>();
     public List<BaseElement> elements = new ArrayList<>();
-
-    public void setUpdateOccurred(boolean updateOccurred) {
-        this.updateOccurred = updateOccurred;
-    }
-
-    public boolean hasUpdateOccured() {
-        return updateOccurred;
-    }
 
     public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
         super(CUSTOMIZABLE_SIGN_BLOCK_ENTITY, pos, state);
@@ -88,12 +79,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         if (signTextureJson == null || signTextureJson.isEmpty()) return;
         if (this.world == null) return;
 
-        setUpdateBackgroundTexture(true);
+        hasTextureUpdateOccurred.set(true);
 
         elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
         elements = BaseElementInterface.unpackList(elements);
-
-        updateOccurred = true;
     }
 
     public static void setTransmittedTexture(String json, ServerPlayerEntity player) {
@@ -120,14 +109,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         BlockPos pos = new BlockPos(blockEntityData.get("x").getAsInt(), blockEntityData.get("y").getAsInt(), blockEntityData.get("z").getAsInt());
 
-        BlockEntity blockEntity = player.getWorld().getBlockEntity(pos);
+        BlockEntity blockEntity = player.getEntityWorld().getBlockEntity(pos);
 
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) {
             MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because block entity at position {} is not a CustomizableSignBlockEntity!", pos);
             return;
         }
 
-        Objects.requireNonNull(player.getWorld().getServer()).execute(() -> ((CustomizableSignBlockEntity) blockEntity).setSignTextureJson(texture));
+        Objects.requireNonNull(player.getEntityWorld().getServer()).execute(() -> ((CustomizableSignBlockEntity) blockEntity).setSignTextureJson(texture));
         ((CustomizableSignBlockEntity) blockEntity).updateTextureVars();
     }
 
@@ -220,7 +209,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         updateGame();
     }
 
-    public String getSignTextureJson() {
+    public String getSignDataJsonString() {
         return this.signTextureJson;
     }
 
@@ -291,6 +280,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         isInitialized = readView.getBoolean("IsInitialized", false);
 
         signTextureJson = OptionalUtils.getOrDefault("SignTexture", readView::getOptionalString, "{}", "CustomizableSignBlockEntity.SignTexture");
+
+        // Convert old texture JSON to new version if necessary
+        if (CustomizableSignData.styleMatchesOldVersion(new CustomizableSignData().setJson(signTextureJson))) {
+            signTextureJson = CustomizableSignData.updateToNewVersion(new CustomizableSignData().setJson(signTextureJson)).jsonString;
+        }
 
         rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "CustomizableSignBlockEntity.Rotation");
         width = OptionalUtils.getOrDefault("Width", readView::getOptionalInt, 1, "CustomizableSignBlockEntity.Width");
@@ -444,14 +438,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 	public void setInitialized(boolean initialized) {
 		isInitialized = initialized;
 	}
-
-    public boolean shouldUpdateBackgroundTexture() {
-        return updateBackgroundTexture;
-    }
-
-    public void setUpdateBackgroundTexture(boolean var) {
-        this.updateBackgroundTexture = var;
-    }
 
     public Direction getFacing() {
         return this.getCachedState().get(CustomizableSignBlock.FACING);

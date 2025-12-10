@@ -74,6 +74,10 @@ public record BorderProperty(
         );
     }
 
+    public String toBackgroundString() {
+        return "%s_%s_%s_%s".formatted(up, right, down, left);
+    }
+
     /**
      * Converts the BorderProperty to a normal string representation. Formatted as "up_right_down_left".
      */

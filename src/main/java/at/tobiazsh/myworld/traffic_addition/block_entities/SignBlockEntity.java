@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class SignBlockEntity extends BlockEntity {
 
-    private Coordinates backstepCoords = new Coordinates(0f, 0f, 0.55f, Direction.NORTH);
     private int rotation = 0;
     private int shapeType;
     private String texturePath;
@@ -54,21 +53,12 @@ public class SignBlockEntity extends BlockEntity {
         this.texturePath = texturePath;
     }
 
-    public Coordinates getBackstepCoords() {
-        return backstepCoords;
-    }
-
-    public void setBackstepCoords(Coordinates backstepCoords) {
-        this.backstepCoords = backstepCoords;
-    }
-
     @Override
     protected void writeData(WriteView writeView) {
         super.writeData(writeView);
         writeView.putInt("Rotation", this.rotation);
         writeView.putInt("ShapeType", this.shapeType);
         writeView.putString("Texture", this.texturePath);
-        writeView.putString("Backstep", constructBackstepString(this.backstepCoords));
     }
 
     @Override
@@ -77,22 +67,6 @@ public class SignBlockEntity extends BlockEntity {
         this.rotation = OptionalUtils.getOrDefault("Rotation", readView::getOptionalInt, 0, "SignBlockEntity.readNbt");
         this.shapeType = OptionalUtils.getOrDefault("ShapeType", readView::getOptionalInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
         this.texturePath = OptionalUtils.getOrDefault("Texture", readView::getOptionalString, "", "SignBlockEntity.readNbt");
-        this.backstepCoords = deconstructBackstepString(OptionalUtils.getOrDefault("Backstep", readView::getOptionalString, "", "SignBlockEntity.readNbt"));
-    }
-
-    private static String constructBackstepString(Coordinates coordinates) {
-        String[] backstepStringParts = {String.valueOf(coordinates.x), String.valueOf(coordinates.y), String.valueOf(coordinates.z), coordinates.direction.asString()};
-        String backstepString = String.join("%", backstepStringParts);
-        return backstepString;
-    }
-
-    private static Coordinates deconstructBackstepString(String string) {
-        String[] backstepStringParts = string.split("%");
-
-        if(backstepStringParts.length < 3) return new Coordinates(0, 0, 0, Direction.NORTH);
-
-        Coordinates coordinates = new Coordinates(Float.parseFloat(backstepStringParts[0]), Float.parseFloat(backstepStringParts[1]), Float.parseFloat(backstepStringParts[2]), Direction.byId(backstepStringParts[3]));
-        return coordinates;
     }
 
     @Override

@@ -6,10 +6,9 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.BlockModelRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.client.util.math.MatrixStack;
@@ -44,11 +43,10 @@ public class BorderRenderer {
      * Renders the borders of a customizable sign based on the given entity's properties.
      */
     public static void render(
+            OrderedRenderCommandQueue queue,
             MatrixStack matrices,
-            VertexConsumerProvider vertexConsumers,
             BorderProperty borders,
             int light,
-            int overlay,
             Direction facing
     ) {
 
@@ -62,38 +60,36 @@ public class BorderRenderer {
                 0.40625f // 13/32f == 0.40625f, which is the distance from the center of the sign to the border
         ); // The amount it has to move back to exactly align with the signs surface
 
-        VertexConsumer consumer = vertexConsumers.getBuffer(borderRenderLayer);
-
         matrices.push();
 
         // Borders
 
         if (borders.up())
-            renderBorder(matrices, consumer, light, overlay, 90, offsetUp, offsetBack, facing);
+            renderEdge(queue, matrices, light, 90, offsetUp, offsetBack, facing);
 
         if (borders.down())
-            renderBorder(matrices, consumer, light, overlay, 270, offsetDown, offsetBack, facing);
+            renderEdge(queue, matrices, light, 270, offsetDown, offsetBack, facing);
 
         if (borders.left())
-            renderBorder(matrices, consumer, light, overlay, 0, offsetLeft, offsetBack, facing); // Not really necessary, just for the sake of it
+            renderEdge(queue, matrices, light, 0, offsetLeft, offsetBack, facing); // Not really necessary, just for the sake of it
 
         if (borders.right())
-            renderBorder(matrices, consumer, light, overlay, 180, offsetRight, offsetBack, facing); // Not really necessary, just for the sake of it
+            renderEdge(queue, matrices, light, 180, offsetRight, offsetBack, facing); // Not really necessary, just for the sake of it
 
 
         // Corners
 
         if (borders.cornerUpRight())
-            renderCorner(matrices, consumer, light, overlay, offsetRight, globalBorderOffset, offsetBack);
+            renderCorner(queue, matrices, light, offsetRight, globalBorderOffset, offsetBack);
 
         if (borders.cornerUpLeft())
-            renderCorner(matrices, consumer, light, overlay, offsetLeft, globalBorderOffset, offsetBack);
+            renderCorner(queue, matrices, light, offsetLeft, globalBorderOffset, offsetBack);
 
         if (borders.cornerDownRight())
-            renderCorner(matrices, consumer, light, overlay, offsetRight, -globalBorderOffset, offsetBack);
+            renderCorner(queue, matrices, light, offsetRight, -globalBorderOffset, offsetBack);
 
         if (borders.cornerDownLeft())
-            renderCorner(matrices, consumer, light, overlay, offsetLeft, -globalBorderOffset, offsetBack);
+            renderCorner(queue, matrices, light, offsetLeft, -globalBorderOffset, offsetBack);
 
         matrices.pop();
     }
@@ -102,19 +98,16 @@ public class BorderRenderer {
      * Renders the border of a customizable sign in the given direction.
      *
      * @param matrices the MatrixStack to use for rendering
-     * @param consumer the VertexConsumers to use for rendering
      * @param light light level
-     * @param overlay overlay texture
      * @param angle the angle to rotate the border
      * @param offset the desired offsetXZ in any direction
      * @param offsetBack the offsetXZ to move back to align with the sign's surface
      * @param facing the facing direction of the original sign
      */
-    private static void renderBorder(
+    private static void renderEdge(
+            OrderedRenderCommandQueue queue,
             MatrixStack matrices,
-            VertexConsumer consumer,
             int light,
-            int overlay,
             int angle,
             BlockPosFloat offset,
             BlockPosFloat offsetBack,
@@ -131,12 +124,14 @@ public class BorderRenderer {
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle)); // Rotate by the given angle
         matrices.translate(-0.5, -0.5, -0.5);
 
-        BlockModelRenderer.render(
-                matrices.peek(),
-                consumer,
+        queue.submitBlockStateModel(
+                matrices,
+                borderRenderLayer,
                 borderStateModel,
                 1.0f, 1.0f, 1.0f,
-                light, overlay
+                light,
+                OverlayTexture.DEFAULT_UV,
+                0
         );
 
         matrices.pop();
@@ -146,18 +141,15 @@ public class BorderRenderer {
      * Renders the necessary corner bits for the customizable sign.
      *
      * @param matrices the MatrixStack to use for rendering
-     * @param consumer the VertexConsumers to use for rendering
      * @param light light level
-     * @param overlay overlay texture
      * @param offsetXZ the desired offsetXZ in either X or Z direction
      * @param offsetY the desired offsetY in either Up or Down direction
      * @param offsetBack the offsetXZ to move back to align with the sign's surface
      */
     private static void renderCorner(
+            OrderedRenderCommandQueue queue,
             MatrixStack matrices,
-            VertexConsumer consumer,
             int light,
-            int overlay,
             BlockPosFloat offsetXZ,
             float offsetY,
             BlockPosFloat offsetBack
@@ -170,12 +162,14 @@ public class BorderRenderer {
         matrices.translate(offsetXZ.x, offsetXZ.y, offsetXZ.z);
         matrices.translate(0, offsetY, 0);
 
-        BlockModelRenderer.render(
-                matrices.peek(),
-                consumer,
+        queue.submitBlockStateModel(
+                matrices,
+                borderRenderLayer,
                 cornerStateModel,
                 1.0f, 1.0f, 1.0f,
-                light, overlay
+                light,
+                OverlayTexture.DEFAULT_UV,
+                0
         );
 
         matrices.pop();

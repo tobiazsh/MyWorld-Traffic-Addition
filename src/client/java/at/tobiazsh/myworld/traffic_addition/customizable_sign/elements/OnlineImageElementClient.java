@@ -10,7 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.OnlineImageElement;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import imgui.ImGui;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 
@@ -32,7 +32,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     DynamicTexture dynamicTexture = null;
 
-    private boolean mayDownload = true; // Flag to control if the image should be downloaded
+    private final AtomicBoolean mayDownload = new AtomicBoolean(true); // Flag to control if the image should be downloaded
 
     public OnlineImageElementClient(
             float x, float y,
@@ -62,8 +62,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     }
 
     @Override
-    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
-        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(indexInList, csbeHeight, matrices, vertexConsumers, light, overlay, facing));
+    public void renderMinecraft(OrderedRenderCommandQueue queue, int indexInList, int csbeHeight, MatrixStack matrices, int light, Direction facing) {
+        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
     }
 
     public ImageElementClient toImageElementCL(boolean isPlaceholder) {
@@ -118,7 +118,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     //      2) the request id
     //      3) the image data as byte array
     private void requestImageDownload() {
-        mayDownload = false; // Only allow one download request
+        mayDownload.set(false); // Only allow one download request
 
         if (OnlineImageCache.isImageCached(this.getPictureReference() + ".png")) {
             resourcePath = OnlineImageCache.getCachedImagePath(getPictureReference().toString() + ".png").toString();
@@ -200,7 +200,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             return true; // Texture is loaded, render normally
         }
 
-        if (mayDownload) {
+        if (mayDownload.get()) {
             requestImageDownload();
         }
 

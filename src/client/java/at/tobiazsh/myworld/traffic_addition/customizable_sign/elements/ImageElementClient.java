@@ -15,7 +15,9 @@ import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -138,21 +140,20 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * @param indexInList Index of the element in the list; For layering purposes
      * @param csbeHeight Height of the CustomizableSignBlockEntity
      * @param matrices MatrixStack
-     * @param vertexConsumers VertexConsumerProvider
      * @param light Light level
-     * @param overlay Overlay level
      * @param facing Direction the element should face
      */
     @SuppressWarnings("resource")
     @Override
     public void renderMinecraft(
+            OrderedRenderCommandQueue queue,
             int indexInList,
             int csbeHeight,
             MatrixStack matrices,
-            VertexConsumerProvider vertexConsumers,
-            int light, int overlay,
+            int light,
             Direction facing
     ) {
+        int overlay = OverlayTexture.DEFAULT_UV;
 
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
@@ -164,12 +165,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
         BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(getRightSideDirection(facing.getOpposite()), x);
-
-        matrices.push();
-
-        matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
-        matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
-        matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
         DynamicTexture texture = isExternal ? reference.dynamicTexture : dynamicTexture;
 
@@ -195,7 +190,15 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         RenderLayer renderLayer = imageLayering.buildRenderLayer();
 
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
+
+        matrices.push();
+        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
+
+        matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
+        matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
+        matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
         matrices.translate(0.5, 0.5, 0.5);
@@ -206,8 +209,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         matrices.translate(w / 2, h / 2, 0); // Move origin to element center
         matrices.multiply(RotationAxis.NEGATIVE_Z.rotationDegrees(rotation));
         matrices.translate(-w / 2, -h / 2, 0); // Move origin back
-
-        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
 
         // Top left
         vertexConsumer.vertex(positionMatrix, 0 , 0, 0)

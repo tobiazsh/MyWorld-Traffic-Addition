@@ -36,7 +36,7 @@ public class CustomizableSignBlock extends BlockWithEntity {
     public static final MapCodec<CustomizableSignBlock> CODEC = createCodec(CustomizableSignBlock::new);
 
     // Check if there is a sign pole at any corner
-    // Render another Sign pole the each time there's air underneath and render another sign pole under that if there's more air underneath
+    // Render another Sign pole each time there's air underneath and render another sign pole under that if there's more air underneath
     // Rotate it around the original sign pole
     // Render textures
     // Set default textures (Selectable)

@@ -16,7 +16,9 @@ import imgui.ImFont;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
@@ -119,7 +121,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
     }
 
     @Override
-    public void renderMinecraft(int indexInList, int csbeHeight, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, Direction facing) {
+    public void renderMinecraft(OrderedRenderCommandQueue queue, int indexInList, int csbeHeight, MatrixStack matrices, int light, Direction facing) {
 
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
@@ -150,6 +152,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 .offset(Direction.UP, csbeHeight - 1)
                 .offset(Direction.DOWN, y)
                 .offset(Direction.DOWN, h * 0.35f); // Fix Up/Down alignment
+
+        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
 
         matrices.push();
 
@@ -183,7 +187,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 Color.toHexARGB(color),
                 false,
                 positionMatrix,
-                vertexConsumers,
+                vertexConsumerProvider,
                 CustomRenderLayer.TextLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_INTENSITY,
                 0,
                 light

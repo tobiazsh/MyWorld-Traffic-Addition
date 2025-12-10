@@ -171,6 +171,12 @@ public class CustomizableSignSettingScreen extends Screen {
     private void initSign() {
         // Determine sign dimensions
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
+
+        if (currentSignBlockEntity == null) {
+            player.sendMessage(Text.literal("Failed to initialize sign structure!"), false);
+            return;
+        }
+
         Direction facing = currentSignBlockEntity.getFacing();
 
         BlockPosExtended masterPos = new BlockPosExtended(pos);

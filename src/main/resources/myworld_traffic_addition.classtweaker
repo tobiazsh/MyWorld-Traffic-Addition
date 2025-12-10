@@ -1,0 +1,24 @@
+classTweaker v1 named
+
+# DRAG FLOAT WIDGET
+
+extendable method net/minecraft/client/gui/widget/SliderWidget setValue (D)V
+extendable method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse (Lnet/minecraft/client/gui/Click;)V
+
+accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse (Lnet/minecraft/client/gui/Click;)V
+
+# accessible field net/minecraft/client/font/TextRenderer handler Lnet/minecraft/client/font/TextHandler; Maybe necessary?
+
+# RENDERERS
+
+accessible field net/minecraft/client/render/GameRenderer buffers Lnet/minecraft/client/render/BufferBuilderStorage;
+accessible class net/minecraft/client/font/FontManager$ProviderIndex
+
+# FONT MANAGER
+
+accessible field net/minecraft/client/font/GlyphBaker glyphAtlases Ljava/util/List; # Maybe necessary?
+accessible field net/minecraft/client/font/GlyphAtlasTexture textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
+
+accessible field net/minecraft/client/render/RenderLayer$MultiPhase phases Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
+accessible field net/minecraft/client/render/RenderLayer$MultiPhaseParameters texture Lnet/minecraft/client/render/RenderPhase$TextureBase;
+accessible method net/minecraft/client/render/RenderPhase$TextureBase getId ()Ljava/util/Optional;
