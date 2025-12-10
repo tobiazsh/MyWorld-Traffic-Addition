@@ -234,7 +234,6 @@ public class CustomRenderLayer {
         }
 
         private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
-
                 zOff -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
                             .useLightmap()
