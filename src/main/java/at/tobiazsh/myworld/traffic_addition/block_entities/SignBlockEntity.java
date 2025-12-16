@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,8 +15,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SignBlockEntity extends BlockEntity {
@@ -29,8 +29,14 @@ public class SignBlockEntity extends BlockEntity {
         this.texturePath = texturePath;
 
         setChanged();
+
+        if (this.level == null) {
+            MyWorldTrafficAddition.LOGGER.error("Tried to update SignBlockEntity texture, but level is null!");
+            return;
+        }
+
         level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(null, this.getBlockState()));
-        this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
+        level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
     }
 
     public String getTexturePath() {
@@ -54,7 +60,7 @@ public class SignBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput writeView) {
+    protected void saveAdditional(@NotNull ValueOutput writeView) {
         super.saveAdditional(writeView);
         writeView.putInt("Rotation", this.rotation);
         writeView.putInt("ShapeType", this.shapeType);
@@ -62,7 +68,7 @@ public class SignBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(ValueInput readView) {
+    protected void loadAdditional(@NotNull ValueInput readView) {
         super.loadAdditional(readView);
         this.rotation = OptionalUtils.getOrDefault("Rotation", readView::getInt, 0, "SignBlockEntity.readNbt");
         this.shapeType = OptionalUtils.getOrDefault("ShapeType", readView::getInt, 2, "SignBlockEntity.readNbt"); // Default to 2 (Round Sign)
@@ -70,12 +76,12 @@ public class SignBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+    public @Nullable Packet<@NotNull ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registryLookup) {
         return saveWithoutMetadata(registryLookup);
     }
 }
