@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.screens;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignPoleRotationPayload;
-import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
+import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
