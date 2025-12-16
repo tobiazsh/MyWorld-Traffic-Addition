@@ -14,32 +14,32 @@ import at.tobiazsh.myworld.traffic_addition.blocks.UpsideDownTriangularSignBlock
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
 
 @Environment(EnvType.CLIENT)
 public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity> {
 
-    public UpsideDownTriangularSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-        super(MinecraftClient.getInstance().getBakedModelManager());
+    public UpsideDownTriangularSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+        super(Minecraft.getInstance().getModelManager());
     }
 
     @Override
-    protected void renderTextureOnModel(String texturePath, MatrixStack matrices, VertexConsumerProvider vertexConsumers, Direction facing, int light, int overlay) {
-        Identifier TEXTURE = Identifier.of(MyWorldTrafficAddition.MOD_ID, texturePath);
+    protected void renderTextureOnModel(String texturePath, PoseStack matrices, MultiBufferSource vertexConsumers, Direction facing, int light, int overlay) {
+        Identifier TEXTURE = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
-        RenderLayer renderLayer = RenderLayers.entityCutout(TEXTURE);
+        RenderType renderLayer = RenderTypes.entityCutout(TEXTURE);
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
-        matrices.push();
+        matrices.pushPose();
         matrices.scale(1.0f, 1.0f, 1.0f);
         matrices.translate(-0.5, -0.5, -0.5);
         matrices.translate(0.57, 1, 0);
@@ -47,11 +47,11 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
 
         rotateTexture(facing, matrices);
 
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), -0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.5f, -0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(overlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.5f, 0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), -0.5f, 0.5f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 0.0f).light(light).overlay(overlay).normal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
 
-        matrices.pop();
+        matrices.popPose();
     }
 }

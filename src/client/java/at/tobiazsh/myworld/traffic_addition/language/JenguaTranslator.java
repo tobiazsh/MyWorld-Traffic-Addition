@@ -6,7 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
 import io.github.tobiazsh.jengua.Translator;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -94,7 +94,7 @@ public class JenguaTranslator {
     }
 
     public static void autoSetLanguage() {
-        String minecraftLocale = MinecraftClient.getInstance().getLanguageManager().getLanguage();
+        String minecraftLocale = Minecraft.getInstance().getLanguageManager().getSelected();
         String jenguaLocale = convertMinecraftToJenguaLocale(minecraftLocale);
         MyWorldTrafficAddition.LOGGER.info("Trying to automatically set Jengua language to {}...", jenguaLocale);
 

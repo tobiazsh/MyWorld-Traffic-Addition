@@ -2,8 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.font;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.resource.Location;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TrueTypeFontLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.font.providers.TrueTypeGlyphProviderDefinition;
 
 public class RuntimeFontRegistrar {
     private RuntimeFontRegistrar() {}
@@ -12,7 +12,7 @@ public class RuntimeFontRegistrar {
             Location location,
             float fontSize,
             float oversampleIndex,
-            TrueTypeFontLoader.Shift shift,
+            TrueTypeGlyphProviderDefinition.Shift shift,
             String skipChars
     ) {
         CustomTrueTypeFontLoader loader = new CustomTrueTypeFontLoader(
@@ -25,10 +25,10 @@ public class RuntimeFontRegistrar {
 
         RuntimeFontRegistry.register(loader);
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         client.execute(() -> {
             try {
-                client.reloadResources();
+                client.reloadResourcePacks();
             } catch (Exception e) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to reload resources after registering font from location: {}", location, e);
             }

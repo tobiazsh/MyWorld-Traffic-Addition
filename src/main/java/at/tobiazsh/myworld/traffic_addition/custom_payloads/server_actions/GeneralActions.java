@@ -1,22 +1,22 @@
 package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 
 public class GeneralActions {
     public static class ActionDefaults {
-        ServerPlayerEntity serverPlayer;
-        ServerWorld world;
+        ServerPlayer serverPlayer;
+        ServerLevel world;
 
-        public ActionDefaults(ServerPlayerEntity serverPlayer, ServerWorld world) {
+        public ActionDefaults(ServerPlayer serverPlayer, ServerLevel world) {
             this.serverPlayer = serverPlayer;
             this.world = world;
         }
 
         public static ActionDefaults ActionDefaultsBuilder(ServerPlayNetworking.Context context) {
-            ServerPlayerEntity serverPlayer = context.player();
-            return new ActionDefaults(serverPlayer, serverPlayer.getEntityWorld());
+            ServerPlayer serverPlayer = context.player();
+            return new ActionDefaults(serverPlayer, serverPlayer.level());
         }
     }
 }

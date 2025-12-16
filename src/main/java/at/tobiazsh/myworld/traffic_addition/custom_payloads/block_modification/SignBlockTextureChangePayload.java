@@ -10,27 +10,27 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-public record SignBlockTextureChangePayload(BlockPos pos, String texturePath, RegistryKey<World> worldRegistryKey) implements CustomPayload {
+public record SignBlockTextureChangePayload(BlockPos pos, String texturePath, ResourceKey<Level> worldRegistryKey) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<SignBlockTextureChangePayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID + ".sign_block_texture_change"));
-    public static final PacketCodec<ByteBuf, SignBlockTextureChangePayload> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, SignBlockTextureChangePayload::pos,
-            PacketCodecs.STRING, SignBlockTextureChangePayload::texturePath,
-            RegistryKey.createPacketCodec(RegistryKeys.WORLD), SignBlockTextureChangePayload::worldRegistryKey,
+    public static final CustomPacketPayload.Type<SignBlockTextureChangePayload> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + ".sign_block_texture_change"));
+    public static final StreamCodec<ByteBuf, SignBlockTextureChangePayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SignBlockTextureChangePayload::pos,
+            ByteBufCodecs.STRING_UTF8, SignBlockTextureChangePayload::texturePath,
+            ResourceKey.streamCodec(Registries.DIMENSION), SignBlockTextureChangePayload::worldRegistryKey,
             SignBlockTextureChangePayload::new
     );
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

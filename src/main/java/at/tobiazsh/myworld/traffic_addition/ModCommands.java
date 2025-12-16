@@ -10,17 +10,17 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.command.MwtaCommand;
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSourceStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ModCommands {
 
-    public static void initialize(@NotNull CommandDispatcher<ServerCommandSource> dispatcher,
-                                  @Nullable CommandRegistryAccess access,
-                                  @Nullable CommandManager.RegistrationEnvironment env
+    public static void initialize(@NotNull CommandDispatcher<CommandSourceStack> dispatcher,
+                                  @Nullable CommandBuildContext access,
+                                  @Nullable Commands.CommandSelection env
     ) {
         MwtaCommand.register(dispatcher);
     }

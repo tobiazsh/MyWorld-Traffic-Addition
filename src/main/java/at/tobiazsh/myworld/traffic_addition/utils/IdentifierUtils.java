@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class IdentifierUtils {
 
@@ -22,7 +22,7 @@ public class IdentifierUtils {
             path = path.substring(trimAway.length());
         }
 
-        return Identifier.of(namespace, path);
+        return Identifier.fromNamespaceAndPath(namespace, path);
     }
 
     /**
@@ -40,6 +40,6 @@ public class IdentifierUtils {
             path = path.substring(toTrim.length());
         }
 
-        return Identifier.of(namespace, path);
+        return Identifier.fromNamespaceAndPath(namespace, path);
     }
 }

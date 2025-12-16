@@ -1,27 +1,27 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 
 public class ModItems {
-    public static Item registerItem(Item.Settings itemSettings, String id) {
-        Identifier itemId = Identifier.of(MyWorldTrafficAddition.MOD_ID, id);
-        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, itemId);
+    public static Item registerItem(Item.Properties itemSettings, String id) {
+        Identifier itemId = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, id);
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, itemId);
 
-        itemSettings.registryKey(itemKey);
-        return Registry.register(Registries.ITEM, itemKey, new Item(itemSettings));
+        itemSettings.setId(itemKey);
+        return Registry.register(BuiltInRegistries.ITEM, itemKey, new Item(itemSettings));
     }
 
-    public static final Item AUSTRIA_ITEM = registerItem(new Item.Settings().maxCount(128), "austria_item");
+    public static final Item AUSTRIA_ITEM = registerItem(new Item.Properties().stacksTo(128), "austria_item");
 
     public static void initialize(){
         ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY).register((itemGroup) -> {
-            itemGroup.add(ModItems.AUSTRIA_ITEM.asItem());
+            itemGroup.accept(ModItems.AUSTRIA_ITEM.asItem());
         });
     }
 }

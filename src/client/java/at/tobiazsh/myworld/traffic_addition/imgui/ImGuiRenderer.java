@@ -15,7 +15,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import imgui.ImGui;
 import imgui.flag.ImGuiKey;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class ImGuiRenderer {
 
@@ -39,8 +39,8 @@ public class ImGuiRenderer {
             if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
 
             if (shouldSnap) {
-                float width = MinecraftClient.getInstance().getWindow().getWidth();
-                float height = MinecraftClient.getInstance().getWindow().getHeight();
+                float width = Minecraft.getInstance().getWindow().getScreenWidth();
+                float height = Minecraft.getInstance().getWindow().getScreenHeight();
 
                 ImGui.setNextWindowPos(0, 0);
                 ImGui.setNextWindowSize(width, height);

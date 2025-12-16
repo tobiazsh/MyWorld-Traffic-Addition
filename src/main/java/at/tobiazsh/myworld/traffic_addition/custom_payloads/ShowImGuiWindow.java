@@ -2,21 +2,22 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
+import net.minecraft.resources.Identifier;
 
-public record ShowImGuiWindow(int windowId) implements CustomPayload {
+public record ShowImGuiWindow(int windowId) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<ShowImGuiWindow> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "show_imgui_window"));
-    public static final PacketCodec<ByteBuf, ShowImGuiWindow> CODEC = PacketCodec.tuple(
-            PacketCodecs.INTEGER, ShowImGuiWindow::windowId,
+    public static final CustomPacketPayload.Type<ShowImGuiWindow> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "show_imgui_window"));
+    public static final StreamCodec<ByteBuf, ShowImGuiWindow> CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, ShowImGuiWindow::windowId,
             ShowImGuiWindow::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

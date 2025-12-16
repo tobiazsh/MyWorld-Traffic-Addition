@@ -3,7 +3,7 @@
   "package": "at.tobiazsh.myworld.traffic_addition.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "MinecraftClientMixin",
+    "MinecraftMixin",
     "RenderSystemAccessor",
     "TextureManagerAccessor",
     "font.FontManagerAccessor",

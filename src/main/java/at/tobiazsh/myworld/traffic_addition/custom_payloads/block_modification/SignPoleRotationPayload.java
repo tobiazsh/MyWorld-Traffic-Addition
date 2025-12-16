@@ -2,23 +2,23 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
-public record SignPoleRotationPayload(BlockPos pos, int rotation) implements CustomPayload {
+public record SignPoleRotationPayload(BlockPos pos, int rotation) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<SignPoleRotationPayload> Id = new CustomPayload.Id<>(Identifier.of((MyWorldTrafficAddition.MOD_ID + ".sign_pole_rotation")));
-    public static final PacketCodec<ByteBuf, SignPoleRotationPayload> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, SignPoleRotationPayload::pos,
-            PacketCodecs.INTEGER, SignPoleRotationPayload::rotation,
+    public static final CustomPacketPayload.Type<SignPoleRotationPayload> Id = new CustomPacketPayload.Type<>(Identifier.parse((MyWorldTrafficAddition.MOD_ID + ".sign_pole_rotation")));
+    public static final StreamCodec<ByteBuf, SignPoleRotationPayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SignPoleRotationPayload::pos,
+            ByteBufCodecs.INT, SignPoleRotationPayload::rotation,
             SignPoleRotationPayload::new
     );
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

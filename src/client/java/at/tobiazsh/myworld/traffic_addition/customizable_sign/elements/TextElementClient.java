@@ -16,12 +16,12 @@ import imgui.ImFont;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.core.Direction;
+import com.mojang.math.Axis;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -121,7 +121,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
     }
 
     @Override
-    public void renderMinecraft(OrderedRenderCommandQueue queue, int indexInList, int csbeHeight, MatrixStack matrices, int light, Direction facing) {
+    public void renderMinecraft(SubmitNodeCollector queue, int indexInList, int csbeHeight, PoseStack matrices, int light, Direction facing) {
 
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
@@ -137,8 +137,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
             return;
         }
 
-        float textWidth = textRenderer.getWidth(this.getText());
-        float textHeight = textRenderer.fontHeight;
+        float textWidth = textRenderer.width(this.getText());
+        float textHeight = textRenderer.lineHeight;
         float scaleX = 1 / textWidth;
         float scaleY = 1 / textHeight * 0.6f; // 0.6f is a magic number to make it look not-stretched apparently ¯\_(ツ)_/¯
         float effectiveWidthScale = w * scaleX;
@@ -153,9 +153,9 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 .offset(Direction.DOWN, y)
                 .offset(Direction.DOWN, h * 0.35f); // Fix Up/Down alignment
 
-        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
+        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
 
-        matrices.push();
+        matrices.pushPose();
 
         // Move to correct position
         matrices.translate(zPos.x, zPos.y, zPos.z);
@@ -163,23 +163,23 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
         // Rotate to face the same direction as the block
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing)));
+        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing)));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Turn by 180 degrees, because it's inverted
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.NEGATIVE_Z.rotationDegrees(180));
+        matrices.mulPose(Axis.ZN.rotationDegrees(180));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Rotate by given rotation
         matrices.translate(w * 0.5f, h * 0.6f * 0.5f, 0.0f); // Translate to text center
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotation)); // Apply rotation
+        matrices.mulPose(Axis.ZP.rotationDegrees(rotation)); // Apply rotation
         matrices.translate(-w * 0.5f, -h * 0.6f * 0.5f, 0.0f); // Translate back
 
         // Scale up to match size
         matrices.scale(effectiveWidthScale, effectiveHeightScale, 1);
 
-        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
+        Matrix4f positionMatrix = matrices.last().pose();
 
         textRenderer.draw(
                 this.getText(),
@@ -193,7 +193,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 light
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     /**

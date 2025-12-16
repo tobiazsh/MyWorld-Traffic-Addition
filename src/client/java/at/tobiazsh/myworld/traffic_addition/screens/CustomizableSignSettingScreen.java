@@ -13,15 +13,15 @@ import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -40,16 +40,16 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 public class CustomizableSignSettingScreen extends Screen {
 
     // Constants
-    private static final Text TITLE = Text.translatable("screen." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen");
+    private static final Component TITLE = Component.translatable("screen." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen");
     private static final int MARGIN = 10;
     private static final int WIDGET_HEIGHT = 20;
     private static final int WIDGET_WIDTH = 200;
     private static final int SPACING = 30;
 
     // Block and world data
-    private final World world;
+    private final Level world;
     private final BlockPos pos;
-    private final PlayerEntity player;
+    private final Player player;
 
     // UI state
     private int currentYPosition = MARGIN;
@@ -64,7 +64,7 @@ public class CustomizableSignSettingScreen extends Screen {
     /**
      * Creates a new screen for customizing signDistances
      */
-    public CustomizableSignSettingScreen(World world, BlockPos pos, PlayerEntity player) {
+    public CustomizableSignSettingScreen(Level world, BlockPos pos, Player player) {
         super(TITLE);
         this.world = world;
         this.pos = pos;
@@ -95,19 +95,19 @@ public class CustomizableSignSettingScreen extends Screen {
 
         // Initialize button
         addButton(
-                Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.check_button"),
+                Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.check_button"),
                 (widget) -> initSign()
         );
 
         // Rotation slider
         DegreeSliderWidget rotationWidget = new DegreeSliderWidget(
                 MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT,
-                Text.of(initialRotationValue + "°"),
+                Component.nullToEmpty(initialRotationValue + "°"),
                 initialRotationValue / 90f + 0.5f
         ) {
             @Override
             protected void updateMessage() {
-                this.setMessage(Text.of((int)getValue() + "°"));
+                this.setMessage(Component.nullToEmpty((int)getValue() + "°"));
             }
 
             @Override
@@ -115,21 +115,21 @@ public class CustomizableSignSettingScreen extends Screen {
                 applyRotation((int)getValue());
             }
         };
-        addDrawableChild(rotationWidget);
+        addRenderableWidget(rotationWidget);
         advancePosition();
 
         // Draw editor button
         addButton(
-                Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".draw_editor_button"),
+                Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".draw_editor_button"),
                 (widget) -> showEditorScreen()
         );
     }
 
-    private void addButton(Text text, ButtonWidget.PressAction action) {
-        ButtonWidget button = ButtonWidget.builder(text, action)
-                .dimensions(MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT)
+    private void addButton(Component text, Button.OnPress action) {
+        Button button = Button.builder(text, action)
+                .bounds(MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT)
                 .build();
-        addDrawableChild(button);
+        addRenderableWidget(button);
         advancePosition();
     }
 
@@ -153,14 +153,14 @@ public class CustomizableSignSettingScreen extends Screen {
     }
 
     private void reopen(boolean showChildren) {
-        this.close();
+        this.onClose();
         CustomizableSignSettingScreen screen = new CustomizableSignSettingScreen(this.world, this.pos, this.player);
         screen.showChildren = showChildren;
-        MinecraftClient.getInstance().setScreen(screen);
+        Minecraft.getInstance().setScreen(screen);
     }
 
     private void clearAll() {
-        this.clearChildren();
+        this.clearWidgets();
     }
 
     private boolean abort = false;
@@ -173,7 +173,7 @@ public class CustomizableSignSettingScreen extends Screen {
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
 
         if (currentSignBlockEntity == null) {
-            player.sendMessage(Text.literal("Failed to initialize sign structure!"), false);
+            player.displayClientMessage(Component.literal("Failed to initialize sign structure!"), false);
             return;
         }
 
@@ -194,7 +194,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
         if (!abort) {
             if (!informMaster(originalPositions, masterPos, facing)) {
-                player.sendMessage(Text.literal(tr("Minecraft.MWTA.Warn", "No sign found at one or more of the positions! Please check the structure!")), false);
+                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "No sign found at one or more of the positions! Please check the structure!")), false);
                 return;
             }
 
@@ -215,7 +215,7 @@ public class CustomizableSignSettingScreen extends Screen {
                 signDistanceBytes = ListUtils.toByteArray(signDistancesString);
             } catch (IOException e) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to serialize sign positions for {}: {}", pos, e.getMessage());
-                player.sendMessage(Text.literal(tr("Minecraft.MWTA.Error", "Failed to initialize sign structure!")), false);
+                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Error", "Failed to initialize sign structure!")), false);
                 return;
             }
 
@@ -233,8 +233,8 @@ public class CustomizableSignSettingScreen extends Screen {
 
         BlockPos currentPos = masterPos;
 
-        while (isUsableCustomizableSignBlockEntity(currentPos.up(), world, facing)) {
-            currentPos = currentPos.up();
+        while (isUsableCustomizableSignBlockEntity(currentPos.above(), world, facing)) {
+            currentPos = currentPos.above();
             height++;
         }
 
@@ -288,17 +288,17 @@ public class CustomizableSignSettingScreen extends Screen {
             }
 
             if (scannedWidth != signWidth) {
-                player.sendMessage(Text.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
+                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
                 abort = true;
                 break;
             }
 
             scannedHeight++;
-            currentUpPos = currentUpPos.up();
+            currentUpPos = currentUpPos.above();
         }
 
         if (scannedHeight != signHeight) {
-            player.sendMessage(Text.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
+            player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
             abort = true;
         }
 
@@ -337,7 +337,7 @@ public class CustomizableSignSettingScreen extends Screen {
         Direction rightDirection = getRightSideDirection(facing.getOpposite());
 
         // Start position; this is the topmost pole position in the sign structure
-        BlockPos start = blockPosInDirection(facing.getOpposite(), masterPos.up(signHeight - 1), 1);
+        BlockPos start = blockPosInDirection(facing.getOpposite(), masterPos.above(signHeight - 1), 1);
 
         for (int i = 0; i < signWidth; i++) {
             BlockPos pos = blockPosInDirection(rightDirection, start, i);
@@ -349,7 +349,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
                 poles.add(pos);
 
-                pos = pos.down();
+                pos = pos.below();
             }
         }
 

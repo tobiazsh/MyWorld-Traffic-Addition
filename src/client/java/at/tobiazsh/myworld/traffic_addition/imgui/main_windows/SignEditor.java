@@ -38,8 +38,8 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiWindowFlags;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -94,7 +94,7 @@ public class SignEditor {
         OnlineImageGallery.render();
     }
 
-    public static void open(BlockPos masterBlockPos, @NotNull World world, boolean isInit) {
+    public static void open(BlockPos masterBlockPos, @NotNull Level world, boolean isInit) {
 
         if (!isInit) {
             ErrorPopup.open(new Error(

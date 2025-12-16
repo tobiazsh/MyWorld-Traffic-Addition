@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils.math;
 
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 
 public class Coordinates {

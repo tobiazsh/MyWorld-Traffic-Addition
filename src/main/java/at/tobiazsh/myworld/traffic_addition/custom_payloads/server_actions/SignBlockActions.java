@@ -6,9 +6,9 @@ import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.S
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockRotationPayload;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 public class SignBlockActions {
     public static void handleTextureChange(SignBlockTextureChangePayload payload, ServerPlayNetworking.Context ctx) {

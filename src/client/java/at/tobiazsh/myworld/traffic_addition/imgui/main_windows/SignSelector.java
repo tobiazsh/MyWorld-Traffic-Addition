@@ -16,9 +16,9 @@ import imgui.ImVec2;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class SignSelector {
     private SignFilter filter = new SignFilter(null, null, null);
     private final Texture previewTexture = new Texture();
     private BlockPos signPos;
-    private RegistryKey<World> worldRegistryKey;
+    private ResourceKey<Level> worldRegistryKey;
     private final String windowId;
 
     private FilterWindow filterWindow;
@@ -212,7 +212,7 @@ public class SignSelector {
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
-    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, RegistryKey<World> world) {
+    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, ResourceKey<Level> world) {
         shouldRender = true;
         this.signType = signType;
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type

@@ -2,19 +2,19 @@ package at.tobiazsh.myworld.traffic_addition.rendering;
 
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.LayeringTransform;
-import net.minecraft.client.render.RenderSetup;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
-import static net.minecraft.client.texture.SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;
+import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
 
 /**
  * Custom RenderLayer exclusively for this mod to prevent z-fighting when viewing signs from further away. Pairs with CustomTextRenderer.
@@ -46,7 +46,7 @@ public class CustomRenderLayer {
 
     public static class Layering {
         public static LayeringTransform getZLayeringBackward(float zOffset) {
-            return new LayeringTransform("view_offset_z_layering_backward", matrices -> RenderSystem.getProjectionType().apply(matrices, zOffset));
+            return new LayeringTransform("view_offset_z_layering_backward", matrices -> RenderSystem.getProjectionType().applyLayeringTransform(matrices, zOffset));
         }
     }
 
@@ -55,7 +55,7 @@ public class CustomRenderLayer {
     public static class ImageLayering {
         
         private float zOffset;
-        private RenderLayer renderLayer;
+        private RenderType renderLayer;
         private final ImageLayering.LayeringType layeringType;
         private final Identifier texture;
 
@@ -71,33 +71,33 @@ public class CustomRenderLayer {
             this.texture = texture;
         }
 
-        private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
+        private final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
-                            .texture(TEXTURE_NAME, texture)
+                            .withTexture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .useOverlay()
-                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
-                            .build();
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .createRenderSetup();
 
-                    return RenderLayer.of("entity_solid_z_offset_backward", renderSetup);
+                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
                 }
         );
 
-        private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
+        private final Function<Identifier, RenderType> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
-                            .texture(TEXTURE_NAME, texture)
+                            .withTexture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .useOverlay()
-                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
-                            .build();
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .createRenderSetup();
 
-                    return RenderLayer.of("entity_solid_z_offset_backward", renderSetup);
+                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
                 }
         );
         
-        public RenderLayer buildRenderLayer() {
+        public RenderType buildRenderLayer() {
 
                 // If cached, return the cached render layer
                 if (layerExistsInCache(this.texture, this.zOffset, this.layeringType))
@@ -113,7 +113,7 @@ public class CustomRenderLayer {
                 return this.renderLayer;
         }
 
-        public RenderLayer getRenderLayer() {
+        public RenderType getRenderLayer() {
             return renderLayer;
         }
         
@@ -149,7 +149,7 @@ public class CustomRenderLayer {
     public static class TextLayering {
 
         private float zOffset;
-        private RenderLayer renderLayer;
+        private RenderType renderLayer;
         private final LayeringType layeringType;
         private final Identifier texture;
 
@@ -165,19 +165,19 @@ public class CustomRenderLayer {
             this.texture = texture;
         }
 
-        private final Function<Identifier, RenderLayer> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
+        private final Function<Identifier, RenderType> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.RENDERTYPE_TEXT_INTENSITY)
-                            .texture(TEXTURE_NAME, texture)
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.TEXT_INTENSITY)
+                            .withTexture(TEXTURE_NAME, texture)
                             .useLightmap()
-                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
-                            .build();
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .createRenderSetup();
 
-                    return RenderLayer.of("text_z_offset_backward_intensity", renderSetup);
+                    return RenderType.create("text_z_offset_backward_intensity", renderSetup);
                 }
         );
 
-        public RenderLayer buildRenderLayer() {
+        public RenderType buildRenderLayer() {
 
             // If cached, return the cached render layer
             if (layerExistsInCache(this.texture, this.zOffset, this.layeringType))
@@ -192,7 +192,7 @@ public class CustomRenderLayer {
             return this.renderLayer;
         }
 
-        public RenderLayer getRenderLayer() {
+        public RenderType getRenderLayer() {
             return renderLayer;
         }
 
@@ -235,19 +235,19 @@ public class CustomRenderLayer {
             this.layeringType = layeringType;
         }
 
-        private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
+        private final Function<Float, RenderType> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 zOff -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK)
                             .useLightmap()
-                            .texture(TEXTURE_NAME, BLOCK_ATLAS_TEXTURE) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
-                            .layeringTransform(Layering.getZLayeringBackward(zOff))
-                            .build();
+                            .withTexture(TEXTURE_NAME, LOCATION_BLOCKS) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOff))
+                            .createRenderSetup();
 
-                    return RenderLayer.of("cutout_z_offset_backward", renderSetup);
+                    return RenderType.create("cutout_z_offset_backward", renderSetup);
                 }
         );
 
-        public RenderLayer buildRenderLayer() {
+        public RenderType buildRenderLayer() {
             return switch (this.layeringType) {
                 case CUTOUT_Z_OFFSET_BACKWARD -> CUTOUT_Z_OFFSET_BACKWARD.apply(this.zOffset);
             };

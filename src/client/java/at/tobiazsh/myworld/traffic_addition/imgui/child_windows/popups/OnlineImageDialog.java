@@ -18,8 +18,8 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -127,7 +127,7 @@ public class OnlineImageDialog {
         shouldOpen = true;
         currentPage = OnlineImageDialogPage.NEW;
 
-        CustomClientNetworking.getInstance().sendStringToServer(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), "dummy");
+        CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), "dummy");
 
         imageUrl = new ImString(1024);
     }
@@ -280,7 +280,7 @@ public class OnlineImageDialog {
 
                 if (!downloader.hasError()) {
                     currentPage = OnlineImageDialogPage.EDIT; // Go to next page
-                    MinecraftClient.getInstance().execute(this::uploadImageToGPU); // Upload image to GPU
+                    Minecraft.getInstance().execute(this::uploadImageToGPU); // Upload image to GPU
                     createImageBackup();
                 }
 
@@ -506,7 +506,7 @@ public class OnlineImageDialog {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Metadata");
             JsonObject metadata = createMetadata(
                     imageName.get(),
-                    MinecraftClient.getInstance().getGameProfile().id(),
+                    Minecraft.getInstance().getGameProfile().id(),
                     UUID.randomUUID(),
                     hideForOthers.get(),
                     Instant.now()
@@ -536,7 +536,7 @@ public class OnlineImageDialog {
             buffer.put(metadataBytes);
 
             CustomClientNetworking.getInstance().sendBytesToServer(
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"),
                     buffer.array(), 20, 16000
             );
 

@@ -14,9 +14,9 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Tuple;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -327,18 +327,18 @@ public class OnlineImageGallery {
         isLoading = true;
 
         List<UUID> uuids = metadataList.stream().map(CustomImageMetadata::getImageUUID).toList(); // Get UUIDs of all images
-        Pair<List<UUID>, List<Pair<Integer, UUID>>> listPair = splitCached(uuids);
-        List<Pair<Integer, UUID>> cachedUuids = listPair.getRight(); // Get UUIDs of cached images
-        uuids = listPair.getLeft(); // Get UUIDs of non-cached images
+        Tuple<List<UUID>, List<Tuple<Integer, UUID>>> listPair = splitCached(uuids);
+        List<Tuple<Integer, UUID>> cachedUuids = listPair.getB(); // Get UUIDs of cached images
+        uuids = listPair.getA(); // Get UUIDs of non-cached images
 
         // Get Cached thumbnails
-        List<Pair<Integer, byte[]>> cachedThumbnails = getFromCachedImages(cachedUuids);
+        List<Tuple<Integer, byte[]>> cachedThumbnails = getFromCachedImages(cachedUuids);
 
         // All thumbnails are cached; skip fetch
         if (uuids.isEmpty()) {
             List<byte[]> thumbnails = new ArrayList<>();
-            cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight()));
-            MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
+            cachedThumbnails.forEach(pair -> thumbnails.add(pair.getA(), pair.getB()));
+            Minecraft.getInstance().execute(() -> loadThumbnails(thumbnails));
             return;
         }
 
@@ -346,15 +346,15 @@ public class OnlineImageGallery {
         OnlineImageNetworking.fetchThumbnails(uuids)
                 .thenAccept(thumbnails -> {
                     currentThumbnailData = thumbnails;
-                    cachedThumbnails.forEach(pair -> thumbnails.add(pair.getLeft(), pair.getRight())); // Add cached thumbnails to the list
+                    cachedThumbnails.forEach(pair -> thumbnails.add(pair.getA(), pair.getB())); // Add cached thumbnails to the list
 
                     for (int i = 0; i < finalUuids.size(); i++) {
                         UUID uuid = finalUuids.get(i);
                         byte[] data = thumbnails.get(i);
-                        cacheThumbnail(new Pair<>(uuid, data));
+                        cacheThumbnail(new Tuple<>(uuid, data));
                     }
 
-                    MinecraftClient.getInstance().execute(() -> loadThumbnails(thumbnails));
+                    Minecraft.getInstance().execute(() -> loadThumbnails(thumbnails));
                 })
                 .exceptionally(ex -> {
                     MyWorldTrafficAddition.LOGGER.error("Failed to fetch thumbnails: {}", ex.getMessage());
@@ -393,9 +393,9 @@ public class OnlineImageGallery {
         isLoading = false;
     }
 
-    private static void cacheThumbnail(Pair<UUID, byte[]> uncachedThumbnail) {
-        String imageName = uncachedThumbnail.getLeft() + "_thumbnail.png";
-        OnlineImageCache.cacheImage(uncachedThumbnail.getRight(), imageName);
+    private static void cacheThumbnail(Tuple<UUID, byte[]> uncachedThumbnail) {
+        String imageName = uncachedThumbnail.getA() + "_thumbnail.png";
+        OnlineImageCache.cacheImage(uncachedThumbnail.getB(), imageName);
     }
 
     /**
@@ -403,30 +403,30 @@ public class OnlineImageGallery {
      * @param uuids The list of UUIDs to split
      * @return Left list: UUIDs that are not cached, right list: List of Pair, where left is the UUID that is cached and right is its index in the original list
      */
-    private static Pair<List<UUID>, List<Pair<Integer, UUID>>> splitCached(List<UUID> uuids) {
+    private static Tuple<List<UUID>, List<Tuple<Integer, UUID>>> splitCached(List<UUID> uuids) {
         List<UUID> cached = OnlineImageCache.getCachedUUIDs("_thumbnail.png");
         List<UUID> finalCached = cached;
         List<UUID> notCached = uuids.stream().filter(uuid -> !finalCached.contains(uuid)).toList();
         cached = uuids.stream().filter(cached::contains).toList(); // Filter out UUIDs that aren't even in the list
 
-        List<Pair<Integer, UUID>> cachedUuids = cached.stream().map(uuid -> {
+        List<Tuple<Integer, UUID>> cachedUuids = cached.stream().map(uuid -> {
             int index = uuids.indexOf(uuid);
-            return new Pair<>(index, uuid);
+            return new Tuple<>(index, uuid);
         }).toList();
 
-        return new Pair<>(
+        return new Tuple<>(
                 notCached,
                 cachedUuids
         );
     }
 
-    private static List<Pair<Integer, byte[]>> getFromCachedImages(List<Pair<Integer, UUID>> images) {
-        List<Pair<Integer, byte[]>> cachedImages = new ArrayList<>();
+    private static List<Tuple<Integer, byte[]>> getFromCachedImages(List<Tuple<Integer, UUID>> images) {
+        List<Tuple<Integer, byte[]>> cachedImages = new ArrayList<>();
 
-        for (Pair<Integer, UUID> pair : images) {
-            byte[] image = OnlineImageCache.loadImage(pair.getRight().toString() + "_thumbnail.png");
+        for (Tuple<Integer, UUID> pair : images) {
+            byte[] image = OnlineImageCache.loadImage(pair.getB().toString() + "_thumbnail.png");
             if (image != null) {
-                cachedImages.add(new Pair<>(pair.getLeft(), image));
+                cachedImages.add(new Tuple<>(pair.getA(), image));
             }
         }
 
@@ -486,7 +486,7 @@ public class OnlineImageGallery {
 
     private static void requestDeletion(UUID imageUUID) {
         CustomClientNetworking.getInstance().sendBytesToServer( // Send request to server
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"),
                 imageUUID.toString().getBytes(),
                 -1, -1
         );

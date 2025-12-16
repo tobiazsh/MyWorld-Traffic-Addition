@@ -4,8 +4,8 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlock
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 
 public class CustomizableSignBlockActions {
     public static void handleUpdateTextureVariables(UpdateTextureVarsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {

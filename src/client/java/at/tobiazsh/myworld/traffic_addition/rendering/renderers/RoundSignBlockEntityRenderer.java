@@ -11,14 +11,14 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 import at.tobiazsh.myworld.traffic_addition.block_entities.RoundSignBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 
 @Environment(EnvType.CLIENT)
 public class RoundSignBlockEntityRenderer extends SignBlockEntityRenderer<RoundSignBlockEntity> {
 
-    public RoundSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-        super(MinecraftClient.getInstance().getBakedModelManager());
+    public RoundSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+        super(Minecraft.getInstance().getModelManager());
     }
 
 }

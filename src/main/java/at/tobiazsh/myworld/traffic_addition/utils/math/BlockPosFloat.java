@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils.math;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 public class BlockPosFloat {
     public float x, y, z;
@@ -45,7 +45,7 @@ public class BlockPosFloat {
      * @return BlockPosFloat
      */
     public BlockPosFloat offset(Direction direction, float amount) {
-        return amount == 0 ? this : new BlockPosFloat(x + direction.getOffsetX() * amount, y + direction.getOffsetY() * amount, z + direction.getOffsetZ() * amount);
+        return amount == 0 ? this : new BlockPosFloat(x + direction.getStepX() * amount, y + direction.getStepY() * amount, z + direction.getStepZ() * amount);
     }
 
     /**

@@ -10,23 +10,23 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
-public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, byte[] signDistances) implements CustomPayload {
-    public static final CustomPayload.Id<SetSignPositionsCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_sign_positions_customizable_sign_block_payload"));
+public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, byte[] signDistances) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<SetSignPositionsCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_sign_positions_customizable_sign_block_payload"));
 
-    public static final PacketCodec<ByteBuf, SetSignPositionsCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, SetSignPositionsCustomizableSignBlockPayload::pos,
-            PacketCodecs.BYTE_ARRAY, SetSignPositionsCustomizableSignBlockPayload::signDistances,
+    public static final StreamCodec<ByteBuf, SetSignPositionsCustomizableSignBlockPayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SetSignPositionsCustomizableSignBlockPayload::pos,
+            ByteBufCodecs.BYTE_ARRAY, SetSignPositionsCustomizableSignBlockPayload::signDistances,
             SetSignPositionsCustomizableSignBlockPayload::new
     );
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

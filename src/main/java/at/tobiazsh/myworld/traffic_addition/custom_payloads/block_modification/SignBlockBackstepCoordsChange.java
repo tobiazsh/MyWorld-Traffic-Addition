@@ -10,27 +10,27 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
-public record SignBlockBackstepCoordsChange(BlockPos pos, float x, float y, float z, Direction direction) implements CustomPayload {
+public record SignBlockBackstepCoordsChange(BlockPos pos, float x, float y, float z, Direction direction) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<SignBlockBackstepCoordsChange> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID + ".sign_block_backstep_coords_change"));
-    public static final PacketCodec<ByteBuf, SignBlockBackstepCoordsChange> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, SignBlockBackstepCoordsChange::pos,
-            PacketCodecs.FLOAT, SignBlockBackstepCoordsChange::x,
-            PacketCodecs.FLOAT, SignBlockBackstepCoordsChange::y,
-            PacketCodecs.FLOAT, SignBlockBackstepCoordsChange::z,
-            Direction.PACKET_CODEC, SignBlockBackstepCoordsChange::direction,
+    public static final CustomPacketPayload.Type<SignBlockBackstepCoordsChange> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + ".sign_block_backstep_coords_change"));
+    public static final StreamCodec<ByteBuf, SignBlockBackstepCoordsChange> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SignBlockBackstepCoordsChange::pos,
+            ByteBufCodecs.FLOAT, SignBlockBackstepCoordsChange::x,
+            ByteBufCodecs.FLOAT, SignBlockBackstepCoordsChange::y,
+            ByteBufCodecs.FLOAT, SignBlockBackstepCoordsChange::z,
+            Direction.STREAM_CODEC, SignBlockBackstepCoordsChange::direction,
             SignBlockBackstepCoordsChange::new
     );
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.network;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class ChunkTransferData {
     private final Identifier protocolId;

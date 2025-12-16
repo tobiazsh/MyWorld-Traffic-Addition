@@ -10,21 +10,22 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
-public record OpenCustomizableSignEditScreen(BlockPos pos) implements CustomPayload {
+public record OpenCustomizableSignEditScreen(BlockPos pos) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<OpenCustomizableSignEditScreen> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "open_customizable_sign_edit_screen"));
-    public static PacketCodec<ByteBuf, OpenCustomizableSignEditScreen> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, OpenCustomizableSignEditScreen::pos,
+    public static final CustomPacketPayload.Type<OpenCustomizableSignEditScreen> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "open_customizable_sign_edit_screen"));
+    public static StreamCodec<ByteBuf, OpenCustomizableSignEditScreen> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, OpenCustomizableSignEditScreen::pos,
             OpenCustomizableSignEditScreen::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

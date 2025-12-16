@@ -2,20 +2,21 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
-public record UpdateTextureVarsCustomizableSignBlockPayload(BlockPos pos) implements CustomPayload {
-    public static final CustomPayload.Id<UpdateTextureVarsCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID + ".update_texture_vars_customizable_sign_block"));
-    public static final PacketCodec<ByteBuf, UpdateTextureVarsCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, UpdateTextureVarsCustomizableSignBlockPayload::pos,
+public record UpdateTextureVarsCustomizableSignBlockPayload(BlockPos pos) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<UpdateTextureVarsCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + ".update_texture_vars_customizable_sign_block"));
+    public static final StreamCodec<ByteBuf, UpdateTextureVarsCustomizableSignBlockPayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, UpdateTextureVarsCustomizableSignBlockPayload::pos,
             UpdateTextureVarsCustomizableSignBlockPayload::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

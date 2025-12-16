@@ -6,11 +6,11 @@ import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -55,7 +55,7 @@ public class DynamicTexture extends AbstractTexture {
                 throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture, image is null!");
 
             this.load(image);
-            MinecraftClient.getInstance().getTextureManager().registerTexture(id, this);
+            Minecraft.getInstance().getTextureManager().register(id, this);
         } catch (IOException e) {
             throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture!", e);
         }
@@ -70,7 +70,7 @@ public class DynamicTexture extends AbstractTexture {
      * @return this DynamicTexture instance
      */
     public DynamicTexture smartRegisterTexture() {
-        if (((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures().containsKey(id)) // Already registered in TextureManager
+        if (((TextureManagerAccessor) Minecraft.getInstance().getTextureManager()).getByPath().containsKey(id)) // Already registered in TextureManager
             return this;
 
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
@@ -102,8 +102,8 @@ public class DynamicTexture extends AbstractTexture {
      */
     public void unregister() {
         try {
-            TextureManager tm = MinecraftClient.getInstance().getTextureManager();
-            ((TextureManagerAccessor) tm).getTextures().remove(this.id);
+            TextureManager tm = Minecraft.getInstance().getTextureManager();
+            ((TextureManagerAccessor) tm).getByPath().remove(this.id);
         } catch (Exception e) {
             MyWorldTrafficAddition.LOGGER.warn("Could not unregister texture \"{}\" with path \"{}\" from TextureManager!", this.id, this.path, e);
         }
@@ -183,9 +183,9 @@ public class DynamicTexture extends AbstractTexture {
         GpuDevice gpu = RenderSystem.getDevice();
         this.close();
         Objects.requireNonNull(this.id);
-        this.glTexture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
-        this.glTextureView = gpu.createTextureView(this.glTexture);
-        gpu.createCommandEncoder().writeToTexture(this.glTexture, image);
+        this.texture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
+        this.textureView = gpu.createTextureView(this.texture);
+        gpu.createCommandEncoder().writeToTexture(this.texture, image);
     }
 
 

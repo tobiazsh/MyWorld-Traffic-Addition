@@ -2,32 +2,33 @@ package at.tobiazsh.myworld.traffic_addition.network;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Uuids;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.UUIDUtil;
 
 import java.util.UUID;
 
-public record ChunkedDataPayload(Identifier protocolId, UUID transferId, int chunkIndex, int totalChunks, int dataSize, byte[] data) implements CustomPayload {
+public record ChunkedDataPayload(Identifier protocolId, UUID transferId, int chunkIndex, int totalChunks, int dataSize, byte[] data) implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<ChunkedDataPayload> Id = new CustomPayload.Id<>(
-            Identifier.of(MyWorldTrafficAddition.MOD_ID, "chunked_data")
+    public static final CustomPacketPayload.Type<ChunkedDataPayload> Id = new CustomPacketPayload.Type<>(
+            Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "chunked_data")
     );
 
-    public static final PacketCodec<ByteBuf, ChunkedDataPayload> CODEC = PacketCodec.tuple(
-            Identifier.PACKET_CODEC, ChunkedDataPayload::protocolId,
-            Uuids.PACKET_CODEC, ChunkedDataPayload::transferId,
-            PacketCodecs.INTEGER, ChunkedDataPayload::chunkIndex,
-            PacketCodecs.INTEGER, ChunkedDataPayload::totalChunks,
-            PacketCodecs.INTEGER, ChunkedDataPayload::dataSize,
-            PacketCodecs.BYTE_ARRAY, ChunkedDataPayload::data,
+    public static final StreamCodec<ByteBuf, ChunkedDataPayload> CODEC = StreamCodec.composite(
+            Identifier.STREAM_CODEC, ChunkedDataPayload::protocolId,
+            UUIDUtil.STREAM_CODEC, ChunkedDataPayload::transferId,
+            ByteBufCodecs.INT, ChunkedDataPayload::chunkIndex,
+            ByteBufCodecs.INT, ChunkedDataPayload::totalChunks,
+            ByteBufCodecs.INT, ChunkedDataPayload::dataSize,
+            ByteBufCodecs.BYTE_ARRAY, ChunkedDataPayload::data,
             ChunkedDataPayload::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 
