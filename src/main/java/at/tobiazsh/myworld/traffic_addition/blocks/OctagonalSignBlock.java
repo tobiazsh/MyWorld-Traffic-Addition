@@ -11,7 +11,6 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 import at.tobiazsh.myworld.traffic_addition.block_entities.OctagonalSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
