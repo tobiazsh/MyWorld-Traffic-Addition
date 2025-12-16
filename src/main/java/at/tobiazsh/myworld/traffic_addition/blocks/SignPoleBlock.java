@@ -38,8 +38,7 @@ public class SignPoleBlock extends BaseEntityBlock {
 
         BlockPos blockBelowPos = pos.below(1);
 
-        if(world.getBlockEntity(blockBelowPos) instanceof SignPoleBlockEntity) {
-            SignPoleBlockEntity blockEntityBelow = (SignPoleBlockEntity)world.getBlockEntity(blockBelowPos);
+        if(world.getBlockEntity(blockBelowPos) instanceof SignPoleBlockEntity blockEntityBelow) {
             SignPoleBlockEntity thisBlockEntity = (SignPoleBlockEntity)world.getBlockEntity(pos);
 
             if (thisBlockEntity == null) {
