@@ -14,7 +14,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import imgui.ImGui;
-import imgui.flag.ImGuiKey;
 import net.minecraft.client.Minecraft;
 
 public class ImGuiRenderer {
