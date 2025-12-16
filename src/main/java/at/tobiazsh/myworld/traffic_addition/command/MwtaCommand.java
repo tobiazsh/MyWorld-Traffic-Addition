@@ -158,13 +158,13 @@ public class MwtaCommand {
 
         if (ServerBlacklist.isPlayerBlacklisted(targetUuid)) {
             UUID finalTargetUuid = targetUuid;
-            context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid.toString() + " is already blacklisted.").withStyle(ChatFormatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid + " is already blacklisted.").withStyle(ChatFormatting.RED), false);
             return Command.SINGLE_SUCCESS;
         }
 
         ServerBlacklist.addToBlacklist(targetUuid);
         UUID finalTargetUuid = targetUuid;
-        context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid.toString() + " has been added to the custom image upload blacklist.").withStyle(ChatFormatting.GREEN), false);
+        context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid + " has been added to the custom image upload blacklist.").withStyle(ChatFormatting.GREEN), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -180,13 +180,13 @@ public class MwtaCommand {
 
         if (!ServerBlacklist.isPlayerBlacklisted(targetUuid)) {
             UUID finalTargetUuid = targetUuid;
-            context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid.toString() + " is not blacklisted.").withStyle(ChatFormatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid + " is not blacklisted.").withStyle(ChatFormatting.RED), false);
             return Command.SINGLE_SUCCESS;
         }
 
         ServerBlacklist.removeFromBlacklist(targetUuid);
         UUID finalTargetUuid = targetUuid;
-        context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid.toString() + " has been added to the custom image upload blacklist.").withStyle(ChatFormatting.GREEN), true);
+        context.getSource().sendSuccess(() -> Component.literal("Player with UUID " + finalTargetUuid + " has been added to the custom image upload blacklist.").withStyle(ChatFormatting.GREEN), true);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -248,7 +248,7 @@ public class MwtaCommand {
         }
 
         OnlineImageBackend.deleteImage(targetImage);
-        context.getSource().sendSuccess(() -> Component.literal("Image with UUID " + targetImage.toString() + " has been deleted successfully.").withStyle(ChatFormatting.GREEN), true);
+        context.getSource().sendSuccess(() -> Component.literal("Image with UUID " + targetImage + " has been deleted successfully.").withStyle(ChatFormatting.GREEN), true);
         return Command.SINGLE_SUCCESS;
     }
 }
