@@ -62,7 +62,7 @@ public class CustomTextRenderer extends Font {
                 private void draw(TextRenderable glyph) {
                     // Get the id from the default render layer
                     RenderType defaultGlyphRenderLayer = glyph.renderType(DisplayMode.NORMAL);
-                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.state.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
+                    Optional<Identifier> optId = Optional.of(defaultGlyphRenderLayer.state.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
 
                     // Construct our custom layering
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.parse("missing")));
