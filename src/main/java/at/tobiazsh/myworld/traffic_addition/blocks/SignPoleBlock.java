@@ -41,6 +41,12 @@ public class SignPoleBlock extends BaseEntityBlock {
         if(world.getBlockEntity(blockBelowPos) instanceof SignPoleBlockEntity) {
             SignPoleBlockEntity blockEntityBelow = (SignPoleBlockEntity)world.getBlockEntity(blockBelowPos);
             SignPoleBlockEntity thisBlockEntity = (SignPoleBlockEntity)world.getBlockEntity(pos);
+
+            if (thisBlockEntity == null) {
+                MyWorldTrafficAddition.LOGGER.error("Tried to set rotationValue on invalid SignPoleBlockEntity!");
+                return;
+            }
+
             thisBlockEntity.setRotationValue(blockEntityBelow.getRotationValue());
         }
     }
