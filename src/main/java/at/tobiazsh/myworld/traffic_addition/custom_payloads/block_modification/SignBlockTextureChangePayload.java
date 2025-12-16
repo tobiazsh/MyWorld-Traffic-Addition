@@ -18,7 +18,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SignBlockTextureChangePayload(BlockPos pos, String texturePath, ResourceKey<Level> worldRegistryKey) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SignBlockTextureChangePayload> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + ".sign_block_texture_change"));

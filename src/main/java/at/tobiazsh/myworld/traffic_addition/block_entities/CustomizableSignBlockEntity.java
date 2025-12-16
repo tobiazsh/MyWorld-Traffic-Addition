@@ -31,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -239,13 +240,13 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
 
     @Override
-    protected void saveAdditional(ValueOutput view) {
+    protected void saveAdditional(@NotNull ValueOutput view) {
         super.saveAdditional(view);
         nbtWrite(view);
     }
 
     @Override
-    protected void loadAdditional(ValueInput readView) {
+    protected void loadAdditional(@NotNull ValueInput readView) {
         super.loadAdditional(readView);
 
         if (readView.getString("Borders").isEmpty() && !OptionalUtils.getOrDefault("BorderModelPath", readView::getString, "", "CustomizableSignBlockEntity.BorderModelPath").isBlank()) { // If old border string is present, convert it to new BorderProperty
@@ -294,12 +295,12 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+    public @Nullable Packet<@NotNull ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registryLookup) {
         return saveWithoutMetadata(registryLookup);
     }
 
@@ -450,7 +451,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      */
     public static boolean isUsableCustomizableSignBlockEntity(BlockPos pos, Level world, Direction shouldFace) {
         return
-            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity && shouldFace == ((CustomizableSignBlockEntity) world.getBlockEntity(pos)).getFacing();
+            world.getBlockEntity(pos) instanceof CustomizableSignBlockEntity && shouldFace == ((CustomizableSignBlockEntity) Objects.requireNonNull(world.getBlockEntity(pos))).getFacing();
     }
 
 

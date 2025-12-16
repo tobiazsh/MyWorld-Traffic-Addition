@@ -7,11 +7,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class ModItems {
     public static Item registerItem(Item.Properties itemSettings, String id) {
         Identifier itemId = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, id);
-        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, itemId);
+        ResourceKey<@NotNull Item> itemKey = ResourceKey.create(Registries.ITEM, itemId);
 
         itemSettings.setId(itemKey);
         return Registry.register(BuiltInRegistries.ITEM, itemKey, new Item(itemSettings));

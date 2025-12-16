@@ -6,9 +6,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NullMarked;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlocks.*;
 
+@NullMarked
 public class ModBlockEntities {
 
     public static BlockEntityType<SignPoleBlockEntity> SIGN_POLE_BLOCK_ENTITY = Registry.register(

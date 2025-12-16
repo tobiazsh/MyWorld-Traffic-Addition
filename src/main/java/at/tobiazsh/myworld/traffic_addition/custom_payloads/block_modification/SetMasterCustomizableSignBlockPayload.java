@@ -13,10 +13,11 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SetMasterCustomizableSignBlockPayload(BlockPos pos, Boolean shouldMaster, BlockPos master) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SetMasterCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_block_master_change"));

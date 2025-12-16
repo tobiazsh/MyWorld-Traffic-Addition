@@ -10,14 +10,15 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 import at.tobiazsh.myworld.traffic_addition.block_entities.RoundSignBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class RoundSignBlock extends SignBlock {
 
     private static final MapCodec<RoundSignBlock> CODEC = simpleCodec(RoundSignBlock::new);

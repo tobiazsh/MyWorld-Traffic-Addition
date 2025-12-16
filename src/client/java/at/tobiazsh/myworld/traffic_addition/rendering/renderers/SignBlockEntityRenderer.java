@@ -35,9 +35,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<T, SignBlockRenderState> {
+public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<@NotNull T, @NotNull SignBlockRenderState> {
 
     private final ModelManager bakedModelMgr;
 
@@ -49,7 +50,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     }
 
     @Override
-    public void submit(SignBlockRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState cameraState) {
+    public void submit(SignBlockRenderState state, PoseStack matrices, @NotNull SubmitNodeCollector queue, @NotNull CameraRenderState cameraState) {
 
         int light = state.lightCoords;
 
@@ -115,7 +116,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     }
 
     @Override
-    public void extractRenderState(T blockEntity, SignBlockRenderState state, float tickProgress, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public void extractRenderState(T blockEntity, SignBlockRenderState state, float tickProgress, @NotNull Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
         state.texturePath = blockEntity.getTexturePath();
     }

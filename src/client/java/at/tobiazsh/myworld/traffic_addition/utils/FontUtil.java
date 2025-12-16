@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class FontUtil {
     private FontUtil() {}
@@ -23,12 +24,12 @@ public class FontUtil {
             }
 
             @Override
-            public GlyphSource glyphs(FontDescription source) {
+            public @NotNull GlyphSource glyphs(@NotNull FontDescription source) {
                 return pickStorage().source(true);
             }
 
             @Override
-            public EffectGlyph effect() {
+            public @NotNull EffectGlyph effect() {
                 return pickStorage().whiteGlyph();
             }
         };

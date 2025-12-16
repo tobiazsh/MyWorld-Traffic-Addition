@@ -8,16 +8,17 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class ModGroups {
 
-    public static final ResourceKey<CreativeModeTab> TRAFFIC_ADDITION_ITEM_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition"));
+    public static final ResourceKey<@NotNull CreativeModeTab> TRAFFIC_ADDITION_ITEM_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition"));
     public static final CreativeModeTab TRAFFIC_ADDITION_ITEM_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModBlocks.BORDER_BLOCK.getBlock()))
             .title(Component.translatable("itemGroup.myworld_traffic_addition"))
             .build();
 
-    public static final ResourceKey<CreativeModeTab> TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition_austria"));
+    public static final ResourceKey<@NotNull CreativeModeTab> TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition_austria"));
     public static final CreativeModeTab TRAFFIC_ADDITION_AUSTRIA_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModItems.AUSTRIA_ITEM))
             .title(Component.translatable("itemGroup.myworld_traffic_addition_austria"))

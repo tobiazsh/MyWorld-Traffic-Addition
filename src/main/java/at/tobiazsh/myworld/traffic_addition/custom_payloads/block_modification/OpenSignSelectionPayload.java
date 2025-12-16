@@ -10,7 +10,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record OpenSignSelectionPayload(BlockPos pos, int selection_type, ResourceKey<Level> dimensionRegistryKey) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<OpenSignSelectionPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "open_sign_selection_screen"));

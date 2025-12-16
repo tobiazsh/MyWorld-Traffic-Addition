@@ -15,7 +15,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SignBlockRotationPayload(BlockPos pos, int rotation) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SignBlockRotationPayload> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + "sign_block_rotation_change"));

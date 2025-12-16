@@ -45,7 +45,7 @@ public class SignSelector {
     private SignFilter filter = new SignFilter(null, null, null);
     private final Texture previewTexture = new Texture();
     private BlockPos signPos;
-    private ResourceKey<Level> worldRegistryKey;
+    private ResourceKey<@NotNull Level> worldRegistryKey;
     private final String windowId;
 
     private FilterWindow filterWindow;
@@ -212,7 +212,7 @@ public class SignSelector {
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
-    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, ResourceKey<Level> world) {
+    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, ResourceKey<@NotNull Level> world) {
         shouldRender = true;
         this.signType = signType;
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type

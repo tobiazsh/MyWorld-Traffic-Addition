@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.image.ByteImage;
 import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
 import net.minecraft.util.Tuple;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.*;
@@ -22,7 +23,7 @@ import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 public class ImageDownloader {
 
-    private static final Tuple<String, String> requestProperty = new Tuple<>("User-Agent", "Mozilla/5.0 (Compatible) MyWorldTrafficAddon/" + MyWorldTrafficAddition.MOD_VERSION);
+    private static final Tuple<@NotNull String, @NotNull String> requestProperty = new Tuple<>("User-Agent", "Mozilla/5.0 (Compatible) MyWorldTrafficAddon/" + MyWorldTrafficAddition.MOD_VERSION);
     private static final int connectTimeout = 15000; // 15 seconds
     private static final int readTimeout = 30000; // 15 seconds
 

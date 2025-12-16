@@ -7,7 +7,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SignPoleRotationPayload(BlockPos pos, int rotation) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SignPoleRotationPayload> Id = new CustomPacketPayload.Type<>(Identifier.parse((MyWorldTrafficAddition.MOD_ID + ".sign_pole_rotation")));

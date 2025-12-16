@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -16,12 +17,12 @@ public class SmartPayload<T extends CustomPacketPayload> {
         SERVER
     }
 
-    public CustomPacketPayload.Type<T> id;
+    public CustomPacketPayload.Type<@NotNull T> id;
     public PayloadReceivedAction<T> onReceive;
-    public StreamCodec<ByteBuf, T> codec;
+    public StreamCodec<@NotNull ByteBuf, @NotNull T> codec;
     public RECEIVE_ENVIRONMENT env;
 
-    public SmartPayload(CustomPacketPayload.Type<T> id, PayloadReceivedAction<T> onReceive, StreamCodec<ByteBuf, T> codec, RECEIVE_ENVIRONMENT env) {
+    public SmartPayload(CustomPacketPayload.Type<@NotNull T> id, PayloadReceivedAction<T> onReceive, StreamCodec<@NotNull ByteBuf, @NotNull T> codec, RECEIVE_ENVIRONMENT env) {
         this.id = id;
         this.onReceive = onReceive;
         this.codec = codec;

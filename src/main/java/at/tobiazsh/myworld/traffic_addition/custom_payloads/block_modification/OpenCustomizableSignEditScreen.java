@@ -14,7 +14,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record OpenCustomizableSignEditScreen(BlockPos pos) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<OpenCustomizableSignEditScreen> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "open_customizable_sign_edit_screen"));

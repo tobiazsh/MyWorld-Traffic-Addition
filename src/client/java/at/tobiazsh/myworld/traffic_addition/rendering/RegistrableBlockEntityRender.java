@@ -5,9 +5,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 
+@NullMarked
 public class RegistrableBlockEntityRender <T extends BlockEntity, S extends BlockEntityRenderState> {
     public BlockEntityType<T> blockEntityType;
     public BlockEntityRendererProvider<T ,S> blockEntityRenderer;

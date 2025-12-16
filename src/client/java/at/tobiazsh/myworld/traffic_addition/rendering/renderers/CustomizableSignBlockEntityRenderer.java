@@ -41,6 +41,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
 
-public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity, CustomizableSignBlockRenderState> {
+public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<@NotNull CustomizableSignBlockEntity, @NotNull CustomizableSignBlockRenderState> {
 
     public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
 
@@ -145,7 +146,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     }
 
     @Override
-    public void extractRenderState(CustomizableSignBlockEntity blockEntity, CustomizableSignBlockRenderState state, float tickProgress, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public void extractRenderState(CustomizableSignBlockEntity blockEntity, CustomizableSignBlockRenderState state, float tickProgress, @NotNull Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
 
         state.isRendering = blockEntity.isRendering();
@@ -189,7 +190,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render the sign block
     @Override
-    public void submit(CustomizableSignBlockRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState cameraState) {
+    public void submit(CustomizableSignBlockRenderState state, @NotNull PoseStack matrices, @NotNull SubmitNodeCollector queue, @NotNull CameraRenderState cameraState) {
 
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!state.isRendering) return;

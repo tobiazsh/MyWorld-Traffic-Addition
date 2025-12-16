@@ -5,6 +5,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,24 +37,24 @@ public class SignPoleBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+    public @Nullable Packet<@NotNull ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registryLookup) {
         return saveWithoutMetadata(registryLookup);
     }
 
     @Override
-    protected void saveAdditional(ValueOutput writeView) {
+    protected void saveAdditional(@NotNull ValueOutput writeView) {
         super.saveAdditional(writeView);
         writeView.putInt(ROTATION_KEY, this.rotation_value);
         writeView.putBoolean("ShouldRender", shouldRender);
     }
 
     @Override
-    protected void loadAdditional(ValueInput readView) {
+    protected void loadAdditional(@NotNull ValueInput readView) {
         super.loadAdditional(readView);
         this.shouldRender = readView.getBooleanOr("ShouldRender", true);
         this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, readView::getInt, 0, "SignPoleBlockEntity.readNbt");

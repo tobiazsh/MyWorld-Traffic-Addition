@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import java.util.Optional;
@@ -49,12 +50,12 @@ public class CustomTextRenderer extends Font {
         static CustomGlyphDrawer drawing(MultiBufferSource vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
             return new CustomGlyphDrawer() {
                 @Override
-                public void acceptGlyph(TextRenderable.Styled glyph) {
+                public void acceptGlyph(TextRenderable.@NotNull Styled glyph) {
                     this.draw(glyph);
                 }
 
                 @Override
-                public void acceptEffect(TextRenderable bakedGlyph) {
+                public void acceptEffect(@NotNull TextRenderable bakedGlyph) {
                     this.draw(bakedGlyph);
                 }
 
@@ -73,9 +74,9 @@ public class CustomTextRenderer extends Font {
             };
         }
 
-        default void acceptGlyph(TextRenderable.Styled glyph) { }
-        default void acceptEffect(TextRenderable rect) { }
-        default void acceptEmptyArea(EmptyArea rect) { }
+        default void acceptGlyph(TextRenderable.@NotNull Styled glyph) { }
+        default void acceptEffect(@NotNull TextRenderable rect) { }
+        default void acceptEmptyArea(@NotNull EmptyArea rect) { }
     }
 
 //      OLD IMPLEMENTATION USING DRAWER SUBCLASS - KEPT FOR REFERENCE

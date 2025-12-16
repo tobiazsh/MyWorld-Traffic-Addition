@@ -16,7 +16,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SignBlockBackstepCoordsChange(BlockPos pos, float x, float y, float z, Direction direction) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<SignBlockBackstepCoordsChange> Id = new CustomPacketPayload.Type<>(Identifier.parse(MyWorldTrafficAddition.MOD_ID + ".sign_block_backstep_coords_change"));

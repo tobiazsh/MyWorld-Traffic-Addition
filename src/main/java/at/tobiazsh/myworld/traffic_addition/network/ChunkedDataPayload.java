@@ -7,9 +7,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.UUIDUtil;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.UUID;
 
+@NullMarked
 public record ChunkedDataPayload(Identifier protocolId, UUID transferId, int chunkIndex, int totalChunks, int dataSize, byte[] data) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<ChunkedDataPayload> Id = new CustomPacketPayload.Type<>(

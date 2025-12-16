@@ -10,6 +10,7 @@ import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.gui.font.providers.GlyphProviderType;
 import net.minecraft.client.gui.font.providers.TrueTypeGlyphProviderDefinition;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -70,12 +71,12 @@ public record CustomTrueTypeFontLoader(
     }
 
     @Override
-    public GlyphProviderType type() {
+    public @NotNull GlyphProviderType type() {
         return GlyphProviderType.TTF;
     }
 
     @Override
-    public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
+    public @NotNull Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
         return Either.left(this::loadFont);
     }
 }

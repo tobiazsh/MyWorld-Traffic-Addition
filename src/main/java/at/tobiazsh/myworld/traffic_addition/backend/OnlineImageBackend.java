@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OnlineImageBackend {
 
     private static final ConcurrentHashMap<UUID, AtomicInteger> perPlayerCounts = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<UUID, Tuple<CustomImageMetadata, Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
+    private static final ConcurrentHashMap<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
     public static AtomicInteger totalEntries = new AtomicInteger(0);
     public static AtomicInteger publicEntries = new AtomicInteger(0);
     public static AtomicInteger hiddenEntries = new AtomicInteger(0);
@@ -268,9 +268,9 @@ public class OnlineImageBackend {
 
 
     private static void cleanupMetadataMap() {
-        Iterator<Map.Entry<UUID, Tuple<CustomImageMetadata, Boolean>>> iterator = metadataMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>>> iterator = metadataMap.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<UUID, Tuple<CustomImageMetadata, Boolean>> entry = iterator.next();
+            Map.Entry<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>> entry = iterator.next();
             UUID imageUUID = entry.getKey();
             boolean hidden = entry.getValue().getB();
 
@@ -572,7 +572,7 @@ public class OnlineImageBackend {
         executorService.submit(() -> {
             UUID imageUUID = byteToUUID(imageUUIDBytes);
 
-            Tuple<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+            Tuple<@NotNull CustomImageMetadata, @NotNull Boolean> stored = metadataMap.get(imageUUID);
             if (stored == null) {
                 // not found, error message
                 errorToClient(
@@ -643,7 +643,7 @@ public class OnlineImageBackend {
      * @param imageUUID The UUID of the image to delete.
      */
     public static void deleteImage(UUID imageUUID) {
-        Tuple<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+        Tuple<@NotNull CustomImageMetadata, @NotNull Boolean> stored = metadataMap.get(imageUUID);
         if (stored == null) {
             MyWorldTrafficAddition.LOGGER.warn("Tried to delete image with UUID {} but it was not found!", imageUUID);
             return;

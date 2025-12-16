@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 import at.tobiazsh.myworld.traffic_addition.error.Error;
+import org.jetbrains.annotations.NotNull;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
@@ -17,7 +18,7 @@ public class ErrorPopup {
 
     private static final String errorIconPath = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
     private static Runnable onClose;
-    private static final Queue<Tuple<Error, Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
+    private static final Queue<Tuple<@NotNull Error, @NotNull Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
     private static final AtomicReference<String> text = new AtomicReference<>("");
     private static final AtomicReference<String> message = new AtomicReference<>("");
 
@@ -60,6 +61,7 @@ public class ErrorPopup {
     }
 
     public static void open(Error error, Runnable close) {
+        if (close == null) close = () -> {}; // Avoid null pointer exceptions
         errorQueue.add(new Tuple<>(error, close));
     }
 
@@ -68,8 +70,8 @@ public class ErrorPopup {
     }
 
     private static void nextError() {
-        Tuple<Error, Runnable> p = errorQueue.poll();
-        if (p == null || p.getA() == null) {
+        Tuple<@NotNull Error, @NotNull Runnable> p = errorQueue.poll();
+        if (p == null) {
             return;
         }
 

@@ -8,10 +8,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class RegisteredModBlock {
     private final Identifier blockId;
-    private final ResourceKey<Block> blockKey;
+    private final ResourceKey<@NotNull Block> blockKey;
     private final Block block;
     private Item blockItem;
     private boolean blockItemAvailable = false;
@@ -30,7 +31,7 @@ public class RegisteredModBlock {
         return blockId;
     }
 
-    public ResourceKey<Block> getKey(ResourceKey<Block> blockKey) {
+    public ResourceKey<@NotNull Block> getKey(ResourceKey<@NotNull Block> blockKey) {
         return blockKey;
     }
 
@@ -72,7 +73,7 @@ public class RegisteredModBlock {
 
     // Private Methods
 
-    public static ResourceKey<Block> genKey(Identifier id) {
+    public static ResourceKey<@NotNull Block> genKey(Identifier id) {
         return ResourceKey.create(Registries.BLOCK, id);
     }
 }

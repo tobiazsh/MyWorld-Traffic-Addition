@@ -15,7 +15,9 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record SetSignPositionsCustomizableSignBlockPayload(BlockPos pos, byte[] signDistances) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<SetSignPositionsCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_sign_positions_customizable_sign_block_payload"));
 

@@ -17,7 +17,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class UpsideDownTriangularSignBlock extends SignBlock {
 
     private static final MapCodec<UpsideDownTriangularSignBlock> CODEC = simpleCodec(UpsideDownTriangularSignBlock::new);

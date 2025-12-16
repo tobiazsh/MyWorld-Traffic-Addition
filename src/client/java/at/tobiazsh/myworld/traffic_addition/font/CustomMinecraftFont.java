@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GlyphSource;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,13 +64,13 @@ public class CustomMinecraftFont extends BasicFont {
             }
 
             @Override
-            public GlyphSource glyphs(FontDescription source) {
+            public @NotNull GlyphSource glyphs(@NotNull FontDescription source) {
                 FontSet storage = pickStorage();
                 return storage.source(true);
             }
 
             @Override
-            public EffectGlyph effect() {
+            public @NotNull EffectGlyph effect() {
                 FontSet storage = pickStorage();
                 return storage.whiteGlyph();
             }

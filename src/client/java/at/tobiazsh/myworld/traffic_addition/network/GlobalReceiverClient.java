@@ -4,15 +4,16 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class GlobalReceiverClient<T extends CustomPacketPayload> {
-    public CustomPacketPayload.Type<T> payloadId;
+    public CustomPacketPayload.Type<@NotNull T> payloadId;
     public PayloadReceivedActionClient<T> onReceive;
 
-    public GlobalReceiverClient(CustomPacketPayload.Type<T> id, PayloadReceivedActionClient<T> runnable) {
+    public GlobalReceiverClient(CustomPacketPayload.Type<@NotNull T> id, PayloadReceivedActionClient<T> runnable) {
         this.payloadId = id;
         this.onReceive = runnable;
     }

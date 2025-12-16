@@ -17,6 +17,7 @@ import imgui.flag.ImGuiCol;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
+import org.jspecify.annotations.NullMarked;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -323,6 +324,7 @@ public class OnlineImageGallery {
     }
 
     // What the fuck...
+    @NullMarked
     private static void loadThumbnailsForCurrentPage(List<CustomImageMetadata> metadataList) {
         isLoading = true;
 
@@ -393,6 +395,7 @@ public class OnlineImageGallery {
         isLoading = false;
     }
 
+    @NullMarked
     private static void cacheThumbnail(Tuple<UUID, byte[]> uncachedThumbnail) {
         String imageName = uncachedThumbnail.getA() + "_thumbnail.png";
         OnlineImageCache.cacheImage(uncachedThumbnail.getB(), imageName);
@@ -403,6 +406,7 @@ public class OnlineImageGallery {
      * @param uuids The list of UUIDs to split
      * @return Left list: UUIDs that are not cached, right list: List of Pair, where left is the UUID that is cached and right is its index in the original list
      */
+    @NullMarked
     private static Tuple<List<UUID>, List<Tuple<Integer, UUID>>> splitCached(List<UUID> uuids) {
         List<UUID> cached = OnlineImageCache.getCachedUUIDs("_thumbnail.png");
         List<UUID> finalCached = cached;
@@ -420,11 +424,12 @@ public class OnlineImageGallery {
         );
     }
 
+    @NullMarked
     private static List<Tuple<Integer, byte[]>> getFromCachedImages(List<Tuple<Integer, UUID>> images) {
         List<Tuple<Integer, byte[]>> cachedImages = new ArrayList<>();
 
         for (Tuple<Integer, UUID> pair : images) {
-            byte[] image = OnlineImageCache.loadImage(pair.getB().toString() + "_thumbnail.png");
+            byte[] image = OnlineImageCache.loadImage(pair.getB() + "_thumbnail.png");
             if (image != null) {
                 cachedImages.add(new Tuple<>(pair.getA(), image));
             }

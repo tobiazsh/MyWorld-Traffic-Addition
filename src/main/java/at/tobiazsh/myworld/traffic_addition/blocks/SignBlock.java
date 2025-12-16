@@ -31,7 +31,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
+import java.util.Objects;
+
+@NullMarked
 public abstract class SignBlock extends BaseEntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -89,7 +93,7 @@ public abstract class SignBlock extends BaseEntityBlock {
 
         BlockPos blockBehindPos = getBehindPos(pos, state);
         if(world.getBlockEntity(blockBehindPos) instanceof SignPoleBlockEntity blockEntityBehind) {
-            ((SignBlockEntity) world.getBlockEntity(pos)).setRotation(blockEntityBehind.getRotationValue());
+            ((SignBlockEntity) Objects.requireNonNull(world.getBlockEntity(pos))).setRotation(blockEntityBehind.getRotationValue());
         }
     }
 

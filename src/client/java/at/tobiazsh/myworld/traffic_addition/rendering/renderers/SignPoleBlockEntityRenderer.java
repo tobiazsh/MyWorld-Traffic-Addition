@@ -17,11 +17,13 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 @Environment(EnvType.CLIENT)
+@NullMarked
 public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPoleBlockEntity, SignPoleBlockRenderState> {
 
-    private BlockStateModel signPoleModel = null;
+    private @Nullable BlockStateModel signPoleModel = null;
 
     public SignPoleBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
