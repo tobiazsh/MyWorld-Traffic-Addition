@@ -205,7 +205,7 @@ public class CustomizableSignData {
 
     /**
      * Extracts the style path from the JSON. For normal use, use {@link CustomizableSignData#getStylePath()} instead.
-     * @return
+     * @return The style path
      */
     public String extractStylePath() {
         if (json.has("Style")) {
@@ -216,7 +216,7 @@ public class CustomizableSignData {
 
     /**
      * Gets the style path of the sign
-     * @return
+     * @return The style path
      */
     public String getStylePath() {
         return stylePath;
