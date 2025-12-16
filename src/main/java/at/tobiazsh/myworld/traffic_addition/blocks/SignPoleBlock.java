@@ -81,7 +81,7 @@ public class SignPoleBlock extends BaseEntityBlock {
     {
         if(player.isShiftKeyDown() && !world.isClientSide()) {
             BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof SignPoleBlockEntity signPoleEntity) {
+            if (entity instanceof SignPoleBlockEntity) {
                 MyWorldTrafficAddition.sendOpenSignPoleRotationScreenPacket((ServerPlayer) player, pos);
                 return InteractionResult.SUCCESS;
             }
