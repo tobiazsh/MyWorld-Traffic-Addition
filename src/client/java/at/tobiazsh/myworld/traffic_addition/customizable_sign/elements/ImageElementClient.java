@@ -146,7 +146,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * @param light Light level
      * @param facing Direction the element should face
      */
-    @SuppressWarnings("resource")
     @Override
     public void renderMinecraft(
             SubmitNodeCollector queue,
