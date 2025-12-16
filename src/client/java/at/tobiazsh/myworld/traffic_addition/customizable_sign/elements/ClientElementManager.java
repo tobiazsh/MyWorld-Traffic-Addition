@@ -8,8 +8,8 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import com.google.gson.JsonObject;
 import io.netty.util.internal.StringUtil;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -252,7 +252,7 @@ public class ClientElementManager {
 
         String jsonString = constructedJson.toString();
 
-        CustomClientNetworking.getInstance().sendStringToServer(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), jsonString);
+        CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), jsonString);
     }
 
     public void updateRawData() {

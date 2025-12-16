@@ -1,20 +1,21 @@
 package at.tobiazsh.myworld.traffic_addition.block_entities;
 
 import at.tobiazsh.myworld.traffic_addition.utils.OptionalUtils;
-import net.minecraft.block.Block;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.gameevent.GameEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,27 +37,27 @@ public class SignPoleBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public @Nullable Packet<@NotNull ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return createNbt(registryLookup);
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registryLookup) {
+        return saveWithoutMetadata(registryLookup);
     }
 
     @Override
-    protected void writeData(WriteView writeView) {
-        super.writeData(writeView);
+    protected void saveAdditional(@NotNull ValueOutput writeView) {
+        super.saveAdditional(writeView);
         writeView.putInt(ROTATION_KEY, this.rotation_value);
         writeView.putBoolean("ShouldRender", shouldRender);
     }
 
     @Override
-    protected void readData(ReadView readView) {
-        super.readData(readView);
-        this.shouldRender = readView.getBoolean("ShouldRender", true);
-        this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, readView::getOptionalInt, 0, "SignPoleBlockEntity.readNbt");
+    protected void loadAdditional(@NotNull ValueInput readView) {
+        super.loadAdditional(readView);
+        this.shouldRender = readView.getBooleanOr("ShouldRender", true);
+        this.rotation_value = OptionalUtils.getOrDefault(ROTATION_KEY, readView::getInt, 0, "SignPoleBlockEntity.readNbt");
     }
 
     public int getRotationValue() {
@@ -67,10 +68,10 @@ public class SignPoleBlockEntity extends BlockEntity {
         if (this.rotation_value != value) {
             this.rotation_value = value;
 
-            markDirty();
-	        assert world != null;
-	        world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
-            Objects.requireNonNull(this.getWorld()).updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+            setChanged();
+	        assert level != null;
+	        level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(null, this.getBlockState()));
+            Objects.requireNonNull(this.getLevel()).sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
         }
     }
 
@@ -78,10 +79,10 @@ public class SignPoleBlockEntity extends BlockEntity {
         if (this.shouldRender != value) {
             this.shouldRender = value;
 
-            markDirty();
-	        assert world != null;
-	        world.emitGameEvent(GameEvent.BLOCK_CHANGE, this.getPos(), GameEvent.Emitter.of(null, this.getCachedState()));
-            Objects.requireNonNull(this.getWorld()).updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+            setChanged();
+	        assert level != null;
+	        level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(null, this.getBlockState()));
+            Objects.requireNonNull(this.getLevel()).sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), Block.UPDATE_ALL);
         }
     }
 

@@ -15,9 +15,9 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import com.google.gson.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -129,8 +129,8 @@ public class CustomizableSignData {
 	public static List<String> getBackgroundTexturePathList(CustomizableSignData customizableSignData, CustomizableSignBlockEntity blockEntity) {
 		List<String> textures = new ArrayList<>();
 
-		BlockPos pos = blockEntity.getPos();
-		World world = blockEntity.getWorld();
+		BlockPos pos = blockEntity.getBlockPos();
+		Level world = blockEntity.getLevel();
 
 		if (pos == null) return textures;
 		if (world == null) return textures;
@@ -155,7 +155,7 @@ public class CustomizableSignData {
 				scanPosX = blockPosInDirection(rightSide, scanPosX, 1);
 			}
 
-			scanPosY = scanPosY.up();
+			scanPosY = scanPosY.above();
 			scanPosX = scanPosY;
 		}
 
@@ -205,7 +205,7 @@ public class CustomizableSignData {
 
     /**
      * Extracts the style path from the JSON. For normal use, use {@link CustomizableSignData#getStylePath()} instead.
-     * @return
+     * @return The style path
      */
     public String extractStylePath() {
         if (json.has("Style")) {
@@ -216,7 +216,7 @@ public class CustomizableSignData {
 
     /**
      * Gets the style path of the sign
-     * @return
+     * @return The style path
      */
     public String getStylePath() {
         return stylePath;

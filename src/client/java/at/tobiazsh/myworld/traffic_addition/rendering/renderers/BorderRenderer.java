@@ -5,31 +5,31 @@ import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.core.Direction;
+import com.mojang.math.Axis;
 
 public class BorderRenderer {
 
     private static BlockStateModel borderStateModel;
     private static BlockStateModel cornerStateModel;
-    private static RenderLayer borderRenderLayer;
+    private static RenderType borderRenderLayer;
 
     /**
      * Initializes the BorderRenderer with the necessary models and render layer.
      */
-    public static void init(BakedModelManager bakedModelManager, CustomRenderLayer.ModelLayering modelLayering) {
-        BlockState borderBlockState = ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock().getDefaultState();
-        BlockState cornerBlockState = ModBlocks.CUSTOMIZABLE_SIGN_CORNER_BIT.getBlock().getDefaultState();
+    public static void init(ModelManager bakedModelManager, CustomRenderLayer.ModelLayering modelLayering) {
+        BlockState borderBlockState = ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock().defaultBlockState();
+        BlockState cornerBlockState = ModBlocks.CUSTOMIZABLE_SIGN_CORNER_BIT.getBlock().defaultBlockState();
 
-        borderStateModel = bakedModelManager.getBlockModels().getModel(borderBlockState);
-        cornerStateModel = bakedModelManager.getBlockModels().getModel(cornerBlockState);
+        borderStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(borderBlockState);
+        cornerStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(cornerBlockState);
 
         borderRenderLayer = modelLayering.buildRenderLayer();
     }
@@ -43,8 +43,8 @@ public class BorderRenderer {
      * Renders the borders of a customizable sign based on the given entity's properties.
      */
     public static void render(
-            OrderedRenderCommandQueue queue,
-            MatrixStack matrices,
+            SubmitNodeCollector queue,
+            PoseStack matrices,
             BorderProperty borders,
             int light,
             Direction facing
@@ -60,7 +60,7 @@ public class BorderRenderer {
                 0.40625f // 13/32f == 0.40625f, which is the distance from the center of the sign to the border
         ); // The amount it has to move back to exactly align with the signs surface
 
-        matrices.push();
+        matrices.pushPose();
 
         // Borders
 
@@ -91,7 +91,7 @@ public class BorderRenderer {
         if (borders.cornerDownLeft())
             renderCorner(queue, matrices, light, offsetLeft, -globalBorderOffset, offsetBack);
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     /**
@@ -105,36 +105,36 @@ public class BorderRenderer {
      * @param facing the facing direction of the original sign
      */
     private static void renderEdge(
-            OrderedRenderCommandQueue queue,
-            MatrixStack matrices,
+            SubmitNodeCollector queue,
+            PoseStack matrices,
             int light,
             int angle,
             BlockPosFloat offset,
             BlockPosFloat offsetBack,
             Direction facing
     ) {
-        matrices.push();
+        matrices.pushPose();
 
         matrices.translate(offsetBack.x, offsetBack.y, offsetBack.z); // Move back to align with the sign's surface
         matrices.translate(offset.x, offset.y, offset.z);
 
         // Rotating
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing))); // Rotate towards face of sign
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle)); // Rotate by the given angle
+        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing))); // Rotate towards face of sign
+        matrices.mulPose(Axis.ZP.rotationDegrees(angle)); // Rotate by the given angle
         matrices.translate(-0.5, -0.5, -0.5);
 
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
                 borderRenderLayer,
                 borderStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     /**
@@ -147,14 +147,14 @@ public class BorderRenderer {
      * @param offsetBack the offsetXZ to move back to align with the sign's surface
      */
     private static void renderCorner(
-            OrderedRenderCommandQueue queue,
-            MatrixStack matrices,
+            SubmitNodeCollector queue,
+            PoseStack matrices,
             int light,
             BlockPosFloat offsetXZ,
             float offsetY,
             BlockPosFloat offsetBack
     ) {
-        matrices.push();
+        matrices.pushPose();
 
         // No rotating here, just translating yay (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
 
@@ -162,17 +162,17 @@ public class BorderRenderer {
         matrices.translate(offsetXZ.x, offsetXZ.y, offsetXZ.z);
         matrices.translate(0, offsetY, 0);
 
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
                 borderRenderLayer,
                 cornerStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     // Image what a pain it would be if we'd live in a 4-dimensional world to get 4-dimensional games going lol

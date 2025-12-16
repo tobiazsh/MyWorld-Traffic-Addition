@@ -9,8 +9,8 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
 
 
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.OCTAGONAL_SIGN_BLOCK_ENTITY;
 

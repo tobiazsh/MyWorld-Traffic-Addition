@@ -17,11 +17,11 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.command.DefaultPermissions;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -55,9 +55,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
                     .getVersion()
                     .getFriendlyString();
 
-	private static final List<SmartPayload<? extends CustomPayload>> serverSmartPayloads = new ArrayList<>();
-	private static final List<SmartPayload<? extends CustomPayload>> clientSmartPayloads = new ArrayList<>();
-	private static final List<SmartPayload<? extends CustomPayload>> smartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPacketPayload>> serverSmartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPacketPayload>> clientSmartPayloads = new ArrayList<>();
+	private static final List<SmartPayload<? extends CustomPacketPayload>> smartPayloads = new ArrayList<>();
 
 	@Override
 	public void onInitialize() {
@@ -105,7 +105,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				// Sign Blocks
 				new SmartPayload<>(SignBlockTextureChangePayload.Id, SignBlockActions::handleTextureChange, SignBlockTextureChangePayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SignBlockRotationPayload.Id, SignBlockActions::handleRotationChange, SignBlockRotationPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SignBlockBackstepCoordsChange.Id, SignBlockActions::handleBackstepCoordsChange, SignBlockBackstepCoordsChange.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
 				// Customizable Sign Blocks
 				new SmartPayload<>(SetMasterCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetMaster, SetMasterCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
@@ -142,49 +141,49 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		smartPayloads.addAll(clientSmartPayloads);
 	}
 
-	public static void sendOpenSignPoleRotationScreenPacket(ServerPlayerEntity player, BlockPos pos) {
+	public static void sendOpenSignPoleRotationScreenPacket(ServerPlayer player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenSignPoleRotationScreenPayload(pos));
 	}
 
-	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayerEntity player, BlockPos pos) {
+	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayer player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
 	}
 
 	private static void registerCustomProtocols() {
 		// Set customizable sign texture
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), (player, data) -> CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), (player, data) -> CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player));
 
 		// Request the maximum image upload size
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {
-            CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), String.valueOf(ServerPreferences.maximumImageUploadSize));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {
+            CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), String.valueOf(ServerPreferences.maximumImageUploadSize));
 		});
 
 		// Send custom image to server (client -> server as always)
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"), (player, data) -> {
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"), (player, data) -> {
 			byte[] imageData = Arrays.copyOfRange(data, 0, data.length);
 			OnlineImageBackend.processUploadedImage(player, imageData);
 		});
 
 		// Request the total number of uploaded images
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
-            boolean isPlayerMod = player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS);;
-			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), isPlayerMod ? String.valueOf(OnlineImageBackend.totalEntries) : String.valueOf(OnlineImageBackend.publicEntries));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
+            boolean isPlayerMod = player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), isPlayerMod ? String.valueOf(OnlineImageBackend.totalEntries) : String.valueOf(OnlineImageBackend.publicEntries));
 		});
 
 		// Request the total number of uploaded images by user
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageBackend.getEntryNumberByPlayer(player));
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"), (player, data) -> OnlineImageBackend.getEntryNumberByPlayer(player));
 
 		// Request image entries metadata from server; Used in the online image gallery
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageBackend::sendEntryMetadataToClient);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"), OnlineImageBackend::sendEntryMetadataToClient);
 
 		// Request thumbnail data (for custom images)
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageBackend::sendThumbnailsOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"), OnlineImageBackend::sendThumbnailsOf);
 
 		// Request for image deletion
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageBackend::deleteImage);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_deletion"), OnlineImageBackend::deleteImage);
 
 		// Request image
-		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageBackend::sendImageDataOf);
+		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_data"), OnlineImageBackend::sendImageDataOf);
 	}
 
     private static void registerEvents() {
@@ -200,7 +199,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	@Contract("_ -> new")
     public static @NotNull Identifier createId(String id) {
-		return Identifier.of(MOD_ID, id);
+		return Identifier.fromNamespaceAndPath(MOD_ID, id);
 	}
 
 }

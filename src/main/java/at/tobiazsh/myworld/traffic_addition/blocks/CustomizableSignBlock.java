@@ -11,29 +11,35 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
-public class CustomizableSignBlock extends BlockWithEntity {
+@NullMarked
+public class CustomizableSignBlock extends BaseEntityBlock {
 
-    public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
-    public static final MapCodec<CustomizableSignBlock> CODEC = createCodec(CustomizableSignBlock::new);
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final MapCodec<CustomizableSignBlock> CODEC = simpleCodec(CustomizableSignBlock::new);
 
     // Check if there is a sign pole at any corner
     // Render another Sign pole each time there's air underneath and render another sign pole under that if there's more air underneath
@@ -47,38 +53,38 @@ public class CustomizableSignBlock extends BlockWithEntity {
     // Don't worry
     // Be happy
 
-    private static final VoxelShape SHAPE_E = Block.createCuboidShape(0, 0, 0, 1, 16, 16);
-    private static final VoxelShape SHAPE_W = Block.createCuboidShape(15, 0, 0, 16, 16, 16);
-    private static final VoxelShape SHAPE_S = Block.createCuboidShape(0, 0, 0, 16, 16, 1);
-    private static final VoxelShape SHAPE_N = Block.createCuboidShape(0, 0, 15, 16, 16, 16);
+    private static final VoxelShape SHAPE_E = Block.box(0, 0, 0, 1, 16, 16);
+    private static final VoxelShape SHAPE_W = Block.box(15, 0, 0, 16, 16, 16);
+    private static final VoxelShape SHAPE_S = Block.box(0, 0, 0, 16, 16, 1);
+    private static final VoxelShape SHAPE_N = Block.box(0, 0, 15, 16, 16, 16);
 
-    public CustomizableSignBlock(Settings settings) {
+    public CustomizableSignBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        switch(state.get(FACING)) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        switch(state.getValue(FACING)) {
             case EAST -> { return SHAPE_E; }
             case SOUTH -> { return SHAPE_S; }
             case WEST -> { return SHAPE_W; }
@@ -87,34 +93,34 @@ public class CustomizableSignBlock extends BlockWithEntity {
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new CustomizableSignBlockEntity(pos, state);
     }
 
     @Override
-    protected BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.INVISIBLE;
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.isSneaking() && !world.isClient()) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isShiftKeyDown() && !world.isClientSide()) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
 
             if (!(blockEntity instanceof CustomizableSignBlockEntity)) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
 
-            MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayerEntity) player, ((CustomizableSignBlockEntity) blockEntity).getMasterPos());
+            MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayer) player, ((CustomizableSignBlockEntity) blockEntity).getMasterPos());
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

@@ -13,9 +13,9 @@ import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.FontManager;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.font.FontManager;
+import com.mojang.blaze3d.platform.Window;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,8 +23,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
+@Mixin(Minecraft.class)
+public abstract class MinecraftMixin implements MinecraftClientAccessor {
 
     @Shadow @Final private Window window;
 
@@ -32,7 +32,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void customInit(CallbackInfo ci) {
-        ImGuiImpl.create(window.getHandle()); // Initialize ImGui with the Minecraft window handle
+        ImGuiImpl.create(window.handle()); // Initialize ImGui with the Minecraft window handle
         JenguaTranslator.setup(); // Setup Jengua and load configured language
     }
 
@@ -44,7 +44,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
     // ---- Font ----
 
     // Injects after fontManager has been initialized
-    @Inject(method = "onFontOptionsChanged", at = @At("TAIL"))
+    @Inject(method = "updateFontOptions", at = @At("TAIL"))
     private void createTTFRenderer(CallbackInfo ci) {
         CustomMinecraftFont.initFonts();
     }
@@ -58,7 +58,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientAccessor {
         return this.fontManager;
     }
 
-    @Inject(method = "stop", at = @At("HEAD"))
+    @Inject(method = "destroy", at = @At("HEAD"))
     public void stop(CallbackInfo ci) {
         MyWorldTrafficAdditionClient.onStopGame();
     }

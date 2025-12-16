@@ -2,24 +2,24 @@ classTweaker v1 named
 
 # DRAG FLOAT WIDGET
 
-extendable method net/minecraft/client/gui/widget/SliderWidget setValue (D)V
-extendable method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse (Lnet/minecraft/client/gui/Click;)V
+extendable method net/minecraft/client/gui/components/AbstractSliderButton setValue (D)V
+extendable method net/minecraft/client/gui/components/AbstractSliderButton setValueFromMouse (Lnet/minecraft/client/input/MouseButtonEvent;)V
 
-accessible method net/minecraft/client/gui/widget/SliderWidget setValueFromMouse (Lnet/minecraft/client/gui/Click;)V
+accessible method net/minecraft/client/gui/components/AbstractSliderButton setValueFromMouse (Lnet/minecraft/client/input/MouseButtonEvent;)V
 
 # RENDERERS AND RENDERLAYERS
 
-accessible field net/minecraft/client/render/RenderLayer renderSetup Lnet/minecraft/client/render/RenderSetup;
-accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
+accessible field net/minecraft/client/renderer/rendertype/RenderType state Lnet/minecraft/client/renderer/rendertype/RenderSetup;
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
 
-accessible field net/minecraft/client/render/GameRenderer buffers Lnet/minecraft/client/render/BufferBuilderStorage;
+accessible field net/minecraft/client/renderer/GameRenderer renderBuffers Lnet/minecraft/client/renderer/RenderBuffers;
 
-accessible field net/minecraft/client/font/GlyphBaker glyphAtlases Ljava/util/List; # Maybe necessary?
-accessible field net/minecraft/client/font/GlyphAtlasTexture textRenderLayers Lnet/minecraft/client/font/TextRenderLayerSet;
+accessible field net/minecraft/client/gui/font/GlyphStitcher textures Ljava/util/List; # Maybe necessary?
+accessible field net/minecraft/client/gui/font/FontTexture renderTypes Lnet/minecraft/client/gui/font/GlyphRenderTypes;
 
-accessible field net/minecraft/client/render/RenderSetup textures Ljava/util/Map;
-accessible field net/minecraft/client/render/RenderSetup$TextureSpec location Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/client/renderer/rendertype/RenderSetup textures Ljava/util/Map;
+accessible field net/minecraft/client/renderer/rendertype/RenderSetup$TextureBinding location Lnet/minecraft/resources/Identifier;
 
 # FONT MANAGER
 
-accessible class net/minecraft/client/font/FontManager$ProviderIndex
+accessible class net/minecraft/client/gui/font/FontManager$Preparation

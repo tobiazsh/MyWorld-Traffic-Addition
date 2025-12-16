@@ -10,23 +10,25 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import org.jspecify.annotations.NullMarked;
 
-public record SetRotationCustomizableSignBlockPayload(BlockPos pos, int rotation) implements CustomPayload {
-    public static final CustomPayload.Id<SetRotationCustomizableSignBlockPayload> Id = new CustomPayload.Id<>(Identifier.of(MyWorldTrafficAddition.MOD_ID, "set_rotation_customizable_sign_block_rotation"));
+@NullMarked
+public record SetRotationCustomizableSignBlockPayload(BlockPos pos, int rotation) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<SetRotationCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_rotation_customizable_sign_block_rotation"));
 
-    public static final PacketCodec<ByteBuf, SetRotationCustomizableSignBlockPayload> CODEC = PacketCodec.tuple(
-            BlockPos.PACKET_CODEC, SetRotationCustomizableSignBlockPayload::pos,
-            PacketCodecs.INTEGER, SetRotationCustomizableSignBlockPayload::rotation,
+    public static final StreamCodec<ByteBuf, SetRotationCustomizableSignBlockPayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, SetRotationCustomizableSignBlockPayload::pos,
+            ByteBufCodecs.INT, SetRotationCustomizableSignBlockPayload::rotation,
             SetRotationCustomizableSignBlockPayload::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Id;
     }
 }

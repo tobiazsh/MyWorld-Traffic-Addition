@@ -18,8 +18,8 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryUtil;
 import oshi.util.tuples.Triplet;
 
@@ -127,7 +127,7 @@ public class OnlineImageDialog {
         shouldOpen = true;
         currentPage = OnlineImageDialogPage.NEW;
 
-        CustomClientNetworking.getInstance().sendStringToServer(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), "dummy");
+        CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), "dummy");
 
         imageUrl = new ImString(1024);
     }
@@ -280,7 +280,7 @@ public class OnlineImageDialog {
 
                 if (!downloader.hasError()) {
                     currentPage = OnlineImageDialogPage.EDIT; // Go to next page
-                    MinecraftClient.getInstance().execute(this::uploadImageToGPU); // Upload image to GPU
+                    Minecraft.getInstance().execute(this::uploadImageToGPU); // Upload image to GPU
                     createImageBackup();
                 }
 
@@ -372,7 +372,7 @@ public class OnlineImageDialog {
         ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "Give your image a unique name"));
         ImGui.spacing();
         ImGui.checkbox(tr("ImGui.Child.PopUps.OnlineImageDialog", "Hide for others"), hideForOthers); // Checkbox to hide image for others
-        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "This will hide your image for others. Admins can still see it, so don\u0027t be naughty") + "! ;)");
+        ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "This will hide your image for others. Admins can still see it, so don\u0027t be naughty") + "! ;)"); // Do not replace \u0027t with ' directly, as it breaks the translator
 
         ImGui.setCursorPosY(ImGui.getWindowSizeY() - ImGui.getFontSize()*2); // Make things appear all the way at the bottom
         ImGui.beginChild("##confirmPageActionButtonContainer");
@@ -506,7 +506,7 @@ public class OnlineImageDialog {
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Creating Metadata");
             JsonObject metadata = createMetadata(
                     imageName.get(),
-                    MinecraftClient.getInstance().getGameProfile().id(),
+                    Minecraft.getInstance().getGameProfile().id(),
                     UUID.randomUUID(),
                     hideForOthers.get(),
                     Instant.now()
@@ -517,6 +517,14 @@ public class OnlineImageDialog {
             saveLocal(metadata, imagePngData, thumbnailPngData);
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Packing data");
+
+            if (imagePngData == null || thumbnailPngData == null) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to upload image to server! Aborting...");
+                operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Image or thumbnail data is null");
+                isOperationComplete = true;
+                isOperating = false;
+                return;
+            }
 
             // Combine data
             byte[] metadataBytes = metadata.toString().getBytes(StandardCharsets.UTF_8);
@@ -536,7 +544,7 @@ public class OnlineImageDialog {
             buffer.put(metadataBytes);
 
             CustomClientNetworking.getInstance().sendBytesToServer(
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "send_custom_image_to_server"),
                     buffer.array(), 20, 16000
             );
 

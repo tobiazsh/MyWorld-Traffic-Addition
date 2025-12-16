@@ -1,14 +1,16 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.*;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.font.EmptyArea;
+import net.minecraft.client.gui.font.TextRenderable;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import java.util.Optional;
@@ -17,9 +19,9 @@ import java.util.Optional;
  * Custom TextRenderer exclusively for this mod to prevent z-fighting when viewing signs from further away using custom render layers. Pairs with CustomRenderLayer.TextLayering.
  */
 @Environment(EnvType.CLIENT)
-public class CustomTextRenderer extends TextRenderer {
+public class CustomTextRenderer extends Font {
 
-    public CustomTextRenderer(GlyphsProvider fonts) {
+    public CustomTextRenderer(Provider fonts) {
         super(fonts);
     }
 
@@ -34,36 +36,36 @@ public class CustomTextRenderer extends TextRenderer {
             int color,
             boolean shadow,
             Matrix4f matrix,
-            VertexConsumerProvider vertexConsumers,
+            MultiBufferSource vertexConsumers,
             CustomRenderLayer.TextLayering.LayeringType layeringType,
             int backgroundColor,
             int light
     ) {
-        TextRenderer.GlyphDrawable glyphDrawable = this.prepare(string, x, y, color, shadow, backgroundColor);
-        glyphDrawable.draw(CustomGlyphDrawer.drawing(vertexConsumers, matrix, layeringType, light, zOffset)); // <-- Custom Glyph Drawer
+        Font.PreparedText glyphDrawable = this.prepareText(string, x, y, color, shadow, backgroundColor);
+        glyphDrawable.visit(CustomGlyphDrawer.drawing(vertexConsumers, matrix, layeringType, light, zOffset)); // <-- Custom Glyph Drawer
     }
 
     @Environment(EnvType.CLIENT)
-    public interface CustomGlyphDrawer extends TextRenderer.GlyphDrawer {
-        static CustomGlyphDrawer drawing(VertexConsumerProvider vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
+    public interface CustomGlyphDrawer extends Font.GlyphVisitor {
+        static CustomGlyphDrawer drawing(MultiBufferSource vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
             return new CustomGlyphDrawer() {
                 @Override
-                public void drawGlyph(TextDrawable.DrawnGlyphRect glyph) {
+                public void acceptGlyph(TextRenderable.@NotNull Styled glyph) {
                     this.draw(glyph);
                 }
 
                 @Override
-                public void drawRectangle(TextDrawable bakedGlyph) {
+                public void acceptEffect(@NotNull TextRenderable bakedGlyph) {
                     this.draw(bakedGlyph);
                 }
 
-                private void draw(TextDrawable glyph) {
+                private void draw(TextRenderable glyph) {
                     // Get the id from the default render layer
-                    RenderLayer defaultGlyphRenderLayer = glyph.getRenderLayer(TextLayerType.NORMAL);
-                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.renderSetup.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
+                    RenderType defaultGlyphRenderLayer = glyph.renderType(DisplayMode.NORMAL);
+                    Optional<Identifier> optId = Optional.of(defaultGlyphRenderLayer.state.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
 
                     // Construct our custom layering
-                    CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.of("missing")));
+                    CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.parse("missing")));
 
                     // User RenderLayer
                     VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer.buildRenderLayer());
@@ -72,9 +74,9 @@ public class CustomTextRenderer extends TextRenderer {
             };
         }
 
-        default void drawGlyph(TextDrawable.DrawnGlyphRect glyph) { }
-        default void drawRectangle(TextDrawable rect) { }
-        default void drawEmptyGlyphRect(EmptyGlyphRect rect) { }
+        default void acceptGlyph(TextRenderable.@NotNull Styled glyph) { }
+        default void acceptEffect(@NotNull TextRenderable rect) { }
+        default void acceptEmptyArea(@NotNull EmptyArea rect) { }
     }
 
 //      OLD IMPLEMENTATION USING DRAWER SUBCLASS - KEPT FOR REFERENCE

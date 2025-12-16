@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.texture;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

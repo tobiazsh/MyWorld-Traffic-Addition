@@ -4,33 +4,40 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.OpenSignSelectionPayload;
 import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
-public abstract class SignBlock extends BlockWithEntity {
+import java.util.Objects;
 
-    public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
+@NullMarked
+public abstract class SignBlock extends BaseEntityBlock {
+
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private final VoxelShape SHAPE_N;
     private final VoxelShape SHAPE_E;
@@ -38,7 +45,7 @@ public abstract class SignBlock extends BlockWithEntity {
     private final VoxelShape SHAPE_W;
     public final SIGN_SHAPE shape;
 
-    public SignBlock(Settings settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw, SIGN_SHAPE shape) {
+    public SignBlock(Properties settings, VoxelShape vn, VoxelShape ve, VoxelShape vs, VoxelShape vw, SIGN_SHAPE shape) {
         super(settings);
 
         SHAPE_N = vn;
@@ -50,28 +57,28 @@ public abstract class SignBlock extends BlockWithEntity {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        return state.with(FACING, rotation.rotate(state.get(FACING)));
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        switch(state.get(FACING)) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        switch(state.getValue(FACING)) {
             case EAST -> { return SHAPE_E; }
             case SOUTH -> { return SHAPE_S; }
             case WEST -> { return SHAPE_W; }
@@ -80,38 +87,38 @@ public abstract class SignBlock extends BlockWithEntity {
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        super.onPlaced(world, pos, state, placer, itemStack);
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.setPlacedBy(world, pos, state, placer, itemStack);
 
         BlockPos blockBehindPos = getBehindPos(pos, state);
         if(world.getBlockEntity(blockBehindPos) instanceof SignPoleBlockEntity blockEntityBehind) {
-            ((SignBlockEntity) world.getBlockEntity(pos)).setRotation(blockEntityBehind.getRotationValue());
+            ((SignBlockEntity) Objects.requireNonNull(world.getBlockEntity(pos))).setRotation(blockEntityBehind.getRotationValue());
         }
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         if (
-                !(world instanceof ServerWorld) ||
-                !(player instanceof ServerPlayerEntity) ||
-                !player.isSneaking()
+                !(world instanceof ServerLevel) ||
+                !(player instanceof ServerPlayer) ||
+                !player.isShiftKeyDown()
         )
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
 
         ServerPlayNetworking.send(
-                (ServerPlayerEntity) player,
+                (ServerPlayer) player,
                 new OpenSignSelectionPayload(
                         pos,
                         getSignSelectionEnumInt(this.shape),
-                        world.getRegistryKey()
+                        world.dimension()
                 )
         );
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     public static BlockPos getBehindPos(BlockPos pos, BlockState state) {
-        switch(state.get(FACING)) {
+        switch(state.getValue(FACING)) {
             case EAST -> { return pos.west(); }
             case SOUTH -> { return pos.north(); }
             case WEST -> { return pos.east(); }
@@ -121,7 +128,7 @@ public abstract class SignBlock extends BlockWithEntity {
 
     public Coordinates getBackMovementCoordinates(BlockState state) {
         Coordinates backstepCoords;
-        switch (state.get(FACING)) {
+        switch (state.getValue(FACING)) {
             case EAST -> backstepCoords = new Coordinates(-1.55f, 0f, 0f, Direction.EAST);
             case SOUTH -> backstepCoords = new Coordinates(0f, 0f, -1.55f, Direction.SOUTH);
             case WEST -> backstepCoords = new Coordinates(1.55f, 0f, 0f, Direction.WEST);
@@ -132,17 +139,12 @@ public abstract class SignBlock extends BlockWithEntity {
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
-        return null;
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.INVISIBLE;
-    }
-
-    @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return null;
     }
 

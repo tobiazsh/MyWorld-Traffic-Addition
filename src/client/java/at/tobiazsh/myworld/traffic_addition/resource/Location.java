@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.resource;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class Location {
     private final boolean isResource;

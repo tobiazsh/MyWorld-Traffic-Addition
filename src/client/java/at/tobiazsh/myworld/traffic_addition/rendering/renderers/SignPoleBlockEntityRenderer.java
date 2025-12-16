@@ -1,55 +1,56 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignPoleBlockRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.BlockModelRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
 @Environment(EnvType.CLIENT)
+@NullMarked
 public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPoleBlockEntity, SignPoleBlockRenderState> {
 
-    private BlockStateModel signPoleModel = null;
+    private @Nullable BlockStateModel signPoleModel = null;
 
-    public SignPoleBlockEntityRenderer(BlockEntityRendererFactory.Context context) {}
+    public SignPoleBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
-    public void render(SignPoleBlockRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
+    public void submit(SignPoleBlockRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState cameraState) {
         if(!state.shouldRender) return;
 
         if (signPoleModel == null)
-            signPoleModel = MinecraftClient.getInstance().getBlockRenderManager().getModel(state.blockState);
+            signPoleModel = Minecraft.getInstance().getBlockRenderer().getBlockModel(state.blockState);
 
-        matrices.push();
+        matrices.pushPose();
 
         matrices.translate(.5, 0, .5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(state.rotation));
+        matrices.mulPose(Axis.YP.rotationDegrees(state.rotation));
         matrices.translate(-0.5f, 0, -0.5f);
 
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
-                RenderLayers.solid(),
+                RenderTypes.solidMovingBlock(),
                 signPoleModel,
                 1.0f, 1.0f, 1.0f,
-                state.lightmapCoordinates,
-                OverlayTexture.DEFAULT_UV,
+                state.lightCoords,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override
@@ -58,14 +59,14 @@ public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPole
     }
 
     @Override
-    public void updateRenderState(SignPoleBlockEntity blockEntity, SignPoleBlockRenderState state, float tickProgress, Vec3d cameraPos, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay) {
-        BlockEntityRenderer.super.updateRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
+    public void extractRenderState(SignPoleBlockEntity blockEntity, SignPoleBlockRenderState state, float tickProgress, Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
         state.rotation = blockEntity.getRotationValue();
         state.shouldRender = blockEntity.isShouldRender();
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox() {
+    public boolean shouldRenderOffScreen() {
         return true;
     }
 }

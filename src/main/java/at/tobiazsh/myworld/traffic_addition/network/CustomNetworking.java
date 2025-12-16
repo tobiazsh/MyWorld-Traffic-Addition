@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.network;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;

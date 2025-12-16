@@ -5,7 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.BooleanUtils;
 import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -41,7 +41,7 @@ public class OnlineImageNetworking {
         imageCountFuture = new CompletableFuture<>();
 
         CustomClientNetworking.getInstance().sendBytesToServer(
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"),
                 new byte[1],
                 -1, -1
         ); // Dummy byte & -1 for no limits in transmission
@@ -70,7 +70,7 @@ public class OnlineImageNetworking {
         privateImageCountFuture = new CompletableFuture<>();
 
         CustomClientNetworking.getInstance().sendBytesToServer(
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_private_uploaded_images"),
                 new byte[1],
                 -1, -1
         ); // Dummy byte & -1 for no limits in transmission
@@ -108,7 +108,7 @@ public class OnlineImageNetworking {
         buffer.put(BooleanUtils.toByte(privateImages)); // 1 byte to indicate if private images are requested
 
         CustomClientNetworking.getInstance().sendBytesToServer(
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_entries_metadata"),
                 buffer.array(),
                 -1, -1
         ); // Dummy byte & -1 for no limits in transmission
@@ -166,7 +166,7 @@ public class OnlineImageNetworking {
         }
 
         CustomClientNetworking.getInstance().sendBytesToServer(
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_thumbnail_data"),
                 buffer.array(),
                 -1, -1
         ); // Dummy byte & -1 for no limits in transmission
@@ -219,7 +219,7 @@ public class OnlineImageNetworking {
             buffer.put(requestIdBytes);
 
             CustomClientNetworking.getInstance().sendBytesToServer(
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_image_data"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_image_data"),
                     buffer.array(),
                     -1, -1
             ); // Dummy byte & -1 for no limits in transmission
