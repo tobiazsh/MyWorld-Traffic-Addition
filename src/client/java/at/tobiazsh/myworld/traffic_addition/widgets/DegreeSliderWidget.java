@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.Widgets;
+package at.tobiazsh.myworld.traffic_addition.widgets;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
