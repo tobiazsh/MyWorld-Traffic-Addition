@@ -86,10 +86,8 @@ public class CustomizableSignBlockActions {
         BlockPos masterPos = payload.master();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
-        if (blockEntity instanceof CustomizableSignBlockEntity) {
+        if (blockEntity instanceof CustomizableSignBlockEntity csbeBlockEntity) {
             defaults.world.getServer().execute(() -> {
-                CustomizableSignBlockEntity csbeBlockEntity = (CustomizableSignBlockEntity) blockEntity;
-
                 csbeBlockEntity.setMaster(shouldMaster);
                 csbeBlockEntity.setMasterPos(masterPos);
             });
