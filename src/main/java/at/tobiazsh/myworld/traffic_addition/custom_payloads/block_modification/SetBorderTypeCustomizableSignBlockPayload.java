@@ -9,26 +9,25 @@ package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import org.jetbrains.annotations.NotNull;
 
 public record SetBorderTypeCustomizableSignBlockPayload(BlockPos pos, String borders) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<SetBorderTypeCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_border_type_customizable_sign_block_payload"));
-    public static final StreamCodec<ByteBuf, SetBorderTypeCustomizableSignBlockPayload> CODEC = StreamCodec.composite(
+    public static final CustomPacketPayload.Type<@NotNull SetBorderTypeCustomizableSignBlockPayload> Id = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_border_type_customizable_sign_block_payload"));
+    public static final StreamCodec<@NotNull ByteBuf, @NotNull SetBorderTypeCustomizableSignBlockPayload> CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, SetBorderTypeCustomizableSignBlockPayload::pos,
             ByteBufCodecs.STRING_UTF8, SetBorderTypeCustomizableSignBlockPayload::borders,
             SetBorderTypeCustomizableSignBlockPayload::new
     );
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
+    public @NotNull Type<? extends @NotNull CustomPacketPayload> type() {
         return Id;
     }
 }
