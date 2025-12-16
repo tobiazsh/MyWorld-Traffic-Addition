@@ -65,8 +65,6 @@ public class DynamicTexture extends AbstractTexture {
 
     /**
      * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
-     * @param blur whether to use blur filtering (or linear filtering)
-     * @param clamp whether to use clamp wrapping
      * @return this DynamicTexture instance
      */
     public DynamicTexture smartRegisterTexture() {
@@ -176,8 +174,6 @@ public class DynamicTexture extends AbstractTexture {
     /**
      * Creates the texture (glTexture) from the specified NativeImage.
      * @param image the NativeImage to load the texture from
-     * @param blur whether to use blur filtering (or linear filtering)
-     * @param clamp whether to use clamp wrapping
      */
     private void load(NativeImage image) {
         GpuDevice gpu = RenderSystem.getDevice();
