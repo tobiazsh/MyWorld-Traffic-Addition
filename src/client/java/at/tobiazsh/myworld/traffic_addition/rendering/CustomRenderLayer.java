@@ -3,18 +3,18 @@ package at.tobiazsh.myworld.traffic_addition.rendering;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.RenderPhase;
+import net.minecraft.client.render.LayeringTransform;
+import net.minecraft.client.render.RenderSetup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.client.render.RenderLayer;
-import org.joml.Matrix4fStack;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
-import static net.minecraft.client.render.RenderPhase.*;
+import static net.minecraft.client.texture.SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;
 
 /**
  * Custom RenderLayer exclusively for this mod to prevent z-fighting when viewing signs from further away. Pairs with CustomTextRenderer.
@@ -23,6 +23,8 @@ public class CustomRenderLayer {
 
     public static final int DEFAULT_IMAGE_CACHE_SIZE = 200;
     public static final int DEFAULT_TEXT_CACHE_SIZE = 100;
+
+    public static final String TEXTURE_NAME = "Sampler0";
 
     public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
         "BUILT_TEXT_LAYERING",
@@ -43,17 +45,8 @@ public class CustomRenderLayer {
     // ------------------ GENERAL Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     public static class Layering {
-        public static RenderPhase.Layering getRenderPhaseZLayeringBackward(float zOffset) {
-            return new RenderPhase.Layering("view_offset_z_layering_backward", () -> {
-                Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-                matrix4fStack.pushMatrix();
-                RenderSystem.getProjectionType().apply(matrix4fStack, zOffset);
-            },
-                    () -> {
-                        Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
-                        matrix4fStack.popMatrix();
-                    }
-            );
+        public static LayeringTransform getZLayeringBackward(float zOffset) {
+            return new LayeringTransform("view_offset_z_layering_backward", matrices -> RenderSystem.getProjectionType().apply(matrices, zOffset));
         }
     }
 
@@ -80,41 +73,27 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderLayer> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, false))
-                            .lightmap(ENABLE_LIGHTMAP)
-                            .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
-                            .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
-                            .build(true);
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+                            .texture(TEXTURE_NAME, texture)
+                            .useLightmap()
+                            .useOverlay()
+                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .build();
 
-                    return RenderLayer.of(
-                            "entity_solid_z_offset_backward",
-                            1536,
-                            true,
-                            false,
-                            RenderPipelines.ENTITY_SOLID,
-                            multiPhaseParameters
-                    );
+                    return RenderLayer.of("entity_solid_z_offset_backward", renderSetup);
                 }
         );
 
         private final Function<Identifier, RenderLayer> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, false))
-                            .lightmap(ENABLE_LIGHTMAP)
-                            .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
-                            .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
-                            .build(true);
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
+                            .texture(TEXTURE_NAME, texture)
+                            .useLightmap()
+                            .useOverlay()
+                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .build();
 
-                    return RenderLayer.of(
-                            "entity_cutout_z_offset_backward",
-                            1536,
-                            true,
-                            false,
-                            RenderPipelines.ENTITY_CUTOUT,
-                            multiPhaseParameters
-                    );
+                    return RenderLayer.of("entity_solid_z_offset_backward", renderSetup);
                 }
         );
         
@@ -187,18 +166,15 @@ public class CustomRenderLayer {
         }
 
         private final Function<Identifier, RenderLayer> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
-                texture -> RenderLayer.of(
-                        "text_z_offset_backward_intensity",
-                        786432,
-                        false,
-                        false,
-                        CustomRenderPipelines.RENDERTYPE_CUSTOM_TEXT_INTENSITY,
-                        RenderLayer.MultiPhaseParameters.builder()
-                                .texture(new RenderPhase.Texture(texture, false))
-                                .lightmap(ENABLE_LIGHTMAP)
-                                .layering(CustomRenderLayer.Layering.getRenderPhaseZLayeringBackward(zOffset))
-                                .build(false)
-                )
+                texture -> {
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.RENDERTYPE_TEXT_INTENSITY)
+                            .texture(TEXTURE_NAME, texture)
+                            .useLightmap()
+                            .layeringTransform(Layering.getZLayeringBackward(zOffset))
+                            .build();
+
+                    return RenderLayer.of("text_z_offset_backward_intensity", renderSetup);
+                }
         );
 
         public RenderLayer buildRenderLayer() {
@@ -260,18 +236,15 @@ public class CustomRenderLayer {
         }
 
         private final Function<Float, RenderLayer> CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
-                zOff -> RenderLayer.of(
-                        "cutout_z_offset_backward",
-                        786432,
-                        true,
-                        false,
-                        RenderPipelines.CUTOUT,
-                        RenderLayer.MultiPhaseParameters.builder()
-                                .lightmap(ENABLE_LIGHTMAP)
-                                .layering(Layering.getRenderPhaseZLayeringBackward(zOff))
-                                .texture(BLOCK_ATLAS_TEXTURE)
-                                .build(true)
-                )
+                zOff -> {
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK)
+                            .useLightmap()
+                            .texture(TEXTURE_NAME, BLOCK_ATLAS_TEXTURE) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
+                            .layeringTransform(Layering.getZLayeringBackward(zOff))
+                            .build();
+
+                    return RenderLayer.of("cutout_z_offset_backward", renderSetup);
+                }
         );
 
         public RenderLayer buildRenderLayer() {

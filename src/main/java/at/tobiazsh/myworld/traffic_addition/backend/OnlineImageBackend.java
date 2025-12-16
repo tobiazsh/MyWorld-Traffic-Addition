@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -328,7 +329,7 @@ public class OnlineImageBackend {
      */
     public static void sendEntryMetadataToClient(ServerPlayerEntity player, byte[] bytes) {
         executorService.submit(() -> {
-            boolean isPlayerMod = player.hasPermissionLevel(2); // Check if player is a moderator (permission level 2 or higher)
+            boolean isPlayerMod = player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS); // Check if player is a moderator (permission level 2 or higher)
 
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             buffer.rewind();

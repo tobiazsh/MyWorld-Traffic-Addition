@@ -1,11 +1,11 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.*;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.util.Identifier;
@@ -48,7 +48,7 @@ public class CustomTextRenderer extends TextRenderer {
         static CustomGlyphDrawer drawing(VertexConsumerProvider vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
             return new CustomGlyphDrawer() {
                 @Override
-                public void drawGlyph(TextDrawable glyph) {
+                public void drawGlyph(TextDrawable.DrawnGlyphRect glyph) {
                     this.draw(glyph);
                 }
 
@@ -60,10 +60,7 @@ public class CustomTextRenderer extends TextRenderer {
                 private void draw(TextDrawable glyph) {
                     // Get the id from the default render layer
                     RenderLayer defaultGlyphRenderLayer = glyph.getRenderLayer(TextLayerType.NORMAL);
-                    RenderLayer.MultiPhase multiPhase = (RenderLayer.MultiPhase) defaultGlyphRenderLayer;
-                    RenderLayer.MultiPhaseParameters multiPhaseParameters = multiPhase.phases;
-                    RenderPhase.TextureBase textureBase = multiPhaseParameters.texture;
-                    Optional<Identifier> optId = textureBase.getId();
+                    Optional<Identifier> optId = Optional.ofNullable(defaultGlyphRenderLayer.renderSetup.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
 
                     // Construct our custom layering
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.of("missing")));
@@ -75,9 +72,9 @@ public class CustomTextRenderer extends TextRenderer {
             };
         }
 
-        void drawGlyph(TextDrawable glyph);
-
-        void drawRectangle(TextDrawable bakedGlyph);
+        default void drawGlyph(TextDrawable.DrawnGlyphRect glyph) { }
+        default void drawRectangle(TextDrawable rect) { }
+        default void drawEmptyGlyphRect(EmptyGlyphRect rect) { }
     }
 
 //      OLD IMPLEMENTATION USING DRAWER SUBCLASS - KEPT FOR REFERENCE

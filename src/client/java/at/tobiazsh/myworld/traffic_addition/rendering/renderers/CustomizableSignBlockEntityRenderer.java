@@ -23,10 +23,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.command.ModelCommandRenderer;
@@ -211,7 +208,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderLayers.cutout(),
                 csbeStateModel,
                 1.0f, 1.0f, 1.0f,
                 state.lightmapCoordinates,
@@ -283,7 +280,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Render sign block
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderLayers.cutout(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
@@ -424,7 +421,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Render sign pole
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderLayers.cutout(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
@@ -481,7 +478,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         queue.submitBlockStateModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderLayers.cutout(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,

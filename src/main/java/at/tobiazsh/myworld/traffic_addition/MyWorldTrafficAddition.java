@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.command.DefaultPermissions;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -166,7 +167,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request the total number of uploaded images
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.of(MyWorldTrafficAddition.MOD_ID, "request_total_uploaded_images"), (player, data) -> {
-            boolean isPlayerMod = player.hasPermissionLevel(2);
+            boolean isPlayerMod = player.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS);;
 			CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_total_uploaded_images"), isPlayerMod ? String.valueOf(OnlineImageBackend.totalEntries) : String.valueOf(OnlineImageBackend.publicEntries));
 		});
 
