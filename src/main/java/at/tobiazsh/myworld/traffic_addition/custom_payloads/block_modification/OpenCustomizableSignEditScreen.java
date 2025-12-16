@@ -12,7 +12,6 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 
