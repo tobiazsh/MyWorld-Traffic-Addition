@@ -365,21 +365,21 @@ public class SignSelector {
                     .map(SignTexture.CATEGORY::name)
                     .toList();
             List<String> categories = new ArrayList<>(categoryNames);
-            categories.add(0, "*");
+            categories.addFirst("*");
             this.availCategories = categories.toArray(new String[0]);
 
             // Also sort countries alphabetically
             List<String> sortedCountries = new ArrayList<>(availCountries);
             sortedCountries.sort(String::compareTo);
             List<String> countries = new ArrayList<>(sortedCountries);
-            countries.add(0, "*");
+            countries.addFirst("*");
             this.availCountries = countries.toArray(new String[0]);
 
             List<String> shapeNames = availShapes.stream()
                     .map(Enum::name)
                     .toList();
             List<String> shapes = new ArrayList<>(shapeNames);
-            shapes.add(0, "*");
+            shapes.addFirst("*");
             this.availShapes = shapes.toArray(new String[0]);
 
             // Combo Indices
