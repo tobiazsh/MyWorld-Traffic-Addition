@@ -20,8 +20,6 @@ public class ModItems {
     public static final Item AUSTRIA_ITEM = registerItem(new Item.Properties().stacksTo(128), "austria_item");
 
     public static void initialize(){
-        ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY).register((itemGroup) -> {
-            itemGroup.accept(ModItems.AUSTRIA_ITEM.asItem());
-        });
+        ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY).register((itemGroup) -> itemGroup.accept(ModItems.AUSTRIA_ITEM.asItem()));
     }
 }
