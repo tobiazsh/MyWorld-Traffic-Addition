@@ -518,6 +518,14 @@ public class OnlineImageDialog {
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Packing data");
 
+            if (imagePngData == null || thumbnailPngData == null) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to upload image to server! Aborting...");
+                operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Image or thumbnail data is null");
+                isOperationComplete = true;
+                isOperating = false;
+                return;
+            }
+
             // Combine data
             byte[] metadataBytes = metadata.toString().getBytes(StandardCharsets.UTF_8);
             int headerSize = Integer.BYTES * 3 + 1; // 3 Ints + 1 byte for hidden
