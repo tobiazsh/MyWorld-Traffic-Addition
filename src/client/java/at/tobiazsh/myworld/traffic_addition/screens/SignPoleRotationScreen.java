@@ -21,7 +21,6 @@ import net.minecraft.world.level.Level;
 public class SignPoleRotationScreen extends Screen {
 
     private final BlockPos pos;
-    private final Level world;
     private final BlockEntity entity;
 
     private int initial_rotation_value;
@@ -31,7 +30,6 @@ public class SignPoleRotationScreen extends Screen {
     public SignPoleRotationScreen(Level world, BlockPos pos, Player player) {
         super(TITLE);
         this.pos = pos;
-        this.world = world;
         this.entity = world.getBlockEntity(pos);
 
 
