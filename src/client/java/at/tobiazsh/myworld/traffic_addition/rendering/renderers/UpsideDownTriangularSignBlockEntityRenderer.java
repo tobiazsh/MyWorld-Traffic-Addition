@@ -10,8 +10,6 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.UpsideDownTriangularSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.blocks.UpsideDownTriangularSignBlock;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
