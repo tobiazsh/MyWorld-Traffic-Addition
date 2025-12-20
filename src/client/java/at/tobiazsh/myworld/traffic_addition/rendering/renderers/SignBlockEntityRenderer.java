@@ -57,13 +57,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         MultiBufferSource provider = Minecraft.getInstance().renderBuffers().bufferSource();
         Direction facing = state.blockState.getValue(SignBlock.FACING);
 
-        //Coordinates backstepCoords = Coordinates.getNormalInDirection(-1.55f, facing);
-
-        // Commented out for now; Don't know if it's necessary to constantly sync this value
-//        if(backstepCoords != entity.getBackstepCoords()) {
-//            ClientPlayNetworking.send(new SignBlockBackstepCoordsChange(entity.getPos(), backstepCoords.x, backstepCoords.y, backstepCoords.z, backstepCoords.direction));
-//        }
-
         BlockEntity blockEntityBehind = Minecraft.getInstance().level.getBlockEntity( getBlockPosBehind(facing, state.blockPos) );
 
         matrices.pushPose();
@@ -71,11 +64,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         if(blockEntityBehind instanceof SignPoleBlockEntity signPoleBlockEntity) {
             int rotationDegrees = signPoleBlockEntity.getRotationValue() + 180;
             Coordinates mountingOffset = Coordinates.getNormalInDirection(facing.getOpposite());
-
-            // Commented out for now; Don't know if it's necessary to constantly sync this value
-//            if (entity.getRotation() != rotationDegrees) {
-//                ClientPlayNetworking.send(new SignBlockRotationPayload(entity.getPos(), rotationDegrees));
-//            }
 
             matrices.translate(mountingOffset.x, mountingOffset.y, mountingOffset.z); // Place it in the correct position
             matrices.translate(0.5, 0, 0.5); // Set it back by half a block in each direction
