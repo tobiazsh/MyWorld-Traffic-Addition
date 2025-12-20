@@ -89,6 +89,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         elements = BaseElementInterface.unpackList(elements);
     }
 
+    // GETTERS / SETTERS -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     public static void setTransmittedTexture(String json, ServerPlayer player) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
