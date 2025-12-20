@@ -127,37 +127,33 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         ((CustomizableSignBlockEntity) blockEntity).updateTextureVars();
     }
 
+
+    public int getHeight() {
+        return this.height;
+    }
     public void setHeight(int height) {
         this.height = height;
         updateGame();
     }
 
+
+    public int getWidth() {
+        return this.width;
+    }
     public void setWidth(int width) {
         this.width = width;
         updateGame();
     }
 
-    public int getHeight() {
-        return this.height;
-    }
 
-    public int getWidth() {
-        return this.width;
+    public int getRotation() {
+        return this.rotation;
     }
-
     public void setRotation(int rotation) {
         this.rotation = rotation;
         updateGame();
     }
 
-    public int getRotation() {
-        return this.rotation;
-    }
-
-    public void setSignDistances(byte[] signDistances) {
-        this.signDistances = Base64.getEncoder().encodeToString(signDistances);
-        updateGame();
-    }
 
     /**
      * Returns the raw encoded string of the sign distances.
@@ -165,60 +161,68 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public String getSignDistancesString() {
         return signDistances;
     }
+    public void setSignDistances(byte[] signDistances) {
+        this.signDistances = Base64.getEncoder().encodeToString(signDistances);
+        updateGame();
+    }
+
 
     public String getSignPoleDistancesString() {
         return signPoleDistances;
     }
-
     public void setSignPoleDistances(byte[] signPolePositions) {
         this.signPoleDistances = Base64.getEncoder().encodeToString(signPolePositions);
         updateGame();
     }
 
+
     public boolean isRendering() {
         return isRendered;
     }
-
     public void setRendered(boolean render) {
         isRendered = render;
         updateGame();
     }
 
+
+    public BorderProperty getBorderType() {
+        return borders;
+    }
     public void setBorderType(BorderProperty borders) {
         this.borders = borders;
         updateGame();
     }
 
-    public BorderProperty getBorderType() {
-        return borders;
-    }
 
+    public boolean isMaster() {
+        return isMaster;
+    }
     public void setMaster(boolean value) {
         this.isMaster = value;
         updateGame();
     }
 
-    public boolean isMaster() {
-        return isMaster;
-    }
 
+    public BlockPos getMasterPos() {
+        return masterPos;
+    }
     public void setMasterPos(BlockPos masterPos) {
         this.masterPos = new BlockPosExtended(masterPos);
         updateGame();
     }
 
-    public BlockPos getMasterPos() {
-        return masterPos;
-    }
 
+    public String getSignDataJsonString() {
+        return this.signTextureJson;
+    }
     public void setSignTextureJson(String json) {
         this.signTextureJson = json;
         updateGame();
     }
 
-    public String getSignDataJsonString() {
-        return this.signTextureJson;
-    }
+
+    // Other Methods -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private BlockPosExtended deconstructMasterPosString(String posStr) {
         String[] posList = posStr.split("%");
