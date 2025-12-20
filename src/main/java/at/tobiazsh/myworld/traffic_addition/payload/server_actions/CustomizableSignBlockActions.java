@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
@@ -92,5 +93,18 @@ public class CustomizableSignBlockActions {
                 csbeBlockEntity.setMasterPos(masterPos);
             });
         }
+    }
+
+    public static void handleCustomizableSignEditScreenClosed(CustomizableSignSettingScreenClosed payload, ServerPlayNetworking.Context ctx) {
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
+        BlockPos masterSignPos = payload.masterSignPos();
+
+        if (defaults.world == null) {
+            MyWorldTrafficAddition.LOGGER.warn("World is null when trying to mark customizable sign as being edited!");
+            return;
+        }
+
+        if (defaults.world.getBlockEntity(masterSignPos) instanceof CustomizableSignBlockEntity csbe)
+            csbe.resetEditedBy();
     }
 }

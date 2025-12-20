@@ -63,8 +63,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private int height = 1;
     private int width = 1;
 
-    public boolean editAllowed = true;
-    public Set<UUID> editExceptionUUIDs = new HashSet<>();
+    @Nullable private UUID editedBy = null;
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
@@ -218,6 +217,16 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public void setSignTextureJson(String json) {
         this.signTextureJson = json;
         updateGame();
+    }
+
+    public @Nullable UUID getEditedBy() {
+        return editedBy;
+    }
+    public void setEditedBy(@NotNull UUID editedBy) { // Only nullable if reset, for reset, you should use the actual reset method below
+        this.editedBy = editedBy;
+    }
+    public void resetEditedBy() {
+        this.editedBy = null;
     }
 
 

@@ -414,4 +414,10 @@ public class CustomizableSignSettingScreen extends Screen {
 
         return close;
     }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+        ClientPlayNetworking.send(new CustomizableSignSettingScreenClosed(pos));
+    }
 }

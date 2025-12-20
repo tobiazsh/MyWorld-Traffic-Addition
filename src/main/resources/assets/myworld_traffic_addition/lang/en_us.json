@@ -28,5 +28,7 @@
 	"widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Make Master and Initialize",
 
 	"commands.myworld_traffic_addition.main_command.root": "This is the main command of MyWorld Traffic Addition. You can configure and execute different things with it, but be cautious!",
-	"commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!"
+	"commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!",
+
+    "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "This sign is currently being edited by another player and you may thus not access it."
 }

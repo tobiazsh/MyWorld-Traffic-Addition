@@ -115,6 +115,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(SetRotationCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRotation, SetRotationCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SetSizeCustomizableSignPayload.Id, CustomizableSignBlockActions::handleSetSize, SetSizeCustomizableSignPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(UpdateTextureVarsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleUpdateTextureVariables, UpdateTextureVarsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
+                new SmartPayload<>(CustomizableSignSettingScreenClosed.Id, CustomizableSignBlockActions::handleCustomizableSignEditScreenClosed, CustomizableSignSettingScreenClosed.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
 				// OTHER
                 new SmartPayload<>(ChunkedDataPayload.Id, (payload, context) -> {
