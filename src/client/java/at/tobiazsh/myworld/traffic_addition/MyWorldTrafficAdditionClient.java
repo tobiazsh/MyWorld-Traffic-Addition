@@ -56,7 +56,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
     public static final SignSelector signSelector = new SignSelector("NormalSignSelector");
 
 	private static final List<GlobalReceiverClient<? extends CustomPacketPayload>> globalReceiverClients = new ArrayList<>();
-	private static final List<RegistrableBlockEntityRender<? extends BlockEntity, ? extends BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
+	private static final List<RegistrableBlockEntityRender<? extends @NotNull BlockEntity, ? extends @NotNull BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
 
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
 
