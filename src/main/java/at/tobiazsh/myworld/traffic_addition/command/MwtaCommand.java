@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.command;
 
 import at.tobiazsh.myworld.traffic_addition.ModVars;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.payload.ShowImGuiWindow;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;

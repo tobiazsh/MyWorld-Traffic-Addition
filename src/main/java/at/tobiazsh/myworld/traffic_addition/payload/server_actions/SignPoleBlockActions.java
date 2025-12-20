@@ -1,8 +1,8 @@
-package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
+package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SetShouldRenderSignPolePayload;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignPoleRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SetShouldRenderSignPolePayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignPoleRotationPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.server.level.ServerPlayer;

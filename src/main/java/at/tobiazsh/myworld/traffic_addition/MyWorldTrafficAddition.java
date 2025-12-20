@@ -1,17 +1,17 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.CustomizableSignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignBlockActions;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions.SignPoleBlockActions;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.ShowImGuiWindow;
+import at.tobiazsh.myworld.traffic_addition.payload.server_actions.CustomizableSignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.payload.server_actions.SignBlockActions;
+import at.tobiazsh.myworld.traffic_addition.payload.server_actions.SignPoleBlockActions;
+import at.tobiazsh.myworld.traffic_addition.payload.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;

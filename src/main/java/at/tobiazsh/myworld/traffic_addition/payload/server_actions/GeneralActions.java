@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
+package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;

@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification;
+package at.tobiazsh.myworld.traffic_addition.payload.block_modification;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import io.netty.buffer.ByteBuf;

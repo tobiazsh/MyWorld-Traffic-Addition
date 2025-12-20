@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.algorithms.FuzzySearch;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
 import at.tobiazsh.myworld.traffic_addition.error.Error;

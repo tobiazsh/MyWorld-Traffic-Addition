@@ -1,8 +1,8 @@
-package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
+package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockRotationPayload;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignBlockRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignBlockTextureChangePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
