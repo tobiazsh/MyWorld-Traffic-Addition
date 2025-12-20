@@ -8,8 +8,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.UUID;
-
 @NullMarked
 public record CustomizableSignSettingScreenClosed(BlockPos masterSignPos) implements CustomPacketPayload {
 
