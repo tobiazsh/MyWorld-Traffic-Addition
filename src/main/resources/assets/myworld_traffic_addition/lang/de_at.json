@@ -28,5 +28,7 @@
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Zum Master mochn und eistölln",
 
   "commands.myworld_traffic_addition.main_command.root": "Deis is da Haupt-Command va da MyWorld Traffic Addition Mod. Mit dem kounnst vülle Dinge eistölln und a vülle Sochn ausfühan, oba sei Vorsichtig!",
-  "commands.myworld_traffic_addition.main_command.dev.set": "%s fia %s va %s g'seitzt!"
+  "commands.myworld_traffic_addition.main_command.dev.set": "%s fia %s va %s g'seitzt!",
+
+  "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "Dies Schüdl wird grod va an ondrem Spüla berorbat', du kaust desweg'n ned drauf zuagreifn!"
 }

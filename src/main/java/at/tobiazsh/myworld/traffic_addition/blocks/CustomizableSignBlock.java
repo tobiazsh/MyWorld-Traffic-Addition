@@ -11,6 +11,13 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import com.mojang.serialization.MapCodec;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -34,6 +41,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
+
+import java.io.IOException;
 
 @NullMarked
 public class CustomizableSignBlock extends BaseEntityBlock {
@@ -116,11 +125,45 @@ public class CustomizableSignBlock extends BaseEntityBlock {
                 return InteractionResult.FAIL;
             }
 
-            MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket((ServerPlayer) player, ((CustomizableSignBlockEntity) blockEntity).getMasterPos());
+            MinecraftServer server = world.getServer();
 
-            return InteractionResult.SUCCESS;
+            if (server == null) {
+                MyWorldTrafficAddition.LOGGER.error("Could not get Server from Customizable Sign's Level while player interaction at BlockPos {} because Level#getServer() is null!", pos);
+                return InteractionResult.FAIL;
+            }
+
+            CustomizableSignBlockEntity csbe = (CustomizableSignBlockEntity) blockEntity;
+            BlockPos masterPos = csbe.getMasterPos();
+
+            if (!csbe.isMaster())
+                csbe = (CustomizableSignBlockEntity) world.getBlockEntity(masterPos); // Has to be master for the following stuff
+
+            if (csbe == null) {
+                MyWorldTrafficAddition.LOGGER.error("Could not open customizable sign edit screen for Customizable Sign Block at position {} for player {} with UUID {} because the block is null!", masterPos, player.getName(), player.getUUID());
+                return InteractionResult.FAIL;
+            }
+
+            if (csbe.getEditedBy() == null) { // If is free, let player edit and mark as being edited
+                openEditScreenForAndMark((ServerPlayer) player, csbe);
+                return InteractionResult.SUCCESS;
+            }
+
+            if (server.getPlayerList().getPlayer(csbe.getEditedBy()) == null) { // Is null if player is offline
+                // If player is offline, overwrite mark and permit editing
+                openEditScreenForAndMark((ServerPlayer) player, csbe);
+                return InteractionResult.SUCCESS;
+            }
+
+            ((ServerPlayer) player).sendSystemMessage(Component.translatable("interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited"));
+
+            return InteractionResult.FAIL;
         }
 
         return InteractionResult.PASS;
+    }
+
+    private void openEditScreenForAndMark(ServerPlayer player, CustomizableSignBlockEntity master) {
+        MyWorldTrafficAddition.sendOpenCustomizableSignEditScreenPacket(player, master.getBlockPos());
+        master.setEditedBy(player.getUUID());
     }
 }
