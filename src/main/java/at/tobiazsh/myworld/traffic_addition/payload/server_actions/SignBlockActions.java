@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 
 public class SignBlockActions {
     public static void handleTextureChange(SignBlockTextureChangePayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         String textureId = payload.texturePath();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
@@ -19,7 +19,7 @@ public class SignBlockActions {
     }
 
     public static void handleRotationChange(SignBlockRotationPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         int rotation = payload.rotation();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);

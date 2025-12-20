@@ -14,7 +14,7 @@ public class GeneralActions {
             this.world = world;
         }
 
-        public static ActionDefaults ActionDefaultsBuilder(ServerPlayNetworking.Context context) {
+        public static ActionDefaults fromContext(ServerPlayNetworking.Context context) {
             ServerPlayer serverPlayer = context.player();
             return new ActionDefaults(serverPlayer, serverPlayer.level());
         }

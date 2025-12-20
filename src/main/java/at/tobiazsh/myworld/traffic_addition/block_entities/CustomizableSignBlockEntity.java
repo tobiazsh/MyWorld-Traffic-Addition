@@ -63,6 +63,9 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private int height = 1;
     private int width = 1;
 
+    public boolean editAllowed = true;
+    public List<UUID> editExceptionUUIDs = new ArrayList<>();
+
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
     public List<BaseElement> elements = new ArrayList<>();

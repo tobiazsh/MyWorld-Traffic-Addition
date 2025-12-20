@@ -9,7 +9,7 @@ import net.minecraft.core.BlockPos;
 
 public class CustomizableSignBlockActions {
     public static void handleUpdateTextureVariables(UpdateTextureVarsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
@@ -18,7 +18,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSize(SetSizeCustomizableSignPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         int height = payload.height();
         int width = payload.width();
@@ -34,7 +34,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetRotation(SetRotationCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         int rotation = payload.rotation();
 
@@ -43,7 +43,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetRenderState(SetRenderStateCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         boolean renderState = payload.renderState();
 
@@ -52,7 +52,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSignPositions(SetSignPositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         byte[] bytes = payload.signDistances();
 
@@ -61,7 +61,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSignPolePositions(SetSignPolePositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         byte[] bytes = payload.bytes();
 
@@ -70,7 +70,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetBorderType(SetBorderTypeCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         String borders = payload.borders();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
@@ -80,7 +80,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetMaster(SetMasterCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         Boolean shouldMaster = payload.shouldMaster();
         BlockPos masterPos = payload.master();
