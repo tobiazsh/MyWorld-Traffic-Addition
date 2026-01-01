@@ -1,6 +1,6 @@
 # MyWorld Traffic Addition
 
-### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.6, 1.21.7 and 1.21.8<br>
+### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.11
 
 ## [View on Modrinth](https://modrinth.com/mod/myworld-traffic-addition)
 
