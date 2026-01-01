@@ -3,13 +3,14 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import imgui.ImGui;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Tuple;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
 import at.tobiazsh.myworld.traffic_addition.error.Error;
+import org.jetbrains.annotations.NotNull;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
@@ -17,7 +18,7 @@ public class ErrorPopup {
 
     private static final String errorIconPath = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
     private static Runnable onClose;
-    private static final Queue<Pair<Error, Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
+    private static final Queue<Tuple<@NotNull Error, @NotNull Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
     private static final AtomicReference<String> text = new AtomicReference<>("");
     private static final AtomicReference<String> message = new AtomicReference<>("");
 
@@ -60,7 +61,8 @@ public class ErrorPopup {
     }
 
     public static void open(Error error, Runnable close) {
-        errorQueue.add(new Pair<>(error, close));
+        if (close == null) close = () -> {}; // Avoid null pointer exceptions
+        errorQueue.add(new Tuple<>(error, close));
     }
 
     public static boolean hasErrors() {
@@ -68,14 +70,14 @@ public class ErrorPopup {
     }
 
     private static void nextError() {
-        Pair<Error, Runnable> p = errorQueue.poll();
-        if (p == null || p.getLeft() == null) {
+        Tuple<@NotNull Error, @NotNull Runnable> p = errorQueue.poll();
+        if (p == null) {
             return;
         }
 
-        Error e = p.getLeft();
+        Error e = p.getA();
         text.set(e.getTitle() != null ? e.getTitle() : "");
         message.set(e.getMessage() != null ? e.getMessage() : "");
-        onClose = p.getRight();
+        onClose = p.getB();
     }
 }

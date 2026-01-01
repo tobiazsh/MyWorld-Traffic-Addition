@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.algorithms.FuzzySearch;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignBlockTextureChangePayload;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignBlockTextureChangePayload;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
@@ -16,9 +16,9 @@ import imgui.ImVec2;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class SignSelector {
     private SignFilter filter = new SignFilter(null, null, null);
     private final Texture previewTexture = new Texture();
     private BlockPos signPos;
-    private RegistryKey<World> worldRegistryKey;
+    private ResourceKey<@NotNull Level> worldRegistryKey;
     private final String windowId;
 
     private FilterWindow filterWindow;
@@ -212,7 +212,7 @@ public class SignSelector {
     /**
      * Opens and initialized the sign selector window for the current sign type
      */
-    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, RegistryKey<World> world) {
+    public void open(SignBlock.SIGN_SHAPE signType, BlockPos signPos, ResourceKey<@NotNull Level> world) {
         shouldRender = true;
         this.signType = signType;
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type
@@ -365,21 +365,21 @@ public class SignSelector {
                     .map(SignTexture.CATEGORY::name)
                     .toList();
             List<String> categories = new ArrayList<>(categoryNames);
-            categories.add(0, "*");
+            categories.addFirst("*");
             this.availCategories = categories.toArray(new String[0]);
 
             // Also sort countries alphabetically
             List<String> sortedCountries = new ArrayList<>(availCountries);
             sortedCountries.sort(String::compareTo);
             List<String> countries = new ArrayList<>(sortedCountries);
-            countries.add(0, "*");
+            countries.addFirst("*");
             this.availCountries = countries.toArray(new String[0]);
 
             List<String> shapeNames = availShapes.stream()
                     .map(Enum::name)
                     .toList();
             List<String> shapes = new ArrayList<>(shapeNames);
-            shapes.add(0, "*");
+            shapes.addFirst("*");
             this.availShapes = shapes.toArray(new String[0]);
 
             // Combo Indices

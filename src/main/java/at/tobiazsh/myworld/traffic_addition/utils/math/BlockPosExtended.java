@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.utils.math;
 
 
 import at.tobiazsh.myworld.traffic_addition.utils.StringableObject;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
 

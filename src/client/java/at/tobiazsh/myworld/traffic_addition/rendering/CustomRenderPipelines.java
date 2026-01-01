@@ -1,10 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.renderer.RenderPipelines;
 
-import static net.minecraft.client.gl.RenderPipelines.FOG_SNIPPET;
-import static net.minecraft.client.gl.RenderPipelines.TEXT_SNIPPET;
+import static net.minecraft.client.renderer.RenderPipelines.FOG_SNIPPET;
+import static net.minecraft.client.renderer.RenderPipelines.TEXT_SNIPPET;
 
 public class CustomRenderPipelines {
 

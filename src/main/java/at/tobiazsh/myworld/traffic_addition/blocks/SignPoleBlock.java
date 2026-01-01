@@ -3,86 +3,97 @@ package at.tobiazsh.myworld.traffic_addition.blocks;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
-public class SignPoleBlock extends BlockWithEntity {
+@NullMarked
+public class SignPoleBlock extends BaseEntityBlock {
 
-    private static final VoxelShape SHAPE = Block.createCuboidShape(6.5, 0.0, 6.5, 9.5, 16.0, 9.5);
+    private static final VoxelShape SHAPE = Block.box(6.5, 0.0, 6.5, 9.5, 16.0, 9.5);
 
-    public static final MapCodec<SignPoleBlock> CODEC = createCodec(SignPoleBlock::new);
+    public static final MapCodec<SignPoleBlock> CODEC = simpleCodec(SignPoleBlock::new);
 
-    public SignPoleBlock(Settings settings)
+    public SignPoleBlock(Properties settings)
     {
         super(settings);
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        super.onPlaced(world, pos, state, placer, itemStack);
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.setPlacedBy(world, pos, state, placer, itemStack);
 
-        BlockPos blockBelowPos = pos.down(1);
+        BlockPos blockBelowPos = pos.below(1);
 
-        if(world.getBlockEntity(blockBelowPos) instanceof SignPoleBlockEntity) {
-            SignPoleBlockEntity blockEntityBelow = (SignPoleBlockEntity)world.getBlockEntity(blockBelowPos);
+        if(world.getBlockEntity(blockBelowPos) instanceof SignPoleBlockEntity blockEntityBelow) {
             SignPoleBlockEntity thisBlockEntity = (SignPoleBlockEntity)world.getBlockEntity(pos);
+
+            if (thisBlockEntity == null) {
+                MyWorldTrafficAddition.LOGGER.error("Tried to set rotationValue on invalid SignPoleBlockEntity!");
+                return;
+            }
+
             thisBlockEntity.setRotationValue(blockEntityBelow.getRotationValue());
         }
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         return new SignPoleBlockEntity(pos, state);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context){
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context){
         return SHAPE;
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
+    public VoxelShape getInteractionShape(BlockState state, BlockGetter world, BlockPos pos) {
         return SHAPE;
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.INVISIBLE;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit)
     {
-        if(player.isSneaking() && !world.isClient()) {
+        if(player.isShiftKeyDown() && !world.isClientSide()) {
             BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof SignPoleBlockEntity signPoleEntity) {
-                MyWorldTrafficAddition.sendOpenSignPoleRotationScreenPacket((ServerPlayerEntity) player, pos);
-                return ActionResult.SUCCESS;
+            if (entity instanceof SignPoleBlockEntity) {
+                MyWorldTrafficAddition.sendOpenSignPoleRotationScreenPacket((ServerPlayer) player, pos);
+                return InteractionResult.SUCCESS;
             }
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

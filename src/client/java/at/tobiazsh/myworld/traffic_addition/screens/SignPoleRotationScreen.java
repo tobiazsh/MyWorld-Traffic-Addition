@@ -2,36 +2,35 @@ package at.tobiazsh.myworld.traffic_addition.screens;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.SignPoleRotationPayload;
-import at.tobiazsh.myworld.traffic_addition.Widgets.DegreeSliderWidget;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.SignPoleRotationPayload;
+import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 @Environment(EnvType.CLIENT)
 public class SignPoleRotationScreen extends Screen {
 
     private final BlockPos pos;
-    private final World world;
     private final BlockEntity entity;
 
     private int initial_rotation_value;
 
-    private static final Text TITLE = Text.translatable("screen." + MyWorldTrafficAddition.MOD_ID + ".sign_pole_rotation_screen");
+    private static final Component TITLE = Component.translatable("screen." + MyWorldTrafficAddition.MOD_ID + ".sign_pole_rotation_screen");
 
-    public SignPoleRotationScreen(World world, BlockPos pos, PlayerEntity player) {
+    public SignPoleRotationScreen(Level world, BlockPos pos, Player player) {
         super(TITLE);
         this.pos = pos;
-        this.world = world;
         this.entity = world.getBlockEntity(pos);
 
 
@@ -40,7 +39,7 @@ public class SignPoleRotationScreen extends Screen {
     private static final int uniButtonWidth = 200;
     private static final int uniButtonHeight = 20;
 
-    public ButtonWidget confirm;
+    public Button confirm;
     public DegreeSliderWidget rotation_slider;
 
     private void applyRotation(int rotation) {
@@ -51,10 +50,10 @@ public class SignPoleRotationScreen extends Screen {
     @Override
     public void init() {
 
-        rotation_slider = new DegreeSliderWidget(5, 5, uniButtonWidth, uniButtonHeight, Text.of(initial_rotation_value + "°"), initial_rotation_value / 90f + 0.5) {
+        rotation_slider = new DegreeSliderWidget(5, 5, uniButtonWidth, uniButtonHeight, Component.nullToEmpty(initial_rotation_value + "°"), initial_rotation_value / 90f + 0.5) {
             @Override
             protected void updateMessage() {
-                this.setMessage(Text.of((int)getValue() + "°"));
+                this.setMessage(Component.nullToEmpty((int)getValue() + "°"));
             }
 
             @Override
@@ -63,11 +62,11 @@ public class SignPoleRotationScreen extends Screen {
             }
         };
 
-        confirm = ButtonWidget.builder(Text.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".rotation_confirmation_button"), button -> {
-        }).dimensions(5, 30, 200, 20).tooltip(Tooltip.of(Text.literal("Tooltip of button1"))).build();
+        confirm = Button.builder(Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".rotation_confirmation_button"), button -> {
+        }).bounds(5, 30, 200, 20).tooltip(Tooltip.create(Component.literal("Tooltip of button1"))).build();
 
-        addDrawableChild(confirm);
-        addDrawableChild(rotation_slider);
+        addRenderableWidget(confirm);
+        addRenderableWidget(rotation_slider);
     }
 
     @Override
@@ -76,7 +75,7 @@ public class SignPoleRotationScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(@NotNull GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
     }
 }

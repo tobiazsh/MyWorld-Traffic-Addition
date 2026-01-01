@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.network;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 import java.util.Arrays;
 import java.util.UUID;

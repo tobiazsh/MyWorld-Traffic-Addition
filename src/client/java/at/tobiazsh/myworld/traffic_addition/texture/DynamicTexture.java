@@ -6,11 +6,11 @@ import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -47,15 +47,15 @@ public class DynamicTexture extends AbstractTexture {
     /**
      * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
      */
-    public DynamicTexture registerTexture(boolean blur, boolean clamp) {
+    public DynamicTexture registerTexture() {
         this.close();
 
         try (NativeImage image = this.getImage(isResource)){
             if (image == null)
                 throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture, image is null!");
 
-            this.load(image, blur, clamp);
-            MinecraftClient.getInstance().getTextureManager().registerTexture(id, this);
+            this.load(image);
+            Minecraft.getInstance().getTextureManager().register(id, this);
         } catch (IOException e) {
             throw new RuntimeException("Could not register texture in TextureManager from DynamicTexture!", e);
         }
@@ -65,18 +65,16 @@ public class DynamicTexture extends AbstractTexture {
 
     /**
      * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
-     * @param blur whether to use blur filtering (or linear filtering)
-     * @param clamp whether to use clamp wrapping
      * @return this DynamicTexture instance
      */
-    public DynamicTexture smartRegisterTexture(boolean blur, boolean clamp) {
-        if (((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures().containsKey(id)) // Already registered in TextureManager
+    public DynamicTexture smartRegisterTexture() {
+        if (((TextureManagerAccessor) Minecraft.getInstance().getTextureManager()).getByPath().containsKey(id)) // Already registered in TextureManager
             return this;
 
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
             return this;
 
-        return this.registerTexture(blur, clamp).register();
+        return this.registerTexture().register();
     }
 
     /**
@@ -102,8 +100,8 @@ public class DynamicTexture extends AbstractTexture {
      */
     public void unregister() {
         try {
-            TextureManager tm = MinecraftClient.getInstance().getTextureManager();
-            ((TextureManagerAccessor) tm).getTextures().remove(this.id);
+            TextureManager tm = Minecraft.getInstance().getTextureManager();
+            ((TextureManagerAccessor) tm).getByPath().remove(this.id);
         } catch (Exception e) {
             MyWorldTrafficAddition.LOGGER.warn("Could not unregister texture \"{}\" with path \"{}\" from TextureManager!", this.id, this.path, e);
         }
@@ -176,18 +174,14 @@ public class DynamicTexture extends AbstractTexture {
     /**
      * Creates the texture (glTexture) from the specified NativeImage.
      * @param image the NativeImage to load the texture from
-     * @param blur whether to use blur filtering (or linear filtering)
-     * @param clamp whether to use clamp wrapping
      */
-    private void load(NativeImage image, boolean blur, boolean clamp) {
+    private void load(NativeImage image) {
         GpuDevice gpu = RenderSystem.getDevice();
         this.close();
         Objects.requireNonNull(this.id);
-        this.glTexture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
-        this.glTextureView = gpu.createTextureView(this.glTexture);
-        this.setFilter(blur, false);
-        this.setClamp(clamp);
-        gpu.createCommandEncoder().writeToTexture(this.glTexture, image);
+        this.texture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
+        this.textureView = gpu.createTextureView(this.texture);
+        gpu.createCommandEncoder().writeToTexture(this.texture, image);
     }
 
 

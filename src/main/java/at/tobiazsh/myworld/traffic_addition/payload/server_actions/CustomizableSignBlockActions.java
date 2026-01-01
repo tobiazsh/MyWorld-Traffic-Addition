@@ -1,15 +1,16 @@
-package at.tobiazsh.myworld.traffic_addition.custom_payloads.server_actions;
+package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.custom_payloads.block_modification.*;
+import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 
 public class CustomizableSignBlockActions {
     public static void handleUpdateTextureVariables(UpdateTextureVarsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
@@ -18,7 +19,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSize(SetSizeCustomizableSignPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         int height = payload.height();
         int width = payload.width();
@@ -34,7 +35,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetRotation(SetRotationCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         int rotation = payload.rotation();
 
@@ -43,7 +44,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetRenderState(SetRenderStateCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         boolean renderState = payload.renderState();
 
@@ -52,7 +53,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSignPositions(SetSignPositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         byte[] bytes = payload.signDistances();
 
@@ -61,7 +62,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetSignPolePositions(SetSignPolePositionsCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         byte[] bytes = payload.bytes();
 
@@ -70,7 +71,7 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetBorderType(SetBorderTypeCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         String borders = payload.borders();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
@@ -80,19 +81,30 @@ public class CustomizableSignBlockActions {
     }
 
     public static void handleSetMaster(SetMasterCustomizableSignBlockPayload payload, ServerPlayNetworking.Context ctx) {
-        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.ActionDefaultsBuilder(ctx);
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
         BlockPos pos = payload.pos();
         Boolean shouldMaster = payload.shouldMaster();
         BlockPos masterPos = payload.master();
         BlockEntity blockEntity = defaults.world.getBlockEntity(pos);
 
-        if (blockEntity instanceof CustomizableSignBlockEntity) {
+        if (blockEntity instanceof CustomizableSignBlockEntity csbeBlockEntity) {
             defaults.world.getServer().execute(() -> {
-                CustomizableSignBlockEntity csbeBlockEntity = (CustomizableSignBlockEntity) blockEntity;
-
                 csbeBlockEntity.setMaster(shouldMaster);
                 csbeBlockEntity.setMasterPos(masterPos);
             });
         }
+    }
+
+    public static void handleCustomizableSignEditScreenClosed(CustomizableSignSettingScreenClosed payload, ServerPlayNetworking.Context ctx) {
+        GeneralActions.ActionDefaults defaults = GeneralActions.ActionDefaults.fromContext(ctx);
+        BlockPos masterSignPos = payload.masterSignPos();
+
+        if (defaults.world == null) {
+            MyWorldTrafficAddition.LOGGER.warn("World is null when trying to mark customizable sign as being edited!");
+            return;
+        }
+
+        if (defaults.world.getBlockEntity(masterSignPos) instanceof CustomizableSignBlockEntity csbe)
+            csbe.resetEditedBy();
     }
 }

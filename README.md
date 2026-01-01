@@ -1,6 +1,6 @@
 # MyWorld Traffic Addition
 
-### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.6, 1.21.7 and 1.21.8<br>
+### **MyWorld Traffic Addition is still in development. Many features follow soon! <br /> <br /> Only Available for Fabric**<br><br>CURRENTLY SUPPORTED MINECRAFT VERSION: 1.21.11
 
 ## [View on Modrinth](https://modrinth.com/mod/myworld-traffic-addition)
 
@@ -58,9 +58,9 @@ There are a few fonts included in the mod that can be used for sign editing and 
 fonts themselves.
 
 **Here's what's recommended for specific countries when building roads and signs:**<br><br>
-For **Spain, Mexico, USA, Portugal: *Highway Gothic*** by Tom Oetken<br>--<br>
-For **Germany, Czech Republic: *DIN 1451 Mittelschrift*** by Peter Wiegel (SIL OFL)<br>--<br>
-For **Austria, Slovakia: *Paneuropa*** by Peter Wiegel (SIL OFL)<br>--<br>
+- For **Spain, Mexico, USA, Portugal: *Highway Gothic*** by Tom Oetken ([Link](https://www.dafont.com/highway-gothic.font))
+- For **Germany, Czech Republic: *DIN 1451 Mittelschrift*** by Peter Wiegel (SIL OFL)
+- For **Austria, Slovakia: *Paneuropa*** by Peter Wiegel (SIL OFL)
 **For Your own made up country there are a few neutral fonts included: *Roboto (Mono), Funnel Sans and Deja Vu Sans* !**
 
 You can always add more fonts yourself by just opening the .jar with a zipping program and adding the .ttf file under `assets/myworld_traffic_addition/textures/imgui/fonts/` **BUT**
@@ -70,19 +70,16 @@ I try to add a good selection of fonts that fit for many countries, but I can't 
 mod for every font that's being used on road signage world wide (Italy as example; they have privated their font used in road signage, but it's similar to Arial)
 
 ## License
-This project is licensed under the **Attribution-NonCommercial 4.0 International** - see the [LICENSE](LICENSE) file for details
+This project is licensed under the **GNU Lesser General Public License** - see the [LICENSE](LICENSE) file for details
 
 ### In short:
 **You are free to:**<br>
-✅ Use, modify, and share this mod for non-commercial purposes.<br>
-✅ Redistribute it as long as you credit "Tobias S." or "Tobiazsh" somewhere, even in small text. (See below)*<br>
-✅ Modify and distribute your own versions under the same non-commercial terms.<br>
+✅ Use, study, copy, modify and redistribute the mod under commercial and non-commercial use.<br>
 
 **You may NOT:**<br>
-❌ Use this mod for commercial purposes (including selling, paywalls, or monetization).<br>
-❌ Redistribute it without proper credit.<br>
+❌ Redistribute the mod or its derivatives while stripping away the original author's copyright notices or claiming the work as your own.
 
-*While not required, I’d really appreciate it if you included a link to any of my social media when sharing or redistributing this mod. Links are on [my GitHub Profile](https://github.com/tobiazsh).
+I’d also really appreciate it if you included a link to any of my profiles when sharing or redistributing this mod. Links are on [my GitHub Profile](https://github.com/tobiazsh).
 
 <br><br>
 ***Made with ❤️ in Austria***

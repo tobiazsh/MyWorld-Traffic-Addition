@@ -9,7 +9,7 @@ import io.github.tobiazsh.jengua.LanguageSaver;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -29,22 +29,22 @@ public class MwtaDebugCommand {
 
         File targetFile = FabricLoader.getInstance().getConfigDir().resolve("myworld_traffic_addition/debug/lang_files/en_US.json").toFile();
 
-        source.sendFeedback(Text.of("Saving language file to %s".formatted(targetFile.getAbsoluteFile())));
+        source.sendFeedback(Component.nullToEmpty("Saving language file to %s".formatted(targetFile.getAbsoluteFile())));
 
         if (targetFile.exists() && !targetFile.delete()) {
-            source.sendError(Text.of("Failed to delete existing language file!"));
+            source.sendError(Component.nullToEmpty("Failed to delete existing language file!"));
             return Command.SINGLE_SUCCESS;
         }
 
         if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs()) {
-            source.sendError(Text.of("Failed to create directory for language file!"));
+            source.sendError(Component.nullToEmpty("Failed to create directory for language file!"));
             return Command.SINGLE_SUCCESS;
         }
 
         try {
             LanguageSaver.saveLanguageFileTo(JenguaTranslator.default_en_US, targetFile);
         } catch (Exception e) {
-            source.sendError(Text.of("Failed to save language file! More details in log!"));
+            source.sendError(Component.nullToEmpty("Failed to save language file! More details in log!"));
             MyWorldTrafficAddition.LOGGER.error("Failed to save language file!", e);
             return Command.SINGLE_SUCCESS;
         }

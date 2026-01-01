@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils.math;
 
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 
 public class Coordinates {
@@ -22,9 +22,9 @@ public class Coordinates {
      */
     public static Coordinates getNormalInDirection(float distance, Direction facing) {
         return switch (facing) {
-            case NORTH -> new Coordinates(0, 0, distance, Direction.NORTH);
+            case NORTH -> new Coordinates(0, 0, -distance, Direction.NORTH);
             case EAST -> new Coordinates(distance, 0, 0, Direction.EAST);
-            case SOUTH -> new Coordinates(0, 0, -distance, Direction.SOUTH);
+            case SOUTH -> new Coordinates(0, 0, distance, Direction.SOUTH);
             case WEST -> new Coordinates(-distance, 0, 0, Direction.WEST);
             case UP -> new Coordinates(0, distance, 0, Direction.UP);
             case DOWN -> new Coordinates(0, -distance, 0, Direction.DOWN);

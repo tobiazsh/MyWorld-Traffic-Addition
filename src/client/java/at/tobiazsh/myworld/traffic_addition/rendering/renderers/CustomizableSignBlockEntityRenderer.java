@@ -21,25 +21,27 @@ import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.command.ModelCommandRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import com.mojang.math.Axis;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -48,7 +50,7 @@ import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
 
-public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<CustomizableSignBlockEntity, CustomizableSignBlockRenderState> {
+public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<@NotNull CustomizableSignBlockEntity, @NotNull CustomizableSignBlockRenderState> {
 
     public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
 
@@ -60,7 +62,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             )
     );
 
-    private final BakedModelManager bakedModelManager;
+    private final ModelManager bakedModelManager;
 
     public static float zOffsetRenderLayer = 3f;
     public static final float zOffsetRenderLayerDefault = 3f;
@@ -72,8 +74,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             Collections.synchronizedMap(new WeakHashMap<>());
 
     // Constructor
-    public CustomizableSignBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {
-        bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
+    public CustomizableSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+        bakedModelManager = Minecraft.getInstance().getModelManager();
 
         BorderRenderer.init(
                 bakedModelManager,
@@ -144,8 +146,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     }
 
     @Override
-    public void updateRenderState(CustomizableSignBlockEntity blockEntity, CustomizableSignBlockRenderState state, float tickProgress, Vec3d cameraPos, @Nullable ModelCommandRenderer.CrumblingOverlayCommand crumblingOverlay) {
-        BlockEntityRenderer.super.updateRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
+    public void extractRenderState(CustomizableSignBlockEntity blockEntity, CustomizableSignBlockRenderState state, float tickProgress, @NotNull Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
 
         state.isRendering = blockEntity.isRendering();
         state.isMaster = blockEntity.isMaster();
@@ -167,8 +169,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             state.signData.setJson(state.signDataJsonString);
         }
 
-        if (elements.containsKey(blockEntity.getPos()) && !blockEntity.hasTextureUpdateOccurred.get()) {
-            state.clientElements = elements.get(blockEntity.getPos());
+        if (elements.containsKey(blockEntity.getBlockPos()) && !blockEntity.hasTextureUpdateOccurred.get()) {
+            state.clientElements = elements.get(blockEntity.getBlockPos());
         } else {
             List<ClientElementInterface> clientElements = blockEntity.elements
                     .reversed()
@@ -178,7 +180,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     .toList();
 
             state.clientElements = clientElements;
-            elements.put(blockEntity.getPos(), clientElements); // Update the cached elements
+            elements.put(blockEntity.getBlockPos(), clientElements); // Update the cached elements
             blockEntity.hasTextureUpdateOccurred.set(false); // Reset the flag
         }
 
@@ -188,69 +190,69 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render the sign block
     @Override
-    public void render(CustomizableSignBlockRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
+    public void submit(CustomizableSignBlockRenderState state, @NotNull PoseStack matrices, @NotNull SubmitNodeCollector queue, @NotNull CameraRenderState cameraState) {
 
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!state.isRendering) return;
 
         // Get the facing of the sign block
-        Direction facing = state.blockState.get(CustomizableSignBlock.FACING);
+        Direction facing = state.blockState.getValue(CustomizableSignBlock.FACING);
 
         // Get the BlockEntity of the master block
-        assert MinecraftClient.getInstance().world != null;
+        assert Minecraft.getInstance().level != null;
 
         int rotation = state.rotation;
 
-        matrices.push();
+        matrices.pushPose();
 
         // Rotate the sign
         rotateSign(rotation, matrices);
 
         // Render master block sign block
-        BlockStateModel csbeStateModel = bakedModelManager.getBlockModels().getModel(state.blockState);
+        BlockStateModel csbeStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(state.blockState);
 
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderTypes.cutoutMovingBlock(),
                 csbeStateModel,
                 1.0f, 1.0f, 1.0f,
-                state.lightmapCoordinates,
-                OverlayTexture.DEFAULT_UV,
+                state.lightCoords,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
         // Render the border for the master sign block
-        BorderRenderer.render(queue, matrices, state.borders, state.lightmapCoordinates, facing);
-        renderTexture(queue, state, matrices, state.lightmapCoordinates, facing);
+        BorderRenderer.render(queue, matrices, state.borders, state.lightCoords, facing);
+        renderTexture(queue, state, matrices, state.lightCoords, facing);
 
         boolean masterPresent = false;
-        if (MinecraftClient.getInstance().world != null) {
-            masterPresent = MinecraftClient.getInstance().world.getBlockEntity(state.masterBlockPos) instanceof CustomizableSignBlockEntity;
+        if (Minecraft.getInstance().level != null) {
+            masterPresent = Minecraft.getInstance().level.getBlockEntity(state.masterBlockPos) instanceof CustomizableSignBlockEntity;
         }
 
         // If the entity is master, render the other signs attached to it
         if (state.isMaster || !masterPresent) {
-            renderSignPoles(queue, state, matrices, state.lightmapCoordinates);
-            renderSigns(queue, state, csbeStateModel, matrices, state.lightmapCoordinates, facing);
+            renderSignPoles(queue, state, matrices, state.lightCoords);
+            renderSigns(queue, state, csbeStateModel, matrices, state.lightCoords, facing);
         }
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 
 
 
-    private void renderSigns(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing) {
+    private void renderSigns(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, PoseStack matrices, int light, Direction facing) {
         // Get the sign positions as a list of BlockPos
         List<BlockPosExtended> signDistances = getSignDistances(state.signDistancesString);
-        List<BlockPosExtended> signPositions = calculatePosition(signDistances, new BlockPosExtended(state.pos));
+        List<BlockPosExtended> signPositions = calculatePosition(signDistances, new BlockPosExtended(state.blockPos));
 
         // Render each sign
         for (int i = 0; i < signPositions.size(); i++) {
             BlockPos signPos = signPositions.get(i).toBlockPos();
             CustomizableSignBlockEntity csbe = null;
-            if (MinecraftClient.getInstance().world != null) {
-                BlockEntity be = MinecraftClient.getInstance().world.getBlockEntity(signPos);
+            if (Minecraft.getInstance().level != null) {
+                BlockEntity be = Minecraft.getInstance().level.getBlockEntity(signPos);
                 if (be instanceof CustomizableSignBlockEntity) csbe = (CustomizableSignBlockEntity) be;
             }
 
@@ -265,7 +267,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     facing,
                     signDistances.get(i).invert(),
                     borderType,
-                    OverlayTexture.DEFAULT_UV,
+                    OverlayTexture.NO_OVERLAY,
                     signPos
             );
         }
@@ -275,19 +277,19 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign
-    private void renderSign(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, MatrixStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay, BlockPos position) {
-        matrices.push();
+    private void renderSign(SubmitNodeCollector queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, PoseStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay, BlockPos position) {
+        matrices.pushPose();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
 
         // Render sign block
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderTypes.cutoutMovingBlock(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
@@ -301,39 +303,39 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
 
-        BlockPos blockPosBehind = new BlockPos(position).offset(masterState.blockState.get(CustomizableSignBlock.FACING).getOpposite(), 1);
+        BlockPos blockPosBehind = new BlockPos(position).relative(masterState.blockState.getValue(CustomizableSignBlock.FACING).getOpposite(), 1);
 
-        if (MinecraftClient.getInstance().world != null &&
-                MinecraftClient.getInstance().world.getBlockEntity(blockPosBehind) instanceof SignPoleBlockEntity) {
+        if (Minecraft.getInstance().level != null &&
+                Minecraft.getInstance().level.getBlockEntity(blockPosBehind) instanceof SignPoleBlockEntity) {
 
             renderSignHolder(queue, masterState, matrices, light, facing);
         }
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 
 
 
     // Render the background texture of one sign
-    private void renderBackground(CustomizableSignBlockRenderState masterState, MatrixStack matrices, int light, int backgroundOverlay, Direction facing, BorderProperty borders) {
+    private void renderBackground(CustomizableSignBlockRenderState masterState, PoseStack matrices, int light, int backgroundOverlay, Direction facing, BorderProperty borders) {
         Path signTexturePath = Path.of(masterState.signData.getStylePath());
         String textureName = borders.toBackgroundString().concat(".png"); // Construct file name from borders since border are the same on the background and the actual background
         signTexturePath = Path.of("/assets/" + MyWorldTrafficAddition.MOD_ID).relativize(signTexturePath.resolve(textureName));
 
         // Construct Identifier from path so Minecraft finds it in resource
         // For it to be found, the separation of paths should be Unix-Style (/) and not Windows-Style (\), so replace that.
-        Identifier backgroundTexture = Identifier.of(MyWorldTrafficAddition.MOD_ID, signTexturePath.toString().replaceAll("\\\\", "/"));
+        Identifier backgroundTexture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, signTexturePath.toString().replaceAll("\\\\", "/"));
 
         // Construct RenderLayer for texture; use my own RenderLayer instead of Minecraft's
         CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, backgroundTexture);
-        RenderLayer backgroundRenderLayer = backgroundLayer.buildRenderLayer();
+        RenderType backgroundRenderLayer = backgroundLayer.buildRenderLayer();
         BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
-        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
+        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(backgroundRenderLayer);
 
-        matrices.push();
+        matrices.pushPose();
 
         // Now render that
         // Position the vertices
@@ -341,15 +343,15 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z);
 
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 1.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 0f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 1.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 1f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(1.0f, 0.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
-        vertexConsumer.vertex(matrices.peek().getPositionMatrix(), 0.0f, 1f, 0.0f).color(1f, 1f, 1f, 1f).texture(0.0f, 0.0f).light(light).overlay(backgroundOverlay).normal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+        vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 
@@ -357,7 +359,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the sign poles that hold the sign
-    private void renderSignPoles(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light) {
+    private void renderSignPoles(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light) {
         // Get the position of each sign pole compacted in one string
         if (state.signPoleDistancesString.isEmpty()) return; // If there are no sign poles, exit function
 
@@ -372,7 +374,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     !match.getValue().isEmpty())
                     .getFirst().get().getValue();
 
-            cachedPositions.forEach(pos -> renderSignPole(queue, state, bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState()), matrices, light, pos));
+            cachedPositions.forEach(pos -> renderSignPole(queue, state, bakedModelManager.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState()), matrices, light, pos));
             return;
         }
 
@@ -384,7 +386,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
             // Add distance to master position to get the actual position of the sign pole
             polePositions = distances.stream()
-                    .map(distance -> (new BlockPosExtended(state.pos)).addOffset(distance.invert()))
+                    .map(distance -> (new BlockPosExtended(state.blockPos)).addOffset(distance.invert()))
                     .toList();
 
         } catch (IOException | ClassNotFoundException e) {
@@ -399,7 +401,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         CALCULATION_CACHE.access(new AbstractMap.SimpleEntry<>(state.signPoleDistancesString, polePositions));
 
         // Define the BakedModel for the sign poles
-        BlockStateModel signPoleStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().getDefaultState());
+        BlockStateModel signPoleStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState());
 
         // Render each sign pole
         polePositions.forEach(pos -> renderSignPole(queue, state, signPoleStateModel, matrices, light, pos));
@@ -409,7 +411,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render one sign pole
-    private void renderSignPole(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, MatrixStack matrices, int light, BlockPos position) {
+    private void renderSignPole(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, PoseStack matrices, int light, BlockPos position) {
         // The position if the master block
         BlockPos masterPos = state.masterBlockPos;
         BlockPos offset = BlockPosExtended.getOffset(masterPos, position); // Offset of the sign. If the sign pole is one behind, the offset is (0, 0, -1) for example
@@ -417,29 +419,29 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Correct the offset to match the sign pole position
         offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1));
 
-        matrices.push();
+        matrices.pushPose();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Translate the sign pole to the correct position
 
         // Render sign pole
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderTypes.cutoutMovingBlock(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 
 
 
     // Render the texture of the whole sign
-    private void renderTexture(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light, Direction facing) {
+    private void renderTexture(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light, Direction facing) {
         // If the block isn't a master block, exit function because there's nothing to render anyway since non-masters don't hold texture information
         if (!state.isMaster || !state.isInitialized) return;
 
@@ -449,7 +451,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the elements that were placed when the sign was edited
-    private void renderElements(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, int height, MatrixStack matrices, int light, Direction facing) {
+    private void renderElements(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, int height, PoseStack matrices, int light, Direction facing) {
         if (state.clientElements.isEmpty()) return; // If there are no elements, exit
 
         List<ClientElementInterface> renderedElements = state.clientElements;
@@ -460,44 +462,44 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
     }
 
-    public static void renderElement(OrderedRenderCommandQueue queue, ClientElementInterface element, int index, int height, MatrixStack matrices, int light, Direction facing) {
+    public static void renderElement(SubmitNodeCollector queue, ClientElementInterface element, int index, int height, PoseStack matrices, int light, Direction facing) {
         element.renderMinecraft(queue, index, height, matrices, light, facing);
     }
 
 
 
 
-    private void renderSignHolder(OrderedRenderCommandQueue queue, CustomizableSignBlockRenderState state, MatrixStack matrices, int light, Direction facing) {
-        BlockStateModel blockStateModel = bakedModelManager.getBlockModels().getModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().getDefaultState());
+    private void renderSignHolder(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light, Direction facing) {
+        BlockStateModel blockStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().defaultBlockState());
 
-        matrices.push();
+        matrices.pushPose();
 
-        BlockPos holderPos = state.pos.offset(facing, 1); // Position of the sign holder is one block in front of the sign
-        matrices.translate(Vec3d.of(BlockPosExtended.getOffset(state.pos, holderPos))); // Translate the sign holder to the correct position
+        BlockPos holderPos = state.blockPos.relative(facing, 1); // Position of the sign holder is one block in front of the sign
+        matrices.translate(Vec3.atLowerCornerOf(BlockPosExtended.getOffset(state.blockPos, holderPos))); // Translate the sign holder to the correct position
 
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
-        queue.submitBlockStateModel(
+        queue.submitBlockModel(
                 matrices,
-                RenderLayer.getCutout(),
+                RenderTypes.cutoutMovingBlock(),
                 blockStateModel,
                 1.0f, 1.0f, 1.0f,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 
 
 
-    private void rotateSign(int rotationDegrees, MatrixStack matrices) {
+    private void rotateSign(int rotationDegrees, PoseStack matrices) {
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
+        matrices.mulPose(Axis.YP.rotationDegrees(rotationDegrees));
         matrices.translate(-0.5, -0.5, -0.5);
     }
 

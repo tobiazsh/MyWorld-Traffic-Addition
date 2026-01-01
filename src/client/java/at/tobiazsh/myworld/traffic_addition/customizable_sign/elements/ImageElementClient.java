@@ -12,16 +12,19 @@ import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.Direction;
+import com.mojang.math.Axis;
 import org.joml.Matrix4f;
 
 import java.util.UUID;
@@ -143,17 +146,16 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * @param light Light level
      * @param facing Direction the element should face
      */
-    @SuppressWarnings("resource")
     @Override
     public void renderMinecraft(
-            OrderedRenderCommandQueue queue,
+            SubmitNodeCollector queue,
             int indexInList,
             int csbeHeight,
-            MatrixStack matrices,
+            PoseStack matrices,
             int light,
             Direction facing
     ) {
-        int overlay = OverlayTexture.DEFAULT_UV;
+        int overlay = OverlayTexture.NO_OVERLAY;
 
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
@@ -170,14 +172,14 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         if (texture == null) {
             if (isExternal) {
-                texture = new DynamicTexture(this.getResourcePath(), Identifier.of(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
-                        .smartRegisterTexture(false, false)
+                texture = new DynamicTexture(this.getResourcePath(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
+                        .smartRegisterTexture()
                         .register()
                         .subscribe();
 
                 reference.dynamicTexture = texture;
             } else {
-                texture = new DynamicTexture(this.getResourcePath(), IdentifierUtils.trimAssets(Identifier.of(MyWorldTrafficAddition.MOD_ID, this.getResourcePath())), true); // Do not register
+                texture = new DynamicTexture(this.getResourcePath(), IdentifierUtils.trimAssets(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, this.getResourcePath())), true); // Do not register
                 dynamicTexture = texture;
             }
         }
@@ -188,13 +190,13 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
                 CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
                 texture.getId()); // Custom Render Layer to prevent z-fighting
 
-        RenderLayer renderLayer = imageLayering.buildRenderLayer();
+        RenderType renderLayer = imageLayering.buildRenderLayer();
 
-        VertexConsumerProvider.Immediate vertexConsumerProvider = MinecraftClient.getInstance().gameRenderer.buffers.getEntityVertexConsumers(); // ClassTweaker aka. AccessWidener!
+        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
 
-        matrices.push();
-        Matrix4f positionMatrix = matrices.peek().getPositionMatrix();
+        matrices.pushPose();
+        Matrix4f positionMatrix = matrices.last().pose();
 
         matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
         matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
@@ -202,47 +204,47 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
         matrices.translate(0.5, 0.5, 0.5);
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
         matrices.translate(-0.5, -0.5, -0.5);
 
         // Rotate around the element's center
         matrices.translate(w / 2, h / 2, 0); // Move origin to element center
-        matrices.multiply(RotationAxis.NEGATIVE_Z.rotationDegrees(rotation));
+        matrices.mulPose(Axis.ZN.rotationDegrees(rotation));
         matrices.translate(-w / 2, -h / 2, 0); // Move origin back
 
         // Top left
-        vertexConsumer.vertex(positionMatrix, 0 , 0, 0)
-                .texture(0, 1)
-                .color(color[0], color[1], color[2], color[3])
-                .light(light)
-                .overlay(overlay)
-                .normal(0, 0, 1);
+        vertexConsumer.addVertex(positionMatrix, 0 , 0, 0)
+                .setUv(0, 1)
+                .setColor(color[0], color[1], color[2], color[3])
+                .setLight(light)
+                .setOverlay(overlay)
+                .setNormal(0, 0, 1);
 
         // Top right
-        vertexConsumer.vertex(positionMatrix, w, 0, 0)
-                .texture(1, 1)
-                .color(color[0], color[1], color[2], color[3])
-                .light(light)
-                .overlay(overlay)
-                .normal(0, 0, 1);
+        vertexConsumer.addVertex(positionMatrix, w, 0, 0)
+                .setUv(1, 1)
+                .setColor(color[0], color[1], color[2], color[3])
+                .setLight(light)
+                .setOverlay(overlay)
+                .setNormal(0, 0, 1);
 
         // Bottom right
-        vertexConsumer.vertex(positionMatrix, w, h, 0)
-                .texture(1, 0)
-                .color(color[0], color[1], color[2], color[3])
-                .light(light)
-                .overlay(overlay)
-                .normal(0, 0, 1);
+        vertexConsumer.addVertex(positionMatrix, w, h, 0)
+                .setUv(1, 0)
+                .setColor(color[0], color[1], color[2], color[3])
+                .setLight(light)
+                .setOverlay(overlay)
+                .setNormal(0, 0, 1);
 
         // Bottom left
-        vertexConsumer.vertex(positionMatrix, 0, h, 0)
-                .texture(0, 0)
-                .color(color[0], color[1], color[2], color[3])
-                .light(light)
-                .overlay(overlay)
-                .normal(0, 0, 1);
+        vertexConsumer.addVertex(positionMatrix, 0, h, 0)
+                .setUv(0, 0)
+                .setColor(color[0], color[1], color[2], color[3])
+                .setLight(light)
+                .setOverlay(overlay)
+                .setNormal(0, 0, 1);
 
-        matrices.pop();
+        matrices.popPose();
     }
 
     @Override

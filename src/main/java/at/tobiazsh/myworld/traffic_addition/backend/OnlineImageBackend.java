@@ -12,9 +12,10 @@ import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Tuple;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OnlineImageBackend {
 
     private static final ConcurrentHashMap<UUID, AtomicInteger> perPlayerCounts = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<UUID, Pair<CustomImageMetadata, Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
+    private static final ConcurrentHashMap<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>> metadataMap = new ConcurrentHashMap<>(); // List of metadata so it is being saved in RAM and avoids unnecessary file I/O
     public static AtomicInteger totalEntries = new AtomicInteger(0);
     public static AtomicInteger publicEntries = new AtomicInteger(0);
     public static AtomicInteger hiddenEntries = new AtomicInteger(0);
@@ -62,18 +63,18 @@ public class OnlineImageBackend {
      * Processes an uploaded image.
      * @param image The byte array containing the image data, thumbnail, metadata, and hidden status.
      */
-    public static void processUploadedImage(ServerPlayerEntity source, byte[] image) {
+    public static void processUploadedImage(ServerPlayer source, byte[] image) {
         // Extract image
         executorService.submit(() -> {
 
             // Check if player is blacklisted
-            if (ServerBlacklist.bannedImageUploadPlayers.contains(source.getUuid())) {
+            if (ServerBlacklist.bannedImageUploadPlayers.contains(source.getUUID())) {
                 errorToClient(
                         source,
                         new Error("Image Upload Error", "You are banned from uploading images to this server!")
                 );
 
-                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from blacklisted player with UUID {}!", source.getUuid());
+                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from blacklisted player with UUID {}!", source.getUUID());
 
                 return;
             }
@@ -84,20 +85,20 @@ public class OnlineImageBackend {
                         source,
                         new Error("Image Upload Error", "Image uploads are disabled on this server!")
                 );
-                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because uploads are disabled!", source.getUuid());
+                MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because uploads are disabled!", source.getUUID());
                 return;
             }
 
             // Check if upload limit is set
             if (ServerPreferences.isUploadLimitSet) {
                 // Check if player maxed out their upload limit
-                AtomicInteger userUploads = perPlayerCounts.getOrDefault(source.getUuid(), new AtomicInteger(0));
+                AtomicInteger userUploads = perPlayerCounts.getOrDefault(source.getUUID(), new AtomicInteger(0));
                 if (userUploads.get() == ServerPreferences.maximumUploadsPerPlayer) {
                     errorToClient(
                             source,
                             new Error("Image Upload Error", "You have maxed out your upload limit! Delete some of your uploaded images to upload new ones.\nUpload limit per player on server: " + ServerPreferences.maximumUploadsPerPlayer)
                     );
-                    MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because they maxed out their upload limit!", source.getUuid());
+                    MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because they maxed out their upload limit!", source.getUUID());
                     return;
                 }
             }
@@ -206,7 +207,7 @@ public class OnlineImageBackend {
             }
 
 
-            metadataMap.put(imageUUID, new Pair<>(metadataObj, metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
+            metadataMap.put(imageUUID, new Tuple<>(metadataObj, metadataJson.get("Hidden").getAsBoolean())); // Add to list for later use
             MyWorldTrafficAddition.LOGGER.info("User with UUID {} uploaded custom image with UUID {}!", uploaderUUIDStr, imageUUIDStr);
 
             perPlayerCounts.computeIfAbsent(uploaderUUID, k -> new AtomicInteger(0)).incrementAndGet();
@@ -222,9 +223,9 @@ public class OnlineImageBackend {
      * Counts the number of uploaded images by a specific player based on their UUID and sends it to client.
      * @param player The player to count the entries for and send the count to.
      */
-    public static void getEntryNumberByPlayer(ServerPlayerEntity player) {
+    public static void getEntryNumberByPlayer(ServerPlayer player) {
         executorService.submit(() -> {
-            UUID playerUUID = player.getUuid();
+            UUID playerUUID = player.getUUID();
             int count = perPlayerCounts.getOrDefault(playerUUID, new AtomicInteger(0)).get();
 
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
@@ -233,7 +234,7 @@ public class OnlineImageBackend {
 
             CustomServerNetworking.getInstance().sendBytesToClient(
                     player,
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_private_uploaded_images"),
                     buffer.array(),
                     -1,
                     -1
@@ -267,11 +268,11 @@ public class OnlineImageBackend {
 
 
     private static void cleanupMetadataMap() {
-        Iterator<Map.Entry<UUID, Pair<CustomImageMetadata, Boolean>>> iterator = metadataMap.entrySet().iterator();
+        Iterator<Map.Entry<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>>> iterator = metadataMap.entrySet().iterator();
         while (iterator.hasNext()) {
-            Map.Entry<UUID, Pair<CustomImageMetadata, Boolean>> entry = iterator.next();
+            Map.Entry<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>> entry = iterator.next();
             UUID imageUUID = entry.getKey();
-            boolean hidden = entry.getValue().getRight();
+            boolean hidden = entry.getValue().getB();
 
             Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
             Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
@@ -279,7 +280,7 @@ public class OnlineImageBackend {
             // If metadata file does not exist, remove entry from map
             if (!Files.exists(metadataPath)) {
                 iterator.remove();
-                perPlayerCounts.computeIfPresent(entry.getValue().getLeft().getUploaderUUID(), (k, v) -> {
+                perPlayerCounts.computeIfPresent(entry.getValue().getA().getUploaderUUID(), (k, v) -> {
                     v.decrementAndGet();
                     return v.get() <= 0 ? null : v;
                 });
@@ -305,7 +306,7 @@ public class OnlineImageBackend {
                     JsonObject jsonObject = JsonParser.parseString(content).getAsJsonObject();
                     CustomImageMetadata metadata = new CustomImageMetadata(jsonObject);
 
-                    metadataMap.put(metadata.getImageUUID(), new Pair<>(metadata, metadata.isHidden()));
+                    metadataMap.put(metadata.getImageUUID(), new Tuple<>(metadata, metadata.isHidden()));
                     perPlayerCounts.computeIfAbsent(metadata.getUploaderUUID(), k -> new AtomicInteger(0)).incrementAndGet();
 
                     count++;
@@ -326,9 +327,9 @@ public class OnlineImageBackend {
      * @param player The client to send the metadata to.
      * @param bytes The metadata
      */
-    public static void sendEntryMetadataToClient(ServerPlayerEntity player, byte[] bytes) {
+    public static void sendEntryMetadataToClient(ServerPlayer player, byte[] bytes) {
         executorService.submit(() -> {
-            boolean isPlayerMod = player.hasPermissionLevel(2); // Check if player is a moderator (permission level 2 or higher)
+            boolean isPlayerMod = player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER); // Check if player is a moderator (permission level 2 or higher)
 
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
             buffer.rewind();
@@ -340,19 +341,19 @@ public class OnlineImageBackend {
             List<CustomImageMetadata> sendableData;
 
             if (privateImagesOnly) {
-                UUID playerUUID = player.getUuid();
+                UUID playerUUID = player.getUUID();
                 sendableData = metadataMap.values().stream()
-                        .filter(entry -> entry.getLeft().getUploaderUUID().equals(playerUUID))
-                        .map(Pair::getLeft)
+                        .filter(entry -> entry.getA().getUploaderUUID().equals(playerUUID))
+                        .map(Tuple::getA)
                         .toList(); // Get only the Json of the entries that are uploaded by the player
             } else {
                 if (isPlayerMod)
                     sendableData = metadataMap.values().stream()
-                            .map(Pair::getLeft).toList(); // Get all Json entries including hidden ones
+                            .map(Tuple::getA).toList(); // Get all Json entries including hidden ones
                 else
                     sendableData = metadataMap.values().stream()
-                            .filter(entry -> !entry.getRight())
-                            .map(Pair::getLeft).toList(); // Get only the Json of the entries that are not hidden
+                            .filter(entry -> !entry.getB())
+                            .map(Tuple::getA).toList(); // Get only the Json of the entries that are not hidden
             }
             endIndex = Math.min(endIndex, sendableData.size()); // Ensure we don't go out of bounds
 
@@ -379,7 +380,7 @@ public class OnlineImageBackend {
             // Send the response buffer to the client
             CustomServerNetworking.getInstance().sendBytesToClient(
                     player,
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_image_entries_metadata"),
                     responseBuffer.array(),
                     -1,
                     -1
@@ -394,7 +395,7 @@ public class OnlineImageBackend {
      * @param player The client to send to
      * @param imageUuidBytes The byte array containing the requested thumbnails encoded in PNG
      */
-    public static void sendThumbnailsOf(ServerPlayerEntity player, byte[] imageUuidBytes) {
+    public static void sendThumbnailsOf(ServerPlayer player, byte[] imageUuidBytes) {
         executorService.submit(() -> {
             ByteBuffer buffer = ByteBuffer.wrap(imageUuidBytes);
             buffer.rewind();
@@ -412,7 +413,7 @@ public class OnlineImageBackend {
 
             CustomServerNetworking.getInstance().sendBytesToClient(
                     player,
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_thumbnail_data"),
                     thumbnailData,
                     10,
                     16000
@@ -490,7 +491,7 @@ public class OnlineImageBackend {
 
 
 
-    public static void sendImageDataOf(ServerPlayerEntity player, byte[] requestBytes) {
+    public static void sendImageDataOf(ServerPlayer player, byte[] requestBytes) {
         executorService.submit(() -> {
             ByteBuffer buffer = ByteBuffer.wrap(requestBytes);
             buffer.rewind();
@@ -534,7 +535,7 @@ public class OnlineImageBackend {
 
             CustomServerNetworking.getInstance().sendBytesToClient(
                     player,
-                    Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"),
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_image_data"),
                     successfulResponse.array(),
                     20,
                     16000
@@ -542,7 +543,7 @@ public class OnlineImageBackend {
         });
     }
 
-    private static void sendFailedImageResponse(ServerPlayerEntity player, UUID imageUUID, byte[] requestIdBytes) {
+    private static void sendFailedImageResponse(ServerPlayer player, UUID imageUUID, byte[] requestIdBytes) {
         ByteBuffer response = ByteBuffer.allocate(1 + requestIdBytes.length + 1); // 1 byte for success flag, requestId length, and 1 byte for empty image data
 
         response.put(BooleanUtils.toByte(false)); // successful?
@@ -553,7 +554,7 @@ public class OnlineImageBackend {
 
         CustomServerNetworking.getInstance().sendBytesToClient(
                 player,
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_image_data"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_image_data"),
                 response.array(), // Send empty byte array if image not found
                 -1,
                 -1
@@ -567,11 +568,11 @@ public class OnlineImageBackend {
      * @param player The player who requested the deletion.
      * @param imageUUIDBytes The UUID of the image to delete, as a byte array.
      */
-    public static void deleteImage(ServerPlayerEntity player, byte[] imageUUIDBytes) {
+    public static void deleteImage(ServerPlayer player, byte[] imageUUIDBytes) {
         executorService.submit(() -> {
             UUID imageUUID = byteToUUID(imageUUIDBytes);
 
-            Pair<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+            Tuple<@NotNull CustomImageMetadata, @NotNull Boolean> stored = metadataMap.get(imageUUID);
             if (stored == null) {
                 // not found, error message
                 errorToClient(
@@ -581,14 +582,14 @@ public class OnlineImageBackend {
                 return;
             }
 
-            boolean hidden = stored.getRight();
-            CustomImageMetadata metadata = stored.getLeft();
+            boolean hidden = stored.getB();
+            CustomImageMetadata metadata = stored.getA();
 
             // Compare uploader's UUID with the player's UUID to verify if the player is allowed to delete the image
-            UUID playerUUID = player.getUuid();
+            UUID playerUUID = player.getUUID();
 
             if (!metadata.getUploaderUUID().equals(playerUUID)) {
-                MyWorldTrafficAddition.LOGGER.warn("Player with UUID {} and NAME {} tried to delete image with UUID {} but is not the original uploader!", player.getUuid(), player.getName(), imageUUID);
+                MyWorldTrafficAddition.LOGGER.warn("Player with UUID {} and NAME {} tried to delete image with UUID {} but is not the original uploader!", player.getUUID(), player.getName(), imageUUID);
                 errorToClient(
                         player,
                         new Error("Image Deletion Error", "You are not the original uploader of this image and therefore not allowed to delete it!")
@@ -642,14 +643,14 @@ public class OnlineImageBackend {
      * @param imageUUID The UUID of the image to delete.
      */
     public static void deleteImage(UUID imageUUID) {
-        Pair<CustomImageMetadata, Boolean> stored = metadataMap.get(imageUUID);
+        Tuple<@NotNull CustomImageMetadata, @NotNull Boolean> stored = metadataMap.get(imageUUID);
         if (stored == null) {
             MyWorldTrafficAddition.LOGGER.warn("Tried to delete image with UUID {} but it was not found!", imageUUID);
             return;
         }
 
-        boolean hidden = stored.getRight();
-        CustomImageMetadata metadata = stored.getLeft();
+        boolean hidden = stored.getB();
+        CustomImageMetadata metadata = stored.getA();
 
         deleteImage(imageUUID, metadata.getUploaderUUID(), hidden);
     }
@@ -686,10 +687,10 @@ public class OnlineImageBackend {
      * @param player The player to send the error to.
      * @param error The error to send.
      */
-    private static void errorToClient(ServerPlayerEntity player, Error error) {
+    private static void errorToClient(ServerPlayer player, Error error) {
         CustomServerNetworking.getInstance().sendBytesToClient(
                 player,
-                Identifier.of(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_server_error"),
                 error.toBytes(),
                 -1,
                 -1);

@@ -1,17 +1,18 @@
 package at.tobiazsh.myworld.traffic_addition.blocks.utils;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class RegisteredModBlock {
     private final Identifier blockId;
-    private final RegistryKey<Block> blockKey;
+    private final ResourceKey<@NotNull Block> blockKey;
     private final Block block;
     private Item blockItem;
     private boolean blockItemAvailable = false;
@@ -30,7 +31,7 @@ public class RegisteredModBlock {
         return blockId;
     }
 
-    public RegistryKey<Block> getKey(RegistryKey<Block> blockKey) {
+    public ResourceKey<@NotNull Block> getKey(ResourceKey<@NotNull Block> blockKey) {
         return blockKey;
     }
 
@@ -51,19 +52,19 @@ public class RegisteredModBlock {
 
         if (shouldRegisterItem) {
             this.blockItem = Registry.register(
-                    Registries.ITEM,
+                    BuiltInRegistries.ITEM,
                     this.blockId,
 
                     new BlockItem(
                             this.block,
-                            new Item.Settings().useBlockPrefixedTranslationKey().registryKey(
-                                    RegistryKey.of(RegistryKeys.ITEM, this.blockId)
+                            new Item.Properties().useBlockDescriptionPrefix().setId(
+                                    ResourceKey.create(Registries.ITEM, this.blockId)
                             )
                     )
             );
         }
 
-        Registry.register(Registries.BLOCK, this.blockKey, this.block);
+        Registry.register(BuiltInRegistries.BLOCK, this.blockKey, this.block);
 
         return this;
     }
@@ -72,7 +73,7 @@ public class RegisteredModBlock {
 
     // Private Methods
 
-    public static RegistryKey<Block> genKey(Identifier id) {
-        return RegistryKey.of(RegistryKeys.BLOCK, id);
+    public static ResourceKey<@NotNull Block> genKey(Identifier id) {
+        return ResourceKey.create(Registries.BLOCK, id);
     }
 }
