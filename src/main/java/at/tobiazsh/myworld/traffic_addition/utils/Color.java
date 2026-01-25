@@ -59,4 +59,12 @@ public record Color(int a, int r, int g, int b) {
     public static int RGBA2ARGB(int rgba) {
         return ((rgba & 0xFFFFFF00) >> 8) | ((rgba & 0xFF) << 24);
     }
+
+    /**
+     * Converts the color to a hexadecimal string in the format #AARRGGBB
+     * @return The hexadecimal string representation of the color
+     */
+    public String toHexString() {
+        return String.format("#%02X%02X%02X%02X", a, r, g, b);
+    }
 }
