@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Represents a color with alpha, red, green, and blue components.
  * @param a Alpha
@@ -7,6 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
  * @param g Green
  * @param b Blue
  */
+@NullMarked
 public record Color(int a, int r, int g, int b) {
 
     public Color {
