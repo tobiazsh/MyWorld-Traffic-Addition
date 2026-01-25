@@ -15,6 +15,11 @@ import net.minecraft.resources.Identifier;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * A dynamic texture that can be registered and unregistered at runtime.
+ * Accepts both resource paths and absolute file paths for loading images.
+ * Injects the texture into Minecraft's TextureManager and can be managed via the DynamicTextureManager.
+ */
 public class DynamicTexture extends AbstractTexture {
 
     // private
