@@ -82,6 +82,7 @@ public interface BaseElementInterface {
      * @param object The JSON Object to convert
      * @return The converted Object inherited from BaseElement
      */
+    // TODO: Refactor migrations to throw exceptions instead of silently logging to console and returning null
     static BaseElement fromJson(JsonObject object) {
         BaseElement element;
 
