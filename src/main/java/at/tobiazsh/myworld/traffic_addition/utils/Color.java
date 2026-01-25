@@ -38,6 +38,14 @@ public record Color(int a, int r, int g, int b) {
         );
     }
 
+    public Color(String hex, boolean hasAlpha) {
+        this(
+                Integer.parseUnsignedInt(
+                        hex.startsWith("#") ? hex.substring(1) : hex, 16),
+                hasAlpha
+        );
+    }
+
     private static boolean isInvalid(int colorVal) {
         return colorVal < 0 || colorVal > 255;
     }
