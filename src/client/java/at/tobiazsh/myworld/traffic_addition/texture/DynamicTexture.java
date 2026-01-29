@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.texture;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -201,5 +202,23 @@ public class DynamicTexture extends AbstractTexture {
         if (imageFile == null) return null;
 
         return NativeImage.read(imageFile.readBytes());
+    }
+
+    public boolean isLoaded () {
+        return this.textureView != null;
+    }
+
+    public int getWidth() throws TextureNotLoadedException {
+        if (!this.isLoaded())
+            throw new TextureNotLoadedException("Cannot get width of DynamicTexture " + id + " because the texture is not loaded yet!");
+
+        return this.textureView.getWidth(0); // Null check already done by isLoaded()
+    }
+
+    public int getHeight() throws TextureNotLoadedException {
+        if (!this.isLoaded())
+            throw new TextureNotLoadedException("Cannot get height of DynamicTexture " + id + " because the texture is not loaded yet!");
+
+        return this.textureView.getHeight(0); // Null check already done by isLoaded()
     }
 }
