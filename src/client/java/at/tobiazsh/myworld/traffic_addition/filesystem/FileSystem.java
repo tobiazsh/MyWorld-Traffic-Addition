@@ -11,8 +11,9 @@ package at.tobiazsh.myworld.traffic_addition.filesystem;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -488,14 +489,12 @@ public class FileSystem {
 
 
         public byte[] readBytes() throws IOException, NullPointerException {
-            if (isResource) {
-                try (InputStream stream = Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream()) {
-                    return stream.readAllBytes();
-                }
-            }
-
-            return Files.readAllBytes(Path.of(path));
-        }
+			try (BufferedInputStream bis = new BufferedInputStream(
+					isResource ? Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream() : new FileInputStream(path)
+			)) {
+				return bis.readAllBytes();
+			}
+		}
 	}
 }
 
