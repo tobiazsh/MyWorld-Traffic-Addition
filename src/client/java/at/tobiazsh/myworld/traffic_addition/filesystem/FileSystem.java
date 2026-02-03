@@ -292,6 +292,14 @@ public class FileSystem {
 		abstract public boolean exists();
 
 		/**
+		 * Convert to java.io.File
+		 * @return java.io.File
+		 */
+		public java.io.File toJavaFile() {
+			return new java.io.File(path);
+		}
+
+		/**
 		 * Get the size of the element.
 		 * @return Size of the element. 0 if it is a folder.
 		 */
