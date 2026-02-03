@@ -12,9 +12,9 @@ import org.jspecify.annotations.Nullable;
 public class Background {
 
     public static final int BACKGROUND_SERIALIZE_VERSION = 1;
-    private static final String KEY_SERIALIZE_VERSION = "SerializeVersion";
-    private static final String KEY_COLOR = "Color";
-    private static final String KEY_TEXTURE = "Texture";
+    private static final String KEY_SERIALIZE_VERSION = "serializeVersion";
+    private static final String KEY_COLOR = "color";
+    private static final String KEY_TEXTURE = "texture";
 
     @Nullable public final String texture; // Sprite name
     @Nullable public final Color color;
