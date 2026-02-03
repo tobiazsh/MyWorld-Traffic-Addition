@@ -3,35 +3,53 @@ package at.tobiazsh.myworld.traffic_addition.texture;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotFoundException;
 import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.minecraft.resources.Identifier;
+import at.tobiazsh.myworld.traffic_addition.texture.Sprite.RawSpriteData;
+import org.apache.commons.lang3.NotImplementedException;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 
+/**
+ * <p>
+ * A sprite atlas that holds multiple sprites in a single texture.
+ * The sprites do not copy any pixels and instead only hold UV, XY and size information.
+ * Use the texture from this atlas to render the sprites.
+ * </p>
+ * <p>
+ * INFORMATION:
+ * You should not use this class directly. Instead, to load a sprite atlas, use the {@link SpriteAtlasManager}.
+ * The manager handles loading, unloading and reusing of sprite atlases.
+ * </p>
+ * <p>
+ * If the manager does not fulfill your desires, you can always use this class directly, although it is not
+ * recommended.
+ * If you have other desires, which neither this class nor the manager can fulfill, feel free to either open an issue,
+ * or fix it yourself and open a PR.
+ * </p>
+ */
 public class SpriteAtlas implements AutoCloseable {
 
-    /**
-     * Raw data for a sprite in the atlas without UV coordinates as those depend on the atlas size
-     * @param spriteId Identifier of the sprite
-     * @param x the x coordinate of the sprite in the atlas
-     * @param y the y coordinate of the sprite in the atlas
-     * @param width width of the sprite
-     * @param height height of the sprite
-     */
-    public record RawSpriteData(Identifier spriteId, int x, int y, int width, int height) {}
+    public static final String KEY_ATLAS_ID = "atlasId";
+    public static final String KEY_LOCATION = "location";
+    public static final String KEY_IN_JAR = "inJar";
+    public static final String KEY_SPRITES = "sprites";
 
     private final String locationInJar; // String for simplicity. Otherwise, use Identifier if refactor is necessary
     private final boolean isResource;
     private final DynamicTexture texture;
-    private final HashSet<Sprite> sprites = new HashSet<>();
+    private final HashMap<Identifier, Sprite> sprites = new HashMap<>(); // Map of sprites by their Identifier
     private final HashSet<RawSpriteData> uninitializedSprites = new HashSet<>();
+    private final Identifier atlasId;
 
     /**
      * Creates a SpriteAtlas instance
      * Starts at root of jar
      * @param locationInJar Location in jar starting with /assets/modid/... (e.g. /assets/myworld_traffic_addition/textures/atlas/sprites.png)
      */
-    public SpriteAtlas(String locationInJar, RawSpriteData ...sprites) {
+    public SpriteAtlas(Identifier atlasId, String locationInJar, RawSpriteData...sprites) {
+        this.atlasId = atlasId;
         this.locationInJar = locationInJar;
         this.isResource = true; // For now, only support resources; Implemented for future use cases
 
@@ -61,8 +79,8 @@ public class SpriteAtlas implements AutoCloseable {
         texture.smartRegisterTexture();
     }
 
-    public HashSet<Sprite> getSprites() {
-        return sprites;
+    public Collection<Sprite> getSprites() {
+        return Collections.unmodifiableCollection(sprites.values());
     }
 
     public boolean isLoaded() {
@@ -83,6 +101,10 @@ public class SpriteAtlas implements AutoCloseable {
         return texture.getHeight();
     }
 
+    public Identifier getAtlasId() {
+        return atlasId;
+    }
+
     /**
      * Initializes all uninitialized sprites by calculating their UV coordinates based on the atlas size
      * @throws TextureNotLoadedException if the texture is not loaded yet
@@ -93,16 +115,16 @@ public class SpriteAtlas implements AutoCloseable {
 
         for (RawSpriteData rawSprite : uninitializedSprites) {
             Sprite sprite = new Sprite(
-                    rawSprite.spriteId,
-                    rawSprite.x,
-                    rawSprite.y,
-                    rawSprite.width,
-                    rawSprite.height,
+                    rawSprite.spriteId(),
+                    rawSprite.x(),
+                    rawSprite.y(),
+                    rawSprite.width(),
+                    rawSprite.height(),
                     atlasWidth,
                     atlasHeight
             );
 
-            sprites.add(sprite);
+            sprites.put(sprite.spriteId, sprite);
         }
 
         uninitializedSprites.clear();
@@ -120,8 +142,8 @@ public class SpriteAtlas implements AutoCloseable {
      * Gets the uninitialized sprites
      * @return Set of uninitialized sprites
      */
-    public HashSet<RawSpriteData> getUninitializedSprites() {
-        return uninitializedSprites;
+    public Collection<RawSpriteData> getUninitializedSprites() {
+        return Collections.unmodifiableCollection(uninitializedSprites);
     }
 
     /**
@@ -130,8 +152,8 @@ public class SpriteAtlas implements AutoCloseable {
      * @return Sprite with the given Identifier
      * @throws SpriteNotFoundException if no sprite with the given Identifier is found
      */
-    public Sprite getSpriteById(Identifier id) throws SpriteNotFoundException {
-        Sprite spr = sprites.stream().filter(sprite -> sprite.spriteId.equals(id)).findFirst().orElse(null);
+    public Sprite getSprite(Identifier id) throws SpriteNotFoundException {
+        Sprite spr = sprites.get(id);
         if (spr == null)
             throw new SpriteNotFoundException("Sprite with id " + id.toString() + " not found in SpriteAtlas " + locationInJar);
 
@@ -140,7 +162,77 @@ public class SpriteAtlas implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (texture != null)
-            texture.close();
+        texture.close();
+    }
+
+    // STATIC METHODS ------------------------------------------------------------
+
+    /**
+     * Loads a SpriteAtlas from a JSON file.
+     * The JSON file should look like this:
+     * <pre>
+     * {@code
+     * {
+     *     "atlasId": "namespace:atlas_name",
+     *     "location": "./sprites/someatlas.png",
+     *     "inJar": true,
+     *     "sprites": [
+     *          ... list of sprites ...
+     *     ]
+     * }
+     * }
+     * </pre>
+     * <p>
+     * For structure of sprites, see {@link Sprite#fromJson(JsonObject)}
+     * </p>
+     * @param jsonAtlas JsonObject representing the SpriteAtlas
+     * @return Deserialized SpriteAtlas
+     */
+    public static SpriteAtlas fromJson(JsonObject jsonAtlas) throws IllegalArgumentException, NotImplementedException {
+
+        if (
+                !jsonAtlas.has(KEY_LOCATION) ||
+                !jsonAtlas.has(KEY_IN_JAR) ||
+                !jsonAtlas.has(KEY_ATLAS_ID)
+        ) {
+            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required fields (atlasId, location, inJar)");
+        }
+
+        // No check for sprites existence, as it is not required and can be empty
+
+        Identifier atlasId = Identifier.parse(jsonAtlas.get(KEY_ATLAS_ID).getAsString());
+        String location = jsonAtlas.get(KEY_LOCATION).getAsString();
+        boolean inJar = jsonAtlas.get(KEY_IN_JAR).getAsBoolean();
+
+        if (!inJar)
+            throw new NotImplementedException("SpriteAtlas loading from file system is not implemented yet!");
+
+        JsonArray jsonSprites = jsonAtlas.get(KEY_SPRITES).getAsJsonArray();
+        RawSpriteData[] sprites = new RawSpriteData[jsonSprites.size()];
+
+        for (int i = 0; i < jsonSprites.size(); i++) {
+            sprites[i] = Sprite.fromJson(jsonSprites.get(i).getAsJsonObject());
+        }
+
+        return new SpriteAtlas(atlasId, location, sprites);
+    }
+
+    /**
+     * Serializes a SpriteAtlas to a JSON file.
+     * @return JsonObject representing the SpriteAtlas
+     */
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty(KEY_LOCATION, locationInJar);
+        json.addProperty(KEY_IN_JAR, isResource);
+
+        JsonArray spritesArray = new JsonArray();
+
+        for (Sprite sprite : sprites.values())
+            spritesArray.add(sprite.toJson());
+
+        json.add(KEY_SPRITES, spritesArray);
+
+        return json;
     }
 }
