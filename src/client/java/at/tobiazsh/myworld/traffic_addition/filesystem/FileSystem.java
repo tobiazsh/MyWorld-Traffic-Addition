@@ -250,7 +250,7 @@ public class FileSystem {
 		}
 	}
 
-	public static class DirectoryElement {
+	abstract public static class DirectoryElement {
 		public final String path;
 		public final String name;
         public final boolean isResource;
@@ -286,6 +286,12 @@ public class FileSystem {
         }
 
 		/**
+		 * Checks if the element exists in the filesystem
+		 * If it does exist as a file, but the type here is folder, it will return false as well (and vice versa)
+		 */
+		abstract public boolean exists();
+
+		/**
 		 * Get the size of the element.
 		 * @return Size of the element. 0 if it is a folder.
 		 */
@@ -315,6 +321,12 @@ public class FileSystem {
 
 		public Folder(String name, String path, boolean isResource) {
 			super(name, path, isResource);
+		}
+
+		@Override
+		public boolean exists() {
+			java.io.File file = new java.io.File(path);
+			return file.exists() && file.isDirectory();
 		}
 
 		/**
@@ -444,7 +456,13 @@ public class FileSystem {
 			super(name, path, isResource);
 		}
 
-        public File(String path, boolean isResource) {
+		@Override
+		public boolean exists() {
+			java.io.File file = new java.io.File(path);
+			return file.exists() && file.isFile();
+		}
+
+		public File(String path, boolean isResource) {
             super(evaluateFileName(path), path, isResource);
         }
 
