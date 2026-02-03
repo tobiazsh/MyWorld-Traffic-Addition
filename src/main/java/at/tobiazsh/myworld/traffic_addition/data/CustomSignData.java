@@ -13,11 +13,11 @@ import java.util.List;
 @NullMarked
 public class CustomSignData {
 
-    public static final int SIGN_DATA_SERIALIZE_VERSION = 1;
+    public static final int SIGN_DATA_SERIALIZE_VERSION = 2;
 
-    private static final String KEY_SERIALIZE_VERSION = "SerializeVersion";
-    private static final String KEY_BACKGROUND = "Background";
-    private static final String KEY_ELEMENTS = "Elements";
+    private static final String KEY_SERIALIZE_VERSION = "serializeVersion";
+    private static final String KEY_BACKGROUND = "background";
+    private static final String KEY_ELEMENTS = "elements";
 
     private Background background;
     private final CustomSignElementContainer elementContainer;
@@ -81,30 +81,65 @@ public class CustomSignData {
      * @return The deserialized CustomSignData
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
-    @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private static CustomSignData deserialize(JsonObject jsonObject, int version) throws IllegalArgumentException {
         return switch(version) {
             case 1 -> deserializeV1(jsonObject);
-            // ... future versions here
+            case 2 -> deserializeV2(jsonObject);
+            // Add future versions here
             default -> throw new IllegalArgumentException("Unsupported CustomSignData serialize version: " + version);
         };
     }
 
     /**
      * Deserializes a CustomSignData from a JsonObject of version 1.
+     * @apiNote Before version 2, JSON entries are stored with PascalCase. From version 2 onwards, camelCase is used.
      * @param jsonObject The JsonObject to deserialize
      * @return The deserialized CustomSignData
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
+    @SuppressWarnings("Duplicates")
     private static CustomSignData deserializeV1(JsonObject jsonObject) throws IllegalArgumentException {
+        final String KEY_BACKGROUND = "Background";
+        final String KEY_ELEMENTS = "Elements";
+
         if (!jsonObject.has(KEY_BACKGROUND) || !jsonObject.has(KEY_ELEMENTS)) {
             throw new IllegalArgumentException("Invalid CustomSignData JSON: Missing required fields");
         }
 
         Background background = Background.fromJson(jsonObject.getAsJsonObject(KEY_BACKGROUND));
+        List<BaseElement> elements = toElements(jsonObject.getAsJsonArray(KEY_ELEMENTS));
 
+        return new CustomSignData(background, elements);
+    }
+
+    /**
+     * Deserializes a CustomSignData from a JsonObject of version 2.
+     * @apiNote Previous version used PascalCase for JSON entries. This version uses camelCase.
+     * @param jsonObject The JsonObject to deserialize
+     * @return The deserialized CustomSignData
+     * @throws IllegalArgumentException If any required fields are missing or any field is invalid
+     */
+    @SuppressWarnings("Duplicates")
+    private static CustomSignData deserializeV2(JsonObject jsonObject) throws IllegalArgumentException {
+        if (!jsonObject.has(KEY_BACKGROUND) || !jsonObject.has(KEY_ELEMENTS)) {
+            throw new IllegalArgumentException("Invalid CustomSignData JSON: Missing required fields");
+        }
+
+        Background background = Background.fromJson(jsonObject.getAsJsonObject(KEY_BACKGROUND));
+        List<BaseElement> elements = toElements(jsonObject.getAsJsonArray(KEY_ELEMENTS));
+
+        return new CustomSignData(background, elements);
+    }
+
+    /**
+     * Deserializes a list of BaseElements from a JsonArray.
+     * @param jsonArray The JsonArray to deserialize
+     * @apiNote Always assumes the latest version for elements.
+     * @return The deserialized list of BaseElements
+     */
+    private static List<BaseElement> toElements(JsonArray jsonArray) throws IllegalArgumentException {
         List<BaseElement> elements = new ArrayList<>();
-        jsonObject.getAsJsonArray(KEY_ELEMENTS).forEach(elementJson -> {
+        jsonArray.forEach(elementJson -> {
             BaseElement element = BaseElementInterface.fromJson(elementJson.getAsJsonObject());
 
             if (element == null)
@@ -112,7 +147,6 @@ public class CustomSignData {
 
             elements.add(element);
         });
-
-        return new CustomSignData(background, elements);
+        return elements;
     }
 }
