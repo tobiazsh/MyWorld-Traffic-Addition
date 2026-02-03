@@ -1,0 +1,119 @@
+{
+  "atlasId": "austria:default",
+  "location": "/assets/myworld_traffic_addition/textures/background/austria_default.png",
+  "inJar": true,
+  "sprites": [
+    {
+      "spriteId": "austria_default:0000",
+      "x": 0,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0001",
+      "x": 1024,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0010",
+      "x": 2048,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0011",
+      "x": 3072,
+      "y": 0,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0100",
+      "x": 0,
+      "y": 1024,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0101",
+      "x": 1024,
+      "y": 1024,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0110",
+      "x": 2048,
+      "y": 1024,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:0111",
+      "x": 3072,
+      "y": 1024,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1000",
+      "x": 0,
+      "y": 2048,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1001",
+      "x": 1024,
+      "y": 2048,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1010",
+      "x": 2048,
+      "y": 2048,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1011",
+      "x": 3072,
+      "y": 2048,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1100",
+      "x": 0,
+      "y": 3072,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1101",
+      "x": 1024,
+      "y": 3072,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1110",
+      "x": 2048,
+      "y": 3072,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "spriteId": "austria_default:1111",
+      "x": 3072,
+      "y": 3072,
+      "width": 1024,
+      "height": 1024
+    }
+  ]
+}
