@@ -28,7 +28,7 @@ software such as GIMP, Photoshop, Affinity, or even MS Paint (if you like pain).
     }
     ```
     - `atlasId`: A unique identifier for your atlas. Replace `namespace` with your preferred namespace and `atlas_name`
-   preferred Name
+   preferred Name. Internally, we use the country as the namespace and the type as the path (e.g. `austria:default`).
     - `location`: The path to your atlas image file inside the jar. Make sure to include the leading slash `/`.
     - `inJar`: _**IGNORE! Always set to `true`! To be implemented in future versions.**_
     - `sprites`: An array containing the definitions of each sprite in the atlas.
@@ -37,14 +37,21 @@ software such as GIMP, Photoshop, Affinity, or even MS Paint (if you like pain).
 5. Define your sprites inside the "sprites" array. Each sprite should have the following structure:
     ```json
     {
-      "spriteId": "namespace:sprite_name",
+      "spriteId": "namespace:0000",
       "x": 0,
       "y": 0,
       "width": 64,
       "height": 64
     }
     ```
-    - `spriteId`: The unique identifier for the sprite. Replace `namespace` with your preferred namespace and `sprite_name` with your preferred name for the sprite.
+    - `spriteId`: The unique identifier for the sprite. Replace `namespace` with your preferred namespace and `0000` with the type of background for the sign. Construct like so:
+      - First digit: Top edge (0 = no edge, 1 = edge)
+      - Second digit: Right edge (0 = no edge, 1 = edge)
+      - Third digit: Bottom edge (0 = no edge, 1 = edge)
+      - Fourth digit: Left edge (0 = no edge, 1 = edge)
+      
+      For example, a sprite with `spriteId` of `namespace:1010` would represent a sign background with edges on the top and bottom only.
+      Internally, we use the whole country and name as the namespace (e.g. `austria_default:0000`).
     - `x`: Where the sprite starts on the X-axis in the atlas image. (left to right)
     - `y`: Where the sprite starts on the Y-axis in the atlas image. (top to bottom)
     - `width`: The width of the sprite.
