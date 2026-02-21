@@ -10,6 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.texture.Sprite.RawSpriteData;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * <p>
@@ -31,10 +32,22 @@ import java.util.*;
  */
 public class SpriteAtlas implements AutoCloseable {
 
+    // BASE REQUIRED
     public static final String KEY_ATLAS_ID = "atlasId";
     public static final String KEY_LOCATION = "location";
     public static final String KEY_IN_JAR = "inJar";
     public static final String KEY_SPRITES = "sprites";
+
+    // NICHE / NOT STRICTLY REQUIRED
+    public static final String KEY_AUTOTYPE = "isAuto";
+
+    // AUTO TYPE REQUIRED
+    public static final String KEY_START_X = "startX";
+    public static final String KEY_START_Y = "startY";
+    public static final String KEY_BASE_WIDTH = "baseWidth";
+    public static final String KEY_BASE_HEIGHT = "baseHeight";
+    public static final String KEY_ID_NAMESPACE = "spriteIdNamespace";
+    public static final String KEY_ID_PATHS = "spriteIdPaths";
 
     private final String locationInJar; // String for simplicity. Otherwise, use Identifier if refactor is necessary
     private final boolean isResource;
@@ -168,35 +181,43 @@ public class SpriteAtlas implements AutoCloseable {
     // STATIC METHODS ------------------------------------------------------------
 
     /**
-     * Loads a SpriteAtlas from a JSON file.
-     * The JSON file should look like this:
-     * <pre>
-     * {@code
-     * {
-     *     "atlasId": "namespace:atlas_name",
-     *     "location": "./sprites/someatlas.png",
-     *     "inJar": true,
-     *     "sprites": [
-     *          ... list of sprites ...
-     *     ]
-     * }
-     * }
-     * </pre>
      * <p>
-     * For structure of sprites, see {@link Sprite#fromJson(JsonObject)}
+     *     Loads a SpriteAtlas from a JSON file.
+     *     The JSON file should look like this:
+     *
+     *     <pre>
+     *     {@code
+     *     {
+     *         "atlasId": "namespace:atlas_name",
+     *         "location": "./sprites/someatlas.png",
+     *         "inJar": true,
+     *         "isAuto": false,
+     *         "sprites": [
+     *              ... list of sprites ...
+     *         ]
+     *     }
+     *     }
+     *     </pre>
+     * </p>
+     * <p>
+     *     Note that {@code isAuto} defaults to {@code true} if not specified otherwise, and that the structure as well
+     *     as the loading method {@link SpriteAtlas#fromJsonAuto(JsonObject)} will be used. Therefor setting
+     *     {@code isAuto} to {@code false} is required if manual handling should be used. For more information, see
+     *     loading method.
+     * </p>
+     * <p>
+     *     For structure of sprites, see {@link Sprite#fromJson(JsonObject)}
      * </p>
      * @param jsonAtlas JsonObject representing the SpriteAtlas
      * @return Deserialized SpriteAtlas
      */
     public static SpriteAtlas fromJson(JsonObject jsonAtlas) throws IllegalArgumentException, NotImplementedException {
 
-        if (
-                !jsonAtlas.has(KEY_LOCATION) ||
-                !jsonAtlas.has(KEY_IN_JAR) ||
-                !jsonAtlas.has(KEY_ATLAS_ID)
-        ) {
-            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required fields (atlasId, location, inJar)");
-        }
+        if (!hasBaseFields(jsonAtlas))
+            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required base fields)");
+
+        if (!hasManualFields(jsonAtlas))
+            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required manual fields");
 
         // No check for sprites existence, as it is not required and can be empty
 
@@ -215,6 +236,143 @@ public class SpriteAtlas implements AutoCloseable {
         }
 
         return new SpriteAtlas(atlasId, location, sprites);
+    }
+
+    /**
+     * <p>
+     *     Parses an atlas that is marked as an auto type.
+     * </p>
+     * <p>
+     *     Auto types make writing sprite atlases easier as you only have to specify the proportions of each sprite
+     *     once at the top-level.
+     * </p>
+     * <p>
+     *     Use the following structure for such atlases:
+     *     <pre>
+     *     {@code {
+     *         "atlasId": "namespace:atlas_name",
+     *         "location": "./sprites/someatlas.png",
+     *         "inJar": true,
+     *         "isAuto": true, // Optional, because defaults to true!
+     *         "startX": 0, // Starts scanning atlas from X
+     *         "startY": 0, // Starts scanning atlas from Y
+     *         "baseWidth": 1024, // Width of each texture
+     *         "baseHeight": 1024, // Height of each texture
+     *         "spriteIdNamespace": "some_default_id",
+     *         "spriteIdPaths": [
+     *              // Will work with spriteIdNamespace and
+     *              // form e.g. "some_default_id:sword"
+     *
+     *              // define path from each sprite id
+     *              // (from left to right, top to bottom) here... example:
+     *             ["sword", "axe", "hoe"], // rowIndex 1
+     *             ["shovel", "spade", "pickaxe"], // rowIndex 2
+     *             ...
+     *         ]
+     *     }
+     *     }
+     *     </pre>
+     * </p>
+     * <p>
+     *     If customization is necessary, such as when each texture uses a different size, using it is not viable,
+     *     instead use the manual loader {@link SpriteAtlas#fromJson(JsonObject)}
+     * </p>
+     * @param jsonAtlas The file contents parsed in a JsonObject
+     * @return The parsed SpriteAtlas
+     * @throws IllegalArgumentException If one or multiple argument are not present/invalid or if the sprite atlas JSON does
+     * not represent an auto type
+     * @throws NotImplementedException If the sprite atlas is expecting files from outside the JAR-Resources because
+     * that feature is not yet implemented.
+     */
+    public static SpriteAtlas fromJsonAuto(JsonObject jsonAtlas) throws IllegalArgumentException, NotImplementedException {
+
+        if (!hasBaseFields(jsonAtlas))
+            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required base fields");
+
+        Identifier atlasId = Identifier.parse(jsonAtlas.get(KEY_ATLAS_ID).getAsString());
+        String location = jsonAtlas.get(KEY_LOCATION).getAsString();
+        boolean inJar = jsonAtlas.get(KEY_IN_JAR).getAsBoolean();
+
+        if (!inJar)
+            throw new NotImplementedException("SpriteAtlas loading from file system is not implemented yet!");
+
+        // First check if the atlas is of type auto.
+        /* isAuto defaults to true, so if it exists evaluate further: If the field says "false" (meaning: manual type)
+         * then throw
+         */
+        if (jsonAtlas.has(KEY_AUTOTYPE) && !jsonAtlas.get(KEY_AUTOTYPE).getAsBoolean())
+            throw new IllegalArgumentException("Tried loading manual sprite atlas using auto type loader!");
+
+        if (!hasAutoFields(jsonAtlas))
+            throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required fields for auto type");
+
+        int startX = jsonAtlas.get(KEY_START_X).getAsInt();
+        int startY = jsonAtlas.get(KEY_START_Y).getAsInt();
+
+        int baseWidth = jsonAtlas.get(KEY_BASE_WIDTH).getAsInt();
+        int baseHeight = jsonAtlas.get(KEY_BASE_HEIGHT).getAsInt();
+
+        String idNamespace = jsonAtlas.get(KEY_ID_NAMESPACE).getAsString();
+
+        JsonArray rowArray = jsonAtlas.get(KEY_ID_PATHS).getAsJsonArray();
+        int[] rowSizes = new int[rowArray.size()];
+
+        // Checks how many entries there are on each rowIndex
+        for (int i = 0; i < rowArray.size(); i++) {
+            JsonArray row = rowArray.get(i).getAsJsonArray(); // Throws IllegalArgumentException automatically if is other type
+            rowSizes[i] = row.size();
+        }
+
+        // Calculate how many entries there will be in total
+        RawSpriteData[] sprites = new RawSpriteData[IntStream.of(rowSizes).sum()];
+
+        // Construct each sprite from the known data
+        int entryCount = 0; // Could calculate from rowSizes, but more complicated and less performant. This is just easier and better.
+        for (int rowIndex = 0; rowIndex < rowArray.size(); rowIndex++) {
+            JsonArray row = rowArray.get(rowIndex).getAsJsonArray();
+            for (int colIndex = 0; colIndex < rowSizes[rowIndex]; colIndex++) {
+                sprites[entryCount] = new RawSpriteData(
+                        Identifier.fromNamespaceAndPath(idNamespace, row.get(colIndex).getAsString()),
+                        startX + (baseWidth * colIndex),
+                        startY + (baseHeight * rowIndex),
+                        baseWidth,
+                        baseHeight
+                );
+
+                entryCount++;
+            }
+        }
+
+        return new SpriteAtlas(atlasId, location, sprites);
+    }
+
+    /**
+     * Checks if the provided sprite atlas JSON contains the required base fields
+     */
+    private static boolean hasBaseFields(JsonObject jsonAtlas) {
+        return jsonAtlas.has(KEY_LOCATION) &&
+                jsonAtlas.has(KEY_IN_JAR) &&
+                jsonAtlas.has(KEY_ATLAS_ID);
+    }
+
+    /**
+     * Checks if the provided sprite atlas JSON contains the required fields for the auto type
+     */
+    private static boolean hasAutoFields(JsonObject jsonAtlas) {
+        return jsonAtlas.has(KEY_ID_PATHS) &&
+                jsonAtlas.has(KEY_ID_NAMESPACE) &&
+                jsonAtlas.has(KEY_BASE_WIDTH) &&
+                jsonAtlas.has(KEY_BASE_HEIGHT) &&
+                jsonAtlas.has(KEY_START_X) &&
+                jsonAtlas.has(KEY_START_Y);
+    }
+
+    /**
+     * Checks if the provided sprite atlas JSON contains the required fields for the manual type
+     */
+    private static boolean hasManualFields(JsonObject jsonAtlas) {
+        return jsonAtlas.has(KEY_SPRITES) &&
+                jsonAtlas.has(KEY_AUTOTYPE);
     }
 
     /**
