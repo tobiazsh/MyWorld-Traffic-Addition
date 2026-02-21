@@ -213,6 +213,10 @@ public class SpriteAtlas implements AutoCloseable {
      */
     public static SpriteAtlas fromJson(JsonObject jsonAtlas) throws IllegalArgumentException, NotImplementedException {
 
+        // If matches type auto, parse as type auto
+        if (!jsonAtlas.has(KEY_AUTOTYPE) || jsonAtlas.get(KEY_AUTOTYPE).getAsBoolean())
+            return fromJsonAuto(jsonAtlas);
+
         if (!hasBaseFields(jsonAtlas))
             throw new IllegalArgumentException("Invalid SpriteAtlas JSON: Missing required base fields)");
 
