@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -110,25 +111,13 @@ public class SignSelector {
             signFolder.content
                     .stream()
                     .filter(FileSystem.DirectoryElement::isFolder)
-                    .forEach(textureFolder -> {
-                        String filePath = ((FileSystem.Folder) textureFolder).content // Get the textures.json file or null if not present
-                                .stream()
-                                .filter(dirElem -> dirElem.name.matches("textures.json"))
-                                .findAny()
-                                .orElse(new FileSystem.DirectoryElement(null, null, false))
-                                .path;
-
-                        if (filePath == null) {
-                            MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name);
-                        } else {
-                            // Finally, parse the textures.json
-                            try {
-                                textures.set(SignTexture.parseFile(Path.of(filePath.replaceAll("\\\\", "/")), true)); // WHY HAS WINDOWS GOTTA BE SO SPECIAL WITH PATHS :((((((
-                            } catch (SignTextureParseException e) {
-                                MyWorldTrafficAddition.LOGGER.error("An error occurred while trying to read the sign textures from: {}", filePath, e);
-                            }
-                        }
-                    });
+                    .forEach(textureFolder -> ((FileSystem.Folder) textureFolder).content // Get the textures.json file or null if not present
+                            .stream()
+                            .filter(dirElem -> dirElem.name.matches("textures.json")) // Find textures.json file for the current country
+                            .findAny()
+                            .ifPresentOrElse(dirElem -> {
+                                textures.set(SignTexture.parseFile(Path.of(dirElem.path.replaceAll("\\\\", "/")), true)); // WHY HAS WINDOWS GOTTA BE SO SPECIAL WITH PATHS :((((((
+                            }, () -> MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name)));
 
         } catch (IOException | URISyntaxException e) {
             ErrorPopup.open(new Error(
