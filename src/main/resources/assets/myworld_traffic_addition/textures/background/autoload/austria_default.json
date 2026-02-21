@@ -2,6 +2,7 @@
   "atlasId": "austria:default",
   "location": "/assets/myworld_traffic_addition/textures/background/austria_default.png",
   "inJar": true,
+  "isAuto": false,
   "sprites": [
     {
       "spriteId": "austria_default:0000",
