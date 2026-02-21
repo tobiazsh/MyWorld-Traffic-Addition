@@ -87,6 +87,7 @@ public class SignSelector {
         if (ImGui.button("Select")) {
             System.out.println("Selected texture: " + results.get(selectedIndex.get()));
             apply();
+            close();
         }
 
         ImGui.sameLine();
