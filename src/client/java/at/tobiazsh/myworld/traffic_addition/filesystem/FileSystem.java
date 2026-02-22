@@ -9,6 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.filesystem;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.utils.PathUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedInputStream;
@@ -217,7 +218,8 @@ public class FileSystem {
 	private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
 			for (Path entry : directoryStream) {
-				String entryPath = basePath + entry.getFileName();
+				// TODO: Remove basePath argument as rootDir already stores it AND fix this monstrosity:
+				String entryPath = PathUtils.windowsToUnixPath(Path.of(basePath).resolve(entry.getFileName()).toString());
 				String fileName = entry.getFileName().toString();
 
 				if (Files.isDirectory(entry)) {
