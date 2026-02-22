@@ -11,6 +11,11 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class Background {
 
+    public static final Background TRANSPARENT = new Background(new Color("00000000", true));
+    public static final Background WHITE = new Background(new Color("FFFFFFFF", true));
+    public static final Background BLACK = new Background(new Color("FF000000", true));
+
+
     public static final int BACKGROUND_SERIALIZE_VERSION = 1;
     private static final String KEY_SERIALIZE_VERSION = "serializeVersion";
     private static final String KEY_COLOR = "color";
