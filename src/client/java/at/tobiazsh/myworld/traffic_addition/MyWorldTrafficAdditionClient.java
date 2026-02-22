@@ -12,6 +12,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
@@ -116,6 +117,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	private static void addGlobalReceivers() {
 		globalReceiverClients.addAll(Arrays.asList(
+				new GlobalReceiverClient<>(ClearCSBETextureRenderState.ID, (payload) -> CustomizableSignBlockEntityRenderer.invalidateTexture(payload.pos())),
+
 				new GlobalReceiverClient<>(OpenSignPoleRotationScreenPayload.Id, (payload) -> {
 					BlockPos pos = payload.pos();
 
@@ -242,6 +245,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         }
 
         // Notify renderer that the chunk got unloaded
-        CustomizableSignBlockEntityRenderer.onChunkUnload(blockEntity.getBlockPos());
+        CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
     }
 }

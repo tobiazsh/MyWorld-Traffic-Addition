@@ -323,6 +323,21 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return saveWithoutMetadata(registryLookup);
     }
 
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+
+        /* When this block entity is removed (block destroyed / replaced), tell all tracking clients
+         * to clear their stale renderer cache for this position. This must be done server-side because
+         * the BlockEntityRenderer (client-only) cannot be accessed from here. */
+        if (this.level != null && !this.level.isClientSide()) {
+            MyWorldTrafficAddition.sendClearCSBETextureRenderStatePacket(
+                    (net.minecraft.server.level.ServerLevel) this.level,
+                    this.getBlockPos()
+            );
+        }
+    }
+
     // Everything else -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

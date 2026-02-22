@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
+import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
@@ -15,10 +16,12 @@ import at.tobiazsh.myworld.traffic_addition.payload.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
@@ -133,7 +136,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(OpenSignSelectionPayload.Id, null, OpenSignSelectionPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenCustomizableSignEditScreen.Id, null, OpenCustomizableSignEditScreen.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(ShowImGuiWindow.Id, null, ShowImGuiWindow.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
-				new SmartPayload<>(ChunkedDataPayload.Id, null, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
+				new SmartPayload<>(ChunkedDataPayload.Id, null, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
+				new SmartPayload<>(ClearCSBETextureRenderState.ID, null, ClearCSBETextureRenderState.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
 		));
 	}
 
@@ -148,6 +152,19 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	public static void sendOpenCustomizableSignEditScreenPacket(ServerPlayer player, BlockPos pos) {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
+	}
+
+	/**
+	 * Broadcasts a packet to all players tracking the given block position, telling their client to
+	 * invalidate (clear) the cached render state for that CSBE position. This is needed when the
+	 * block is destroyed so the static renderer cache does not serve a stale texture when the block
+	 * is placed again at the same position.
+	 */
+	public static void sendClearCSBETextureRenderStatePacket(ServerLevel level, BlockPos pos) {
+		ClearCSBETextureRenderState packet = new ClearCSBETextureRenderState(pos);
+		for (ServerPlayer player : PlayerLookup.tracking(level, pos)) {
+			ServerPlayNetworking.send(player, packet);
+		}
 	}
 
 	private static void registerCustomProtocols() {
