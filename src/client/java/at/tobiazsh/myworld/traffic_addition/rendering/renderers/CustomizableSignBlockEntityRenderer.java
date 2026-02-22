@@ -135,10 +135,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         return signDistances;
     }
 
-    public static void onChunkUnload(BlockPos pos) {
-        elements.remove(pos); // Remove elements associated with the unloaded chunk
+    /**
+     * Invalidates the csbe's texture at the specified position
+     */
+    public static void invalidateTexture(BlockPos pos) {
+        elements.remove(pos); // Remove elements associated with the block
     }
-
 
     @Override
     public CustomizableSignBlockRenderState createRenderState() {
