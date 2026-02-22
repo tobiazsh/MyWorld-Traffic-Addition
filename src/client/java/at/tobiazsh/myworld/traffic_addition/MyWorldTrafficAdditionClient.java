@@ -27,6 +27,7 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
@@ -43,8 +44,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +86,10 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		putBlockRenderLayers();
 
 		OnlineImageCache.createCacheDir();
+
+		MyWorldTrafficAddition.LOGGER.info("Loading Background Atlases from the Autoload folder...");
+		autoloadBackgroundAtlases();
+		MyWorldTrafficAddition.LOGGER.info("Successfully loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
 
 		loadPreferences();
 	}
@@ -193,6 +200,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		// Get image data
 		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageNetworking::setImageData);
+	}
+
+	/**
+	 * Loads all background atlases from the autoload folder inside the resources
+	 */
+	public static void autoloadBackgroundAtlases() {
+		try {
+			BackgroundLoader.autoload();
+		} catch (IOException | NotImplementedException | NullPointerException | IllegalArgumentException e) {
+			MyWorldTrafficAddition.LOGGER.error("Failed autoloading one or multiple background atlases. Check resource structure!", e);
+		}
 	}
 
 	public static void onStopGame() {

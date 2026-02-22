@@ -342,6 +342,8 @@ public class SignEditor {
             if (ImGui.menuItem("Test TFD Popup O")) DebugFunctions.testNfd_open();
             if (ImGui.menuItem("Test TFD Popup S")) DebugFunctions.testNfd_save();
 
+            if (ImGui.menuItem("Test Automatic Background Parsing")) DebugFunctions.testAutoBackgroundLoad();
+
             ImGui.endMenu();
         }
 
