@@ -21,7 +21,7 @@ public class Background {
     private static final String KEY_COLOR = "color";
     private static final String KEY_TEXTURE = "texture";
 
-    @Nullable public final String texture; // Sprite name
+    @Nullable public final String texture; // Sprite id
     @Nullable public final Color color;
 
     /**
