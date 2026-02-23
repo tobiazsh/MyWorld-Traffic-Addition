@@ -8,13 +8,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpriteAtlasManager {
 
     public static final SpriteAtlasManager INSTANCE = new SpriteAtlasManager();
 
-    private final HashMap<Identifier, SpriteAtlas> atlases = new HashMap<>(); // Loaded atlases
+    private final ConcurrentHashMap<Identifier, SpriteAtlas> atlases = new ConcurrentHashMap<>(); // Loaded atlases
 
     private SpriteAtlasManager() {}
 
