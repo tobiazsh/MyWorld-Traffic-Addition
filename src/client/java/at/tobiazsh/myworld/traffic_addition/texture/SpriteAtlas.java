@@ -58,6 +58,14 @@ public class SpriteAtlas implements AutoCloseable {
     private final HashSet<RawSpriteData> uninitializedSprites = new HashSet<>();
     private final Identifier atlasId;
 
+    /*
+     * |_________________________________________________| NOTE |_________________________________________________|
+     * | IF IMPLEMENTING SPRITE OUTSIDE RESOURCES, THEY CAN ONLY BE LOADED DURING RUNTIME, NOT AT INIT BECAUSE OF |
+     * | THE WAY DYNAMIC TEXTURES WORK!                                                                           |
+     * |__________________________________________________________________________________________________________|
+     * (yes, I had fun designing that)
+     */
+
     /**
      * Creates a SpriteAtlas instance
      * Starts at root of jar
