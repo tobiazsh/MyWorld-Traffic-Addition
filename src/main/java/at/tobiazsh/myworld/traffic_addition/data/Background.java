@@ -24,6 +24,14 @@ public class Background {
     @Nullable public final String texture; // Sprite id
     @Nullable public final Color color;
 
+    /*
+     * |_________________________________________________| NOTE |_________________________________________________|
+     * | When implementing Background using online images, please implement a mechanism to distinguish between    |
+     * | online and sprite. Online has to use the picture UUID, which has then got to be loaded in a sprite!      |
+     * |__________________________________________________________________________________________________________|
+     */
+
+
     /**
      * Creates a background of solid color
      * @param color Solid Color
@@ -45,9 +53,9 @@ public class Background {
     public JsonObject toJson() throws IllegalStateException {
         JsonObject background = new JsonObject();
         background.addProperty(KEY_SERIALIZE_VERSION, BACKGROUND_SERIALIZE_VERSION);
-        if (isSolidColor() && color != null)
+        if (isColor() && color != null)
             background.addProperty(KEY_COLOR, color.toHexString());
-        else if(!isSolidColor() && texture != null)
+        else if(!isColor() && texture != null)
             background.addProperty(KEY_TEXTURE, texture);
         else
             throw new IllegalStateException("Background must have either a color or a texture");
@@ -55,7 +63,7 @@ public class Background {
         return background;
     }
 
-    public boolean isSolidColor() {
+    public boolean isColor() {
         return color != null;
     }
 
