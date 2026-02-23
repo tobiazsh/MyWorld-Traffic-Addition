@@ -37,6 +37,7 @@ public class SpriteAtlas implements AutoCloseable {
     public static final String KEY_LOCATION = "location";
     public static final String KEY_IN_JAR = "inJar";
     public static final String KEY_SPRITES = "sprites";
+    public static final String KEY_NAME = "name"; // Optional
 
     // NICHE / NOT STRICTLY REQUIRED
     public static final String KEY_AUTOTYPE = "isAuto";
@@ -50,6 +51,7 @@ public class SpriteAtlas implements AutoCloseable {
     public static final String KEY_ID_PATHS = "spriteIdPaths";
 
     private final String locationInJar; // String for simplicity. Otherwise, use Identifier if refactor is necessary
+    private final String name;
     private final boolean isResource;
     private final DynamicTexture texture;
     private final HashMap<Identifier, Sprite> sprites = new HashMap<>(); // Map of sprites by their Identifier
@@ -61,10 +63,11 @@ public class SpriteAtlas implements AutoCloseable {
      * Starts at root of jar
      * @param locationInJar Location in jar starting with /assets/modid/... (e.g. /assets/myworld_traffic_addition/textures/atlas/sprites.png)
      */
-    public SpriteAtlas(Identifier atlasId, String locationInJar, RawSpriteData...sprites) {
+    public SpriteAtlas(Identifier atlasId, String locationInJar, String name, RawSpriteData...sprites) {
         this.atlasId = atlasId;
         this.locationInJar = locationInJar;
         this.isResource = true; // For now, only support resources; Implemented for future use cases
+        this.name = name;
 
         texture = new DynamicTexture(
                 locationInJar,
@@ -75,6 +78,15 @@ public class SpriteAtlas implements AutoCloseable {
         texture.dontDestroyWhenPossible(); // Atlases, which are in the JAR, should stay in memory unless explicitly removed
 
         this.uninitializedSprites.addAll(Arrays.asList(sprites));
+    }
+
+    /**
+     * Creates a SpriteAtlas instance
+     * Starts at root of jar
+     * @param locationInJar Location in jar starting with /assets/modid/... (e.g. /assets/myworld_traffic_addition/textures/atlas/sprites.png)
+     */
+    public SpriteAtlas(Identifier atlasId, String locationInJar, RawSpriteData...sprites) {
+        this(atlasId, locationInJar, atlasId.toString(), sprites);
     }
 
     public DynamicTexture getTexture() {
@@ -228,6 +240,7 @@ public class SpriteAtlas implements AutoCloseable {
         Identifier atlasId = Identifier.parse(jsonAtlas.get(KEY_ATLAS_ID).getAsString());
         String location = jsonAtlas.get(KEY_LOCATION).getAsString();
         boolean inJar = jsonAtlas.get(KEY_IN_JAR).getAsBoolean();
+        String name = jsonAtlas.has("name") ? jsonAtlas.get("name").getAsString() : atlasId.toString();
 
         if (!inJar)
             throw new NotImplementedException("SpriteAtlas loading from file system is not implemented yet!");
@@ -239,7 +252,7 @@ public class SpriteAtlas implements AutoCloseable {
             sprites[i] = Sprite.fromJson(jsonSprites.get(i).getAsJsonObject());
         }
 
-        return new SpriteAtlas(atlasId, location, sprites);
+        return new SpriteAtlas(atlasId, location, name, sprites);
     }
 
     /**
@@ -347,7 +360,9 @@ public class SpriteAtlas implements AutoCloseable {
             }
         }
 
-        return new SpriteAtlas(atlasId, location, sprites);
+        String name = jsonAtlas.has("name") ? jsonAtlas.get("name").getAsString() : atlasId.toString();
+
+        return new SpriteAtlas(atlasId, location, name, sprites);
     }
 
     /**
