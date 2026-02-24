@@ -5,7 +5,11 @@ import net.minecraft.resources.Identifier;
 public class BackgroundTextureUtil {
 
     public static Identifier getBackgroundTextureIdentifier(Identifier spriteAtlasId, BorderProperty borders) {
-        String bordersBinary = Integer.toBinaryString(borders.toBinaryRepresentationNoCorners());
+        String bordersBinary = String.format(
+                "%4s",
+                Integer.toBinaryString(borders.toBinaryRepresentationNoCorners())
+        ).replace(' ', '0');
+
         String id = spriteAtlasId.toString().replace(":", "_");
         return Identifier.fromNamespaceAndPath(id, bordersBinary);
     }
