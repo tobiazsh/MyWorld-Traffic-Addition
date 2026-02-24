@@ -37,7 +37,11 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
 
-    private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
+    private static int textIconId;
+
+    static {
+        Minecraft.getInstance().execute(() -> textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId());
+    }
 
     private Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont imGuiFont; // Font after future is done
