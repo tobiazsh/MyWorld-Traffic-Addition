@@ -36,25 +36,23 @@ public class SpriteAtlasManager {
      * @return the loaded SpriteAtlas
      * @throws IOException If an error occurs while reading the file (such as a non-existent file)
      * @throws IllegalArgumentException If the JSON is malformed or the sprite atlas cannot be created
+     * @throws NullPointerException Error during file read
      */
-    public SpriteAtlas loadSpriteAtlas(FileSystem.File jsonFile) throws IOException, IllegalArgumentException {
+    public SpriteAtlas loadSpriteAtlas(FileSystem.File jsonFile) throws IOException, IllegalArgumentException, NullPointerException {
         if (!jsonFile.exists())
             throw new FileNotFoundException("Sprite atlas JSON file not found: " + jsonFile.path);
 
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(jsonFile.toJavaFile()))) {
-            byte[] file = bis.readAllBytes();
-            String jsonContent = new String(file, StandardCharsets.UTF_8);
+        String jsonContent = new String(jsonFile.readBytes(), StandardCharsets.UTF_8);
 
-            // Construct the sprite atlas from the JSON content
-            // This will also validate the JSON inside the file and throw an IllegalArgumentException if the JSON is
-            // malformed or the sprite atlas cannot be created
-            SpriteAtlas atlas = SpriteAtlas.fromJson(JsonParser.parseString(jsonContent).getAsJsonObject());
+        // Construct the sprite atlas from the JSON content
+        // This will also validate the JSON inside the file and throw an IllegalArgumentException if the JSON is
+        // malformed or the sprite atlas cannot be created
+        SpriteAtlas atlas = SpriteAtlas.fromJson(JsonParser.parseString(jsonContent).getAsJsonObject());
 
-            atlas.loadTexture(); // Load the texture into the TextureManager so that we can get the atlas dimensions for sprite initialization
-            atlas.initializeSprites(); // Initialize all sprites to convert their raw data into actual sprites
-            atlases.put(atlas.getAtlasId(), atlas); // Add the atlas to the manager
+        atlas.loadTexture(); // Load the texture into the TextureManager so that we can get the atlas dimensions for sprite initialization
+        atlas.initializeSprites(); // Initialize all sprites to convert their raw data into actual sprites
+        atlases.put(atlas.getAtlasId(), atlas); // Add the atlas to the manager
 
-            return atlas;
-        }
+        return atlas;
     }
 }
