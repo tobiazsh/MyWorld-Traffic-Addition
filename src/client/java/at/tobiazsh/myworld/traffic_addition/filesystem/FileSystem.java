@@ -335,6 +335,12 @@ public class FileSystem {
 
 		@Override
 		public boolean exists() {
+			if (isResource) { // Extra handling for in-jar-folders
+				String folderPath = PathUtils.windowsToUnixPath(path);
+				folderPath = folderPath.endsWith("/") ? folderPath : folderPath + "/";
+				return MyWorldTrafficAddition.class.getResource(folderPath) != null;
+			}
+
 			java.io.File file = new java.io.File(path);
 			return file.exists() && file.isDirectory();
 		}
@@ -468,6 +474,10 @@ public class FileSystem {
 
 		@Override
 		public boolean exists() {
+			if (isResource) // Handling for in-jar files
+				return MyWorldTrafficAddition.class.getResource(path) != null;
+
+			// Other file types
 			java.io.File file = new java.io.File(path);
 			return file.exists() && file.isFile();
 		}
