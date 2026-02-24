@@ -79,6 +79,38 @@ public record BorderProperty(
     }
 
     /**
+     * <p>
+     *     Returns a binary representation of the border property. Example:
+     * </p>
+     * <p>
+     *     <pre>
+     *         {@code
+     *         up = false
+     *         right = true
+     *         down = false
+     *         left = true
+     *         }
+     *     </pre>
+     *     ...would equal to
+     *     <pre>
+     *         {@code
+     *         0101
+     *         }
+     *     </pre>
+     *     ... where {@code 0 == false} and {@code 1 == true}.
+     * </p>
+     */
+    public int toBinaryRepresentationNoCorners() {
+        int flag = 0x0000;
+        if (up)    flag |= 1 << 3;
+        if (right) flag |= 1 << 2;
+        if (down)  flag |= 1 << 1;
+        if (left)  flag |= 1;
+
+        return flag;
+    }
+
+    /**
      * Converts the BorderProperty to a normal string representation. Formatted as "up_right_down_left".
      */
     public String toNormalString() {

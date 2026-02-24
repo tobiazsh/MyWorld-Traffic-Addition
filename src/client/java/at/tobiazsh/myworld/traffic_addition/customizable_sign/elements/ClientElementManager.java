@@ -2,12 +2,11 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import com.google.gson.JsonObject;
-import io.netty.util.internal.StringUtil;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 
@@ -29,7 +28,7 @@ public class ClientElementManager {
 
     private final List<ClientElementInterface> elements = new CopyOnWriteArrayList<>();
     private float pixelOfOneBlock = 1.0f; // Current scale factor for elements, used for rendering
-    public CustomizableSignData rawData = new CustomizableSignData(); // Raw data of the sign, used for exporting
+    public CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
     public List<String> backgroundTextures = new ArrayList<>(); // Background textures of the sign, used for rendering
 
     public void registerElement(ClientElementInterface element) {
@@ -188,33 +187,20 @@ public class ClientElementManager {
 
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        String jsonString = blockEntity.getSignDataJsonString();
-        if (StringUtil.isNullOrEmpty(jsonString)) return; // No JSON found, nothing to import
+        CustomizableSignTextureData otherSignTextureData = blockEntity.getTextureData();
+        if (otherSignTextureData == null) return; // No JSON found, nothing to import
 
-        CustomizableSignData data = new CustomizableSignData();
-        data.setJsonString(jsonString);
-
-        setData(data, blockEntity); // Set the data from the sign block entity
+        setData(otherSignTextureData, blockEntity); // Set the data from the sign block entity
     }
 
-    public void setData(CustomizableSignData data, CustomizableSignBlockEntity blockEntity) {
+    public void setData(CustomizableSignTextureData data, CustomizableSignBlockEntity blockEntity) {
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        List<String> background = new ArrayList<>();
-        List<BaseElement> globalElements = new ArrayList<>();
-        List<ClientElementInterface> elements;
-
-        if (data.json.has("Style")) background = CustomizableSignData.getBackgroundTexturePathList(data, blockEntity);
-        if (data.json.has("Elements")) globalElements = CustomizableSignData.deconstructElementsToArray(data);
-
-        elements = globalElements.stream().map(ClientElementFactory::toClientElement).toList(); // Convert global elements to client elements
+        List<ClientElementInterface> elements = data.getElementContainer().getElements().stream().map(ClientElementFactory::toClientElement).toList();
         registerUnregistered();
 
         this.setElements(elements);
-        this.rawData = data; // Set the raw data to the imported data
-        this.backgroundTextures = background; // Set the background textures to the imported textures
-
-        //updateFactor();
+        this.textureData = data;
     }
 
     // Registers all elements that are not yet registered
@@ -228,16 +214,10 @@ public class ClientElementManager {
                 .forEach(this::recursiveRegisterElement);
     }
 
-    public void setBackgroundTextures(List<String> backgroundTextures) {
-        this.backgroundTextures.clear();
-        this.backgroundTextures.addAll(backgroundTextures);
-    }
-
     public void exportToSign(BlockPos pos) {
         updateFactor();
-        updateRawData();
 
-        if (StringUtil.isNullOrEmpty(rawData.jsonString)) {
+        if (textureData == null) {
             throw new IllegalStateException("Cannot export to sign: Current JSON is empty! It seems like nothing has been edited!");
         }
 
@@ -248,19 +228,11 @@ public class ClientElementManager {
 
         JsonObject constructedJson = new JsonObject();
         constructedJson.add("blockEntityPosition", blockEntityPosition);
-        constructedJson.add("texture", rawData.json);
+        constructedJson.add("texture", textureData.toJson());
 
         String jsonString = constructedJson.toString();
 
         CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), jsonString);
-    }
-
-    public void updateRawData() {
-        if (!backgroundTextures.isEmpty())
-            rawData.setStyle(backgroundTextures.getFirst().substring(0, backgroundTextures.getFirst().lastIndexOf("/") + 1));
-
-        List<? extends BaseElement> globalElements = elements.stream().map(ClientElementFactory::toGlobalElement).toList();
-        rawData.setElements(globalElements);
     }
 
     public void updateFactor() {
@@ -287,7 +259,7 @@ public class ClientElementManager {
 
         elements.clear();
         elementIds.clear();
-        rawData = new CustomizableSignData(); // Reset the raw data
+        textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>()); // Reset the raw data
         backgroundTextures.clear(); // Clear the background textures
     }
 }

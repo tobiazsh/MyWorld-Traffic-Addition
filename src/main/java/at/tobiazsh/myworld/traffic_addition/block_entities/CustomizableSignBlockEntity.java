@@ -8,10 +8,10 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
-import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
@@ -57,7 +57,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private BlockPosExtended masterPos;
     private String signPoleDistances = "";
     private String signDistances = "";
-    private String signTextureJson = "";
+    private CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
 
     private int rotation = 0;
     private int height = 1;
@@ -67,6 +67,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     // Texture variables
     // These variables are temporary and deleted after the program is closed. It is solely used to reduce the amount of operations it would take to update the textures each render. If it'd be this way, it can easily slow down the game by a lot if there are lots of these signs present.
+    @Deprecated
     public List<BaseElement> elements = new ArrayList<>();
 
     public CustomizableSignBlockEntity(BlockPos pos, BlockState state) {
@@ -79,18 +80,19 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     public void updateTextureVars() {
         if (!isMaster) return;
-        if (signTextureJson == null || signTextureJson.isEmpty()) return;
         if (this.level == null) return;
-
         hasTextureUpdateOccurred.set(true);
-
-        elements = CustomizableSignData.deconstructElementsToArray(new CustomizableSignData().setJson(signTextureJson));
-        elements = BaseElementInterface.unpackList(elements);
     }
 
     // GETTERS / SETTERS -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+    /**
+     * Sets the received block data on the server. (Client -> Server)
+     * @param json The block data
+     * @param player The player who sent it
+     */
     public static void setTransmittedTexture(String json, ServerPlayer player) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
@@ -122,7 +124,15 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             return;
         }
 
-        Objects.requireNonNull(player.level().getServer()).execute(() -> ((CustomizableSignBlockEntity) blockEntity).setSignTextureJson(texture));
+        Objects.requireNonNull(player.level().getServer()).execute(() -> {
+            ((CustomizableSignBlockEntity) blockEntity)
+                    .setTextureData(
+                            CustomizableSignTextureData.fromJson(
+                                    JsonParser.parseString(texture).getAsJsonObject()
+                            )
+                    );
+        });
+
         ((CustomizableSignBlockEntity) blockEntity).updateTextureVars();
     }
 
@@ -211,12 +221,11 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
 
-    public String getSignDataJsonString() {
-        return this.signTextureJson;
+    public CustomizableSignTextureData getTextureData() {
+        return this.textureData;
     }
-    public void setSignTextureJson(String json) {
-        this.signTextureJson = json;
-        updateGame();
+    public void setTextureData(CustomizableSignTextureData customizableSignTextureData) {
+        this.textureData = customizableSignTextureData;
     }
 
     public @Nullable UUID getEditedBy() {
@@ -254,7 +263,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         view.putInt("Height", height);
         view.putBoolean("IsInitialized", isInitialized);
 
-        view.putString("SignTexture", signTextureJson);
+        view.putString("SignTexture", textureData.toJson().toString());
     }
 
 
@@ -299,12 +308,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         isRendered = readView.getBooleanOr("RenderingState", true);
         isInitialized = readView.getBooleanOr("IsInitialized", false);
 
-        signTextureJson = OptionalUtils.getOrDefault("SignTexture", readView::getString, "{}", "CustomizableSignBlockEntity.SignTexture");
+        textureData = CustomizableSignTextureData.fromJson(
+                JsonParser.parseString(
+                        OptionalUtils.getOrDefault("SignTexture", readView::getString, "{}", "CustomizableSignBlockEntity.SignTexture")
+                ).getAsJsonObject()
+        );
 
         // Convert old texture JSON to new version if necessary
-        if (CustomizableSignData.styleMatchesOldVersion(new CustomizableSignData().setJson(signTextureJson))) {
-            signTextureJson = CustomizableSignData.updateToNewVersion(new CustomizableSignData().setJson(signTextureJson)).jsonString;
-        }
+        // LEFT BLANK... NEW VERSION MAY NOT NEED IT
 
         rotation = OptionalUtils.getOrDefault("Rotation", readView::getInt, 0, "CustomizableSignBlockEntity.Rotation");
         width = OptionalUtils.getOrDefault("Width", readView::getInt, 1, "CustomizableSignBlockEntity.Width");

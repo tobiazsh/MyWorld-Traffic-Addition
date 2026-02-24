@@ -7,11 +7,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.jspecify.annotations.NullMarked;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 @NullMarked
-public class CustomSignData {
+public class CustomizableSignTextureData {
 
     public static final int SIGN_DATA_SERIALIZE_VERSION = 2;
 
@@ -22,13 +23,13 @@ public class CustomSignData {
     private Background background;
     private final CustomSignElementContainer elementContainer;
 
-    public CustomSignData(Background background, List<BaseElement> elements) {
+    public CustomizableSignTextureData(Background background, List<BaseElement> elements) {
         this.background = background;
         this.elementContainer = new CustomSignElementContainer(elements);
     }
 
-    public static CustomSignData empty() {
-        return new CustomSignData(new Background(new Color(0, 0, 0, 0)), List.of()); // Transparent background with no elements
+    public static CustomizableSignTextureData empty() {
+        return new CustomizableSignTextureData(new Background(new Color(0, 0, 0, 0)), List.of()); // Transparent background with no elements
     }
 
     /**
@@ -46,6 +47,12 @@ public class CustomSignData {
         this.background = background;
     }
 
+    /**
+     * Returns a copy of the reference of elementContainer
+     */
+    public CustomSignElementContainer getElementContainer() {
+        return elementContainer;
+    }
 
     /**
      * Serializes this CustomSignData to a JsonObject.
@@ -69,9 +76,17 @@ public class CustomSignData {
      * @return The deserialized CustomSignData
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
-    public static CustomSignData fromJson(JsonObject jsonObject) throws IllegalArgumentException {
+    public static CustomizableSignTextureData fromJson(JsonObject jsonObject) throws IllegalArgumentException {
         int version = jsonObject.has(KEY_SERIALIZE_VERSION) ? jsonObject.get(KEY_SERIALIZE_VERSION).getAsInt() : 1; // If it has version, get it, else assume version 1
         return deserialize(jsonObject, version);
+    }
+
+    /**
+     * Determines whether the input JsonObject is the newest version available
+     */
+    public static boolean isNewestVersion(JsonObject jsonObject) {
+        if (!jsonObject.has(KEY_SERIALIZE_VERSION)) return false;
+        return jsonObject.get(KEY_SERIALIZE_VERSION).getAsInt() == SIGN_DATA_SERIALIZE_VERSION;
     }
 
     /**
@@ -81,7 +96,7 @@ public class CustomSignData {
      * @return The deserialized CustomSignData
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
-    private static CustomSignData deserialize(JsonObject jsonObject, int version) throws IllegalArgumentException {
+    private static CustomizableSignTextureData deserialize(JsonObject jsonObject, int version) throws IllegalArgumentException {
         return switch(version) {
             case 1 -> deserializeV1(jsonObject);
             case 2 -> deserializeV2(jsonObject);
@@ -91,25 +106,46 @@ public class CustomSignData {
     }
 
     /**
-     * Deserializes a CustomSignData from a JsonObject of version 1.
+     * Deserializes a CustomSignData from a JsonObject of version 1. Thrown together from old code parts, not the most
+     * beautiful or performant!
      * @apiNote Before version 2, JSON entries are stored with PascalCase. From version 2 onwards, camelCase is used.
      * @param jsonObject The JsonObject to deserialize
      * @return The deserialized CustomSignData
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
     @SuppressWarnings("Duplicates")
-    private static CustomSignData deserializeV1(JsonObject jsonObject) throws IllegalArgumentException {
-        final String KEY_BACKGROUND = "Background";
+    private static CustomizableSignTextureData deserializeV1(JsonObject jsonObject) throws IllegalArgumentException {
+        final String KEY_STYLE = "Style";
         final String KEY_ELEMENTS = "Elements";
 
-        if (!jsonObject.has(KEY_BACKGROUND) || !jsonObject.has(KEY_ELEMENTS)) {
+        if (!jsonObject.has(KEY_STYLE) || !jsonObject.has(KEY_ELEMENTS))
             throw new IllegalArgumentException("Invalid CustomSignData JSON: Missing required fields");
+
+        String styleString = jsonObject.get("Style").getAsString();
+
+        if (jsonObject.get("Style").getAsString().contains(";")) {
+            String[] styleParts = styleString.split("\\*"); // Split each one by '*'
+            String firstPart = styleParts[0]; // Get the first part because we only need one here
+            String[] splitStyle = firstPart.split(";"); // Split the first part by ';'
+
+            String pathStr = splitStyle[3]; // Get the path
+            Path path = Path.of(pathStr).getParent(); // Convert the path to a Path object
+            String newStyle = path.toString(); // Convert the relative path to a string
+            styleString = newStyle.replace("\\", "/"); // Replace backslashes with forward slashes
         }
 
-        Background background = Background.fromJson(jsonObject.getAsJsonObject(KEY_BACKGROUND));
+        styleString = styleString.startsWith("/") ? styleString.substring(1) : styleString;
+
+        String[] splitStyleString = styleString.split("/");
+
+        String country = splitStyleString[splitStyleString.length - 2];
+        String type = splitStyleString[splitStyleString.length - 1];
+
+        type = type.equals("normal") ? "default" : type;
+        Background background = new Background(String.format("%s:%s", country, type));
         List<BaseElement> elements = toElements(jsonObject.getAsJsonArray(KEY_ELEMENTS));
 
-        return new CustomSignData(background, elements);
+        return new CustomizableSignTextureData(background, elements);
     }
 
     /**
@@ -120,7 +156,7 @@ public class CustomSignData {
      * @throws IllegalArgumentException If any required fields are missing or any field is invalid
      */
     @SuppressWarnings("Duplicates")
-    private static CustomSignData deserializeV2(JsonObject jsonObject) throws IllegalArgumentException {
+    private static CustomizableSignTextureData deserializeV2(JsonObject jsonObject) throws IllegalArgumentException {
         if (!jsonObject.has(KEY_BACKGROUND) || !jsonObject.has(KEY_ELEMENTS)) {
             throw new IllegalArgumentException("Invalid CustomSignData JSON: Missing required fields");
         }
@@ -128,7 +164,7 @@ public class CustomSignData {
         Background background = Background.fromJson(jsonObject.getAsJsonObject(KEY_BACKGROUND));
         List<BaseElement> elements = toElements(jsonObject.getAsJsonArray(KEY_ELEMENTS));
 
-        return new CustomSignData(background, elements);
+        return new CustomizableSignTextureData(background, elements);
     }
 
     /**

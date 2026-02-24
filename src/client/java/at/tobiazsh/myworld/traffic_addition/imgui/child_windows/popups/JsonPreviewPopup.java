@@ -8,27 +8,28 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
+import at.tobiazsh.myworld.traffic_addition.utils.JsonUtil;
 import imgui.ImGui;
+
+import java.util.ArrayList;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class JsonPreviewPopup {
-	private static CustomizableSignData currentStyle = new CustomizableSignData();
+	private static CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
 
 	public static boolean shouldOpen = false;
 	public static String windowId = null;
 	private static String json;
 
-	public static void open(CustomizableSignData style) {
-		JsonPreviewPopup.currentStyle = style;
+	public static void open(CustomizableSignTextureData textureData) {
+		JsonPreviewPopup.textureData = textureData;
 		shouldOpen = false;
 		ImGui.openPopup(windowId);
 
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		json = gson.toJson(style.json);
+		json = JsonUtil.toPrettyJson(textureData.toJson().toString());
 	}
 
 	public static void render() {
@@ -52,7 +53,7 @@ public class JsonPreviewPopup {
 
 			ImGui.beginChild("##jsonDisplayer", ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
 
-			if (currentStyle.json == null) ImGui.text(tr("ImGui.Child.PopUps.JsonViewer", "No data available!"));
+			if (textureData.toJson().isEmpty()) ImGui.text(tr("ImGui.Child.PopUps.JsonViewer", "No data available!"));
 			else ImGui.textWrapped(json);
 			ImGui.endChild();
 

@@ -165,16 +165,12 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         state.masterBlockPos = blockEntity.getMasterPos();
         state.borders = blockEntity.getBorderType();
 
-        // Initial set for sign data JSON string
-        if (state.signDataJsonString == null || state.signDataJsonString.isEmpty()) {
-            state.signDataJsonString = blockEntity.getSignDataJsonString();
-            state.signData.setJson(state.signDataJsonString);
-        }
+        state.textureData = blockEntity.getTextureData();
 
         if (elements.containsKey(blockEntity.getBlockPos()) && !blockEntity.hasTextureUpdateOccurred.get()) {
             state.clientElements = elements.get(blockEntity.getBlockPos());
         } else {
-            List<ClientElementInterface> clientElements = blockEntity.elements
+            List<ClientElementInterface> clientElements = blockEntity.getTextureData().getElementContainer().getElements()
                     .reversed()
                     .stream()
                     .map(ClientElementFactory::toClientElement)
@@ -295,12 +291,15 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                 0
         );
 
-
-        // When the sign is first loaded, the sign's render state hasn't initialised the sign data properly yet. This would cause the game/server to crash
-        // Hence the following simple safeguard to check if it's already initialised at all.
-
-        if (masterState.signData.getStylePath() != null && !masterState.signData.getStylePath().isEmpty())
-            renderBackground(masterState, matrices, light, backgroundOverlay, facing, borderType); // Render the background if there's a texture.
+        BackgroundRenderer.MinecraftRenderer.renderMinecraft(
+                masterState.textureData.getBackground(),
+                matrices,
+                light,
+                backgroundOverlay,
+                facing,
+                borderType,
+                zOffsetRenderLayer
+        );
 
         // Render the border on top of the sign
         BorderRenderer.render(queue, matrices, borderType, light, facing);
@@ -312,46 +311,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
             renderSignHolder(queue, masterState, matrices, light, facing);
         }
-
-        matrices.popPose();
-    }
-
-
-
-
-    // Render the background texture of one sign
-    private void renderBackground(CustomizableSignBlockRenderState masterState, PoseStack matrices, int light, int backgroundOverlay, Direction facing, BorderProperty borders) {
-        Path signTexturePath = Path.of(masterState.signData.getStylePath());
-        String textureName = borders.toBackgroundString().concat(".png"); // Construct file name from borders since border are the same on the background and the actual background
-        signTexturePath = Path.of("/assets/" + MyWorldTrafficAddition.MOD_ID).relativize(signTexturePath.resolve(textureName));
-
-        // Construct Identifier from path so Minecraft finds it in resource
-        // For it to be found, the separation of paths should be Unix-Style (/) and not Windows-Style (\), so replace that.
-        Identifier backgroundTexture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, signTexturePath.toString().replaceAll("\\\\", "/"));
-
-        // Construct RenderLayer for texture; use my own RenderLayer instead of Minecraft's
-        CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, backgroundTexture);
-        RenderType backgroundRenderLayer = backgroundLayer.buildRenderLayer();
-        BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
-
-        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(backgroundRenderLayer);
-
-        matrices.pushPose();
-
-        // Now render that
-        // Position the vertices
-        // Offest background so it's not directly in side the sign block
-        matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z);
-
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-        matrices.translate(-0.5, -0.5, -0.5);
-
-        vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
 
         matrices.popPose();
     }

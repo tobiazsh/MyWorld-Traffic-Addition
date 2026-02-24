@@ -18,6 +18,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import at.tobiazsh.myworld.traffic_addition.utils.JsonUtil;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
@@ -33,7 +34,6 @@ import java.util.UUID;
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
 
 public abstract class ElementEntry {
 	private final String name;
@@ -434,7 +434,7 @@ public abstract class ElementEntry {
 		JsonObject modifiedJson = renderObject.toJson();
 		modifiedJson.addProperty("Id", "null");
 		modifiedJson.addProperty("ParentId", "null");
-		FileDialogPopup.setData(getPrettyJson(modifiedJson.toString()));
+		FileDialogPopup.setData(JsonUtil.toPrettyJson(modifiedJson.toString()));
 
 		FileDialogPopup.open(
 				SavesDirectory.getElementSaveDir(),
