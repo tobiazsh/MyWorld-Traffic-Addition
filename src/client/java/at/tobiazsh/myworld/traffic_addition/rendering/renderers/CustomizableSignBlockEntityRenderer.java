@@ -276,6 +276,9 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render one sign
     private void renderSign(SubmitNodeCollector queue, CustomizableSignBlockRenderState masterState, BlockStateModel blockStateModel, PoseStack matrices, int light, Direction facing, BlockPosExtended offset, BorderProperty borderType, int backgroundOverlay, BlockPos position) {
+
+        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
+
         matrices.pushPose();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct position
@@ -294,6 +297,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         BackgroundRenderer.MinecraftRenderer.renderMinecraft(
                 masterState.textureData.getBackground(),
                 matrices,
+                vertexConsumerProvider,
                 light,
                 backgroundOverlay,
                 facing,
