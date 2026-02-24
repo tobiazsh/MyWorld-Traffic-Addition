@@ -103,7 +103,12 @@ public class BackgroundRenderer {
                 return;
             }
 
-            CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, textureIdentifier);
+            CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(
+                    zOffsetRenderLayer,
+                    CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID,
+                    spriteAtlas.getTexture().getId()
+            );
+
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
             BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
