@@ -31,6 +31,7 @@ import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.world.level.block.Block;
@@ -87,9 +88,11 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		OnlineImageCache.createCacheDir();
 
-		MyWorldTrafficAddition.LOGGER.info("Loading Background Atlases from the Autoload folder...");
-		autoloadBackgroundAtlases();
-		MyWorldTrafficAddition.LOGGER.info("Successfully loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
+		ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
+			MyWorldTrafficAddition.LOGGER.info("Loading Background Atlases from the Autoload folder...");
+			autoloadBackgroundAtlases();
+			MyWorldTrafficAddition.LOGGER.info("Loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
+		});
 
 		loadPreferences();
 	}
