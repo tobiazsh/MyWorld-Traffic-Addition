@@ -271,4 +271,67 @@ public class CustomRenderLayer {
             CUTOUT_Z_OFFSET_BACKWARD
         }
     }
+
+    // ------------------ Color Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static class ColorLayering extends Layering {
+
+        private final ColorLayering.LayeringType layeringType;
+
+        /**
+         * Constructor for ColorLayering
+         * @param zOffset The elevation on the z-axis. 1.0f = 128 Blocks | 0.128f = 1 Block
+         * @param layeringType The type of layering (solid, cutout, etc.)
+         */
+        public ColorLayering(float zOffset, LayeringType layeringType) {
+            super(zOffset);
+            this.layeringType = layeringType;
+        }
+
+        private final Function<Float, RenderType> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
+                zOff -> {
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+                            .useLightmap()
+                            .useOverlay()
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOff))
+                            .createRenderSetup();
+
+                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
+                }
+        );
+
+        private final Function<Float, RenderType> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
+                zOff -> {
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
+                            .useLightmap()
+                            .useOverlay()
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOff))
+                            .createRenderSetup();
+
+                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
+                }
+        );
+
+        @Override
+        public RenderType buildRenderType() {
+
+            this.renderType = switch (this.layeringType) {
+                case VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID -> ENTITY_SOLID_Z_OFFSET_BACKWARD.apply(this.zOffset);
+                case VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT -> ENTITY_CUTOUT_Z_OFFSET_BACKWARD.apply(this.zOffset);
+            };
+
+            return this.renderType;
+        }
+
+        @Override
+        public RenderType getRenderType() {
+            return renderType;
+        }
+
+        public enum LayeringType {
+            VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID,
+            VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT
+        }
+    }
+
 }
