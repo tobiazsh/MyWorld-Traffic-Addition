@@ -41,7 +41,6 @@ public class DebugFunctions {
 
         MyWorldTrafficAddition.LOGGER.info("Auto background load finished. Loaded backgrounds:");
         BackgroundLoader.BACKGROUND_SPRITES.forEach(System.out::println);
-        // TODO: Texture on sprite atlas is not correct yet. currently: mwta:/assets/textures/backgrounds/....   expected: mwta:textures/backgrounds
     }
 
     public static void testNewDataParse() {
