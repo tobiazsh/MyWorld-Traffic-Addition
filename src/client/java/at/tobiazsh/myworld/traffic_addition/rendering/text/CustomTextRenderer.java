@@ -68,7 +68,7 @@ public class CustomTextRenderer extends Font {
                     CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.parse("missing")));
 
                     // User RenderLayer
-                    VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer.buildRenderLayer());
+                    VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer.buildRenderType());
                     glyph.render(matrix, vertexConsumer, light, false);
                 }
             };
