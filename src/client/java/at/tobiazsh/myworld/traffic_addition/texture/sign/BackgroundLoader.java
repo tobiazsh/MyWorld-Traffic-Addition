@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.texture.sign;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlas;
+import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -41,8 +42,7 @@ public class BackgroundLoader {
         for (FileSystem.DirectoryElement direlm : AUTOLOAD_DIRECTORY.content) {
             if (direlm.isFolder()) continue; // Do not count folders, although non should exist anyway by now
 
-            String content = new String(((FileSystem.File) direlm).readBytes(), StandardCharsets.UTF_8);
-            SpriteAtlas atlas = SpriteAtlas.fromJson(JsonParser.parseString(content).getAsJsonObject());
+            SpriteAtlas atlas = SpriteAtlasManager.INSTANCE.loadSpriteAtlas((FileSystem.File) direlm);
 
             atlas.loadTexture();
             atlas.initializeSprites();
