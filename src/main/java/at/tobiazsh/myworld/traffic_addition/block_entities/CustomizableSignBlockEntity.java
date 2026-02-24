@@ -226,6 +226,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
     public void setTextureData(CustomizableSignTextureData customizableSignTextureData) {
         this.textureData = customizableSignTextureData;
+        updateGame();
     }
 
     public @Nullable UUID getEditedBy() {
