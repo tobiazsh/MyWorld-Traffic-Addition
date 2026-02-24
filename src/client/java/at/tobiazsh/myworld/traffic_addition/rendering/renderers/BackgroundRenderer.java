@@ -1,6 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotFoundException;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.texture.Sprite;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlas;
@@ -72,8 +74,34 @@ public class BackgroundRenderer {
             if (background.texture == null) return;
 
             Identifier textureIdentifier = Identifier.tryParse(background.texture);
-            SpriteAtlas spriteAtlas = SpriteAtlasManager.INSTANCE.getSpriteAtlas(textureIdentifier);
-            Sprite bgSpr = spriteAtlas.getSprite(BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders));
+            SpriteAtlas spriteAtlas;
+            Sprite bgSpr;
+
+            try {
+                spriteAtlas = SpriteAtlasManager.INSTANCE.getSpriteAtlas(textureIdentifier);
+                bgSpr = spriteAtlas.getSprite(BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders));
+
+                if (bgSpr == null)
+                    throw new SpriteNotFoundException(
+                            "Sprite is with id "
+                            + BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders)
+                            + " isnull!"
+                    );
+
+            } catch (SpriteNotFoundException | NullPointerException e) { // Fallback if error during background getter
+                renderColor(
+                        Background.WHITE, // Least destructive background
+                        matrices,
+                        light,
+                        backgroundOverlay,
+                        facing,
+                        zOffsetRenderLayer
+                );
+
+                MyWorldTrafficAddition.LOGGER.debug("Failed rendering background! Fallback to color background!", e);
+
+                return;
+            }
 
             CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID, textureIdentifier);
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
