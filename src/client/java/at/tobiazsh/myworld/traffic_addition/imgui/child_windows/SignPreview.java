@@ -1,8 +1,11 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.rendering.renderers.BackgroundRenderer;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiStyleVar;
@@ -22,11 +25,11 @@ public class SignPreview {
 
     public static void render(
             float signWidthPixels, float signHeightPixels,
-            int signWidthBlocks, int signHeightBlocks,
             float pxOfBlock, // Pixel of one block
             ImVec2 position,
             List<ClientElementInterface> drawables,
-            List<String> backgroundTextures
+            Background background,
+            BorderProperty[][] borders
     ) {
         ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 0, 0);  // Remove spacing between items
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);  // Remove padding inside the frame
@@ -38,29 +41,11 @@ public class SignPreview {
 
         // Render Background Textures
         // Render from bottom to top and from left to right
-        float currentY = ImGui.getCursorPosY() + (signHeightBlocks - 1) * pxOfBlock; // Set to the position of bottom
-        int previewPosition = 0;
-        for (int i = signHeightBlocks - 1; i >= 0; i--) {
-            ImGui.setCursorPosY(currentY);
-
-            for (int j = 0; j < signWidthBlocks; j++) {
-
-                String texturePath = backgroundTextures.isEmpty() ? "/assets/myworld_traffic_addition/textures/imgui/icons/not-found.png" : backgroundTextures.get(previewPosition);
-
-                Texture currentTexture = Textures.smartRegisterTexture(texturePath);
-                ImGui.image(currentTexture.getTextureId(), pxOfBlock, pxOfBlock);
-
-                // If the current position is smaller than the sign's height minus one, stay in row
-                if (j < signWidthBlocks - 1) {
-                    ImGui.sameLine();
-                }
-
-                previewPosition++;
-            }
-
-            currentY -= pxOfBlock; // Decrease by pxOfBlock to start next line
-        }
-
+        BackgroundRenderer.ImGuiRenderer.render(
+                background,
+                borders,
+                pxOfBlock
+        );
 
         ImGui.endChild();
 

@@ -211,12 +211,11 @@ public class SignEditor {
         SignPreview.render(
                 signRatio.x,
                 signRatio.y,
-                signWidthBlocks,
-                signHeightBlocks,
                 ClientElementManager.getInstance().getPixelOfOneBlock(),
                 new ImVec2(previewX, previewY),
                 ClientElementManager.getInstance().getElements(),
-                ClientElementManager.getInstance().backgroundTextures
+                ClientElementManager.getInstance().textureData.getBackground(),
+                ClientElementManager.getInstance().getBorders()
         );
 
         ImGui.end();

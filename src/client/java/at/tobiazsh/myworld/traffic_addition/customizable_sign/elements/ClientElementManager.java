@@ -6,13 +6,22 @@ import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
+import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Class used by the UI to retrieve the sign's data
+ */
 public class ClientElementManager {
 
     private static final ClientElementManager INSTANCE = new ClientElementManager();
@@ -28,8 +37,9 @@ public class ClientElementManager {
 
     private final List<ClientElementInterface> elements = new CopyOnWriteArrayList<>();
     private float pixelOfOneBlock = 1.0f; // Current scale factor for elements, used for rendering
+    private BorderProperty[][] borders; // Stores the borders from the whole sign in a 2D array
+
     public CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
-    public List<String> backgroundTextures = new ArrayList<>(); // Background textures of the sign, used for rendering
 
     public void registerElement(ClientElementInterface element) {
 
@@ -190,6 +200,13 @@ public class ClientElementManager {
         CustomizableSignTextureData otherSignTextureData = blockEntity.getTextureData();
         if (otherSignTextureData == null) return; // No JSON found, nothing to import
 
+        try {
+            List<BlockPosExtended> signDistances = decodeSignDistances(blockEntity.getSignDistancesString());
+            borders = calculateBorders(signDistances, blockEntity, blockEntity.getWidth(), blockEntity.getHeight());
+        } catch (IOException | ClassNotFoundException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to decode sign distances while importing from sign!", e);
+        }
+
         setData(otherSignTextureData, blockEntity); // Set the data from the sign block entity
     }
 
@@ -260,6 +277,80 @@ public class ClientElementManager {
         elements.clear();
         elementIds.clear();
         textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>()); // Reset the raw data
-        backgroundTextures.clear(); // Clear the background textures
+    }
+
+    /**
+     * Returns all the borders from the signs in the current sign in the correct order in a 2D Array with Syntax
+     * BorderProperty[row][col]
+     */
+    public BorderProperty[][] getBorders() {
+        return borders;
+    }
+
+    /**
+     * Decodes the sign block distances from the master block.
+     * @param encoded The encoded sign block distances string from the master block
+     * @return List<BlockPosExtended> with the sign distances relative to the master block (not the coordinates!)
+     * @throws IOException Problem during decoding
+     * @throws ClassNotFoundException Class to be decoded not found
+     */
+    private static List<BlockPosExtended> decodeSignDistances(String encoded) throws IOException, ClassNotFoundException {
+        byte[] signDistancesByteArray = Base64.getDecoder().decode(encoded);
+        List<String> signDistancesStringed = ListUtils.fromByteArray(signDistancesByteArray);
+
+        return signDistancesStringed
+                .stream()
+                .map(BlockPosExtended.INSTANCE::fromString)
+                .toList();
+    }
+
+    /**
+     * Calculates the borders of the signs around the master block
+     * @param blockPosExtendeds The decoded sign distances
+     * @param masterBlock The master block itself
+     * @return 2D Array BorderProperty[row][col]
+     */
+    private static BorderProperty[][] calculateBorders(
+            List<BlockPosExtended> blockPosExtendeds,
+            CustomizableSignBlockEntity masterBlock,
+            int signWidth, int signHeight
+    ) {
+        List<BlockPosExtended> blockPosExtendedModifiable = new ArrayList<>(blockPosExtendeds);
+        final BlockPosExtended masterBlockPos = new BlockPosExtended(masterBlock.getBlockPos());
+        final Level blockLevel = masterBlock.getLevel();
+
+        if (blockLevel == null)
+            return new BorderProperty[0][0];
+
+        blockPosExtendedModifiable.sort((a, b) -> {
+
+            int yCompare = Integer.compare(a.getY(), b.getY());
+            if (yCompare != 0) return yCompare;
+
+            int distA = Math.abs(a.getX()) + Math.abs(a.getZ());
+            int distB = Math.abs(b.getX()) + Math.abs(b.getZ());
+
+            return Integer.compare(distA, distB);
+        });
+
+        BorderProperty[][] borders = new BorderProperty[signHeight][signWidth];
+
+        int idx = 0;
+        for (int row = 0; row < signHeight; row++) {
+            for (int col = 0; col < signWidth; col++) {
+                BlockPosExtended offset = blockPosExtendedModifiable.get(idx++);
+                BlockPosExtended absPos = masterBlockPos.addOffset(offset.invert());
+
+                BlockEntity be = blockLevel.getBlockEntity(absPos);
+
+                if (be instanceof CustomizableSignBlockEntity csbe) {
+                    borders[row][col] = csbe.getBorderType();
+                } else {
+                    borders[row][col] = BorderProperty.INSTANCE;
+                }
+            }
+        }
+
+        return borders;
     }
 }

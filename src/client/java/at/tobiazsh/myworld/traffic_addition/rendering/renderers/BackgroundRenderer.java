@@ -15,6 +15,9 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import imgui.ImColor;
+import imgui.ImGui;
+import imgui.ImVec2;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
@@ -71,7 +74,7 @@ public class BackgroundRenderer {
             if (background.isColor()) return; // Do NOT render if it's color
             if (background.texture == null) return;
 
-            Identifier atlasIdentifier = Identifier.tryParse(background.texture);
+            Identifier atlasIdentifier = Identifier.parse(background.texture);
             SpriteAtlas spriteAtlas;
             Sprite bgSpr;
 
@@ -138,7 +141,74 @@ public class BackgroundRenderer {
         }
     }
 
-    //public static void renderImGui(...) {
-    //
-    //}
+    public static class ImGuiRenderer {
+        /**
+         * Renders the specified background in tiles using ImGui.image(...) and a {@link SpriteAtlas} in ImGui
+         * @param background The background to render
+         * @param borders A 2D Array of BorderProperty containing the borders of the sign in correct presentation...
+         *                Syntax: BorderProperty[row][col]
+         */
+        public static void render(Background background, BorderProperty[][] borders, float pxOfBlock) {
+            int tileSize = Math.round(pxOfBlock); // Round once so rendering and positioning always use the same integer value
+            float currentY = ImGui.getCursorPosY() + (borders.length - 1) * tileSize; // Set to the position of bottom
+            for (int row = borders.length - 1; row >= 0; row--) {
+                ImGui.setCursorPosY(currentY);
+
+                for (int col = 0; col < borders[row].length; col++) {
+                    if (background.isColor())
+                        renderTileColor(background, tileSize);
+                    else
+                        renderTileTexture(background, borders[row][col], tileSize);
+
+                    if (col < borders[row].length - 1)
+                        ImGui.sameLine();
+                }
+
+                currentY -= tileSize;
+            }
+        }
+
+        private static void renderTileColor(Background background, int tileSize) {
+            Color col = background.color;
+
+            if (col == null) col = Background.WHITE.color; // Fallback to white
+            if (col == null) return; // Make IDE happy (cannot happen - ever)
+
+            ImVec2 pMin = new ImVec2(ImGui.getCursorPosX(), ImGui.getCursorPosY());
+            ImGui.getWindowDrawList().addRectFilled(pMin, new ImVec2(pMin.x + tileSize, pMin.y + tileSize), ImColor.rgba(col.toHexString()));
+        }
+
+        private static void renderTileTexture(Background background, BorderProperty border, int tileSize) {
+            if (background.texture == null) return;
+
+            Identifier atlasIdentifier = Identifier.parse(background.texture);
+            SpriteAtlas spriteAtlas;
+            Sprite bgSpr;
+
+            try {
+                spriteAtlas = SpriteAtlasManager.INSTANCE.getSpriteAtlas(atlasIdentifier);
+                bgSpr = spriteAtlas.getSprite(BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), border));
+
+                if (bgSpr == null)
+                    throw new SpriteNotFoundException(
+                            "Sprite is with id "
+                                    + BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), border)
+                                    + " isnull!"
+                    );
+
+            } catch (SpriteNotFoundException | NullPointerException e) { // Fallback if error during background getter
+                renderTileColor(Background.WHITE, tileSize); // Fallback to white background
+                MyWorldTrafficAddition.LOGGER.debug("Failed rendering background in ImGui! Fallback to color background!", e);
+                return;
+            }
+
+            ImGui.image(
+                    spriteAtlas.getTexture().getTextureId(),
+                    tileSize,
+                    tileSize,
+                    bgSpr.u1, bgSpr.v1,
+                    bgSpr.u2, bgSpr.v2
+            );
+        }
+    }
 }
