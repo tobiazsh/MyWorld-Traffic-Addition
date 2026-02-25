@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import at.tobiazsh.myworld.traffic_addition.utils.Color;
@@ -34,7 +35,6 @@ public class BackgroundSelectorPopup {
     private BackgroundType backgroundType;
 
     private final Background oldBackground;
-    private Background background;
 
     private String id;
 
@@ -42,7 +42,7 @@ public class BackgroundSelectorPopup {
 
     private final CustomizableSignTextureData textureData;
 
-    private float[] color;
+    private float[] color = { 1f, 1f, 1f, 1f }; // Pure White
 
     public BackgroundSelectorPopup(CustomizableSignTextureData textureData, String id) {
         this.oldBackground = textureData.getBackground();
@@ -50,15 +50,28 @@ public class BackgroundSelectorPopup {
         this.backgroundType = extractTypeFromBackground(oldBackground);
         this.id = id;
         this.windowTitle = tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background") + "##" + id;
+
+        if (textureData.getBackground().isColor()) {
+            Color col = textureData.getBackground().color;
+
+
+            color = new float[] {
+                    col.r() / 255f, // Does NOT produce a NPE (see isColor() method)
+                    col.g() / 255f,
+                    col.b() / 255f,
+                    col.a() / 255f
+            };
+        }
     }
 
     public void render() {
-        ImGui.setNextWindowSize(600, 400);
+        ImGui.setNextWindowSize(500, 400);
         ImGui.pushFont(ImGuiImpl.Roboto);
         if (ImGui.beginPopupModal(windowTitle)) {
 
             ImGui.pushFont(ImGuiImpl.RobotoBold);
             ImGui.text(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Type"));
+            ImGui.popFont();
 
             if (ImGui.beginCombo("##bgType_" + id, tr("ImGui.Main.Background", backgroundType.translationName))) {
 
@@ -81,18 +94,18 @@ public class BackgroundSelectorPopup {
             }
 
             ImGui.spacing();
+            ImGui.separator();
+            ImGui.spacing();
 
-            if (ImGui.beginChild("##controlButtons" + id)) {
-                if (ImGui.button(tr("Global", "Cancel"))) {
-                    textureData.setBackground(oldBackground);
-                    ImGui.closeCurrentPopup();
-                }
+            if (ImGui.button(tr("Global", "Cancel"))) {
+                textureData.setBackground(oldBackground);
+                ImGui.closeCurrentPopup();
+            }
 
-                if (ImGui.button(tr("Global", "Okay"))) {
-                    ImGui.closeCurrentPopup();
-                }
+            ImGui.sameLine();
 
-                ImGui.endChild();
+            if (ImGui.button(tr("Global", "Okay"))) {
+                ImGui.closeCurrentPopup();
             }
 
 
@@ -108,26 +121,32 @@ public class BackgroundSelectorPopup {
     }
 
     private void renderColorOptions() {
-        if (ImGui.colorPicker4(tr("Global", "Color Picker") + "##" + id, this.color, ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf)) { // Translatable text for "Color Picker"
-            int r = Math.round(color[0] * 255);
-            int g = Math.round(color[1] * 255);
-            int b = Math.round(color[2] * 255);
-            int a = Math.round(color[3] * 255);
+        if (ImGui.colorPicker4(
+                (tr("Global", "Color Picker") + "##" + id),
+                this.color,
+                ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf
+        )) { // Translatable text for "Color Picker"
+            int r = Math.min(255, Math.round(color[0] * 255));
+            int g = Math.min(255, Math.round(color[1] * 255));
+            int b = Math.min(255, Math.round(color[2] * 255));
+            int a = Math.min(255, Math.round(color[3] * 255));
             textureData.setBackground(new Background(new Color(a, r, g, b)));
         }
     }
 
     private void renderPatternOptions() {
-        if (background.texture == null) return; // Color
-        if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", backgroundType.translationName))) {
+        if (textureData.getBackground().texture == null) return; // Color
+        if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", textureData.getBackground().texture))) {
             BackgroundLoader.BACKGROUND_SPRITES.forEach(bgSprite -> {
                 if (ImGui.selectable(
-                        tr("ImGui.Main.Background", backgroundType.translationName),
-                        Objects.equals(bgSprite, SpriteAtlasManager.INSTANCE.getSpriteAtlas(Identifier.parse(background.texture)))
+                        tr("ImGui.Main.Background", bgSprite.getAtlasId().toString()),
+                        Objects.equals(bgSprite, SpriteAtlasManager.INSTANCE.getSpriteAtlas(Identifier.parse(textureData.getBackground().texture)))
                 )) {
                     textureData.setBackground(new Background(bgSprite.getAtlasId().toString()));
                 }
             });
+
+            ImGui.endCombo();
         }
     }
 
