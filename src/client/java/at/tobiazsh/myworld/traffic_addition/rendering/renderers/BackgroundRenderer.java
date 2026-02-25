@@ -97,7 +97,7 @@ public class BackgroundRenderer {
                         zOffsetRenderLayer
                 );
 
-                MyWorldTrafficAddition.LOGGER.debug("Failed rendering background! Fallback to color background!", e);
+                MyWorldTrafficAddition.LOGGER.debug("Failed rendering background in Minecraft! Fallback to color background!", e);
 
                 return;
             }
