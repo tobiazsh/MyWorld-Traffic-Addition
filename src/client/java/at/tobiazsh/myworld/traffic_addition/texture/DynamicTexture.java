@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -51,7 +52,7 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     /**
-     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
+     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #registerInManager()} for that.
      */
     public DynamicTexture registerTexture() {
         this.close();
@@ -70,7 +71,7 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     /**
-     * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
+     * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #registerInManager()} for that.
      * @return this DynamicTexture instance
      */
     public DynamicTexture smartRegisterTexture() {
@@ -80,14 +81,14 @@ public class DynamicTexture extends AbstractTexture {
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
             return this;
 
-        return this.registerTexture().register();
+        return this.registerTexture().registerInManager();
     }
 
     /**
      * Registers the texture in the DynamicTextureManager. If a texture with the same id already exists, it won't be replaced. Note, this does NOT register the texture in Minecraft's TextureManager!
      * @return this DynamicTexture instance
      */
-    public DynamicTexture register() {
+    public DynamicTexture registerInManager() {
         DynamicTextureManager.addTexture(this.id, this);
         return this;
     }
@@ -220,5 +221,10 @@ public class DynamicTexture extends AbstractTexture {
             throw new TextureNotLoadedException("Cannot get height of DynamicTexture " + id + " because the texture is not loaded yet!");
 
         return this.textureView.getHeight(0); // Null check already done by isLoaded()
+    }
+
+    public int getTextureId() {
+        if (this.texture == null && isLoaded()) return 0;
+        return ((GlTexture)this.texture).glId();
     }
 }
