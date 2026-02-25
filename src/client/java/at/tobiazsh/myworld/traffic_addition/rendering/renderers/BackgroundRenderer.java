@@ -15,10 +15,8 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
@@ -63,10 +61,10 @@ public class BackgroundRenderer {
             float b = color.b() / 255f;
             float a = color.a() / 255f;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
 
             matrices.popPose();
         }
@@ -134,10 +132,10 @@ public class BackgroundRenderer {
             float innerV1 = bgSpr.v1 + vMargin;
             float innerV2 = bgSpr.v2 - vMargin;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
             matrices.popPose();
         }
     }
