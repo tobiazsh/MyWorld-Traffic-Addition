@@ -165,7 +165,10 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
 
     /**
-     * Returns the raw encoded string of the sign distances.
+     * Returns the raw base64-encoded string, which holds the sign distances as a byte array, which are the sign
+     * distances in a {@code List<String>}. Each String in that list is a stringed {@link BlockPosExtended}.
+     * ...
+     * (yeah, don't ask how I came up with that idea. I myself have no idea...)
      */
     public String getSignDistancesString() {
         return signDistances;
