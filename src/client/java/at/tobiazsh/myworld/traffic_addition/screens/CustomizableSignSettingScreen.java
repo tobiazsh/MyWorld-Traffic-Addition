@@ -319,7 +319,7 @@ public class CustomizableSignSettingScreen extends Screen {
             if (!isUsableCustomizableSignBlockEntity(pos, world, facing))
                 return false; // If something changed during that time, we can't inform the block of the new master and thus can't continue
 
-            ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(pos, pos.equals(masterPos), masterPos));
+            ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(pos, (Boolean) pos.equals(masterPos), masterPos));
             ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(pos, pos.equals(masterPos)));
         }
 
