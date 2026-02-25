@@ -18,6 +18,7 @@ import com.mojang.math.Axis;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImVec2;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
@@ -36,7 +37,7 @@ public class BackgroundRenderer {
 
         private static void renderColor(Background background, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumerProvider, int light, int backgroundOverlay, Direction facing, float zOffsetRenderLayer) {
             if (!background.isColor()) return; // Do NOT render if it's not color
-            CustomRenderLayer.ColorLayering backgroundLayer = new CustomRenderLayer.ColorLayering(zOffsetRenderLayer, CustomRenderLayer.ColorLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID);
+            CustomRenderLayer.ColorLayering backgroundLayer = new CustomRenderLayer.ColorLayering(zOffsetRenderLayer);
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
             BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
@@ -57,15 +58,15 @@ public class BackgroundRenderer {
 
             if (color == null) return;
 
-            float r = color.r();
-            float b = color.b();
-            float g = color.g();
-            float a = color.a();
+            float r = color.r() / 255f;
+            float g = color.g() / 255f;
+            float b = color.b() / 255f;
+            float a = color.a() / 255f;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(1.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(1.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
 
             matrices.popPose();
         }
@@ -133,10 +134,10 @@ public class BackgroundRenderer {
             float innerV1 = bgSpr.v1 + vMargin;
             float innerV2 = bgSpr.v2 - vMargin;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(LightTexture.FULL_BRIGHT).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
             matrices.popPose();
         }
     }
@@ -174,8 +175,12 @@ public class BackgroundRenderer {
             if (col == null) col = Background.WHITE.color; // Fallback to white
             if (col == null) return; // Make IDE happy (cannot happen - ever)
 
-            ImVec2 pMin = new ImVec2(ImGui.getCursorPosX(), ImGui.getCursorPosY());
-            ImGui.getWindowDrawList().addRectFilled(pMin, new ImVec2(pMin.x + tileSize, pMin.y + tileSize), ImColor.rgba(col.toHexString()));
+            // getCursorScreenPos() returns screen-space coords, which is what addRectFilled expects
+            ImVec2 pMin = ImGui.getCursorScreenPos();
+            ImGui.getWindowDrawList().addRectFilled(pMin, new ImVec2(pMin.x + tileSize, pMin.y + tileSize), Color.toImGuiColor(col));
+
+            // Advance the cursor so the layout isn't broken
+            ImGui.dummy(tileSize, tileSize);
         }
 
         private static void renderTileTexture(Background background, BorderProperty border, int tileSize) {

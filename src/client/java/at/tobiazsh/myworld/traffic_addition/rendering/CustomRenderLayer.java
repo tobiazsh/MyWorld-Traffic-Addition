@@ -276,61 +276,40 @@ public class CustomRenderLayer {
 
     public static class ColorLayering extends Layering {
 
-        private final ColorLayering.LayeringType layeringType;
-
         /**
          * Constructor for ColorLayering
          * @param zOffset The elevation on the z-axis. 1.0f = 128 Blocks | 0.128f = 1 Block
-         * @param layeringType The type of layering (solid, cutout, etc.)
          */
-        public ColorLayering(float zOffset, LayeringType layeringType) {
+        public ColorLayering(float zOffset) {
             super(zOffset);
-            this.layeringType = layeringType;
         }
 
-        private final Function<Float, RenderType> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
+        // ENTITY_TRANSLUCENT with blocks atlas bound:
+        //  - Fixes ghost texture: ENTITY_SOLID/CUTOUT have no .withTexture() → GPU reuses whatever was last bound
+        //  - Fixes alpha: ENTITY_SOLID is opaque; ENTITY_TRANSLUCENT has alpha blending enabled
+        //  - UV is driven to (0,0) per-vertex so the white corner of the atlas is sampled; vertex color drives the actual tint
+        private final Function<Float, RenderType> ENTITY_TRANSLUCENT_Z_OFFSET_BACKWARD = Util.memoize(
                 zOff -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT)
+                            .withTexture(TEXTURE_NAME, LOCATION_BLOCKS)
                             .useLightmap()
                             .useOverlay()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOff))
                             .createRenderSetup();
 
-                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
-                }
-        );
-
-        private final Function<Float, RenderType> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
-                zOff -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
-                            .useLightmap()
-                            .useOverlay()
-                            .setLayeringTransform(Layering.getZLayeringBackward(zOff))
-                            .createRenderSetup();
-
-                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
+                    return RenderType.create("entity_translucent_z_offset_backward_color", renderSetup);
                 }
         );
 
         @Override
         public RenderType buildRenderType() {
-
-            this.renderType = switch (this.layeringType) {
-                case VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID -> ENTITY_SOLID_Z_OFFSET_BACKWARD.apply(this.zOffset);
-                case VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT -> ENTITY_CUTOUT_Z_OFFSET_BACKWARD.apply(this.zOffset);
-            };
-
+            this.renderType = ENTITY_TRANSLUCENT_Z_OFFSET_BACKWARD.apply(this.zOffset);
             return this.renderType;
         }
 
         @Override
         public RenderType getRenderType() {
             return renderType;
-        }
-
-        public enum LayeringType {
-            VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID,
-            VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT
         }
     }
 

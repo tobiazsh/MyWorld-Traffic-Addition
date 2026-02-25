@@ -71,6 +71,10 @@ public record Color(int a, int r, int g, int b) {
         return ((rgba & 0xFFFFFF00) >> 8) | ((rgba & 0xFF) << 24);
     }
 
+    public static int toImGuiColor(Color color) {
+        return (color.a() << 24) | (color.b() << 16) | (color.g() << 8) | color.r();
+    }
+
     /**
      * Converts the color to a hexadecimal string in the format #AARRGGBB
      * @return The hexadecimal string representation of the color
