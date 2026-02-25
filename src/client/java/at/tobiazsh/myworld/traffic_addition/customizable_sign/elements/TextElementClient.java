@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.Color;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
@@ -188,7 +188,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
         textRenderer.draw(
                 this.getText(),
                 0,0, zOffset,
-                Color.toHexARGB(color),
+                ImGuiColor.toHexARGB(color),
                 false,
                 positionMatrix,
                 vertexConsumerProvider,
