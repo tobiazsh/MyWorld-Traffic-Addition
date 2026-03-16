@@ -135,7 +135,6 @@ public class BackgroundSelectorPopup {
     }
 
     private void renderPatternOptions() {
-        if (textureData.getBackground().texture == null) return; // Color
         if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", textureData.getBackground().texture))) {
             BackgroundLoader.BACKGROUND_SPRITES.forEach(bgSprite -> {
                 if (ImGui.selectable(
