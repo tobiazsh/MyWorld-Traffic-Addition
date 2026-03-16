@@ -3,7 +3,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import at.tobiazsh.myworld.traffic_addition.utils.Color;
@@ -110,7 +109,6 @@ public class BackgroundSelectorPopup {
                 ImGui.closeCurrentPopup();
             }
 
-
             ImGui.endPopup();
         }
 
@@ -137,7 +135,15 @@ public class BackgroundSelectorPopup {
     }
 
     private void renderPatternOptions() {
-        String texture = textureData.getBackground().texture == null ? DEFAULT_TEXTURE : textureData.getBackground().texture;
+        String texture;
+
+        if (textureData.getBackground().texture == null) {
+            texture = DEFAULT_TEXTURE;
+            textureData.setBackground(new Background(texture)); // Set new background to default texture for preview
+        } else {
+            texture = textureData.getBackground().texture; // Else just set the current texture
+        }
+
         if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", texture))) {
             BackgroundLoader.BACKGROUND_SPRITES.forEach(bgSprite -> {
                 if (ImGui.selectable(
