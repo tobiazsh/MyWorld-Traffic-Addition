@@ -43,9 +43,9 @@ public record Color(int a, int r, int g, int b) {
 
     public Color(String hex, boolean hasAlpha) {
         this(
-                Integer.parseUnsignedInt(
-                        hex.startsWith("#") ? hex.substring(1) : hex, 16),
-                hasAlpha
+            Integer.parseUnsignedInt(
+                hex.startsWith("#") ? hex.substring(1) : hex, 16),
+            hasAlpha
         );
     }
 
