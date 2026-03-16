@@ -121,16 +121,19 @@ public class BackgroundSelectorPopup {
     }
 
     private void renderColorOptions() {
+        if (textureData.getBackground().color == null) {
+            this.color = DEFAULT_COLOR.toFloatRGBA();
+            textureData.setBackground(new Background(new Color(this.color)));
+        } else {
+            this.color = textureData.getBackground().color.toFloatRGBA();
+        }
+
         if (ImGui.colorPicker4(
-                (tr("Global", "Color Picker") + "##" + id),
+                tr("Global", "Color Picker") + "##" + id,
                 this.color,
                 ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf
         )) { // Translatable text for "Color Picker"
-            int r = Math.min(255, Math.round(color[0] * 255));
-            int g = Math.min(255, Math.round(color[1] * 255));
-            int b = Math.min(255, Math.round(color[2] * 255));
-            int a = Math.min(255, Math.round(color[3] * 255));
-            textureData.setBackground(new Background(new Color(a, r, g, b)));
+            textureData.setBackground(new Background(new Color(this.color)));
         }
     }
 

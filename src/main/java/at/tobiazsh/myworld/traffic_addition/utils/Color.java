@@ -2,6 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Arrays;
+
 /**
  * Represents a color with alpha, red, green, and blue components.
  * @param a Alpha
@@ -49,6 +51,25 @@ public record Color(int a, int r, int g, int b) {
         );
     }
 
+    /**
+     * Creates a new Color from a float[] {r, g, b, (a)}
+     * @param rgba
+     */
+    public Color(float[] rgba) {
+//        this(
+//                Math.min(255, Math.round(rgba[0] * 255)),
+//                Math.min(255, Math.round(rgba[1] * 255)),
+//                Math.min(255, Math.round(rgba[2] * 255)),
+//                rgba.length == 4 ? Math.min(255, Math.round(rgba[3] * 255)) : 255
+//        );
+        this(
+                rgba.length == 4 ? Math.min(255, Math.round(rgba[3] * 255)) : 255, // a
+                Math.min(255, Math.round(rgba[0] * 255)), // r
+                Math.min(255, Math.round(rgba[1] * 255)), // g
+                Math.min(255, Math.round(rgba[2] * 255))  // b
+        );
+    }
+
     private static boolean isInvalid(int colorVal) {
         return colorVal < 0 || colorVal > 255;
     }
@@ -81,5 +102,17 @@ public record Color(int a, int r, int g, int b) {
      */
     public String toHexString() {
         return String.format("#%02X%02X%02X%02X", a, r, g, b);
+    }
+
+    public float[] toFloatRGBA() {
+        if (isInvalid(a) || isInvalid(r) || isInvalid(g) || isInvalid(b))
+            throw new IllegalArgumentException("Color values must be between 0 and 255");
+
+        float a = a() / 255f;
+        float r = r() / 255f;
+        float g = g() / 255f;
+        float b = b() / 255f;
+
+        return new float[]{r, g, b, a};
     }
 }
