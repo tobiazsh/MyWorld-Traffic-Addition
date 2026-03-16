@@ -18,6 +18,9 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class BackgroundSelectorPopup {
 
+    private static final String DEFAULT_TEXTURE = "austria:default"; // Austria Default Road Sign Texture
+    private static final Color DEFAULT_COLOR = new Color(255, 255, 255, 255); // White
+
     private enum BackgroundType {
         COLOR("Color"),
         NONE("None"),
@@ -54,7 +57,6 @@ public class BackgroundSelectorPopup {
         if (textureData.getBackground().isColor()) {
             Color col = textureData.getBackground().color;
 
-
             color = new float[] {
                     col.r() / 255f, // Does NOT produce a NPE (see isColor() method)
                     col.g() / 255f,
@@ -77,8 +79,8 @@ public class BackgroundSelectorPopup {
 
                 Arrays.stream(BackgroundType.values()).forEach(bgType -> {
                     if (ImGui.selectable(
-                            tr("ImGui.Main.Background", bgType.translationName),
-                            Objects.equals(bgType, this.backgroundType))
+                        tr("ImGui.Main.Background", bgType.translationName),
+                        Objects.equals(bgType, this.backgroundType))
                     ) {
                         this.backgroundType = bgType;
                     }
@@ -135,11 +137,12 @@ public class BackgroundSelectorPopup {
     }
 
     private void renderPatternOptions() {
-        if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", textureData.getBackground().texture))) {
+        String texture = textureData.getBackground().texture == null ? DEFAULT_TEXTURE : textureData.getBackground().texture;
+        if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", texture))) {
             BackgroundLoader.BACKGROUND_SPRITES.forEach(bgSprite -> {
                 if (ImGui.selectable(
-                        tr("ImGui.Main.Background", bgSprite.getAtlasId().toString()),
-                        Objects.equals(bgSprite, SpriteAtlasManager.INSTANCE.getSpriteAtlas(Identifier.parse(textureData.getBackground().texture)))
+                    tr("ImGui.Main.Background", bgSprite.getAtlasId().toString()),
+                    Objects.equals(bgSprite, SpriteAtlasManager.INSTANCE.getSpriteAtlas(Identifier.parse(texture)))
                 )) {
                     textureData.setBackground(new Background(bgSprite.getAtlasId().toString()));
                 }
