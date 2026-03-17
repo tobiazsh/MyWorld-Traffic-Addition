@@ -213,7 +213,7 @@ public class ClientElementManager {
     public void setData(CustomizableSignTextureData data, CustomizableSignBlockEntity blockEntity) {
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        List<ClientElementInterface> elements = data.getElementContainer().getElements().stream().map(ClientElementFactory::toClientElement).toList();
+        List<ClientElementInterface> elements = data.getElementContainer().getElements().stream().map(CustomizableSignElementFactory::toClientElement).toList();
         registerUnregistered();
 
         this.setElements(elements);
@@ -233,6 +233,13 @@ public class ClientElementManager {
 
     public void exportToSign(BlockPos pos) {
         updateFactor();
+
+        textureData.getElementContainer().setElements(
+                elements.stream()
+                    .map(CustomizableSignElementFactory::toGlobalElement)
+                    .filter(Objects::nonNull)
+                    .toList()
+        );
 
         if (textureData == null) {
             throw new IllegalStateException("Cannot export to sign: Current JSON is empty! It seems like nothing has been edited!");
