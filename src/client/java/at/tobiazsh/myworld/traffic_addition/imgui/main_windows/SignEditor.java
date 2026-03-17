@@ -7,7 +7,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementFactory;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
@@ -481,7 +481,7 @@ public class SignEditor {
 
         FileDialogPopup.open(SavesDirectory.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
             JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
-            ClientElementInterface element = ClientElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
+            ClientElementInterface element = CustomizableSignElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
 
             if (element == null) {
                 MyWorldTrafficAddition.LOGGER.error("Importing element failed! Path: {}", path.toString());

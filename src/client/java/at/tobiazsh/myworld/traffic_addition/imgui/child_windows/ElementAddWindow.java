@@ -9,7 +9,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementFactory;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ImageElementClient;
@@ -183,7 +183,7 @@ public class ElementAddWindow {
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
 				if (ImGui.button(tr("Global", "Add"))) { // "Add" button
-					addElement((ImageElementClient) ClientElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
+					addElement((ImageElementClient) CustomizableSignElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
 				}
 
 			}
