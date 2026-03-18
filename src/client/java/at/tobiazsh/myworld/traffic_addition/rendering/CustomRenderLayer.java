@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -15,6 +17,7 @@ import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
 import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
+import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES;
 
 /**
  * Custom RenderLayer exclusively for this mod to prevent z-fighting when viewing signs from further away. Pairs with CustomTextRenderer.
@@ -73,10 +76,10 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_SOLID)
                             .withTexture(TEXTURE_NAME, texture)
-                            .useLightmap()
                             .useOverlay()
+                            .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
                             .createRenderSetup();
 
@@ -86,14 +89,14 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderType> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_CUTOUT)
                             .withTexture(TEXTURE_NAME, texture)
-                            .useLightmap()
                             .useOverlay()
+                            .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
                             .createRenderSetup();
 
-                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
+                    return RenderType.create("entity_cutout_z_offset_backward", renderSetup);
                 }
         );
         
@@ -284,14 +287,10 @@ public class CustomRenderLayer {
             super(zOffset);
         }
 
-        // ENTITY_TRANSLUCENT with blocks atlas bound:
-        //  - Fixes ghost texture: ENTITY_SOLID/CUTOUT have no .withTexture() → GPU reuses whatever was last bound
-        //  - Fixes alpha: ENTITY_SOLID is opaque; ENTITY_TRANSLUCENT has alpha blending enabled
-        //  - UV is driven to (0,0) per-vertex so the white corner of the atlas is sampled; vertex color drives the actual tint
         private final Function<Float, RenderType> ENTITY_TRANSLUCENT_Z_OFFSET_BACKWARD = Util.memoize(
                 zOff -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT)
-                            .withTexture(TEXTURE_NAME, LOCATION_BLOCKS)
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_TRANSLUCENT)
+                            .withTexture(TEXTURE_NAME, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "rendering/1x1_white.png"))
                             .useLightmap()
                             .useOverlay()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOff))
