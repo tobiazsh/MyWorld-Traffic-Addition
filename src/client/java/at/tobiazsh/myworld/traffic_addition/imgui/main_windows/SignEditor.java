@@ -64,7 +64,6 @@ public class SignEditor {
 
     public static String backgroundTexturePath;
     public static ClientElementInterface selectedElement = null;
-    private static Folder allBackgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
     public static ImVec2 signRatio; // Initialized when screen is opened;
     public static boolean showDebug = false;
 
@@ -119,13 +118,6 @@ public class SignEditor {
         }
 
         getSignSize();
-
-        // List all available backgrounds
-        try {
-            allBackgrounds = FileSystem.listFoldersRecursive("/assets/%s/textures/imgui/sign_res/backgrounds/".formatted(MyWorldTrafficAddition.MOD_ID), true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
         signRatio = createRatio(SignPreview.previewMaxWidth, SignPreview.previewMaxHeight, signWidthBlocks, signHeightBlocks);
 
