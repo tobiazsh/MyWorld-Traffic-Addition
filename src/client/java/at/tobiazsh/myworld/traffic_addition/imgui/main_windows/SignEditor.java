@@ -61,13 +61,14 @@ public class SignEditor {
     private static int signHeightBlocks;
 
     private static boolean isClosed = true;
+    private static boolean isDebug = false;
 
     public static String backgroundTexturePath;
     public static ClientElementInterface selectedElement = null;
     public static ImVec2 signRatio; // Initialized when screen is opened;
-    public static boolean showDebug = false;
 
     private static BackgroundSelectorPopup backgroundSelector;
+    private static JsonInjector jsonInjector;
 
     private static void quit() {
         ImGui.closeCurrentPopup();
@@ -138,6 +139,13 @@ public class SignEditor {
                 ClientElementManager.getInstance().textureData,
                 "bg_" + System.identityHashCode(ClientElementManager.getInstance().textureData)
         );
+
+        // DEBUG INIT
+
+        jsonInjector = new JsonInjector(
+                "jsonInjector_" + blockEntity.hashCode(),
+                blockEntity
+        );
     }
 
     private static void getSignSize() {
@@ -182,6 +190,7 @@ public class SignEditor {
         ImGui.begin(tr("ImGui.Main.SignEditor", "Sign Editor"), ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
+        renderDebug();
         handleHotKeys();
 
         JsonPreviewPopup.render();
@@ -256,7 +265,7 @@ public class SignEditor {
 
             ImGui.separator();
 
-            if(ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Debug Menu"))) showDebug = !showDebug;
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Debug Menu"))) isDebug = !isDebug;
 
             ImGui.endMenu();
         }
@@ -317,7 +326,7 @@ public class SignEditor {
             ImGui.endMenu();
         }
 
-        if (showDebug) if (ImGui.beginMenu("Debug")) {
+        if (isDebug) if (ImGui.beginMenu("Debug")) {
 
             if (ImGui.menuItem("Toggle Snap to Window")) {
                 ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
@@ -337,10 +346,18 @@ public class SignEditor {
             if (ImGui.menuItem("Test Automatic Background Parsing")) DebugFunctions.testAutoBackgroundLoad();
             if (ImGui.menuItem("Test New Data Parsing")) DebugFunctions.testNewDataParse();
 
+            if (ImGui.menuItem("Inject JSON")) jsonInjector.open();
+
             ImGui.endMenu();
         }
 
         ImGui.endMenuBar();
+    }
+
+    private static void renderDebug() {
+        if (!isDebug) return;
+
+        jsonInjector.render();
     }
 
     public static void calcFactor() {
