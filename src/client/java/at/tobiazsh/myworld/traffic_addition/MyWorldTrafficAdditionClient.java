@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import at.tobiazsh.myworld.traffic_addition.block_entities.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
@@ -35,7 +34,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
