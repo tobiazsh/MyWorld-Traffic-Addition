@@ -271,6 +271,4 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
     }
 
-	private static void loadShader() {
-	}
 }
