@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.data_fix.GlobalDataFixer;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
@@ -46,6 +47,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("MyWorld Traffic Addition");
 
+	public static final int DATA_FIXER_VERSION = 1;
 	public static final String MOD_ID = "myworld_traffic_addition";
     public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
@@ -90,6 +92,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Loading preferences...");
 		ServerPreferences.loadPreferences();
         ServerBlacklist.loadBlacklist();
+
+		GlobalDataFixer.register();
 
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageBackend.countEntriesAndReadIntoMemory();
