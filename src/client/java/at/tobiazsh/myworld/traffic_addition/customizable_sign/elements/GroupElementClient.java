@@ -30,10 +30,13 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
     }
 
-    // NOT NECESSARY --> Groups are unpacked in CustomizableBlockEntity
+    // Was not necessary in older mod versions because Groups were unpacked in CustomizableBlockEntity, but
+    // as this does not happen anymore and the texture is stored in a simple CustomizableSignTextureData, we need
+    // to render each element of the group element. If performance becomes a problem, unpack all on texture update
+    // and store inside CustomizableSignTextureData. Then re-unpack each time the list changes (detected in-class).
     @Override
     public void renderMinecraft(SubmitNodeCollector queue, int indexInList, int csbeHeight, PoseStack matrices, int light, Direction facing) {
-
+        this.clientElements.forEach(elem -> elem.renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
     }
 
     public List<ClientElementInterface> getClientElements() {
