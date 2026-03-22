@@ -57,7 +57,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private BlockPosExtended masterPos;
     private String signPoleDistances = "";
     private String signDistances = "";
-    private CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
+    private CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.WHITE, new ArrayList<>());
 
     private int rotation = 0;
     private int height = 1;
