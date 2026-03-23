@@ -125,4 +125,12 @@ public record BorderProperty(
                 up, right, down, left
         );
     }
+
+    /**
+     * Check if all borders are active (up, right, down, left). Corners are not considered in this check.
+     */
+    public boolean hasAllBorders() {
+        return up() && right() && left() && down();
+    }
+
 }
