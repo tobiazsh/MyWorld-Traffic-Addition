@@ -627,4 +627,103 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     private static boolean masterStringHasOldFormat(String masterString) {
         return masterString.contains("%");
     }
+
+    private boolean hadErrorWrongBorderPatch;
+
+    /**
+     * Patch for version 1.7.0 --> 1.8.0 of mod because block borders are being loaded wrongly.
+     * Execute on the server!
+     */
+    private static void patchWrongBorders(CustomizableSignBlockEntity csbe) {
+        if (csbe.hadErrorWrongBorderPatch) return; // Don't execute twice
+
+        try {
+            if (csbe.getLevel() == null)
+                throw new IllegalStateException("Level of customizable sign {} is null! Please manually reinitialize the sign!");
+
+            if (!isUsableCustomizableSignBlockEntity(csbe.getMasterPos(), csbe.getLevel(), csbe.getFacing())) {
+                MyWorldTrafficAddition.LOGGER.error("""
+                        Error while re-initializing sign
+                        Master block at position {} is not a usable CustomizableSignBlockEntity! Please manually reinitialize the sign!
+                        Disabling automatic-reinitialization for this sign...
+                        """, csbe.getMasterPos());
+                csbe.hadErrorWrongBorderPatch = true;
+                return;
+            }
+
+            // Confirmed usable block (see above), now cast to block entity
+            var masterBlock = (CustomizableSignBlockEntity) csbe.getLevel().getBlockEntity(csbe.getMasterPos());
+
+            // Just another check to stop the IDE from bitching about it
+            if (masterBlock == null)
+                throw new IllegalStateException("Master Block entity is null!");
+
+            // Another check to stop the IDE from bitching
+            if (masterBlock.getLevel() == null)
+                throw new IllegalStateException("Level of master block is null!");
+
+            var result = CustomizableSignInitializer.initializeSign(
+                    masterBlock,
+                    errorMessage -> {
+                        MyWorldTrafficAddition.LOGGER.error("""
+                                Error while re-initializing sign at position {} during border patch!
+                                Error message: {}
+                                Please manually reinitialize the sign!
+                                Disabling automatic-reinitialization for this sign...
+                                """, csbe.getBlockPos(), errorMessage);
+                        csbe.hadErrorWrongBorderPatch = true;
+                    }
+            );
+
+            if (masterBlock.hadErrorWrongBorderPatch) return; // Don't execute if an error occurred during initialization
+
+            // Set size
+            masterBlock.setWidth(result.signWidth());
+            masterBlock.setHeight(result.signHeight());
+
+            // Also set new sign poles
+            List<String> signPoleDistancesStringified = result.poleDistances().stream()
+                    .map(BlockPosExtended::toObjectString)
+                    .toList();
+
+            byte[] signPoleDistanceBytes = ListUtils.toByteArray(signPoleDistancesStringified);
+            masterBlock.setSignPoleDistances(signPoleDistanceBytes);
+
+            for (BlockPos pos : result.signPositions()) {
+                // Inform other signs of new master
+                var informedCsbe = masterBlock.getLevel().getBlockEntity(pos); // Level is safe here; Already checked above
+                if (!(informedCsbe instanceof CustomizableSignBlockEntity)) return;
+                ((CustomizableSignBlockEntity) informedCsbe).setMaster(false);
+                ((CustomizableSignBlockEntity) informedCsbe).setMasterPos(csbe.getMasterPos());
+
+                // Already load the borders too while we're at it
+                ((CustomizableSignBlockEntity) informedCsbe).borders =
+                        getBorderListBoundingBased(pos, masterBlock.getLevel());
+            }
+
+            // Lastly, set signDistances
+            List<String> signDistancesStringified = result.signDistances().stream()
+                    .map(BlockPosExtended::toObjectString)
+                    .toList();
+
+            byte[] signDistanceBytes = ListUtils.toByteArray(signDistancesStringified);
+            masterBlock.setSignDistances(signDistanceBytes);
+
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("""
+                        Error while re-initializing sign
+                        Disabling automatic-reinitialization for this sign...
+                        """, e);
+            csbe.hadErrorWrongBorderPatch = true;
+        }
+    }
+
+    /**
+     * Checks if a wrong border patch apply makes sense
+     */
+    private static boolean mustApplyWrongBorderPatch(CustomizableSignBlockEntity csbe) {
+        if (!csbe.isMaster) return false;
+        if (csbe.getBorderType().hasAllBorders()) return false;
+        return csbe.width > 1 && csbe.height > 1;
+    }
 }
