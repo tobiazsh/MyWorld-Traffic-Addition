@@ -4,17 +4,14 @@ import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignInitializer;
 import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,17 +21,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 /**
  * Screen for customizing sign blocks
@@ -65,7 +58,7 @@ public class CustomizableSignSettingScreen extends Screen {
     private boolean isInitialized = false;
 
     /**
-     * Creates a new screen for customizing signDistances
+     * Creates a new screen for customizing signRelative
      */
     public CustomizableSignSettingScreen(Level world, BlockPos pos, Player player) {
         super(TITLE);
@@ -166,8 +159,6 @@ public class CustomizableSignSettingScreen extends Screen {
         this.clearWidgets();
     }
 
-    private boolean abort = false;
-
     private void initSign() {
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
 
@@ -176,27 +167,24 @@ public class CustomizableSignSettingScreen extends Screen {
             return;
         }
 
-        var result = CustomizableSignInitializer.initializeSign(
-                currentSignBlockEntity,
-                errorMessage -> {
-                    player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Error", errorMessage)), false);
-                    abort = true;
-                }
-        );
+        var result = CustomizableSignInitializer.initializeSign(currentSignBlockEntity);
 
-        if (abort) return;
+        if (result.hasError()) {
+            player.displayClientMessage(Component.literal(result.error().message()), false);
+            return;
+        }
 
-        if (!informMaster(result.signPositions(), new BlockPosExtended(pos), currentSignBlockEntity.getFacing())) {
+        if (!informMaster(result.signAbsolute(), new BlockPosExtended(pos), currentSignBlockEntity.getFacing())) {
             player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "No sign found at one or more of the positions! Please check the structure!")), false);
             return;
         }
 
         ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, result.signHeight(), result.signWidth()));
 
-        setSignBorder(result.signPositions());
-        result.polePositions().forEach(pole -> ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false)));
+        setSignBorder(result.signAbsolute());
+        result.poleAbsolute().forEach(pole -> ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false)));
 
-        List<String> distancesString = result.poleDistances().stream()
+        List<String> distancesString = result.poleRelative().stream()
                 .map(BlockPosExtended::toObjectString)
                 .toList();
 
@@ -211,7 +199,7 @@ public class CustomizableSignSettingScreen extends Screen {
             return;
         }
 
-        List<String> signDistancesString = result.signDistances().stream()
+        List<String> signDistancesString = result.signRelative().stream()
                 .map(BlockPosExtended::toObjectString)
                 .toList();
 
@@ -229,7 +217,7 @@ public class CustomizableSignSettingScreen extends Screen {
     }
 
     /**
-     * Informs all other signDistances except the master about their new master position
+     * Informs all other signRelative except the master about their new master position
      *
      * @return success status of operation
      */

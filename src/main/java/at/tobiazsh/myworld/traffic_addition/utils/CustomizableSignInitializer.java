@@ -2,202 +2,245 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.*;
 
 import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.isUsableCustomizableSignBlockEntity;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
+@NullMarked
 public class CustomizableSignInitializer {
 
-    public record CustomizableSignInitializationResult(
-            int signWidth, int signHeight,
-            ImmutableList<BlockPos> signPositions,
-            ImmutableList<BlockPosExtended> signDistances,
-            ImmutableList<BlockPos> polePositions,
-            ImmutableList<BlockPosExtended> poleDistances,
-            boolean success
-    ) {
-        public boolean hasError() {
-            return !this.success;
-        }
+    public record DetectionError(String message) {
+        public static DetectionError combine(@Nullable DetectionError signError, @Nullable DetectionError poleError) {
+            String signMessage = signError != null ? signError.message() : "";
+            String poleMessage = poleError != null ? poleError.message() : "";
 
-        public static CustomizableSignInitializationResult unsuccessful() {
-            return new CustomizableSignInitializationResult(
+            return new DetectionError(String.format("""
+                    Sign detection error: %s
+                    Pole detection error: %s
+                    """, signMessage, poleMessage));
+        }
+    }
+
+    /**
+     * Stores the result from the sign detection loop.
+     * @param signRelative All the sign's relative coordinates to the master sign
+     * @param signAbsolute All the sign's absolute coordinates (same order as signAbsolute)
+     * @param realMaster The real master sign position (in case the original master sign was not the actual master)
+     * @param signWidth The sign's detected width
+     * @param signHeight The sign's detected height
+     * @param error Error if detection failed. Null if OK
+     */
+    private record SignLoopResult(
+            ImmutableList<BlockPosExtended> signRelative,
+            ImmutableList<BlockPos> signAbsolute,
+            BlockPos realMaster,
+            int signWidth, int signHeight,
+            @Nullable DetectionError error
+    ) {
+        public static SignLoopResult failure(String message) {
+            return new SignLoopResult(
+                    ImmutableList.of(), ImmutableList.of(),
+                    BlockPos.ZERO,
                     0, 0,
-                    ImmutableList.of(), ImmutableList.of(),
-                    ImmutableList.of(), ImmutableList.of(),
-                    false
+                    new DetectionError(message)
             );
         }
     }
 
     /**
+     * Stores the result from the pole detection loop.
+     * @param poleRelative All the pole's relative coordinates to the master sign
+     * @param poleAbsolute All the pole's absolute coordinates (same order as poleRelative)
+     * @param error Error if detection failed. Null if OK
+     */
+    private record PoleLoopResult(
+            ImmutableList<BlockPosExtended> poleRelative,
+            ImmutableList<BlockPos> poleAbsolute,
+            @Nullable DetectionError error
+    ) {
+        public static PoleLoopResult failure(String message) {
+            return new PoleLoopResult(
+                    ImmutableList.of(), ImmutableList.of(),
+                    new DetectionError(message)
+            );
+        }
+    }
+
+    /**
+     * Stores the result from sign initialization.
+     * @param signWidth The sign's detected width
+     * @param signHeight The sign's detected height
+     * @param realMaster The real master sign position (in case the original master sign was not the actual master)
+     * @param signRelative All the sign's relative coordinates (same order as signAbsolute)
+     * @param signAbsolute All the sign's absolute coordinates to the master sign
+     * @param poleRelative All the pole's relative coordinates to the master sign
+     * @param poleAbsolute All the pole's absolute coordinates (same order as poleRelative)
+     * @param error Error if initialization failed. Null if OK
+     */
+    public record CustomizableSignInitializationResult(
+            int signWidth, int signHeight,
+            BlockPos realMaster,
+            ImmutableList<BlockPosExtended> signRelative,
+            ImmutableList<BlockPos> signAbsolute,
+            ImmutableList<BlockPosExtended> poleRelative,
+            ImmutableList<BlockPos> poleAbsolute,
+            @Nullable DetectionError error
+    ) {
+        public boolean hasError() {
+            return this.error != null;
+        }
+
+        /**
+         * Returns an empty result
+         */
+        public static CustomizableSignInitializationResult failure(String message) {
+            return new CustomizableSignInitializationResult(
+                    0, 0,
+                    BlockPos.ZERO,
+                    ImmutableList.of(), ImmutableList.of(),
+                    ImmutableList.of(), ImmutableList.of(),
+                    new DetectionError(message)
+            );
+        }
+
+        /**
+         * Combines a signResult and a poleResult to a main result.
+         * @param signResult The sign detection result
+         * @param poleResult The pole detection result
+         * @return Combined result
+         */
+        private static CustomizableSignInitializationResult combine(SignLoopResult signResult, PoleLoopResult poleResult) {
+            boolean hasError = signResult.error() != null || poleResult.error() != null;
+
+            return new CustomizableSignInitializationResult(
+                    signResult.signWidth(), signResult.signHeight(),
+                    signResult.realMaster(),
+                    signResult.signRelative(), signResult.signAbsolute(),
+                    poleResult.poleRelative(), poleResult.poleAbsolute(),
+                    hasError ? DetectionError.combine(signResult.error(), poleResult.error()) : null
+            );
+        }
+    }
+
+
+    /**
      * Initializes the sign structure by determining dimensions and configuring connected blocks
      * @param customizableSignBlockEntity the master block entity of the sign structure
-     * @param onError action to perform if an error occurs during initialization, accepts an error message as a parameter
      * @return result of the initialization, containing dimensions and positions of connected blocks if successful, or an error state if unsuccessful
      */
     public static CustomizableSignInitializationResult initializeSign(
-            CustomizableSignBlockEntity customizableSignBlockEntity,
-            Consumer<String> onError
+            CustomizableSignBlockEntity customizableSignBlockEntity
     ) {
-        if (customizableSignBlockEntity == null) {
-            onError.accept("Failed to initialize sign structure! Sign is null!");
-            return CustomizableSignInitializationResult.unsuccessful();
-        }
-
         Direction facing = customizableSignBlockEntity.getFacing();
-        BlockPosExtended masterPos = new BlockPosExtended(customizableSignBlockEntity.getBlockPos());
+        Direction right = getRightSideDirection(facing.getOpposite());
+        BlockPos pos = customizableSignBlockEntity.getBlockPos(); // NOT master pos! We don't know master yet!
         Level level = customizableSignBlockEntity.getLevel();
 
-        if (level == null) {
-            onError.accept("Failed to initialize sign structure! World of sign is null!");
-            return CustomizableSignInitializationResult.unsuccessful();
-        }
+        if (level == null)
+            return CustomizableSignInitializationResult.failure("Failed to initialize sign structure! Level of sign is null!");
 
-        int signHeight = checkHeight(customizableSignBlockEntity.getBlockPos(), facing, level);
-        int signWidth = checkWidth(customizableSignBlockEntity.getBlockPos(), facing, level);
+        SignLoopResult signResult = signDetection(pos, level, facing, right);
 
-        // Configure connected blocks
-        var signDistancesOpt = checkSigns(customizableSignBlockEntity.getBlockPos(), facing, signWidth, signHeight, level);
+        if (signResult.error() != null)
+            return CustomizableSignInitializationResult.failure("Failed to initialize sign structure! Sign detection failed with error: " + signResult.error().message());
 
-        if (signDistancesOpt.isEmpty()) {
-            onError.accept("Failed to initialize sign structure!");
-            return CustomizableSignInitializationResult.unsuccessful();
-        }
-
-        var poleData = checkSignPoles(masterPos, DirectionUtils.getFacing(customizableSignBlockEntity.getBlockPos(), level), level, signHeight, signWidth);
-
-        if (poleData.isEmpty()) {
-            onError.accept("Failed to initialize sign polesAction! Please check the structure");
-            return CustomizableSignInitializationResult.unsuccessful();
-        }
-
-        return new CustomizableSignInitializationResult(
-                signWidth, signHeight,
-                ImmutableList.copyOf(signDistancesOpt.get().getB()),
-                ImmutableList.copyOf(signDistancesOpt.get().getA()),
-                ImmutableList.copyOf(poleData.get().getA()),
-                ImmutableList.copyOf(poleData.get().getB()),
-                true
+        PoleLoopResult poleResult = poleDetection(
+                signResult.realMaster(), level, facing, right, signResult.signWidth, signResult.signHeight
         );
+
+        if (poleResult.error() != null)
+            return CustomizableSignInitializationResult.failure("Failed to initialize sign structure! Pole detection failed with error: " + poleResult.error().message());
+
+        return CustomizableSignInitializationResult.combine(signResult, poleResult);
     }
 
-    /**
-     * Determines the height of the sign structure by checking blocks above
-     */
-    private static int checkHeight(BlockPos masterPos, Direction facing, Level level) {
-        int height = 1;
+    private static SignLoopResult signDetection(
+            BlockPos signPos, Level level, Direction facing, Direction right
+    ) {
+        Direction left = right.getOpposite();
 
-        BlockPos currentPos = masterPos;
+        // Find "real" master on the bottom left
+        BlockPos master = signPos;
 
-        while (isUsableCustomizableSignBlockEntity(currentPos.above(), level, facing)) {
-            currentPos = currentPos.above();
+        while (isUsableCustomizableSignBlockEntity(master.below(), level, facing))
+            master = master.below();
+
+        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(left, master, 1), level, facing))
+            master = blockPosInDirection(left, master, 1);
+
+        // Scan rectangle while getting width and height as well as absolute and relative positions
+        List<BlockPosExtended> signRelative = new ArrayList<>();
+        List<BlockPos>         signAbsolute = new ArrayList<>();
+
+        int width = 0;
+        int height = 0;
+
+        for (BlockPos rowOrigin = master;
+             isUsableCustomizableSignBlockEntity(rowOrigin, level, facing);
+             rowOrigin = rowOrigin.above()) {
+
+            int rowWidth = 0;
+
+            for (BlockPos cursor = rowOrigin;
+                 isUsableCustomizableSignBlockEntity(cursor, level, facing);
+                 cursor = blockPosInDirection(right, cursor, 1)) {
+
+                signRelative.add(BlockPosExtended.getOffset(master, cursor));
+                signAbsolute.add(cursor);
+
+                rowWidth++;
+            }
+
+            if (width == 0)
+                width = rowWidth;
+            else if (rowWidth != width)
+                return SignLoopResult.failure("Not a rectangle!");
+
             height++;
         }
 
-        return height;
+        return new SignLoopResult(
+                ImmutableList.copyOf(signRelative),
+                ImmutableList.copyOf(signAbsolute),
+                master,
+                width, height,
+                null
+        );
     }
 
-    /**
-     * Determines the width of the sign structure by checking adjacent blocks
-     */
-    private static int checkWidth(BlockPos startingPos, Direction facing, Level level) {
-        int right = 1;
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
+    private static PoleLoopResult poleDetection(
+            BlockPos masterPos, Level level, Direction facing, Direction right, int width, int height
+    ) {
+        Direction behind = facing.getOpposite();
+        List<BlockPosExtended> poleRelative = new ArrayList<>();
+        List<BlockPos>         poleAbsolute = new ArrayList<>();
 
-        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(rightDirection, startingPos, right), level, facing))
-            right++;
+        BlockPos topLeftBehind = blockPosInDirection(behind, masterPos.above(height - 1), 1);
 
-        return right; // Subtract 1 to not double count the master block
-    }
+        for (int col = 0; col < width; col++) {
+            BlockPos cursor = blockPosInDirection(right, topLeftBehind, col);
 
-    /**
-     * Identifies and registers all sign blocks in the structure
-     *
-     * @param masterPos the position of the master sign block
-     * @param facing the direction the sign is facing
-     * @param signWidth the width of the sign structure in blocks
-     * @param signHeight the height of the sign structure in blocks
-     *
-     * @return Optional of a Tuple, where A is the distances of the sign blocks to the master block and B is the positions of the sign blocks. The order of both lists is the same, so index 0 in A corresponds to index 0 in B, etc.
-     */
-    private static Optional<Tuple<List<BlockPosExtended>, List<BlockPos>>> checkSigns(BlockPos masterPos, @NotNull Direction facing, int signWidth, int signHeight, Level level) {
-        List<BlockPosExtended> signDistances = new ArrayList<>();
-        List<BlockPos> signPositions = new ArrayList<>();
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
-
-        // Scan row by row, starting at master position
-        int scannedHeight = 0;
-        int scannedWidth = 0;
-        BlockPos currentUpPos = masterPos;
-        while (isUsableCustomizableSignBlockEntity(currentUpPos, level, facing)) {
-            BlockPos currentRightPos = currentUpPos;
-
-            // Scan a single row
-            scannedWidth = 0;
-            while (isUsableCustomizableSignBlockEntity(currentRightPos, level, facing)) {
-                signDistances.add(BlockPosExtended.getOffset(masterPos, currentRightPos));
-                signPositions.add(currentRightPos);
-
-                currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
-
-                scannedWidth++;
-            }
-
-            if (scannedWidth != signWidth)
-                return Optional.empty();
-
-            scannedHeight++;
-            currentUpPos = currentUpPos.above();
-        }
-
-        if (scannedHeight != signHeight)
-            return Optional.empty();
-
-        return Optional.of(new Tuple<>(signDistances, signPositions));
-    }
-
-    /**
-     * Identifies and configures all sign polesAction connected to the sign structure
-     * @return Optional of a Tuple, where A is the Pole poses and B is the distances of the poses to the master block.
-     */
-    private static Optional<Tuple<List<BlockPos>, List<BlockPosExtended>>> checkSignPoles(BlockPosExtended masterPos, Direction facing, Level level, int signHeight, int signWidth) {
-        List<BlockPosExtended> distances = new ArrayList<>();
-        List<BlockPos> poles = new ArrayList<>();
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
-
-        // Start position; this is the topmost pole position in the sign structure
-        BlockPos start = blockPosInDirection(facing.getOpposite(), masterPos.above(signHeight - 1), 1);
-
-        for (int i = 0; i < signWidth; i++) {
-            BlockPos pos = blockPosInDirection(rightDirection, start, i);
-
-            while (level.getBlockEntity(pos) instanceof SignPoleBlockEntity) {
-                distances.add(
-                        BlockPosExtended.getOffset(masterPos, pos)
-                );
-
-                poles.add(pos);
-
-                pos = pos.below();
+            while (level.getBlockEntity(cursor) instanceof SignPoleBlockEntity) {
+                poleRelative.add(BlockPosExtended.getOffset(masterPos, cursor));
+                poleAbsolute.add(cursor);
+                cursor = cursor.below();
             }
         }
 
-        return Optional.of(new Tuple<>(poles, distances));
+        return new PoleLoopResult(
+                ImmutableList.copyOf(poleRelative),
+                ImmutableList.copyOf(poleAbsolute),
+                null
+        );
     }
-
 }
