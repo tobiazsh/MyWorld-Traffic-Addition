@@ -619,7 +619,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         List<String> distances = new ArrayList<>();
 
         for (BlockPos pos : positions) {
-            BlockPosExtended offset = BlockPosExtended.getOffset(masterPos, pos);
+            BlockPosExtended offset = BlockPosExtended.getOffset(masterPos, pos); // Maybe inverse not necessary
             distances.add(offset.toObjectString());
         }
 

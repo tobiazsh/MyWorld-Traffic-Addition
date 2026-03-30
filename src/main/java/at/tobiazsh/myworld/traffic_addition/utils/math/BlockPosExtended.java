@@ -24,11 +24,15 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
     }
 
     public static BlockPosExtended getOffset(BlockPos from, BlockPos to) {
-        int offsetX = from.getX() - to.getX();
-        int offsetY = from.getY() - to.getY();
-        int offsetZ = from.getZ() - to.getZ();
+        int offsetX = to.getX() - from.getX();
+        int offsetY = to.getY() - from.getY();
+        int offsetZ = to.getZ() - from.getZ();
 
         return new BlockPosExtended(offsetX, offsetY, offsetZ);
+    }
+
+    public BlockPosExtended inverse() {
+        return new BlockPosExtended(-this.getX(), -this.getY(), -this.getZ());
     }
 
     public BlockPosExtended addOffset(BlockPosExtended offset) {

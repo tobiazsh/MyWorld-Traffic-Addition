@@ -375,7 +375,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         BlockPos offset = BlockPosExtended.getOffset(masterPos, position); // Offset of the sign. If the sign pole is one behind, the offset is (0, 0, -1) for example
 
         // Correct the offset to match the sign pole position
-        offset = new BlockPos(offset.getX() * (-1), offset.getY() * (-1), offset.getZ() * (-1));
+        offset = new BlockPos(offset.getX(), offset.getY(), offset.getZ());
 
         matrices.pushPose();
 
@@ -433,7 +433,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         matrices.pushPose();
 
         BlockPos holderPos = state.blockPos.relative(facing, 1); // Position of the sign holder is one block in front of the sign
-        matrices.translate(Vec3.atLowerCornerOf(BlockPosExtended.getOffset(state.blockPos, holderPos))); // Translate the sign holder to the correct position
+        matrices.translate(Vec3.atLowerCornerOf(BlockPosExtended.getOffset(state.blockPos, holderPos).inverse())); // Translate the sign holder to the correct position
 
         matrices.translate(0.5, 0.5, 0.5);
         matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
