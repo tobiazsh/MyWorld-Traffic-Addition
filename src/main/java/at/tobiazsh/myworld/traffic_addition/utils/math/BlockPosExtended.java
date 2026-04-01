@@ -9,9 +9,28 @@ package at.tobiazsh.myworld.traffic_addition.utils.math;
 
 
 import at.tobiazsh.myworld.traffic_addition.utils.StringableObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
 
 public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
+
+    public static final StreamCodec<ByteBuf, BlockPosExtended> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public BlockPosExtended decode(ByteBuf object) {
+            int x = object.readInt();
+            int y = object.readInt();
+            int z = object.readInt();
+            return new BlockPosExtended(x, y, z);
+        }
+
+        @Override
+        public void encode(ByteBuf object, BlockPosExtended object2) {
+            object.writeInt(object2.getX());
+            object.writeInt(object2.getY());
+            object.writeInt(object2.getZ());
+        }
+    };
 
     public static final BlockPosExtended INSTANCE = new BlockPosExtended(0, 0, 0);
 
