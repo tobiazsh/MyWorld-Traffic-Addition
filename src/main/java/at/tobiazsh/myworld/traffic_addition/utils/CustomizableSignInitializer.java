@@ -6,6 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
@@ -128,6 +129,57 @@ public class CustomizableSignInitializer {
                     signResult.signRelative(), signResult.signAbsolute(),
                     poleResult.poleRelative(), poleResult.poleAbsolute(),
                     hasError ? DetectionError.combine(signResult.error(), poleResult.error()) : null
+            );
+        }
+
+        /**
+         * Encodes the {@link CustomizableSignInitializationResult} into a {@link FriendlyByteBuf} for network transmission.
+         * @param buf The buffer to write to
+         */
+        public void encode(FriendlyByteBuf buf) {
+            buf.writeInt(signWidth);
+            buf.writeInt(signHeight);
+
+            buf.writeBlockPos(realMaster);
+
+            buf.writeCollection(signRelative, BlockPosExtended.STREAM_CODEC);
+            buf.writeCollection(signAbsolute, BlockPos.STREAM_CODEC);
+
+            buf.writeCollection(poleRelative, BlockPosExtended.STREAM_CODEC);
+            buf.writeCollection(poleAbsolute, BlockPos.STREAM_CODEC);
+
+            buf.writeBoolean(error != null); // Has error?
+
+            String message = error == null ? "" : error.message();
+            buf.writeUtf(message); // Error message (empty if no error)
+        }
+
+        /**
+         * Decodes the {@link CustomizableSignInitializationResult} from a {@link FriendlyByteBuf} received from the network.
+         * @param buf The received buffer.
+         * @return A new {@link CustomizableSignInitializationResult} instance containing the decoded data.
+         */
+        public static CustomizableSignInitializationResult decode(FriendlyByteBuf buf) {
+            int signWidth = buf.readInt();
+            int signHeight = buf.readInt();
+
+            BlockPos realMaster = buf.readBlockPos();
+
+            ImmutableList<BlockPosExtended> signRelative = ImmutableList.copyOf(buf.readList(BlockPosExtended.STREAM_CODEC));
+            ImmutableList<BlockPos> signAbsolute = ImmutableList.copyOf(buf.readList(BlockPos.STREAM_CODEC));
+
+            ImmutableList<BlockPosExtended> poleRelative = ImmutableList.copyOf(buf.readList(BlockPosExtended.STREAM_CODEC));
+            ImmutableList<BlockPos> poleAbsolute = ImmutableList.copyOf(buf.readList(BlockPos.STREAM_CODEC));
+
+            boolean hasError = buf.readBoolean();
+            String message = buf.readUtf();
+
+            return new CustomizableSignInitializationResult(
+                    signWidth, signHeight,
+                    realMaster,
+                    signRelative, signAbsolute,
+                    poleRelative, poleAbsolute,
+                    hasError ? new DetectionError(message) : null
             );
         }
     }
