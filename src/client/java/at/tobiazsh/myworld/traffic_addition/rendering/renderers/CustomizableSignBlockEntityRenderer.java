@@ -73,7 +73,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
      */
     private List<BlockPosExtended> calculatePosition(List<BlockPosExtended> distances, BlockPosExtended masterPos) {
         return distances.stream()
-                .map(distance -> masterPos.addOffset(distance.invert())) // Add the distance to the master position
+                .map(masterPos::addOffset) // Add the distance to the master position
                 .toList();
     }
 
@@ -204,7 +204,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
                     matrices,
                     light,
                     facing,
-                    signDistances.get(i).invert(),
+                    state.signPositionsRelative.get(i),
                     borderType,
                     OverlayTexture.NO_OVERLAY
             );
