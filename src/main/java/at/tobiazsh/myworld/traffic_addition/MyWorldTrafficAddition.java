@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.data_fix.GlobalDataFixer;
+import at.tobiazsh.myworld.traffic_addition.events.BlockEntityLoadHandler;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
@@ -114,13 +115,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(SignBlockRotationPayload.Id, SignBlockActions::handleRotationChange, SignBlockRotationPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
 				// Customizable Sign Blocks
-				new SmartPayload<>(SetMasterCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetMaster, SetMasterCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetBorderTypeCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetBorderType, SetBorderTypeCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSignPolePositionsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetSignPolePositions, SetSignPolePositionsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSignPositionsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetSignPositions, SetSignPositionsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetRenderStateCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRenderState, SetRenderStateCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SetRotationCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRotation, SetRotationCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSizeCustomizableSignPayload.Id, CustomizableSignBlockActions::handleSetSize, SetSizeCustomizableSignPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(UpdateTextureVarsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleUpdateTextureVariables, UpdateTextureVarsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
                 new SmartPayload<>(CustomizableSignSettingScreenClosed.Id, CustomizableSignBlockActions::handleCustomizableSignEditScreenClosed, CustomizableSignSettingScreenClosed.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
@@ -174,6 +169,12 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	private static void registerCustomProtocols() {
 		// Set customizable sign texture
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), (player, data) -> CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player));
+
+		// Customizable Sign Initialization
+		CustomServerNetworking.getInstance().registerProtocolHandler(
+				Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_initialization_transmission"),
+				CustomizableSignBlockActions::handleInitializeSign
+		);
 
 		// Request the maximum image upload size
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {

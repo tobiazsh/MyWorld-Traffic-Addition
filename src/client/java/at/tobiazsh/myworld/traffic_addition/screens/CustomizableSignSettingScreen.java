@@ -1,17 +1,18 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignInitializer;
 import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
-import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
-import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,15 +20,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-
-import java.io.IOException;
-import java.util.List;
-
-import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
-import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
 
 /**
  * Screen for customizing sign blocks
@@ -174,73 +167,15 @@ public class CustomizableSignSettingScreen extends Screen {
             return;
         }
 
-        if (!informMaster(result.signAbsolute(), new BlockPosExtended(pos), currentSignBlockEntity.getFacing())) {
-            player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "No sign found at one or more of the positions! Please check the structure!")), false);
-            return;
-        }
+        FriendlyByteBuf resultBuf = new FriendlyByteBuf(Unpooled.buffer());
+        result.encode(resultBuf);
 
-        ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, result.signHeight(), result.signWidth()));
-
-        setSignBorder(result.signAbsolute());
-        result.poleAbsolute().forEach(pole -> ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false)));
-
-        List<String> distancesString = result.poleRelative().stream()
-                .map(BlockPosExtended::toObjectString)
-                .toList();
-
-        try {
-            // Register poles in the master sign block
-            ClientPlayNetworking.send(new SetSignPolePositionsCustomizableSignBlockPayload(
-                    pos,
-                    ListUtils.toByteArray(distancesString)
-            ));
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to serialize sign pole positions for {}: {}", pos, e.getMessage());
-            return;
-        }
-
-        List<String> signDistancesString = result.signRelative().stream()
-                .map(BlockPosExtended::toObjectString)
-                .toList();
-
-        byte[] signDistanceBytes;
-
-        try {
-            signDistanceBytes = ListUtils.toByteArray(signDistancesString);
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to serialize sign positions for {}: {}", pos, e.getMessage());
-            player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Error", "Failed to initialize sign structure!")), false);
-            return;
-        }
-
-        ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(pos, signDistanceBytes));
-    }
-
-    /**
-     * Informs all other signRelative except the master about their new master position
-     *
-     * @return success status of operation
-     */
-    private boolean informMaster(List<BlockPos> positions, BlockPosExtended masterPos, Direction facing) {
-        for (BlockPos pos : positions) {
-            if (!isUsableCustomizableSignBlockEntity(pos, world, facing))
-                return false; // If something changed during that time, we can't inform the block of the new master and thus can't continue
-
-            ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(pos, (Boolean) pos.equals(masterPos), masterPos));
-            ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(pos, pos.equals(masterPos)));
-        }
-
-        return true;
-    }
-
-    /**
-     * Determines and sets appropriate border types for all sign blocks based on position
-     */
-    private void setSignBorder(List<BlockPos> positions) {
-        positions.forEach(pos -> {
-            BorderProperty borders = getBorderListBoundingBased(pos, world);
-            ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(pos, borders.toObjectString()));
-        });
+        CustomClientNetworking.getInstance().sendBytesToServer(
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_initialization_transmission"),
+                resultBuf.array(),
+                100,
+                0
+        );
     }
 
     // Scrolling implementation
