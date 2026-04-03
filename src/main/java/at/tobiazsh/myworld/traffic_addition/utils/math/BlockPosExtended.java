@@ -9,9 +9,13 @@ package at.tobiazsh.myworld.traffic_addition.utils.math;
 
 
 import at.tobiazsh.myworld.traffic_addition.utils.StringableObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
+
+import java.util.List;
 
 public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
 
@@ -31,6 +35,20 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
             object.writeInt(object2.getZ());
         }
     };
+
+    public static final Codec<BlockPosExtended> CODEC = Codec.INT.listOf().comapFlatMap(
+            list -> {
+                if (list.size() != 3)
+                    return DataResult.error(() -> "Invalid BlockPosExtended list size: " + list.size());
+
+                int x = list.get(0);
+                int y = list.get(1);
+                int z = list.get(2);
+
+                return DataResult.success(new BlockPosExtended(x, y, z));
+            },
+            pos -> List.of(pos.getX(), pos.getY(), pos.getZ())
+    );
 
     public static final BlockPosExtended INSTANCE = new BlockPosExtended(0, 0, 0);
 
