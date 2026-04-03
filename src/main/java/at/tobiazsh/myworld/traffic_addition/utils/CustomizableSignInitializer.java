@@ -44,13 +44,14 @@ public class CustomizableSignInitializer {
     private record SignLoopResult(
             ImmutableList<BlockPosExtended> signRelative,
             ImmutableList<BlockPos> signAbsolute,
+            ImmutableList<BorderProperty> borders,
             BlockPos realMaster,
             int signWidth, int signHeight,
             @Nullable DetectionError error
     ) {
         public static SignLoopResult failure(String message) {
             return new SignLoopResult(
-                    ImmutableList.of(), ImmutableList.of(),
+                    ImmutableList.of(), ImmutableList.of(), ImmutableList.of(),
                     BlockPos.ZERO,
                     0, 0,
                     new DetectionError(message)
@@ -93,6 +94,7 @@ public class CustomizableSignInitializer {
             BlockPos realMaster,
             ImmutableList<BlockPosExtended> signRelative,
             ImmutableList<BlockPos> signAbsolute,
+            ImmutableList<BorderProperty> borders,
             ImmutableList<BlockPosExtended> poleRelative,
             ImmutableList<BlockPos> poleAbsolute,
             @Nullable DetectionError error
@@ -108,7 +110,7 @@ public class CustomizableSignInitializer {
             return new CustomizableSignInitializationResult(
                     0, 0,
                     BlockPos.ZERO,
-                    ImmutableList.of(), ImmutableList.of(),
+                    ImmutableList.of(), ImmutableList.of(), ImmutableList.of(),
                     ImmutableList.of(), ImmutableList.of(),
                     new DetectionError(message)
             );
@@ -126,7 +128,7 @@ public class CustomizableSignInitializer {
             return new CustomizableSignInitializationResult(
                     signResult.signWidth(), signResult.signHeight(),
                     signResult.realMaster(),
-                    signResult.signRelative(), signResult.signAbsolute(),
+                    signResult.signRelative(), signResult.signAbsolute(), signResult.borders(),
                     poleResult.poleRelative(), poleResult.poleAbsolute(),
                     hasError ? DetectionError.combine(signResult.error(), poleResult.error()) : null
             );
@@ -144,6 +146,7 @@ public class CustomizableSignInitializer {
 
             buf.writeCollection(signRelative, BlockPosExtended.STREAM_CODEC);
             buf.writeCollection(signAbsolute, BlockPos.STREAM_CODEC);
+            buf.writeCollection(borders, BorderProperty.STREAM_CODEC);
 
             buf.writeCollection(poleRelative, BlockPosExtended.STREAM_CODEC);
             buf.writeCollection(poleAbsolute, BlockPos.STREAM_CODEC);
@@ -167,6 +170,7 @@ public class CustomizableSignInitializer {
 
             ImmutableList<BlockPosExtended> signRelative = ImmutableList.copyOf(buf.readList(BlockPosExtended.STREAM_CODEC));
             ImmutableList<BlockPos> signAbsolute = ImmutableList.copyOf(buf.readList(BlockPos.STREAM_CODEC));
+            ImmutableList<BorderProperty> borders = ImmutableList.copyOf(buf.readList(BorderProperty.STREAM_CODEC));
 
             ImmutableList<BlockPosExtended> poleRelative = ImmutableList.copyOf(buf.readList(BlockPosExtended.STREAM_CODEC));
             ImmutableList<BlockPos> poleAbsolute = ImmutableList.copyOf(buf.readList(BlockPos.STREAM_CODEC));
@@ -177,7 +181,7 @@ public class CustomizableSignInitializer {
             return new CustomizableSignInitializationResult(
                     signWidth, signHeight,
                     realMaster,
-                    signRelative, signAbsolute,
+                    signRelative, signAbsolute, borders,
                     poleRelative, poleAbsolute,
                     hasError ? new DetectionError(message) : null
             );
@@ -193,21 +197,21 @@ public class CustomizableSignInitializer {
     public static CustomizableSignInitializationResult initializeSign(
             CustomizableSignBlockEntity customizableSignBlockEntity
     ) {
-        Direction facing = customizableSignBlockEntity.getFacing();
-        Direction right = getRightSideDirection(facing.getOpposite());
+        Direction facingInverse = customizableSignBlockEntity.getFacing().getOpposite();
+        Direction right = getRightSideDirection(facingInverse);
         BlockPos pos = customizableSignBlockEntity.getBlockPos(); // NOT master pos! We don't know master yet!
         Level level = customizableSignBlockEntity.getLevel();
 
         if (level == null)
             return CustomizableSignInitializationResult.failure("Failed to initialize sign structure! Level of sign is null!");
 
-        SignLoopResult signResult = signDetection(pos, level, facing, right);
+        SignLoopResult signResult = signDetection(pos, level, facingInverse, right);
 
         if (signResult.error() != null)
             return CustomizableSignInitializationResult.failure("Failed to initialize sign structure! Sign detection failed with error: " + signResult.error().message());
 
         PoleLoopResult poleResult = poleDetection(
-                signResult.realMaster(), level, facing, right, signResult.signWidth, signResult.signHeight
+                signResult.realMaster(), level, facingInverse, right, signResult.signWidth, signResult.signHeight
         );
 
         if (poleResult.error() != null)
@@ -217,9 +221,10 @@ public class CustomizableSignInitializer {
     }
 
     private static SignLoopResult signDetection(
-            BlockPos signPos, Level level, Direction facing, Direction right
+            BlockPos signPos, Level level, Direction facingInverse, Direction right
     ) {
         Direction left = right.getOpposite();
+        Direction facing = facingInverse.getOpposite();
 
         // Find "real" master on the bottom left
         BlockPos master = signPos;
@@ -243,12 +248,15 @@ public class CustomizableSignInitializer {
 
             int rowWidth = 0;
 
-            for (BlockPos cursor = rowOrigin;
-                 isUsableCustomizableSignBlockEntity(cursor, level, facing);
-                 cursor = blockPosInDirection(right, cursor, 1)) {
+            for (
+                    BlockPos cursor = rowOrigin;
+                    isUsableCustomizableSignBlockEntity(cursor, level, facing);
+                    cursor = blockPosInDirection(right, cursor, 1)
+            ) {
 
                 signRelative.add(BlockPosExtended.getOffset(master, cursor));
                 signAbsolute.add(cursor);
+                // INTEGRATE HERE
 
                 rowWidth++;
             }
@@ -261,23 +269,59 @@ public class CustomizableSignInitializer {
             height++;
         }
 
+        ImmutableList<BorderProperty> borders = determineBorders(signAbsolute, right);
+
         return new SignLoopResult(
                 ImmutableList.copyOf(signRelative),
                 ImmutableList.copyOf(signAbsolute),
+                borders,
                 master,
                 width, height,
                 null
         );
     }
 
+    /**
+     * Determines which sign gets which border
+     * @param signAbsolute The list of detected signs in the customizable sign
+     * @param rightDir The rightDir direction from the observer's perspective
+     * @return {@code ImmutableList<BorderProperty>} in order of {@code signAbsolute}
+     */
+    private static ImmutableList<BorderProperty> determineBorders(List<BlockPos> signAbsolute, Direction rightDir) {
+        Set<BlockPos> hashedSignPositions = new HashSet<>(signAbsolute);
+        List<BorderProperty> results = new ArrayList<>(signAbsolute.size());
+        Direction leftDir = rightDir.getOpposite();
+
+        for (BlockPos pos : signAbsolute) {
+            BlockPos above = pos.above();
+            BlockPos below = pos.below();
+
+            boolean up = !hashedSignPositions.contains(above);
+            boolean down = !hashedSignPositions.contains(below);
+            boolean right = !hashedSignPositions.contains(pos.relative(rightDir));
+            boolean left = !hashedSignPositions.contains(pos.relative(leftDir));
+
+            boolean upRight = !hashedSignPositions.contains(above.relative(rightDir));
+            boolean upLeft = !hashedSignPositions.contains(above.relative(leftDir));
+            boolean downRight = !hashedSignPositions.contains(below.relative(rightDir));
+            boolean downLeft = !hashedSignPositions.contains(below.relative(leftDir));
+
+            results.add(new BorderProperty(
+                    up, right, down, left,
+                    upRight, upLeft, downRight, downLeft
+            ));
+        }
+
+        return ImmutableList.copyOf(results);
+    }
+
     private static PoleLoopResult poleDetection(
-            BlockPos masterPos, Level level, Direction facing, Direction right, int width, int height
+            BlockPos masterPos, Level level, Direction facingInverse, Direction right, int width, int height
     ) {
-        Direction behind = facing.getOpposite();
         List<BlockPosExtended> poleRelative = new ArrayList<>();
         List<BlockPos>         poleAbsolute = new ArrayList<>();
 
-        BlockPos topLeftBehind = blockPosInDirection(behind, masterPos.above(height - 1), 1);
+        BlockPos topLeftBehind = blockPosInDirection(facingInverse, masterPos.above(height - 1), 1);
 
         for (int col = 0; col < width; col++) {
             BlockPos cursor = blockPosInDirection(right, topLeftBehind, col);
