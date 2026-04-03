@@ -1,6 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -50,6 +54,22 @@ public record BorderProperty(
             object.writeBoolean(object2.cornerDownLeft());
         }
     };
+
+    public static final Codec<BorderProperty> CODEC = Codec.BOOL.listOf().comapFlatMap(
+            list -> {
+                if (list.size() != 8)
+                    return DataResult.error(() -> "Expected a list of 8 booleans for BorderProperty, but got " + list.size());
+
+                return DataResult.success(new BorderProperty(
+                        list.get(0), list.get(1), list.get(2), list.get(3),
+                        list.get(4), list.get(5), list.get(6), list.get(7)
+                ));
+            },
+            borderProperty -> java.util.List.of(
+                    borderProperty.up(), borderProperty.right(), borderProperty.down(), borderProperty.left(),
+                    borderProperty.cornerUpRight(), borderProperty.cornerUpLeft(), borderProperty.cornerDownRight(), borderProperty.cornerDownLeft()
+            )
+    );
 
     public static final BorderProperty INSTANCE = new BorderProperty(
             false, false, false, false,
