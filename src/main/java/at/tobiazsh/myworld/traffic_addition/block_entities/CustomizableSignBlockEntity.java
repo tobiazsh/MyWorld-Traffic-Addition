@@ -377,118 +377,31 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
     /**
-     * Converts the old border string format to a BorderProperty object.
-     *
-     * @param borderString The old border string format including the name prefix. For example: "customizable_sign_border_top" or "sign_border_not_right".
-     * @param name The name prefix that is used in the border string. For example: "customizable_sign" or "sign".
-     * @return A BorderProperty object representing the border configuration.
+     * Initializes the master block and
+     * @param data The data from the initialization process.
+     * @param border The border for specifically this sign.
      */
-    private static BorderProperty convertOldBorderStringToBorderProperty(String borderString, String name) {
-        String withoutName = borderString.replaceFirst(name + "_border_", ""); // Counts the number of underscores in the name and removes the prefix including the underscore
-
-        boolean left = false;
-        boolean right = false;
-        boolean up = false;
-        boolean down = false;
-
-        switch (withoutName) {
-            case "top" -> up = true;
-            case "right" -> right = true;
-            case "bottom" -> down = true;
-            case "left" -> left = true;
-
-            case "not_right" -> {
-                up = true;
-                down = true;
-                left = true;
-            }
-
-            case "not_left" -> {
-                up = true;
-                down = true;
-                right = true;
-            }
-
-            case "not_top" -> {
-                right = true;
-                down = true;
-                left = true;
-            }
-
-            case "not_bottom" -> {
-                up = true;
-                right = true;
-                left = true;
-            }
-
-
-            case "top_bottom" -> {
-                up = true;
-                down = true;
-            }
-
-            case "left_right" -> {
-                right = true;
-                left = true;
-            }
-
-            case "bottom_left" -> {
-                down = true;
-                left = true;
-            }
-
-            case "bottom_right" -> {
-                down = true;
-                right = true;
-            }
-
-            case "top_left" -> {
-                up = true;
-                left = true;
-            }
-
-            case "top_right" -> {
-                up = true;
-                right = true;
-            }
-
-            case "all" -> {
-                left = true;
-                right = true;
-                up = true;
-                down = true;
-            }
-
-            default -> {} // No borders are present
+    public void initialize(
+            CustomizableSignInitializer.CustomizableSignInitializationResult data,
+            BorderProperty border
+    ) {
+        if (!this.getBlockPos().equals(data.realMaster())) {
+            this.setMasterPos(data.realMaster());
+            this.setRendered(false);
+            this.setMaster(false);
+            this.setBorderType(border);
+            return;
         }
 
-        return new BorderProperty(
-                up, right, down, left,
-                false, false, false, false // No information about corners. Solution: Re-initialize sign in game or live with it. I am too lazy to implement this right now since FAPI fucked up my whole codebase.
-        );
-    }
+        this.setMaster(true);
+        this.setRendered(true);
+        this.setMasterPos(data.realMaster());
+        this.setBorderType(border);
+        this.setInitialized(true);
+        this.setWidth(data.signWidth());
+        this.setHeight(data.signHeight());
 
-    private static String convertPositionsToDistances(String oldPositions, BlockPos masterPos) {
-        List<BlockPos> positions = CustomizableSignBlockEntity.deconstructBlockPosListString(oldPositions);
-        List<String> distances = new ArrayList<>();
-
-        for (BlockPos pos : positions) {
-            BlockPosExtended offset = BlockPosExtended.getOffset(masterPos, pos); // Maybe inverse not necessary
-            distances.add(offset.toObjectString());
-        }
-
-        String distanceBlockPosStrings = "";
-
-        try {
-            distanceBlockPosStrings = Base64.getEncoder().encodeToString(ListUtils.toByteArray(distances));
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to convert old pole positions to distances! Error: {}", e.getMessage());
-        }
-
-        return distanceBlockPosStrings;
-    }
-
-    private static boolean masterStringHasOldFormat(String masterString) {
-        return masterString.contains("%");
+        this.setSignPositionsRelative(data.signRelative());
+        this.setSignPolePositionsRelative(data.poleRelative());
     }
 }
