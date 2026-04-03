@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.core.BlockPos;
 
@@ -26,6 +27,6 @@ public class CustomizableSignBlockRenderState extends BlockEntityRenderState {
 
     public List<ClientElementInterface> clientElements = new ArrayList<>();
 
-    public String signPoleDistancesString = "";
-    public String signDistancesString = "";
+    public List<BlockPosExtended> signPositionsRelative = new ArrayList<>();
+    public List<BlockPosExtended> signPolePositionsRelative = new ArrayList<>();
 }
