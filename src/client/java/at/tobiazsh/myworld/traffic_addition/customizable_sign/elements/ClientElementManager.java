@@ -200,12 +200,7 @@ public class ClientElementManager {
         CustomizableSignTextureData otherSignTextureData = blockEntity.getTextureData();
         if (otherSignTextureData == null) return; // No JSON found, nothing to import
 
-        try {
-            List<BlockPosExtended> signDistances = decodeSignDistances(blockEntity.getSignDistancesString());
-            borders = calculateBorders(signDistances, blockEntity, blockEntity.getWidth(), blockEntity.getHeight());
-        } catch (IOException | ClassNotFoundException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to decode sign distances while importing from sign!", e);
-        }
+        borders = calculateBorders(blockEntity.getSignPositionsRelative(), blockEntity, blockEntity.getWidth(), blockEntity.getHeight());
 
         setData(otherSignTextureData, blockEntity); // Set the data from the sign block entity
     }
@@ -292,23 +287,6 @@ public class ClientElementManager {
      */
     public BorderProperty[][] getBorders() {
         return borders;
-    }
-
-    /**
-     * Decodes the sign block distances from the master block.
-     * @param encoded The encoded sign block distances string from the master block
-     * @return List<BlockPosExtended> with the sign distances relative to the master block (not the coordinates!)
-     * @throws IOException Problem during decoding
-     * @throws ClassNotFoundException Class to be decoded not found
-     */
-    private static List<BlockPosExtended> decodeSignDistances(String encoded) throws IOException, ClassNotFoundException {
-        byte[] signDistancesByteArray = Base64.getDecoder().decode(encoded);
-        List<String> signDistancesStringed = ListUtils.fromByteArray(signDistancesByteArray);
-
-        return signDistancesStringed
-                .stream()
-                .map(BlockPosExtended.INSTANCE::fromString)
-                .toList();
     }
 
     /**
