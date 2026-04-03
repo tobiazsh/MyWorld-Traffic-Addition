@@ -165,20 +165,20 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * ...
      * (yeah, don't ask how I came up with that idea. I myself have no idea...)
      */
-    public String getSignDistancesString() {
-        return signDistances;
+    public List<BlockPosExtended> getSignPositionsRelative() {
+        return signPositionsRelative;
     }
-    public void setSignDistances(byte[] signDistances) {
-        this.signDistances = Base64.getEncoder().encodeToString(signDistances);
+    public void setSignPositionsRelative(List<BlockPosExtended> signPositionsRelative) {
+        this.signPositionsRelative = signPositionsRelative;
         updateGame();
     }
 
 
-    public String getSignPoleDistancesString() {
-        return signPoleDistances;
+    public List<BlockPosExtended> getSignPolePositionsRelative() {
+        return signPolePositionsRelative;
     }
-    public void setSignPoleDistances(byte[] signPolePositions) {
-        this.signPoleDistances = Base64.getEncoder().encodeToString(signPolePositions);
+    public void setSignPolePositionsRelative(List<BlockPosExtended> signPolePositionsRelative) {
+        this.signPolePositionsRelative = signPolePositionsRelative;
         updateGame();
     }
 
@@ -214,7 +214,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         return masterPos;
     }
     public void setMasterPos(BlockPos masterPos) {
-        this.masterPos = new BlockPosExtended(masterPos);
+        this.masterPos = masterPos;
         updateGame();
     }
 
