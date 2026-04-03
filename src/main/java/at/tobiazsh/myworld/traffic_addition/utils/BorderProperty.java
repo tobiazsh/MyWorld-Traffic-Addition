@@ -18,6 +18,39 @@ public record BorderProperty(
             boolean cornerDownLeft
 ) implements StringableObject<BorderProperty> {
 
+    public static final StreamCodec<ByteBuf, BorderProperty> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public BorderProperty decode(ByteBuf object) {
+            boolean up = object.readBoolean();
+            boolean right = object.readBoolean();
+            boolean down = object.readBoolean();
+            boolean left = object.readBoolean();
+
+            boolean cornerUpRight = object.readBoolean();
+            boolean cornerUpLeft = object.readBoolean();
+            boolean cornerDownRight = object.readBoolean();
+            boolean cornerDownLeft = object.readBoolean();
+
+            return new BorderProperty(
+                    up, right, down, left,
+                    cornerUpRight, cornerUpLeft, cornerDownRight, cornerDownLeft
+            );
+        }
+
+        @Override
+        public void encode(ByteBuf object, BorderProperty object2) {
+            object.writeBoolean(object2.up());
+            object.writeBoolean(object2.right());
+            object.writeBoolean(object2.down());
+            object.writeBoolean(object2.left());
+
+            object.writeBoolean(object2.cornerUpRight());
+            object.writeBoolean(object2.cornerUpLeft());
+            object.writeBoolean(object2.cornerDownRight());
+            object.writeBoolean(object2.cornerDownLeft());
+        }
+    };
+
     public static final BorderProperty INSTANCE = new BorderProperty(
             false, false, false, false,
             false, false, false, false
