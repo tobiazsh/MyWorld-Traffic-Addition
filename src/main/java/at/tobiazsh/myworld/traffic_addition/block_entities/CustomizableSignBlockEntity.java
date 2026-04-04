@@ -295,24 +295,15 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         // User-customizable
 
-        if (readView.contains("Rotation")) // Old version
-            rotation = readView.getIntOr("Rotation", 0);
-        else // New version
-            rotation = readView.getIntOr("rotation", 0);
+        String rotationKey = readView.contains("Rotation") ? "Rotation" : "rotation";
+        rotation = readView.getIntOr(rotationKey, 0);
 
-        if (readView.contains("SignTexture")) { // Old version
-            textureData = CustomizableSignTextureData.fromJson(
-                    JsonParser.parseString(
-                            readView.getStringOr("SignTexture", "{}")
-                    ).getAsJsonObject()
-            );
-        } else { // New version
-            textureData = CustomizableSignTextureData.fromJson(
-                    JsonParser.parseString(
-                            readView.getStringOr("sign_texture", "{}")
-                    ).getAsJsonObject()
-            );
-        }
+        String textureKey = readView.contains("Texture") ? "Texture" : "texture";
+        textureData = CustomizableSignTextureData.fromJson(
+                JsonParser.parseString(
+                        readView.getStringOr(textureKey, "{}")
+                ).getAsJsonObject()
+        );
 
         updateTextureVars();
     }
