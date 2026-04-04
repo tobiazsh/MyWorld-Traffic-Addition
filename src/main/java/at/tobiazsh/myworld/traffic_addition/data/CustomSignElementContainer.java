@@ -69,6 +69,13 @@ public class CustomSignElementContainer implements Iterable<BaseElement> {
         this.elements.add(index, element);
     }
 
+    /**
+     * @return Whether the sign has no elements.
+     */
+    public boolean isEmpty() {
+        return this.elements.isEmpty();
+    }
+
     @Override
     public Iterator<BaseElement> iterator() {
         return new Iterator<>() {
