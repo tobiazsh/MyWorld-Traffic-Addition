@@ -377,7 +377,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     }
 
     /**
-     * Initializes the master block and
+     * Initializes the sign according to the current master state (master or not)
      * @param data The data from the initialization process.
      * @param border The border for specifically this sign.
      */
