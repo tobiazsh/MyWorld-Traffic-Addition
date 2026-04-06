@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.data_fix.GlobalDataFixer;
-import at.tobiazsh.myworld.traffic_addition.events.BlockEntityLoadHandler;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
