@@ -285,7 +285,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         borders = readView.read("borders", BorderProperty.CODEC).orElse(BorderProperty.INSTANCE);
         masterPos = readView.read("master_pos", BlockPos.CODEC).orElse(this.getBlockPos());
 
-        isMaster = readView.getBooleanOr("is_master", true);
+        isMaster = readView.getBooleanOr("is_master", false);
         isRendered = readView.getBooleanOr("is_rendered", true);
         isInitialized = readView.getBooleanOr("is_initialized", false);
 
