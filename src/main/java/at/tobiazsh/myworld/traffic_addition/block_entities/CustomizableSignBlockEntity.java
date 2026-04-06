@@ -298,12 +298,17 @@ public class CustomizableSignBlockEntity extends BlockEntity {
         String rotationKey = readView.contains("Rotation") ? "Rotation" : "rotation";
         rotation = readView.getIntOr(rotationKey, 0);
 
-        String textureKey = readView.contains("Texture") ? "Texture" : "texture";
-        textureData = CustomizableSignTextureData.fromJson(
-                JsonParser.parseString(
-                        readView.getStringOr(textureKey, "{}")
-                ).getAsJsonObject()
-        );
+        String textureKey = readView.contains("SignTexture") ? "SignTexture" : "sign_texture";
+        try {
+            textureData = CustomizableSignTextureData.fromJson(
+                    JsonParser.parseString(
+                            readView.getStringOr(textureKey, "{}")
+                    ).getAsJsonObject()
+            );
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to parse texture data for CustomizableSignBlockEntity at position {}! Defaulting to empty texture. Error: {}", this.getBlockPos(), e.getMessage());
+            textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
+        }
 
         updateTextureVars();
     }
