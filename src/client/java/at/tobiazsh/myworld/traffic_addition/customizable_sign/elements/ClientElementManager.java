@@ -7,15 +7,15 @@ import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import java.lang.Math;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -307,16 +307,14 @@ public class ClientElementManager {
         if (blockLevel == null)
             return new BorderProperty[0][0];
 
-        blockPosExtendedModifiable.sort((a, b) -> {
+        // Sort from Y highest to lowest X/Z lowest to highest, because ImGui renders top -> bottom, left -> right
+        blockPosExtendedModifiable.sort(
+                Comparator
+                        .comparingInt(Vec3i::getY).reversed()
+                        .thenComparingInt(pos -> Math.abs(pos.getX()))
+                        .thenComparingInt(pos -> Math.abs(pos.getZ()))
+        );
 
-            int yCompare = Integer.compare(a.getY(), b.getY());
-            if (yCompare != 0) return yCompare;
-
-            int distA = Math.abs(a.getX()) + Math.abs(a.getZ());
-            int distB = Math.abs(b.getX()) + Math.abs(b.getZ());
-
-            return Integer.compare(distA, distB);
-        });
 
         BorderProperty[][] borders = new BorderProperty[signHeight][signWidth];
 
@@ -324,7 +322,7 @@ public class ClientElementManager {
         for (int row = 0; row < signHeight; row++) {
             for (int col = 0; col < signWidth; col++) {
                 BlockPosExtended offset = blockPosExtendedModifiable.get(idx++);
-                BlockPosExtended absPos = masterBlockPos.addOffset(offset.invert());
+                BlockPosExtended absPos = masterBlockPos.addOffset(offset);
 
                 BlockEntity be = blockLevel.getBlockEntity(absPos);
 
