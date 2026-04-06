@@ -47,6 +47,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     private boolean doNotReinitialize = false;
 
+    // Client only
     public AtomicBoolean hasTextureUpdateOccurred = new AtomicBoolean(false); // CLIENT-SIDE ONLY! Indicates whether a texture update has occurred and needs to be processed. Used in BER.
 
     private BorderProperty borders = new BorderProperty(
