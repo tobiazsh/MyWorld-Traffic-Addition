@@ -334,9 +334,16 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         List<ClientElementInterface> renderedElements = state.clientElements;
 
-        for (int i = 0; i < renderedElements.size(); i++) {
-            ClientElementInterface element = renderedElements.get(i);
-            renderElement(queue, element, i, height, matrices, light, facing);
+        // We use manual index counting here because we need to jump by group.elements().size() if we encounter a group
+        // to keep index integrity (otherwise: Z-Fighting!).
+        int currentIndex = 0;
+        for (var element : renderedElements) {
+            renderElement(queue, element, currentIndex, height, matrices, light, facing);
+
+            if (element instanceof GroupElementClient group)
+                currentIndex += group.unpackClient().size();
+            else
+                currentIndex++;
         }
     }
 

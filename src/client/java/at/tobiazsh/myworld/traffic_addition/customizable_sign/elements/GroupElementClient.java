@@ -36,7 +36,15 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     // and store inside CustomizableSignTextureData. Then re-unpack each time the list changes (detected in-class).
     @Override
     public void renderMinecraft(SubmitNodeCollector queue, int indexInList, int csbeHeight, PoseStack matrices, int light, Direction facing) {
-        this.clientElements.forEach(elem -> elem.renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
+        int index = 0;
+        for (var elem : clientElements.reversed()) {
+            elem.renderMinecraft(queue, indexInList + index, csbeHeight, matrices, light, facing);
+
+            if (elem instanceof GroupElementClient element)
+                index += element.clientElements.size();
+            else
+                index++;
+        }
     }
 
     public List<ClientElementInterface> getClientElements() {
