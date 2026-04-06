@@ -97,6 +97,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
         // Another check just to be sure nothing changed in the meantime
         if (imGuiFont.isInvalid() || !imGuiFont.font.isLoaded() || imGuiFont.font.getScale() <= 0) {
             MyWorldTrafficAddition.LOGGER.error("Font is invalid! Can't render text!");
+            imGuiFont = null;
+            fontFuture = null;
             return;
         }
 

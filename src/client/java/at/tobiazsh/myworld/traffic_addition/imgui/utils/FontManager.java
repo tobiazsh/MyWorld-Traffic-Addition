@@ -115,6 +115,10 @@ public class FontManager {
             return CompletableFuture.completedFuture(fontCache.get(key));
         }
 
+        for (var existingRequest : fontRequests)
+            if (existingRequest.getKey().equals(key))
+                return existingRequest.getFuture();
+
         FontRequest request = new FontRequest(path, fontSize);
         fontRequests.add(request);
         return request.getFuture();
