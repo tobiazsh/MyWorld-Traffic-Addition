@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TexturableElementInterface;
+import at.tobiazsh.myworld.traffic_addition.fix.CustomizableSignReinitializer;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
@@ -93,6 +94,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 			autoloadBackgroundAtlases();
 			MyWorldTrafficAddition.LOGGER.info("Loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
 		});
+
+		CustomizableSignReinitializer.register();
 
 		loadPreferences();
 	}
