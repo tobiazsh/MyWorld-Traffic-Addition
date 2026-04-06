@@ -291,7 +291,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
         width = readView.getIntOr("width", 1);
         height = readView.getIntOr("height", 1);
-        version = readView.getIntOr("version", 1);
+        version = readView.getIntOr("version", 0); // If not available, sign is pre-1.8.0. 0 marks it that way.
 
         // User-customizable
 
