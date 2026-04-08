@@ -176,7 +176,7 @@ public class FileSystem {
 			rootDir = new Folder(newPath.getFileName().toString(), path, fromResource);
 
 			// Populate the directory structure
-			populateDirectory(rootDir, newPath, path);
+			populateDirectory(rootDir, newPath);
 		} catch (Exception e) {
 			// Handle or log the exception
 			MyWorldTrafficAddition.LOGGER.error("Failed to crawl directory: {}", path, e);
@@ -215,12 +215,12 @@ public class FileSystem {
 	 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
 	 */
 
-	private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
+	private static void populateDirectory(Folder rootDir, Path resourcePath) throws IOException, URISyntaxException {
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
 			for (Path entry : directoryStream) {
-				// TODO: Remove basePath argument as rootDir already stores it AND fix this monstrosity:
-				String entryPath = PathUtils.windowsToUnixPath(Path.of(basePath).resolve(entry.getFileName()).toString());
 				String fileName = entry.getFileName().toString();
+				Path resolved = Path.of(rootDir.path, fileName);
+				String entryPath = PathUtils.windowsToUnixPath(resolved.toString());
 
 				if (Files.isDirectory(entry)) {
 					entryPath = entryPath.concat("/");
