@@ -1,12 +1,13 @@
 package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
+import at.tobiazsh.myworld.traffic_addition.access.client.GlyphIdentifierHolder;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.Identifier;
@@ -61,11 +62,21 @@ public class CustomTextRenderer extends Font {
 
                 private void draw(TextRenderable glyph) {
                     // Get the id from the default render layer
-                    RenderType defaultGlyphRenderLayer = glyph.renderType(DisplayMode.NORMAL);
-                    Optional<Identifier> optId = Optional.of(defaultGlyphRenderLayer.state.textures.get(CustomRenderLayer.TEXTURE_NAME).location);
+
+                    Optional<Identifier> optionalTextureBinding = Optional.empty();
+
+                    if (glyph instanceof BakedSheetGlyph.GlyphInstance glyphInstance) { // AccessWidener on GlyphInstance!
+                        optionalTextureBinding = Optional.ofNullable(
+                                ((GlyphIdentifierHolder) glyphInstance.glyph()).myworldTrafficAddition$getTexture()
+                        );
+                    }
 
                     // Construct our custom layering
-                    CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, optId.orElseGet(() -> Identifier.parse("missing")));
+                    CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(
+                            zOffset,
+                            layeringType,
+                            optionalTextureBinding.orElseGet(() -> Identifier.parse("missing"))
+                    );
 
                     // User RenderLayer
                     VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer.buildRenderType());
@@ -74,10 +85,17 @@ public class CustomTextRenderer extends Font {
             };
         }
 
-        default void acceptGlyph(TextRenderable.@NotNull Styled glyph) { }
-        default void acceptEffect(@NotNull TextRenderable rect) { }
-        default void acceptEmptyArea(@NotNull EmptyArea rect) { }
+        default void acceptGlyph(TextRenderable.@NotNull Styled glyph) {
+        }
+
+        default void acceptEffect(@NotNull TextRenderable rect) {
+        }
+
+        default void acceptEmptyArea(@NotNull EmptyArea rect) {
+        }
     }
+
+}
 
 //      OLD IMPLEMENTATION USING DRAWER SUBCLASS - KEPT FOR REFERENCE
 //
@@ -236,4 +254,3 @@ public class CustomTextRenderer extends Font {
 //        }
 //
 //    }
-}
