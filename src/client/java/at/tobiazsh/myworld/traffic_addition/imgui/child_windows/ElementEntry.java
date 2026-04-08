@@ -9,6 +9,9 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
+import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.FileDialogPopup;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
@@ -27,9 +30,13 @@ import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor.*;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
@@ -434,18 +441,45 @@ public abstract class ElementEntry {
 		JsonObject modifiedJson = renderObject.toJson();
 		modifiedJson.addProperty("Id", "null");
 		modifiedJson.addProperty("ParentId", "null");
-		FileDialogPopup.setData(JsonUtil.toPrettyJson(modifiedJson.toString()));
 
-		FileDialogPopup.open(
-				SavesDirectory.getElementSaveDir(),
-				FileDialogPopup.FileDialogType.SAVE,
-				(path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
-				"MWTACSELEMENT", "JSON"
+		String savePath = NativeFileDialogs.save(
+				"Export Element - " + renderObject.getName(),
+				new NativeFileDialogs.FilterItem(
+						"MyWorld Traffic Addition Element Files",
+						new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*.json"}
+				),
+				SavesDirectory.getElementSaveDir().toAbsolutePath().toString(),
+				renderObject.getName(),
+				(str) -> {
+						MyWorldTrafficAddition.LOGGER.debug(
+								"Element export of {} {} cancelled",
+								renderObject.getName(), renderObject.getId()
+						);
+				}
 		);
+
+		if (savePath == null)
+			return; // Aborted
+
+		try {
+			Path path = Path.of(savePath);
+			Files.createDirectories(path.getParent());
+			Files.writeString(path, JsonUtil.toPrettyJson(modifiedJson.toString()));
+		} catch (IOException | NullPointerException e) {
+			MyWorldTrafficAddition.LOGGER.error(
+					"An error occurred during element export:", e
+			);
+
+			ErrorPopup.open(
+					new Error(
+							"An error occurred during element export!", // TODO: translate that
+							e.getMessage() + "\nPlease check the log for more details."
+					),
+					() -> {}
+			);
+			return;
+		}
+
+		MyWorldTrafficAddition.LOGGER.debug("Exported element successfully to {}", savePath);
 	}
-
-
-
-
-
 }
