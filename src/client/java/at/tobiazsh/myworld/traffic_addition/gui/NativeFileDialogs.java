@@ -3,12 +3,36 @@ package at.tobiazsh.myworld.traffic_addition.gui;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.function.Consumer;
 
+/**
+ * Utility class providing native file dialogs using LWJGL bindings for TinyFileDialogs.
+ * <p>
+ * This class handles low-level memory allocation and conversion between Java types
+ * and native pointers required by TinyFD. All allocated native memory is freed
+ * after use to prevent memory leaks.
+ * <p>
+ * Note: All methods in this class are blocking and should not be called on the render thread
+ * if UI responsiveness is important.
+ */
 public class NativeFileDialogs {
 
+    /**
+     * Opens a native file selection dialog.
+     *
+     * @param title       The title displayed on the dialog window.
+     * @param filterItem  The filter describing allowed file extensions and their label.
+     * @param defaultPath The initial directory path shown when the dialog opens.
+     * @param onAbort     Callback invoked if the user cancels the dialog or an error occurs.
+     *                    Receives a descriptive message.
+     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled or failed.
+     *
+     * @implNote This method allocates native memory for strings and extension arrays.
+     * All allocated memory is freed before returning.
+     */
     public static String open(String title, FilterItem filterItem, String defaultPath, Consumer<String> onAbort) {
 
         ByteBuffer titleBuffer = MemoryUtil.memUTF8(title);
@@ -53,6 +77,22 @@ public class NativeFileDialogs {
         return result;
     }
 
+    /**
+     * Opens a native file save dialog.
+     *
+     * @param title           The title displayed on the dialog window.
+     * @param filterItem      The filter describing allowed file extensions and their label.
+     * @param defaultPath     The initial directory path shown when the dialog opens.
+     * @param defaultFileName The default file name pre-filled in the dialog.
+     * @param onAbort         Callback invoked if the user cancels the dialog or an error occurs.
+     *                        Receives a descriptive message.
+     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled or failed.
+     *
+     * @implNote Automatically combines {@code defaultPath} and {@code defaultFileName}.
+     * Handles both Unix (/) and Windows (\) path separators.
+     * <p>
+     * This method allocates native memory which is freed before returning.
+     */
     public static String save(String title, FilterItem filterItem, String defaultPath, String defaultFileName, Consumer<String> onAbort) {
 
         String defaultPathAndFile = defaultPath.endsWith("/") || defaultPath.endsWith("\\")
@@ -99,10 +139,24 @@ public class NativeFileDialogs {
         return result;
     }
 
+
+    /**
+     * Represents a file dialog filter item consisting of a display name
+     * and a list of allowed file extensions.
+     *
+     * @param name Human-readable description of the filter (e.g., "JSON Files").
+     * @param ext  Array of file extensions (e.g., {"*.json", "*.txt"}).
+     */
     public record FilterItem(String name, String[] ext) {
+
         /**
-         * Convert extensions to ByteBuffers for TinyFD. Must be freed after use.
-         * @return Array of ByteBuffers representing the extensions.
+         * Converts the extension strings into UTF-8 encoded {@link ByteBuffer}s
+         * suitable for use with TinyFileDialogs.
+         *
+         * @return An array of {@link ByteBuffer}s representing the extensions.
+         *
+         * @implNote The returned buffers are allocated using {@link MemoryUtil#memUTF8(CharSequence)}
+         * and must be freed manually using {@link MemoryUtil#memFree(Buffer)}.
          */
         public ByteBuffer[] getExtAsByteBuffers() {
             ByteBuffer[] exts = new ByteBuffer[ext.length];
@@ -114,8 +168,13 @@ public class NativeFileDialogs {
         }
 
         /**
-         * Convert name to ByteBuffer for TinyFD. Must be freed after use.
-         * @return ByteBuffer representing the name.
+         * Converts the filter name into a UTF-8 encoded {@link ByteBuffer}
+         * suitable for use with TinyFileDialogs.
+         *
+         * @return A {@link ByteBuffer} representing the filter name.
+         *
+         * @implNote The returned buffer must be freed manually using
+         * {@link MemoryUtil#memFree(Buffer)} after use.
          */
         public ByteBuffer getNameAsByteBuffer() {
             return MemoryUtil.memUTF8(name);
