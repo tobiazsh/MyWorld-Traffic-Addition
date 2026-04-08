@@ -28,7 +28,7 @@ public class NativeFileDialogs {
      * @param defaultPath The initial directory path shown when the dialog opens.
      * @param onAbort     Callback invoked if the user cancels the dialog or an error occurs.
      *                    Receives a descriptive message.
-     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled or failed.
+     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled.
      *
      * @implNote This method allocates native memory for strings and extension arrays.
      * All allocated memory is freed before returning.
@@ -86,7 +86,7 @@ public class NativeFileDialogs {
      * @param defaultFileName The default file name pre-filled in the dialog.
      * @param onAbort         Callback invoked if the user cancels the dialog or an error occurs.
      *                        Receives a descriptive message.
-     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled or failed.
+     * @return The selected file path as a {@link String}, or {@code null} if the dialog was canceled.
      *
      * @implNote Automatically combines {@code defaultPath} and {@code defaultFileName}.
      * Handles both Unix (/) and Windows (\) path separators.
