@@ -24,8 +24,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 
