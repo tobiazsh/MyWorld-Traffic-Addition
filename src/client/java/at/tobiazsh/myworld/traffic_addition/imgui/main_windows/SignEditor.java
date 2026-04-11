@@ -44,6 +44,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
@@ -445,15 +446,32 @@ public class SignEditor {
     private static void exportSign() {
         createSavesDir();
 
-        // Ensure the data is up to date
-        FileDialogPopup.setData(JsonUtil.toPrettyJson(ClientElementManager.getInstance().textureData.toJson().toString()));
+        String data = JsonUtil.toPrettyJson(ClientElementManager.getInstance().textureData.toJson().toString());
 
-        FileDialogPopup.open(
-                SavesDirectory.getSignSaveDir(),
-                FileDialogPopup.FileDialogType.SAVE,
-                (path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
-                "MWTACSIGN", "JSON"
-        );
+        try {
+            NativeFileDialogs.writeFileWithDialog(
+                    "Export Customizable Sign...",
+                    new NativeFileDialogs.FilterItem(
+                            "MyWorld Traffic Addition Customizable Sign Data",
+                            new String[]{"*.MWTACSIGN", "*.mwtacsign", "*.JSON", "*.json"}
+                    ),
+                    SavesDirectory.getSignSaveDir(),
+                    "New Customizable Sign",
+                    data.getBytes(StandardCharsets.UTF_8),
+                    (abort) -> {
+                    }
+            );
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Export", "Export failed!"),
+                            "An error occurred while exporting the sign data. Please check logs."
+                    ),
+                    () -> {}
+            );
+
+            MyWorldTrafficAddition.LOGGER.error("Error while exporting sign data!", e);
+        }
     }
 
     private static void importSign() {
