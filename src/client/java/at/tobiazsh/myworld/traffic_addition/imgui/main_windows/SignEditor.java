@@ -13,6 +13,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
+import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
@@ -42,6 +43,7 @@ import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
@@ -457,50 +459,91 @@ public class SignEditor {
     private static void importSign() {
         createSavesDir();
 
-        FileDialogPopup.open(SavesDirectory.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
-            if (path == null || path.toString().isBlank()) return;
+        try {
+            byte[] readFile = NativeFileDialogs.readFileWithDialog(
+                    "Import Sign...",
+                    new NativeFileDialogs.FilterItem(
+                           "MyWorld Traffic Addition Customizable Signs",
+                            new String[]{"*.MWTACSIGN", "*.mwtacsign", "*.JSON", "*. json"}
+                    ),
+                    SavesDirectory.getSignSaveDir(),
+                    (abort) -> {}
+            );
 
-            try {
-                CustomizableSignTextureData data = CustomizableSignTextureData.fromJson(
-                        (JsonObject) JsonParser.parseString(FileDialogPopup.getData())
-                );
+            if (readFile.length == 0) // Abort
+                return;
 
-                ClientElementManager.getInstance().setData(data, blockEntity);
+            var parsedTexture = CustomizableSignTextureData.fromJson(
+                    (JsonObject) JsonParser.parseString(FileDialogPopup.getData())
+            );
 
-                MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path);
-            } catch (IllegalArgumentException e) {
-                ErrorPopup.open(
-                        new Error(
-                                tr("ImGui.Main.Import", "Import failed!"),
-                                tr("ImGui.Main.Import", "The file you provided does not appear to have valid sign data!\": \"The file you provided does not appear to have valid sign data!")
-                        ),
-                        () -> {}
-                );
-                MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
-            }
+            ClientElementManager.getInstance().setData(parsedTexture, blockEntity);
 
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            "An error occurred while reading the file. Please check logs"
+                    ),
+                    () -> {}
+            );
 
-        }, "MWTACSIGN", "JSON");
+            MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
+        } catch (IllegalArgumentException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            tr("ImGui.Main.Import", "The file you provided does not appear to have valid sign data!")
+                    ),
+                    () -> {}
+            );
+        }
     }
 
     private static void importElement() {
-        createSavesDir();
+        try {
+            byte[] readFile = NativeFileDialogs.readFileWithDialog(
+                    "Import Element...",
+                    new NativeFileDialogs.FilterItem(
+                            "MyWorld Traffic Addition Customizable Sign Elements",
+                            new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*. json"}
+                    ),
+                    SavesDirectory.getElementSaveDir(),
+                    (abort) -> {}
+            );
 
-        FileDialogPopup.open(SavesDirectory.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
-            JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
-            ClientElementInterface element = CustomizableSignElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
-
-            if (element == null) {
-                MyWorldTrafficAddition.LOGGER.error("Importing element failed! Path: {}", path.toString());
+            if (readFile.length == 0) // Abort
                 return;
-            }
+
+            JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
+            var element = CustomizableSignElementFactory.toClientElement(
+                    Objects.requireNonNull(BaseElementInterface.fromJson(elementObj))
+            );
+
+            if (element == null)
+                throw new IllegalStateException("Customizable Sign Element does not appear to be valid!");
 
             element.onImport();
-
             ClientElementManager.getInstance().addElementFirst(element);
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            "An error occurred while reading the file. Please check logs"
+                    ),
+                    () -> {}
+            );
 
-            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
-        }, "MWTACSELEMENT", "JSON");
+            MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
+        } catch (IllegalArgumentException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            tr("ImGui.Main.Import", "The file you provided does not appear to have valid element data!")
+                    ),
+                    () -> {}
+            );
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
