@@ -442,30 +442,22 @@ public abstract class ElementEntry {
 		modifiedJson.addProperty("Id", "null");
 		modifiedJson.addProperty("ParentId", "null");
 
-		String savePath = NativeFileDialogs.save(
-				"Export Element - " + renderObject.getName(),
-				new NativeFileDialogs.FilterItem(
-						"MyWorld Traffic Addition Element Files",
-						new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*.json"}
-				),
-				SavesDirectory.getElementSaveDir().toAbsolutePath().toString(),
-				renderObject.getName(),
-				(str) -> {
-						MyWorldTrafficAddition.LOGGER.debug(
-								"Element export of {} {} cancelled",
-								renderObject.getName(), renderObject.getId()
-						);
-				}
-		);
-
-		if (savePath == null)
-			return; // Aborted
-
 		try {
-			Path path = Path.of(savePath);
-			Files.createDirectories(path.getParent());
-			Files.writeString(path, JsonUtil.toPrettyJson(modifiedJson.toString()));
-		} catch (IOException | NullPointerException e) {
+			NativeFileDialogs.writeFileWithDialog(
+					"Export Element - " + renderObject.getName(),
+					new NativeFileDialogs.FilterItem(
+							"MyWorld Traffic Addition Element Files",
+							new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*.json"}
+					),
+					SavesDirectory.getElementSaveDir().toAbsolutePath(),
+					renderObject.getName(),
+					JsonUtil.toPrettyJson(modifiedJson.toString()).getBytes(StandardCharsets.UTF_8),
+					(str) -> MyWorldTrafficAddition.LOGGER.debug(
+                            "Element export of {} {} cancelled",
+                            renderObject.getName(), renderObject.getId()
+                    )
+			);
+		} catch (IOException e) {
 			MyWorldTrafficAddition.LOGGER.error(
 					"An error occurred during element export:", e
 			);
