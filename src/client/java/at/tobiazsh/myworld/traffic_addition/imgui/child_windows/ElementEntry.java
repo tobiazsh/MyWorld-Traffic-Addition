@@ -463,9 +463,6 @@ public abstract class ElementEntry {
 					),
 					() -> {}
 			);
-			return;
-		}
-
-		MyWorldTrafficAddition.LOGGER.debug("Exported element successfully to {}", savePath);
+        }
 	}
 }
