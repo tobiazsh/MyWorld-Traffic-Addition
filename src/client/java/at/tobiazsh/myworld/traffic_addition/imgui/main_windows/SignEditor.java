@@ -473,8 +473,10 @@ public class SignEditor {
             if (readFile.length == 0) // Abort
                 return;
 
+            String readData = new String(readFile, StandardCharsets.UTF_8);
+
             var parsedTexture = CustomizableSignTextureData.fromJson(
-                    (JsonObject) JsonParser.parseString(FileDialogPopup.getData())
+                    (JsonObject) JsonParser.parseString(readData)
             );
 
             ClientElementManager.getInstance().setData(parsedTexture, blockEntity);
