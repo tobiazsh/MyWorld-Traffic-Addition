@@ -515,7 +515,8 @@ public class SignEditor {
             if (readFile.length == 0) // Abort
                 return;
 
-            JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
+            String readData = new String(readFile, StandardCharsets.UTF_8);
+            JsonObject elementObj = JsonParser.parseString(readData).getAsJsonObject();
             var element = CustomizableSignElementFactory.toClientElement(
                     Objects.requireNonNull(BaseElementInterface.fromJson(elementObj))
             );
