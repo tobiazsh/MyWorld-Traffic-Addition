@@ -82,6 +82,9 @@ public interface BaseElementInterface {
      * @param object The JSON Object to convert
      * @return The converted Object inherited from BaseElement
      */
+    // TODO: Refactor migrations to throw exceptions instead of silently logging to console and returning null
+    // TODO: Make a versioning system like in the new CustomizableSignData to handle migrations more cleanly
+    // TODO: Convert to camelCase along the versioning system
     static BaseElement fromJson(JsonObject object) {
         BaseElement element;
 

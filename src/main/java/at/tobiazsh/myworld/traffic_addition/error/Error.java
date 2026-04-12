@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.error;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Simple error class to represent errors with title and message
@@ -42,12 +43,20 @@ public class Error {
     }
 
     public byte[] toBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(4 + title.length() + 4 + message.length() + 1);
-        buffer.putInt(title.length());
-        buffer.put(title.getBytes());
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
 
-        buffer.putInt(message.length());
-        buffer.put(message.getBytes());
+        ByteBuffer buffer = ByteBuffer.allocate(
+                4 + titleBytes.length +
+                        4 + messageBytes.length +
+                        1
+        );
+
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+
+        buffer.putInt(messageBytes.length);
+        buffer.put(messageBytes);
 
         buffer.put((byte) (isHandled ? 1 : 0));
         return buffer.array();
@@ -59,12 +68,12 @@ public class Error {
         int titleLength = buffer.getInt();
         byte[] titleBytes = new byte[titleLength];
         buffer.get(titleBytes);
-        String title = new String(titleBytes);
+        String title = new String(titleBytes, StandardCharsets.UTF_8);
 
         int messageLength = buffer.getInt();
         byte[] messageBytes = new byte[messageLength];
         buffer.get(messageBytes);
-        String message = new String(messageBytes);
+        String message = new String(messageBytes, StandardCharsets.UTF_8);
 
         boolean isHandled = buffer.get() == 1;
 

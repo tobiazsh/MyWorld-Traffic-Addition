@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +15,15 @@ public class SignClipboard {
     }
 
     private ClientElementInterface copiedElement = null;
-    private CustomizableSignData copiedSign = null;
-    private final List<CustomizableSignData> undoStack = new ArrayList<>();
-    private final List<CustomizableSignData> redoStack = new ArrayList<>();
+    private CustomizableSignTextureData copiedSign = null;
+    private final List<CustomizableSignTextureData> undoStack = new ArrayList<>();
+    private final List<CustomizableSignTextureData> redoStack = new ArrayList<>();
 
-    public void setCopiedSign(CustomizableSignData sign) {
+    public void setCopiedSign(CustomizableSignTextureData sign) {
         copiedSign = sign;
     }
 
-    public CustomizableSignData getCopiedSign() {
+    public CustomizableSignTextureData getCopiedSign() {
         return copiedSign;
     }
 
@@ -36,22 +36,22 @@ public class SignClipboard {
         return copiedElement.copy();
     }
 
-    public void pushUndoStack(CustomizableSignData sign) {
+    public void pushUndoStack(CustomizableSignTextureData sign) {
         if (undoStack.size() > 50) undoStack.removeFirst();
         undoStack.add(sign);
     }
 
-    public void pushRedoStack(CustomizableSignData sign) {
-        if (redoStack.size() > 50) undoStack.removeFirst();
+    public void pushRedoStack(CustomizableSignTextureData sign) {
+        if (redoStack.size() > 50) redoStack.removeFirst();
         redoStack.add(sign);
     }
 
-    public CustomizableSignData popUndoStack() {
+    public CustomizableSignTextureData popUndoStack() {
         if (undoStack.isEmpty()) return null;
         return undoStack.removeLast();
     }
 
-    public CustomizableSignData popRedoStack() {
+    public CustomizableSignTextureData popRedoStack() {
         if (redoStack.isEmpty()) return null;
         return redoStack.removeLast();
     }

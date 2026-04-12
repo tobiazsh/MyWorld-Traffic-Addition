@@ -1,0 +1,17 @@
+{
+  "atlasId": "austria:highway",
+  "location": "/assets/myworld_traffic_addition/textures/background/austria_highway.png",
+  "inJar": true,
+  "isAuto": true,
+  "startX": 0,
+  "startY": 0,
+  "baseWidth": 1024,
+  "baseHeight": 1024,
+  "spriteIdNamespace": "austria_highway",
+  "spriteIdPaths": [
+    ["0000", "0001", "0010", "0011"],
+    ["0100", "0101", "0110", "0111"],
+    ["1000", "1001", "1010", "1011"],
+    ["1100", "1101", "1110", "1111"]
+  ]
+}

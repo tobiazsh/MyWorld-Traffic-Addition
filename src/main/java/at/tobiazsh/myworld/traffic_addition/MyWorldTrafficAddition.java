@@ -1,10 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.data_fix.GlobalDataFixer;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
+import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
@@ -15,10 +17,12 @@ import at.tobiazsh.myworld.traffic_addition.payload.ShowImGuiWindow;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
@@ -43,6 +47,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("MyWorld Traffic Addition");
 
+	public static final int DATA_FIXER_VERSION = 1;
 	public static final String MOD_ID = "myworld_traffic_addition";
     public static final Path MOD_RESOURCES = Path.of("/assets/myworld_traffic_addition");
 	public static final String MOD_ID_HUMAN = "MyWorld Traffic Addition";
@@ -88,6 +93,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ServerPreferences.loadPreferences();
         ServerBlacklist.loadBlacklist();
 
+		GlobalDataFixer.register();
+
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageBackend.countEntriesAndReadIntoMemory();
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageBackend.totalEntries);
@@ -107,13 +114,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(SignBlockRotationPayload.Id, SignBlockActions::handleRotationChange, SignBlockRotationPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
 				// Customizable Sign Blocks
-				new SmartPayload<>(SetMasterCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetMaster, SetMasterCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetBorderTypeCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetBorderType, SetBorderTypeCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSignPolePositionsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetSignPolePositions, SetSignPolePositionsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSignPositionsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetSignPositions, SetSignPositionsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetRenderStateCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRenderState, SetRenderStateCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(SetRotationCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleSetRotation, SetRotationCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
-				new SmartPayload<>(SetSizeCustomizableSignPayload.Id, CustomizableSignBlockActions::handleSetSize, SetSizeCustomizableSignPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 				new SmartPayload<>(UpdateTextureVarsCustomizableSignBlockPayload.Id, CustomizableSignBlockActions::handleUpdateTextureVariables, UpdateTextureVarsCustomizableSignBlockPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
                 new SmartPayload<>(CustomizableSignSettingScreenClosed.Id, CustomizableSignBlockActions::handleCustomizableSignEditScreenClosed, CustomizableSignSettingScreenClosed.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
@@ -133,7 +134,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				new SmartPayload<>(OpenSignSelectionPayload.Id, null, OpenSignSelectionPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(OpenCustomizableSignEditScreen.Id, null, OpenCustomizableSignEditScreen.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
 				new SmartPayload<>(ShowImGuiWindow.Id, null, ShowImGuiWindow.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
-				new SmartPayload<>(ChunkedDataPayload.Id, null, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
+				new SmartPayload<>(ChunkedDataPayload.Id, null, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT),
+				new SmartPayload<>(ClearCSBETextureRenderState.ID, null, ClearCSBETextureRenderState.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.CLIENT)
 		));
 	}
 
@@ -150,9 +152,28 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		ServerPlayNetworking.send(player, new OpenCustomizableSignEditScreen(pos));
 	}
 
+	/**
+	 * Broadcasts a packet to all players tracking the given block position, telling their client to
+	 * invalidate (clear) the cached render state for that CSBE position. This is needed when the
+	 * block is destroyed so the static renderer cache does not serve a stale texture when the block
+	 * is placed again at the same position.
+	 */
+	public static void sendClearCSBETextureRenderStatePacket(ServerLevel level, BlockPos pos) {
+		ClearCSBETextureRenderState packet = new ClearCSBETextureRenderState(pos);
+		for (ServerPlayer player : PlayerLookup.tracking(level, pos)) {
+			ServerPlayNetworking.send(player, packet);
+		}
+	}
+
 	private static void registerCustomProtocols() {
 		// Set customizable sign texture
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), (player, data) -> CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player));
+
+		// Customizable Sign Initialization
+		CustomServerNetworking.getInstance().registerProtocolHandler(
+				Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_initialization_transmission"),
+				CustomizableSignBlockActions::handleInitializeSign
+		);
 
 		// Request the maximum image upload size
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {

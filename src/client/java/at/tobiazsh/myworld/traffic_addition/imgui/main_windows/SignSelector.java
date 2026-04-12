@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopu
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.exception.SignTextureParseException;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.SignTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import imgui.ImGui;
@@ -84,8 +83,8 @@ public class SignSelector {
         ImGui.separator();
 
         if (ImGui.button("Select")) {
-            System.out.println("Selected texture: " + results.get(selectedIndex.get()));
             apply();
+            close();
         }
 
         ImGui.sameLine();
@@ -110,25 +109,13 @@ public class SignSelector {
             signFolder.content
                     .stream()
                     .filter(FileSystem.DirectoryElement::isFolder)
-                    .forEach(textureFolder -> {
-                        String filePath = ((FileSystem.Folder) textureFolder).content // Get the textures.json file or null if not present
-                                .stream()
-                                .filter(dirElem -> dirElem.name.matches("textures.json"))
-                                .findAny()
-                                .orElse(new FileSystem.DirectoryElement(null, null, false))
-                                .path;
-
-                        if (filePath == null) {
-                            MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name);
-                        } else {
-                            // Finally, parse the textures.json
-                            try {
-                                textures.set(SignTexture.parseFile(Path.of(filePath.replaceAll("\\\\", "/")), true)); // WHY HAS WINDOWS GOTTA BE SO SPECIAL WITH PATHS :((((((
-                            } catch (SignTextureParseException e) {
-                                MyWorldTrafficAddition.LOGGER.error("An error occurred while trying to read the sign textures from: {}", filePath, e);
-                            }
-                        }
-                    });
+                    .forEach(textureFolder -> ((FileSystem.Folder) textureFolder).content // Get the textures.json file or null if not present
+                            .stream()
+                            .filter(dirElem -> dirElem.name.matches("textures.json")) // Find textures.json file for the current country
+                            .findAny()
+                            .ifPresentOrElse(dirElem -> {
+                                textures.set(SignTexture.parseFile(Path.of(dirElem.path.replaceAll("\\\\", "/")), true)); // WHY HAS WINDOWS GOTTA BE SO SPECIAL WITH PATHS :((((((
+                            }, () -> MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name)));
 
         } catch (IOException | URISyntaxException e) {
             ErrorPopup.open(new Error(
@@ -206,7 +193,9 @@ public class SignSelector {
                 new SignBlockTextureChangePayload(
                         signPos,
                         windowsToUnixPath(relativizeResourcePath(results.get(selectedIndex.get()).path()).toString()),
-                        worldRegistryKey));
+                        worldRegistryKey
+                )
+        );
     }
 
     /**

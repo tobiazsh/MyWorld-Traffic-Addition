@@ -1,119 +1,177 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
+import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
+import at.tobiazsh.myworld.traffic_addition.utils.Color;
 import imgui.ImGui;
+import imgui.flag.ImGuiColorEditFlags;
+import net.minecraft.resources.Identifier;
 
+import java.util.Arrays;
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getBackgroundTexturePathList;
 
 public class BackgroundSelectorPopup {
 
-    private static boolean shouldOpen = false;
-    private static boolean styleSelected = false;
-    private static FileSystem.Folder currentBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal", true); // Default to Austria's Road Style
-    private final static FileSystem.Folder defaultBackground = new FileSystem.Folder("No Background Selected", "/assets/myworld_traffic_addition/textures/imgui/sign_res/backgrounds/austria/normal", true);
-    private static FileSystem.Folder oldBackground = null;
-    private static FileSystem.Folder selectedCountry = new FileSystem.Folder("No Country Selected", "/", true);
-    private static FileSystem.Folder availableBackgrounds = new FileSystem.Folder(null, null, true);
+    private static final String DEFAULT_TEXTURE = "austria:default"; // Austria Default Road Sign Texture
+    private static final Color DEFAULT_COLOR = new Color(255, 255, 255, 255); // White
 
-    public static void render(FileSystem.Folder countriesBG, CustomizableSignBlockEntity customizableSignBlockEntity) {
-        ImGui.setNextWindowSize(1000, 750);
+    private enum BackgroundType {
+        COLOR("Color"),
+        NONE("None"),
+        PATTERN("Pattern");
+
+        public final String translationName;
+
+        BackgroundType(String translationName) {
+            this.translationName = translationName;
+        }
+    }
+
+    private boolean shouldOpen = false;
+
+    private BackgroundType backgroundType;
+
+    private final Background oldBackground;
+
+    private String id;
+
+    private final String windowTitle;
+
+    private final CustomizableSignTextureData textureData;
+
+    private float[] color = { 1f, 1f, 1f, 1f }; // Pure White
+
+    public BackgroundSelectorPopup(CustomizableSignTextureData textureData, String id) {
+        this.oldBackground = textureData.getBackground();
+        this.textureData = textureData;
+        this.backgroundType = extractTypeFromBackground(oldBackground);
+        this.id = id;
+        this.windowTitle = tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background") + "##" + id;
+
+        if (textureData.getBackground().isColor()) {
+            Color col = textureData.getBackground().color;
+
+            color = new float[] {
+                    col.r() / 255f, // Does NOT produce a NPE (see isColor() method)
+                    col.g() / 255f,
+                    col.b() / 255f,
+                    col.a() / 255f
+            };
+        }
+    }
+
+    public void render() {
+        ImGui.setNextWindowSize(500, 400);
         ImGui.pushFont(ImGuiImpl.Roboto);
-        if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background"))) {
-            ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
-            ImGui.setCursorPosX((1000 - imgui.calcTextSize(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Settings")).x) / 2);
-            ImGui.text(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Settings"));
-            ImGui.popFont();
-
-            ImGui.separator();
+        if (ImGui.beginPopupModal(windowTitle)) {
 
             ImGui.pushFont(ImGuiImpl.RobotoBold);
-            ImGui.text(tr("Global", "Country"));
+            ImGui.text(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Type"));
             ImGui.popFont();
 
-            if (ImGui.beginCombo("##country", selectedCountry.name)) {
-                countriesBG.forEach(country -> {
-                    boolean isSelected = (Objects.equals(selectedCountry.name, country.name));
+            if (ImGui.beginCombo("##bgType_" + id, tr("ImGui.Main.Background", backgroundType.translationName))) {
 
-                    // If country is selected, search the country's folder for styles, which are also folders, and put them in a list
-                    if (ImGui.selectable(country.name, isSelected)) {
-                        selectedCountry = (FileSystem.Folder) country;
-
-                        try {
-                            availableBackgrounds = FileSystem.listFoldersRecursive(country.path, true);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                Arrays.stream(BackgroundType.values()).forEach(bgType -> {
+                    if (ImGui.selectable(
+                        tr("ImGui.Main.Background", bgType.translationName),
+                        Objects.equals(bgType, this.backgroundType))
+                    ) {
+                        this.backgroundType = bgType;
                     }
-
-                    if (isSelected) ImGui.setItemDefaultFocus();
                 });
 
                 ImGui.endCombo();
+            }
+
+            switch(backgroundType) {
+                case COLOR -> renderColorOptions();
+                case PATTERN -> renderPatternOptions();
+                default -> {} // Also don't render anything on "None" type
             }
 
             ImGui.spacing();
-
-            ImGui.pushFont(ImGuiImpl.RobotoBold);
-            ImGui.text(tr("Global", "Background"));
-            ImGui.popFont();
-
-            if (ImGui.beginCombo("##background", currentBackground.name)) {
-
-                availableBackgrounds.forEach(style -> {
-                    boolean isSelected = (Objects.equals(currentBackground.name, style.name));
-                    if (ImGui.selectable(style.name, isSelected)) {
-                        oldBackground = currentBackground;
-                        currentBackground = (FileSystem.Folder) style;
-                        styleSelected = true;
-                    }
-                });
-
-                ImGui.endCombo();
-            }
-
+            ImGui.separator();
             ImGui.spacing();
 
             if (ImGui.button(tr("Global", "Cancel"))) {
-                styleSelected = false;
-                currentBackground = Objects.requireNonNullElse(oldBackground, defaultBackground); // If there wasn't a background beforehand, select the default one.
+                textureData.setBackground(oldBackground);
                 ImGui.closeCurrentPopup();
             }
 
             ImGui.sameLine();
 
-            boolean applyButtonDisabled = !styleSelected;
-
-            if (applyButtonDisabled) ImGui.beginDisabled();
-
-            if (ImGui.button(tr("Global", "Apply"))) {
-                styleSelected = false;
+            if (ImGui.button(tr("Global", "Okay"))) {
                 ImGui.closeCurrentPopup();
-
-                ClientElementManager.getInstance().rawData.setStyle(currentBackground.path);
-                ClientElementManager.getInstance().setBackgroundTextures(getBackgroundTexturePathList(ClientElementManager.getInstance().rawData, customizableSignBlockEntity));
             }
-
-            if (applyButtonDisabled) ImGui.endDisabled();
 
             ImGui.endPopup();
         }
 
         if (shouldOpen) {
-            ImGui.openPopup(tr("ImGui.Child.PopUps.BackgroundSelector", "Choose Background"));
+            ImGui.openPopup(windowTitle);
             shouldOpen = false;
         }
 
         ImGui.popFont();
     }
 
-    public static void open() {
+    private void renderColorOptions() {
+        if (textureData.getBackground().color == null) {
+            this.color = DEFAULT_COLOR.toFloatRGBA();
+            textureData.setBackground(new Background(new Color(this.color)));
+        } else {
+            this.color = textureData.getBackground().color.toFloatRGBA();
+        }
+
+        if (ImGui.colorPicker4(
+                tr("Global", "Color Picker") + "##" + id,
+                this.color,
+                ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf
+        )) { // Translatable text for "Color Picker"
+            textureData.setBackground(new Background(new Color(this.color)));
+        }
+    }
+
+    private void renderPatternOptions() {
+        String texture;
+
+        if (textureData.getBackground().texture == null) {
+            texture = DEFAULT_TEXTURE;
+            textureData.setBackground(new Background(texture)); // Set new background to default texture for preview
+        } else {
+            texture = textureData.getBackground().texture; // Else just set the current texture
+        }
+
+        if (ImGui.beginCombo("##patternSelect_" + id, tr("ImGui.Main.Background", texture))) {
+            BackgroundLoader.BACKGROUND_SPRITES.forEach(bgSprite -> {
+                if (ImGui.selectable(
+                    tr("ImGui.Main.Background", bgSprite.getAtlasId().toString()),
+                    Objects.equals(bgSprite, SpriteAtlasManager.INSTANCE.getSpriteAtlas(Identifier.parse(texture)))
+                )) {
+                    textureData.setBackground(new Background(bgSprite.getAtlasId().toString()));
+                }
+            });
+
+            ImGui.endCombo();
+        }
+    }
+
+    private static BackgroundType extractTypeFromBackground(Background bg) {
+        if (Objects.equals(bg.color, new Color(0, 0, 0, 0)))
+            return BackgroundType.NONE;
+
+        if (bg.isColor())
+            return BackgroundType.COLOR;
+
+        return BackgroundType.PATTERN;
+    }
+
+    public void open() {
         shouldOpen = true;
     }
 }

@@ -49,7 +49,8 @@
         },
         "BackgroundSelector": {
           "Choose Background": "Choose Background",
-          "Background Settings": "Background Settings"
+          "Background Settings": "Background Settings",
+          "Background Type": "Background Type"
         }
       },
       "ElementEntry": {
@@ -130,6 +131,10 @@
       "SignSelector": {
         "Sign Selector": "Sign Selector",
         "Filter": "Filter"
+      },
+      "Import": {
+        "Import failed!": "Import failed!",
+        "The file you provided does not appear to have valid sign data!": "The file you provided does not appear to have valid sign data!"
       }
     },
     "Global": {
@@ -138,6 +143,11 @@
         "Do you really want to exit?": "Do you really want to exit?",
         "All unsaved changes will be gone!": "All unsaved changes will be gone!"
       }
+    },
+    "Background": {
+      "Color": "Color",
+      "None": "None",
+      "Pattern": "Pattern"
     }
   },
   "Minecraft": {
@@ -215,6 +225,7 @@
     "Results": "Results",
     "Zoom Out": "Zoom Out",
     "Of": "Of",
+    "Okay": "Okay",
     "Duplicate": "Duplicate",
     "Clipboard": "Clipboard",
     "Color Picker": "Color Picker",

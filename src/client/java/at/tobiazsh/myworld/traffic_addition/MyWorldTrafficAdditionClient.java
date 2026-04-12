@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TexturableElementInterface;
+import at.tobiazsh.myworld.traffic_addition.fix.CustomizableSignReinitializer;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
@@ -12,6 +13,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
+import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
 import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
@@ -26,9 +28,11 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.world.level.block.Block;
@@ -42,8 +46,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +89,14 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		OnlineImageCache.createCacheDir();
 
+		ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
+			MyWorldTrafficAddition.LOGGER.info("Loading Background Atlases from the Autoload folder...");
+			autoloadBackgroundAtlases();
+			MyWorldTrafficAddition.LOGGER.info("Loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
+		});
+
+		CustomizableSignReinitializer.register();
+
 		loadPreferences();
 	}
 
@@ -116,6 +130,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	private static void addGlobalReceivers() {
 		globalReceiverClients.addAll(Arrays.asList(
+				new GlobalReceiverClient<>(ClearCSBETextureRenderState.ID, (payload) -> CustomizableSignBlockEntityRenderer.invalidateTexture(payload.pos())),
+
 				new GlobalReceiverClient<>(OpenSignPoleRotationScreenPayload.Id, (payload) -> {
 					BlockPos pos = payload.pos();
 
@@ -192,6 +208,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_image_data"), OnlineImageNetworking::setImageData);
 	}
 
+	/**
+	 * Loads all background atlases from the autoload folder inside the resources
+	 */
+	public static void autoloadBackgroundAtlases() {
+		try {
+			BackgroundLoader.autoload();
+		} catch (IOException | NotImplementedException | NullPointerException | IllegalArgumentException e) {
+			MyWorldTrafficAddition.LOGGER.error("Failed autoloading one or multiple background atlases. Check resource structure!", e);
+		}
+	}
+
 	public static void onStopGame() {
 		MyWorldTrafficAddition.LOGGER.info("Shutting down MyWorld Traffic Addition!");
 
@@ -242,6 +269,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         }
 
         // Notify renderer that the chunk got unloaded
-        CustomizableSignBlockEntityRenderer.onChunkUnload(blockEntity.getBlockPos());
+        CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
     }
+
 }

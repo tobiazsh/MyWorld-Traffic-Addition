@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.Color;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
@@ -37,7 +37,11 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
 
-    private static final int textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId();
+    private static int textIconId;
+
+    static {
+        Minecraft.getInstance().execute(() -> textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId());
+    }
 
     private Future<ImGuiFont> fontFuture; // Future for the font
     private ImGuiFont imGuiFont; // Font after future is done
@@ -93,6 +97,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
         // Another check just to be sure nothing changed in the meantime
         if (imGuiFont.isInvalid() || !imGuiFont.font.isLoaded() || imGuiFont.font.getScale() <= 0) {
             MyWorldTrafficAddition.LOGGER.error("Font is invalid! Can't render text!");
+            imGuiFont = null;
+            fontFuture = null;
             return;
         }
 
@@ -184,7 +190,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
         textRenderer.draw(
                 this.getText(),
                 0,0, zOffset,
-                Color.toHexARGB(color),
+                ImGuiColor.toHexARGB(color),
                 false,
                 positionMatrix,
                 vertexConsumerProvider,

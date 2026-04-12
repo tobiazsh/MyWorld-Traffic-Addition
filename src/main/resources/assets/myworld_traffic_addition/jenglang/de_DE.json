@@ -49,7 +49,8 @@
         },
         "BackgroundSelector": {
           "Choose Background": "Hintergrund auswählen",
-          "Background Settings": "Hintergrund Einstellungen"
+          "Background Settings": "Hintergrund Einstellungen",
+          "Background Type": "Hintergrundtyp"
         }
       },
       "ElementEntry": {
@@ -129,6 +130,10 @@
       "SignSelector": {
         "SignSelector": "Schilderauswahl",
         "Filter": "Filtern"
+      },
+      "Import": {
+        "Import failed!": "Import fehlgeschlagen!",
+        "The file you provided does not appear to have valid sign data!": "Die angegebene Datei scheint kein gültiges Schild zu enthalten!"
       }
     },
     "Global": {
@@ -137,6 +142,11 @@
         "Do you really want to exit?": "Möchtest du wirklich verlassen?",
         "All unsaved changes will be gone!": "Alle ungespeicherten Änderungen gehen dabei verloren!"
       }
+    },
+    "Background": {
+      "Color": "Farbe",
+      "None": "Leer",
+      "Pattern": "Muster"
     }
   },
   "Minecraft": {
@@ -199,6 +209,7 @@
     "Next": "Nächste",
     "Zoom Out": "Herauszoomen",
     "Of": "Von",
+    "Okay": "Okay",
     "Redo": "Wiederholen",
     "Author": "Autor",
     "Country": "Land",
