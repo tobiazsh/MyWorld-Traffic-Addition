@@ -3,9 +3,10 @@
   "package": "at.tobiazsh.myworld.traffic_addition.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "DataFixTypesAccessor",
+    "DataFixTypesMixin"
   ],
   "client": [
-
   ],
   "injectors": {
     "defaultRequire": 1

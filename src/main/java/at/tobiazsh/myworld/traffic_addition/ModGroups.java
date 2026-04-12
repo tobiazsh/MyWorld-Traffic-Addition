@@ -18,14 +18,7 @@ public class ModGroups {
             .title(Component.translatable("itemGroup.myworld_traffic_addition"))
             .build();
 
-    public static final ResourceKey<@NotNull CreativeModeTab> TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition_austria"));
-    public static final CreativeModeTab TRAFFIC_ADDITION_AUSTRIA_GROUP = FabricItemGroup.builder()
-            .icon(() -> new ItemStack(ModItems.AUSTRIA_ITEM))
-            .title(Component.translatable("itemGroup.myworld_traffic_addition_austria"))
-            .build();
-
     static final CreativeModeTab traffic_addition_group = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, TRAFFIC_ADDITION_ITEM_GROUP_KEY, TRAFFIC_ADDITION_ITEM_GROUP);
-    static final CreativeModeTab traffic_addition_austria_group = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY, TRAFFIC_ADDITION_AUSTRIA_GROUP);
 
     public static void initialize() {
 

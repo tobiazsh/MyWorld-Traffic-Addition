@@ -9,9 +9,46 @@ package at.tobiazsh.myworld.traffic_addition.utils.math;
 
 
 import at.tobiazsh.myworld.traffic_addition.utils.StringableObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+
+import java.util.List;
 
 public class BlockPosExtended extends BlockPos implements StringableObject<BlockPosExtended> {
+
+    public static final StreamCodec<ByteBuf, BlockPosExtended> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public BlockPosExtended decode(ByteBuf object) {
+            int x = object.readInt();
+            int y = object.readInt();
+            int z = object.readInt();
+            return new BlockPosExtended(x, y, z);
+        }
+
+        @Override
+        public void encode(ByteBuf object, BlockPosExtended object2) {
+            object.writeInt(object2.getX());
+            object.writeInt(object2.getY());
+            object.writeInt(object2.getZ());
+        }
+    };
+
+    public static final Codec<BlockPosExtended> CODEC = Codec.INT.listOf().comapFlatMap(
+            list -> {
+                if (list.size() != 3)
+                    return DataResult.error(() -> "Invalid BlockPosExtended list size: " + list.size());
+
+                int x = list.get(0);
+                int y = list.get(1);
+                int z = list.get(2);
+
+                return DataResult.success(new BlockPosExtended(x, y, z));
+            },
+            pos -> List.of(pos.getX(), pos.getY(), pos.getZ())
+    );
 
     public static final BlockPosExtended INSTANCE = new BlockPosExtended(0, 0, 0);
 
@@ -24,11 +61,18 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
     }
 
     public static BlockPosExtended getOffset(BlockPos from, BlockPos to) {
-        int offsetX = from.getX() - to.getX();
-        int offsetY = from.getY() - to.getY();
-        int offsetZ = from.getZ() - to.getZ();
+        int offsetX = to.getX() - from.getX();
+        int offsetY = to.getY() - from.getY();
+        int offsetZ = to.getZ() - from.getZ();
 
         return new BlockPosExtended(offsetX, offsetY, offsetZ);
+    }
+
+    /**
+     * @return The inverse of this BlockPosExtended, meaning all coordinates are negated.
+     */
+    public BlockPosExtended inverse() {
+        return new BlockPosExtended(-this.getX(), -this.getY(), -this.getZ());
     }
 
     public BlockPosExtended addOffset(BlockPosExtended offset) {
@@ -69,13 +113,5 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
 
     public BlockPos toBlockPos() {
         return new BlockPos(this.getX(), this.getY(), this.getZ());
-    }
-
-    /**
-     * Inverts the coordinates of this BlockPosExtended.
-     * @return a new BlockPosExtended with inverted coordinates.
-     */
-    public BlockPosExtended invert() {
-        return new BlockPosExtended(-this.getX(), -this.getY(), -this.getZ());
     }
 }

@@ -1,8 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.texture;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -15,6 +17,11 @@ import net.minecraft.resources.Identifier;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * A dynamic texture that can be registered and unregistered at runtime.
+ * Accepts both resource paths and absolute file paths for loading images.
+ * Injects the texture into Minecraft's TextureManager and can be managed via the DynamicTextureManager.
+ */
 public class DynamicTexture extends AbstractTexture {
 
     // private
@@ -45,7 +52,7 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     /**
-     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
+     * Registers the texture in the TextureManager. Throws RuntimeException if the image could not be loaded. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #registerInManager()} for that.
      */
     public DynamicTexture registerTexture() {
         this.close();
@@ -64,7 +71,7 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     /**
-     * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #register()} for that.
+     * Registers the texture in the TextureManager only if it isn't already registered there or in the DynamicTextureManager. Note, this does NOT add the texture to the DynamicTextureManager! Use {@link #registerInManager()} for that.
      * @return this DynamicTexture instance
      */
     public DynamicTexture smartRegisterTexture() {
@@ -74,14 +81,14 @@ public class DynamicTexture extends AbstractTexture {
         if (DynamicTextureManager.hasTexture(id)) // Already registered in DynamicTextureManager
             return this;
 
-        return this.registerTexture().register();
+        return this.registerTexture().registerInManager();
     }
 
     /**
      * Registers the texture in the DynamicTextureManager. If a texture with the same id already exists, it won't be replaced. Note, this does NOT register the texture in Minecraft's TextureManager!
      * @return this DynamicTexture instance
      */
-    public DynamicTexture register() {
+    public DynamicTexture registerInManager() {
         DynamicTextureManager.addTexture(this.id, this);
         return this;
     }
@@ -196,5 +203,28 @@ public class DynamicTexture extends AbstractTexture {
         if (imageFile == null) return null;
 
         return NativeImage.read(imageFile.readBytes());
+    }
+
+    public boolean isLoaded () {
+        return this.textureView != null;
+    }
+
+    public int getWidth() throws TextureNotLoadedException {
+        if (!this.isLoaded())
+            throw new TextureNotLoadedException("Cannot get width of DynamicTexture " + id + " because the texture is not loaded yet!");
+
+        return this.textureView.getWidth(0); // Null check already done by isLoaded()
+    }
+
+    public int getHeight() throws TextureNotLoadedException {
+        if (!this.isLoaded())
+            throw new TextureNotLoadedException("Cannot get height of DynamicTexture " + id + " because the texture is not loaded yet!");
+
+        return this.textureView.getHeight(0); // Null check already done by isLoaded()
+    }
+
+    public int getTextureId() {
+        if (this.texture == null || !isLoaded()) return 0;
+        return ((GlTexture)this.texture).glId();
     }
 }

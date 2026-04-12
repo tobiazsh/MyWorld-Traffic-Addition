@@ -23,3 +23,7 @@ accessible field net/minecraft/client/renderer/rendertype/RenderSetup$TextureBin
 # FONT MANAGER
 
 accessible class net/minecraft/client/gui/font/FontManager$Preparation
+
+# GLYPH STUFF
+
+accessible class net/minecraft/client/gui/font/glyphs/BakedSheetGlyph$GlyphInstance

@@ -2,18 +2,26 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.data.Background;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
-import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
-import io.netty.util.internal.StringUtil;
+import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import java.lang.Math;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Class used by the UI to retrieve the sign's data
+ */
 public class ClientElementManager {
 
     private static final ClientElementManager INSTANCE = new ClientElementManager();
@@ -29,8 +37,9 @@ public class ClientElementManager {
 
     private final List<ClientElementInterface> elements = new CopyOnWriteArrayList<>();
     private float pixelOfOneBlock = 1.0f; // Current scale factor for elements, used for rendering
-    public CustomizableSignData rawData = new CustomizableSignData(); // Raw data of the sign, used for exporting
-    public List<String> backgroundTextures = new ArrayList<>(); // Background textures of the sign, used for rendering
+    private BorderProperty[][] borders; // Stores the borders from the whole sign in a 2D array
+
+    public CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
 
     public void registerElement(ClientElementInterface element) {
 
@@ -188,33 +197,22 @@ public class ClientElementManager {
 
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        String jsonString = blockEntity.getSignDataJsonString();
-        if (StringUtil.isNullOrEmpty(jsonString)) return; // No JSON found, nothing to import
+        CustomizableSignTextureData otherSignTextureData = blockEntity.getTextureData();
+        if (otherSignTextureData == null) return; // No JSON found, nothing to import
 
-        CustomizableSignData data = new CustomizableSignData();
-        data.setJsonString(jsonString);
+        borders = calculateBorders(blockEntity.getSignPositionsRelative(), blockEntity, blockEntity.getWidth(), blockEntity.getHeight());
 
-        setData(data, blockEntity); // Set the data from the sign block entity
+        setData(otherSignTextureData, blockEntity); // Set the data from the sign block entity
     }
 
-    public void setData(CustomizableSignData data, CustomizableSignBlockEntity blockEntity) {
+    public void setData(CustomizableSignTextureData data, CustomizableSignBlockEntity blockEntity) {
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        List<String> background = new ArrayList<>();
-        List<BaseElement> globalElements = new ArrayList<>();
-        List<ClientElementInterface> elements;
-
-        if (data.json.has("Style")) background = CustomizableSignData.getBackgroundTexturePathList(data, blockEntity);
-        if (data.json.has("Elements")) globalElements = CustomizableSignData.deconstructElementsToArray(data);
-
-        elements = globalElements.stream().map(ClientElementFactory::toClientElement).toList(); // Convert global elements to client elements
+        List<ClientElementInterface> elements = data.getElementContainer().getElements().stream().map(CustomizableSignElementFactory::toClientElement).toList();
         registerUnregistered();
 
         this.setElements(elements);
-        this.rawData = data; // Set the raw data to the imported data
-        this.backgroundTextures = background; // Set the background textures to the imported textures
-
-        //updateFactor();
+        this.textureData = data;
     }
 
     // Registers all elements that are not yet registered
@@ -228,16 +226,17 @@ public class ClientElementManager {
                 .forEach(this::recursiveRegisterElement);
     }
 
-    public void setBackgroundTextures(List<String> backgroundTextures) {
-        this.backgroundTextures.clear();
-        this.backgroundTextures.addAll(backgroundTextures);
-    }
-
     public void exportToSign(BlockPos pos) {
         updateFactor();
-        updateRawData();
 
-        if (StringUtil.isNullOrEmpty(rawData.jsonString)) {
+        textureData.getElementContainer().setElements(
+                elements.stream()
+                    .map(CustomizableSignElementFactory::toGlobalElement)
+                    .filter(Objects::nonNull)
+                    .toList()
+        );
+
+        if (textureData == null) {
             throw new IllegalStateException("Cannot export to sign: Current JSON is empty! It seems like nothing has been edited!");
         }
 
@@ -248,19 +247,11 @@ public class ClientElementManager {
 
         JsonObject constructedJson = new JsonObject();
         constructedJson.add("blockEntityPosition", blockEntityPosition);
-        constructedJson.add("texture", rawData.json);
+        constructedJson.add("texture", textureData.toJson());
 
         String jsonString = constructedJson.toString();
 
         CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), jsonString);
-    }
-
-    public void updateRawData() {
-        if (!backgroundTextures.isEmpty())
-            rawData.setStyle(backgroundTextures.getFirst().substring(0, backgroundTextures.getFirst().lastIndexOf("/") + 1));
-
-        List<? extends BaseElement> globalElements = elements.stream().map(ClientElementFactory::toGlobalElement).toList();
-        rawData.setElements(globalElements);
     }
 
     public void updateFactor() {
@@ -287,7 +278,62 @@ public class ClientElementManager {
 
         elements.clear();
         elementIds.clear();
-        rawData = new CustomizableSignData(); // Reset the raw data
-        backgroundTextures.clear(); // Clear the background textures
+        textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>()); // Reset the raw data
+    }
+
+    /**
+     * Returns all the borders from the signs in the current sign in the correct order in a 2D Array with Syntax
+     * BorderProperty[row][col]
+     */
+    public BorderProperty[][] getBorders() {
+        return borders;
+    }
+
+    /**
+     * Calculates the borders of the signs around the master block
+     * @param blockPosExtendeds The decoded sign distances
+     * @param masterBlock The master block itself
+     * @return 2D Array BorderProperty[row][col]
+     */
+    private static BorderProperty[][] calculateBorders(
+            List<BlockPosExtended> blockPosExtendeds,
+            CustomizableSignBlockEntity masterBlock,
+            int signWidth, int signHeight
+    ) {
+        List<BlockPosExtended> blockPosExtendedModifiable = new ArrayList<>(blockPosExtendeds);
+        final BlockPosExtended masterBlockPos = new BlockPosExtended(masterBlock.getBlockPos());
+        final Level blockLevel = masterBlock.getLevel();
+
+        if (blockLevel == null)
+            return new BorderProperty[0][0];
+
+        // Sort from Y highest to lowest X/Z lowest to highest, because ImGui renders top -> bottom, left -> right
+        blockPosExtendedModifiable.sort(
+                Comparator
+                        .comparingInt(Vec3i::getY).reversed()
+                        .thenComparingInt(pos -> Math.abs(pos.getX()))
+                        .thenComparingInt(pos -> Math.abs(pos.getZ()))
+        );
+
+
+        BorderProperty[][] borders = new BorderProperty[signHeight][signWidth];
+
+        int idx = 0;
+        for (int row = 0; row < signHeight; row++) {
+            for (int col = 0; col < signWidth; col++) {
+                BlockPosExtended offset = blockPosExtendedModifiable.get(idx++);
+                BlockPosExtended absPos = masterBlockPos.addOffset(offset);
+
+                BlockEntity be = blockLevel.getBlockEntity(absPos);
+
+                if (be instanceof CustomizableSignBlockEntity csbe) {
+                    borders[row][col] = csbe.getBorderType();
+                } else {
+                    borders[row][col] = BorderProperty.INSTANCE;
+                }
+            }
+        }
+
+        return borders;
     }
 }

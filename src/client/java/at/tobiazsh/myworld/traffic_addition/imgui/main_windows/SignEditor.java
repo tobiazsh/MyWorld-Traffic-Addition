@@ -7,11 +7,13 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  * @author Tobias
  */
 
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementFactory;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
+import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
@@ -22,13 +24,11 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_im
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem.Folder;
 import at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 
+import at.tobiazsh.myworld.traffic_addition.utils.JsonUtil;
 import com.google.gson.*;
 
 import imgui.ImGui;
@@ -43,13 +43,13 @@ import net.minecraft.world.level.Level;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
 import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.clearFontAtlas;
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.getPrettyJson;
-import static at.tobiazsh.myworld.traffic_addition.data.CustomizableSignData.updateToNewVersion;
 import static at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory.createSavesDir;
 
 public class SignEditor {
@@ -62,12 +62,14 @@ public class SignEditor {
     private static int signHeightBlocks;
 
     private static boolean isClosed = true;
+    private static boolean isDebug = false;
 
     public static String backgroundTexturePath;
     public static ClientElementInterface selectedElement = null;
-    private static Folder allBackgrounds = null; // All Countries in ImGui/SignRes/Backgrounds/
     public static ImVec2 signRatio; // Initialized when screen is opened;
-    public static boolean showDebug = false;
+
+    private static BackgroundSelectorPopup backgroundSelector;
+    private static JsonInjector jsonInjector;
 
     private static void quit() {
         ImGui.closeCurrentPopup();
@@ -88,10 +90,11 @@ public class SignEditor {
         ElementsWindow.render();
         ElementAddWindow.render();
         ElementPropertyWindow.render();
-        BackgroundSelectorPopup.render(allBackgrounds, blockEntity);
         ConfirmationPopup.render();
         FileDialogPopup.render();
         OnlineImageGallery.render();
+
+        backgroundSelector.render();
     }
 
     public static void open(BlockPos masterBlockPos, @NotNull Level world, boolean isInit) {
@@ -118,13 +121,6 @@ public class SignEditor {
 
         getSignSize();
 
-        // List all available backgrounds
-        try {
-            allBackgrounds = FileSystem.listFoldersRecursive("/assets/%s/textures/imgui/sign_res/backgrounds/".formatted(MyWorldTrafficAddition.MOD_ID), true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         signRatio = createRatio(SignPreview.previewMaxWidth, SignPreview.previewMaxHeight, signWidthBlocks, signHeightBlocks);
 
         backgroundTexturePath = "";
@@ -139,6 +135,18 @@ public class SignEditor {
 
         ImGuiRenderer.showSignEditor = true;
         isClosed = false;
+
+        backgroundSelector = new BackgroundSelectorPopup(
+                ClientElementManager.getInstance().textureData,
+                "bg_" + System.identityHashCode(ClientElementManager.getInstance().textureData)
+        );
+
+        // DEBUG INIT
+
+        jsonInjector = new JsonInjector(
+                "jsonInjector_" + blockEntity.hashCode(),
+                blockEntity
+        );
     }
 
     private static void getSignSize() {
@@ -183,10 +191,11 @@ public class SignEditor {
         ImGui.begin(tr("ImGui.Main.SignEditor", "Sign Editor"), ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
+        renderDebug();
         handleHotKeys();
 
         JsonPreviewPopup.render();
-        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(ClientElementManager.getInstance().rawData);
+        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(ClientElementManager.getInstance().textureData);
 
         // Status bar showing dimensions, zoomed dimensions, pixel/block ratio and zoom percentage
         ImGui.setCursorPosY(ImGui.getWindowHeight() - ImGui.getFontSize() - ImGui.getStyle().getWindowPaddingY()); // Position the status bar at the bottom of the window
@@ -204,12 +213,11 @@ public class SignEditor {
         SignPreview.render(
                 signRatio.x,
                 signRatio.y,
-                signWidthBlocks,
-                signHeightBlocks,
                 ClientElementManager.getInstance().getPixelOfOneBlock(),
                 new ImVec2(previewX, previewY),
                 ClientElementManager.getInstance().getElements(),
-                ClientElementManager.getInstance().backgroundTextures
+                ClientElementManager.getInstance().textureData.getBackground(),
+                ClientElementManager.getInstance().getBorders()
         );
 
         ImGui.end();
@@ -258,7 +266,7 @@ public class SignEditor {
 
             ImGui.separator();
 
-            if(ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Debug Menu"))) showDebug = !showDebug;
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Debug Menu"))) isDebug = !isDebug;
 
             ImGui.endMenu();
         }
@@ -275,7 +283,8 @@ public class SignEditor {
         }
 
         if (ImGui.beginMenu(tr("Global", "Background"))) {
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Choose Background") + "...", "CTRL + G")) BackgroundSelectorPopup.open();
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Choose Background") + "...", "CTRL + G"))
+                backgroundSelector.open();
 
             ImGui.endMenu();
         }
@@ -318,9 +327,7 @@ public class SignEditor {
             ImGui.endMenu();
         }
 
-        if (showDebug) if (ImGui.beginMenu("Debug")) {
-
-            if (ImGui.menuItem("Update Json")) ClientElementManager.getInstance().updateRawData();
+        if (isDebug) if (ImGui.beginMenu("Debug")) {
 
             if (ImGui.menuItem("Toggle Snap to Window")) {
                 ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
@@ -330,11 +337,6 @@ public class SignEditor {
                 createSavesDir();
             }
 
-            if (ImGui.menuItem("Convert to new syntax")) {
-                CustomizableSignData style = ClientElementManager.getInstance().rawData;
-                updateToNewVersion(style);
-            }
-
             if (ImGui.menuItem("Test Error Popup")) {
                 ErrorPopup.open(new Error("Test Error", "This is a test error message."), () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed."));
             }
@@ -342,10 +344,21 @@ public class SignEditor {
             if (ImGui.menuItem("Test TFD Popup O")) DebugFunctions.testNfd_open();
             if (ImGui.menuItem("Test TFD Popup S")) DebugFunctions.testNfd_save();
 
+            if (ImGui.menuItem("Test Automatic Background Parsing")) DebugFunctions.testAutoBackgroundLoad();
+            if (ImGui.menuItem("Test New Data Parsing")) DebugFunctions.testNewDataParse();
+
+            if (ImGui.menuItem("Inject JSON")) jsonInjector.open();
+
             ImGui.endMenu();
         }
 
         ImGui.endMenuBar();
+    }
+
+    private static void renderDebug() {
+        if (!isDebug) return;
+
+        jsonInjector.render();
     }
 
     public static void calcFactor() {
@@ -362,33 +375,32 @@ public class SignEditor {
     }
 
     private static void copySign() {
-        ClientElementManager.getInstance().updateRawData();
-        if (ClientElementManager.getInstance().rawData.json.isEmpty()) return; // Can't copy if empty
+        if (ClientElementManager.getInstance().textureData.toJson().isEmpty()) return; // Can't copy if empty
 
-        SignClipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().textureData);
     }
 
     private static void pasteSign() {
-        if (SignClipboard.getInstance().getCopiedSign() == null || SignClipboard.getInstance().getCopiedSign().json.isEmpty()) return; // Can't paste if empty
+        if (SignClipboard.getInstance().getCopiedSign() == null || SignClipboard.getInstance().getCopiedSign().toJson().isEmpty()) return; // Can't paste if empty
 
         ClientElementManager.getInstance().setData(SignClipboard.getInstance().getCopiedSign(), blockEntity);
     }
 
     public static void addUndo() {
-        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
     }
 
     private static void undo() {
         if (SignClipboard.getInstance().undoEmpty()) return; // Can't undo if empty
 
-        SignClipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().textureData);
         ClientElementManager.getInstance().setData(SignClipboard.getInstance().popUndoStack(), blockEntity);
     }
 
     private static void redo() {
         if (SignClipboard.getInstance().redoEmpty()) return; // Can't redo if empty
 
-        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().rawData);
+        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
         ClientElementManager.getInstance().setData(SignClipboard.getInstance().popRedoStack(), blockEntity);
     }
 
@@ -407,7 +419,8 @@ public class SignEditor {
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.Q)) quit(); // Quit
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) BackgroundSelectorPopup.open(); // Background Selector Open
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) backgroundSelector.open();
+
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopup.shouldOpen = true; // Open Json Preview
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle(); // Element Window Toggle
@@ -433,50 +446,125 @@ public class SignEditor {
     private static void exportSign() {
         createSavesDir();
 
-        // Ensure the data is up to date
-        ClientElementManager.getInstance().updateRawData();
-        FileDialogPopup.setData(getPrettyJson(ClientElementManager.getInstance().rawData.jsonString));
+        String data = JsonUtil.toPrettyJson(ClientElementManager.getInstance().textureData.toJson().toString());
 
-        FileDialogPopup.open(
-                SavesDirectory.getSignSaveDir(),
-                FileDialogPopup.FileDialogType.SAVE,
-                (path) -> MyWorldTrafficAddition.LOGGER.info("Saved file successfully! Path: {}", path.toString()),
-                "MWTACSIGN", "JSON"
-        );
+        try {
+            NativeFileDialogs.writeFileWithDialog(
+                    "Export Customizable Sign...",
+                    new NativeFileDialogs.FilterItem(
+                            "MyWorld Traffic Addition Customizable Sign Data",
+                            new String[]{"*.MWTACSIGN", "*.mwtacsign", "*.JSON", "*.json"}
+                    ),
+                    SavesDirectory.getSignSaveDir(),
+                    "New Customizable Sign",
+                    data.getBytes(StandardCharsets.UTF_8),
+                    (abort) -> {
+                    }
+            );
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Export", "Export failed!"),
+                            "An error occurred while exporting the sign data. Please check logs."
+                    ),
+                    () -> {}
+            );
+
+            MyWorldTrafficAddition.LOGGER.error("Error while exporting sign data!", e);
+        }
     }
 
     private static void importSign() {
         createSavesDir();
 
-        FileDialogPopup.open(SavesDirectory.getSignSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
-            if (path == null || path.toString().isBlank()) return;
+        try {
+            byte[] readFile = NativeFileDialogs.readFileWithDialog(
+                    "Import Sign...",
+                    new NativeFileDialogs.FilterItem(
+                           "MyWorld Traffic Addition Customizable Signs",
+                            new String[]{"*.MWTACSIGN", "*.mwtacsign", "*.JSON", "*. json"}
+                    ),
+                    SavesDirectory.getSignSaveDir(),
+                    (abort) -> {}
+            );
 
-            CustomizableSignData style = new CustomizableSignData();
-            style.setJson(FileDialogPopup.getData());
-            ClientElementManager.getInstance().setData(style, blockEntity);
+            if (readFile.length == 0) // Abort
+                return;
 
-            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path);
-        }, "MWTACSIGN", "JSON");
+            String readData = new String(readFile, StandardCharsets.UTF_8);
+
+            var parsedTexture = CustomizableSignTextureData.fromJson(
+                    (JsonObject) JsonParser.parseString(readData)
+            );
+
+            ClientElementManager.getInstance().setData(parsedTexture, blockEntity);
+
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            "An error occurred while reading the file. Please check logs"
+                    ),
+                    () -> {}
+            );
+
+            MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
+        } catch (IllegalArgumentException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            tr("ImGui.Main.Import", "The file you provided does not appear to have valid sign data!")
+                    ),
+                    () -> {}
+            );
+        }
     }
 
     private static void importElement() {
-        createSavesDir();
+        try {
+            byte[] readFile = NativeFileDialogs.readFileWithDialog(
+                    "Import Element...",
+                    new NativeFileDialogs.FilterItem(
+                            "MyWorld Traffic Addition Customizable Sign Elements",
+                            new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*. json"}
+                    ),
+                    SavesDirectory.getElementSaveDir(),
+                    (abort) -> {}
+            );
 
-        FileDialogPopup.open(SavesDirectory.getElementSaveDir(), FileDialogPopup.FileDialogType.OPEN, (path) -> {
-            JsonObject elementObj = JsonParser.parseString(FileDialogPopup.getData()).getAsJsonObject();
-            ClientElementInterface element = ClientElementFactory.toClientElement(Objects.requireNonNull(BaseElementInterface.fromJson(elementObj)));
-
-            if (element == null) {
-                MyWorldTrafficAddition.LOGGER.error("Importing element failed! Path: {}", path.toString());
+            if (readFile.length == 0) // Abort
                 return;
-            }
+
+            String readData = new String(readFile, StandardCharsets.UTF_8);
+            JsonObject elementObj = JsonParser.parseString(readData).getAsJsonObject();
+            var element = CustomizableSignElementFactory.toClientElement(
+                    Objects.requireNonNull(BaseElementInterface.fromJson(elementObj))
+            );
+
+            if (element == null)
+                throw new IllegalStateException("Customizable Sign Element does not appear to be valid!");
 
             element.onImport();
-
             ClientElementManager.getInstance().addElementFirst(element);
+        } catch (IOException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            "An error occurred while reading the file. Please check logs"
+                    ),
+                    () -> {}
+            );
 
-            MyWorldTrafficAddition.LOGGER.info("Opened file successfully! Path: {}", path.toString());
-        }, "MWTACSELEMENT", "JSON");
+            MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
+        } catch (IllegalArgumentException e) {
+            ErrorPopup.open(
+                    new Error(
+                            tr("ImGui.Main.Import", "Import failed!"),
+                            tr("ImGui.Main.Import", "The file you provided does not appear to have valid element data!")
+                    ),
+                    () -> {}
+            );
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------

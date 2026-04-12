@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -26,25 +27,20 @@ public class CustomRenderLayer {
 
     public static final String TEXTURE_NAME = "Sampler0";
 
-    public static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
-        "BUILT_TEXT_LAYERING",
-        Objects.requireNonNullElse(
-            gameplayPreference.getInt("textRenderLayerCacheSize"),
-            DEFAULT_TEXT_CACHE_SIZE
-        )
-    ); // Stores all the built text render layers of all fonts
-
-    public static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
-        "BUILT_IMAGE_LAYERING",
-        Objects.requireNonNullElse(
-                gameplayPreference.getInt("imageRenderLayerCacheSize"),
-                DEFAULT_IMAGE_CACHE_SIZE
-        )
-    ); // Stores all the built image render layers of all textures
-
     // ------------------ GENERAL Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    public static class Layering {
+    abstract public static class Layering {
+
+        protected Layering(float zOffset) {
+            this.zOffset = zOffset;
+        }
+
+        protected final float zOffset;
+        protected RenderType renderType;
+
+        abstract public RenderType buildRenderType();
+        abstract public RenderType getRenderType();
+
         public static LayeringTransform getZLayeringBackward(float zOffset) {
             return new LayeringTransform("view_offset_z_layering_backward", matrices -> RenderSystem.getProjectionType().applyLayeringTransform(matrices, zOffset));
         }
@@ -52,12 +48,17 @@ public class CustomRenderLayer {
 
     // ------------------ Image Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     
-    public static class ImageLayering {
-        
-        private float zOffset;
-        private RenderType renderLayer;
+    public static class ImageLayering extends Layering {
         private final ImageLayering.LayeringType layeringType;
         private final Identifier texture;
+
+        private static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
+                "BUILT_IMAGE_LAYERING",
+                Objects.requireNonNullElse(
+                        gameplayPreference.getInt("imageRenderLayerCacheSize"),
+                        DEFAULT_IMAGE_CACHE_SIZE
+                )
+        ); // Stores all the built image render layers of all textures
 
         /**
          * Constructor for ImageLayering
@@ -66,17 +67,17 @@ public class CustomRenderLayer {
          * @param texture The texture id
          */
         public ImageLayering(float zOffset, LayeringType layeringType, Identifier texture) {
-            this.zOffset = zOffset;
+            super(zOffset);
             this.layeringType = layeringType;
             this.texture = texture;
         }
 
         private final Function<Identifier, RenderType> ENTITY_SOLID_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_SOLID)
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_SOLID)
                             .withTexture(TEXTURE_NAME, texture)
-                            .useLightmap()
                             .useOverlay()
+                            .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
                             .createRenderSetup();
 
@@ -86,35 +87,35 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderType> ENTITY_CUTOUT_Z_OFFSET_BACKWARD = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.ENTITY_CUTOUT)
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_CUTOUT)
                             .withTexture(TEXTURE_NAME, texture)
-                            .useLightmap()
                             .useOverlay()
+                            .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
                             .createRenderSetup();
 
-                    return RenderType.create("entity_solid_z_offset_backward", renderSetup);
+                    return RenderType.create("entity_cutout_z_offset_backward", renderSetup);
                 }
         );
         
-        public RenderType buildRenderLayer() {
+        public RenderType buildRenderType() {
 
                 // If cached, return the cached render layer
                 if (layerExistsInCache(this.texture, this.zOffset, this.layeringType))
-                    return Objects.requireNonNull(getLayerFromCache(this.texture, this.zOffset, this.layeringType)).getRenderLayer();
+                    return Objects.requireNonNull(getLayerFromCache(this.texture, this.zOffset, this.layeringType)).getRenderType();
 
-                this.renderLayer = switch (this.layeringType) {
+                this.renderType = switch (this.layeringType) {
                     case VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID -> ENTITY_SOLID_Z_OFFSET_BACKWARD.apply(this.texture);
                     case VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT -> ENTITY_CUTOUT_Z_OFFSET_BACKWARD.apply(this.texture);
                 };
 
                 cacheLayer(this);
 
-                return this.renderLayer;
+                return this.renderType;
         }
 
-        public RenderType getRenderLayer() {
-            return renderLayer;
+        public RenderType getRenderType() {
+            return renderType;
         }
         
         public enum LayeringType {
@@ -146,10 +147,17 @@ public class CustomRenderLayer {
 
     // ------------------ Text Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    public static class TextLayering {
+    public static class TextLayering extends Layering {
 
-        private float zOffset;
-        private RenderType renderLayer;
+        private static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
+                "BUILT_TEXT_LAYERING",
+                Objects.requireNonNullElse(
+                        gameplayPreference.getInt("textRenderLayerCacheSize"),
+                        DEFAULT_TEXT_CACHE_SIZE
+                )
+        ); // Stores all the built text render layers of all fonts
+
+
         private final LayeringType layeringType;
         private final Identifier texture;
 
@@ -160,7 +168,7 @@ public class CustomRenderLayer {
          * @param texture The texture id
          */
         public TextLayering(float zOffset, LayeringType layeringType, Identifier texture) {
-            this.zOffset = zOffset;
+            super(zOffset);
             this.layeringType = layeringType;
             this.texture = texture;
         }
@@ -177,23 +185,25 @@ public class CustomRenderLayer {
                 }
         );
 
-        public RenderType buildRenderLayer() {
+        @Override
+        public RenderType buildRenderType() {
 
             // If cached, return the cached render layer
             if (layerExistsInCache(this.texture, this.zOffset, this.layeringType))
-                return Objects.requireNonNull(getLayerFromCache(this.texture, this.zOffset, this.layeringType)).getRenderLayer();
+                return Objects.requireNonNull(getLayerFromCache(this.texture, this.zOffset, this.layeringType)).getRenderType();
 
-            this.renderLayer = switch (this.layeringType) {
+            this.renderType = switch (this.layeringType) {
                 case VIEW_OFFSET_Z_LAYERING_BACKWARD_INTENSITY -> TEXT_Z_OFFSET_BACKWARD_INTENSITY.apply(this.texture);
             };
 
             cacheLayer(this);
 
-            return this.renderLayer;
+            return this.renderType;
         }
 
-        public RenderType getRenderLayer() {
-            return renderLayer;
+        @Override
+        public RenderType getRenderType() {
+            return renderType;
         }
 
         public enum LayeringType {
@@ -225,13 +235,12 @@ public class CustomRenderLayer {
 
     // ------------------ Model Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    public static class ModelLayering {
+    public static class ModelLayering extends Layering {
 
-        private final float zOffset;
         private final LayeringType layeringType;
 
         public ModelLayering(float zOffset, ModelLayering.LayeringType layeringType) {
-            this.zOffset = zOffset;
+            super(zOffset);
             this.layeringType = layeringType;
         }
 
@@ -239,7 +248,7 @@ public class CustomRenderLayer {
                 zOff -> {
                     RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK)
                             .useLightmap()
-                            .withTexture(TEXTURE_NAME, LOCATION_BLOCKS) // Deprecated; might change in the future. Still using because Minecraft also uses it on it's "model renderers"
+                            .withTexture(TEXTURE_NAME, LOCATION_BLOCKS) // Deprecated; might change in the future. Still using because Minecraft also uses it on its "model renderers"
                             .setLayeringTransform(Layering.getZLayeringBackward(zOff))
                             .createRenderSetup();
 
@@ -247,14 +256,58 @@ public class CustomRenderLayer {
                 }
         );
 
-        public RenderType buildRenderLayer() {
+        @Override
+        public RenderType buildRenderType() {
             return switch (this.layeringType) {
                 case CUTOUT_Z_OFFSET_BACKWARD -> CUTOUT_Z_OFFSET_BACKWARD.apply(this.zOffset);
             };
+        }
+
+        @Override
+        public RenderType getRenderType() {
+            return null;
         }
 
         public enum LayeringType {
             CUTOUT_Z_OFFSET_BACKWARD
         }
     }
+
+    // ------------------ Color Layering -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    public static class ColorLayering extends Layering {
+
+        /**
+         * Constructor for ColorLayering
+         * @param zOffset The elevation on the z-axis. 1.0f = 128 Blocks | 0.128f = 1 Block
+         */
+        public ColorLayering(float zOffset) {
+            super(zOffset);
+        }
+
+        private final Function<Float, RenderType> ENTITY_TRANSLUCENT_Z_OFFSET_BACKWARD = Util.memoize(
+                zOff -> {
+                    RenderSetup renderSetup = RenderSetup.builder(CustomRenderPipelines.RENDERTYPE_SIGN_ELEMENT_TRANSLUCENT)
+                            .withTexture(TEXTURE_NAME, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "rendering/1x1_white.png"))
+                            .useLightmap()
+                            .useOverlay()
+                            .setLayeringTransform(Layering.getZLayeringBackward(zOff))
+                            .createRenderSetup();
+
+                    return RenderType.create("entity_translucent_z_offset_backward_color", renderSetup);
+                }
+        );
+
+        @Override
+        public RenderType buildRenderType() {
+            this.renderType = ENTITY_TRANSLUCENT_Z_OFFSET_BACKWARD.apply(this.zOffset);
+            return this.renderType;
+        }
+
+        @Override
+        public RenderType getRenderType() {
+            return renderType;
+        }
+    }
+
 }

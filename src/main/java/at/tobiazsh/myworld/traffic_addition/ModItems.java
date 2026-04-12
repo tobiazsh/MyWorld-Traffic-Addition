@@ -18,9 +18,9 @@ public class ModItems {
         return Registry.register(BuiltInRegistries.ITEM, itemKey, new Item(itemSettings));
     }
 
-    public static final Item AUSTRIA_ITEM = registerItem(new Item.Properties().stacksTo(128), "austria_item");
+    /*public static final Item AUSTRIA_ITEM = registerItem(new Item.Properties().stacksTo(128), "austria_item");*/ // kept for reference
 
     public static void initialize(){
-        ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY).register((itemGroup) -> itemGroup.accept(ModItems.AUSTRIA_ITEM.asItem()));
+        /*ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_AUSTRIA_GROUP_KEY).register((itemGroup) -> itemGroup.accept(ModItems.AUSTRIA_ITEM.asItem()));*/ // kept for reference
     }
 }

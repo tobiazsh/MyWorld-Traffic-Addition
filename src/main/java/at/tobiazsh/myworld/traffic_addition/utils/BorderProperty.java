@@ -1,6 +1,10 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,6 +21,55 @@ public record BorderProperty(
             boolean cornerDownRight,
             boolean cornerDownLeft
 ) implements StringableObject<BorderProperty> {
+
+    public static final StreamCodec<ByteBuf, BorderProperty> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public BorderProperty decode(ByteBuf object) {
+            boolean up = object.readBoolean();
+            boolean right = object.readBoolean();
+            boolean down = object.readBoolean();
+            boolean left = object.readBoolean();
+
+            boolean cornerUpRight = object.readBoolean();
+            boolean cornerUpLeft = object.readBoolean();
+            boolean cornerDownRight = object.readBoolean();
+            boolean cornerDownLeft = object.readBoolean();
+
+            return new BorderProperty(
+                    up, right, down, left,
+                    cornerUpRight, cornerUpLeft, cornerDownRight, cornerDownLeft
+            );
+        }
+
+        @Override
+        public void encode(ByteBuf object, BorderProperty object2) {
+            object.writeBoolean(object2.up());
+            object.writeBoolean(object2.right());
+            object.writeBoolean(object2.down());
+            object.writeBoolean(object2.left());
+
+            object.writeBoolean(object2.cornerUpRight());
+            object.writeBoolean(object2.cornerUpLeft());
+            object.writeBoolean(object2.cornerDownRight());
+            object.writeBoolean(object2.cornerDownLeft());
+        }
+    };
+
+    public static final Codec<BorderProperty> CODEC = Codec.BOOL.listOf().comapFlatMap(
+            list -> {
+                if (list.size() != 8)
+                    return DataResult.error(() -> "Expected a list of 8 booleans for BorderProperty, but got " + list.size());
+
+                return DataResult.success(new BorderProperty(
+                        list.get(0), list.get(1), list.get(2), list.get(3),
+                        list.get(4), list.get(5), list.get(6), list.get(7)
+                ));
+            },
+            borderProperty -> java.util.List.of(
+                    borderProperty.up(), borderProperty.right(), borderProperty.down(), borderProperty.left(),
+                    borderProperty.cornerUpRight(), borderProperty.cornerUpLeft(), borderProperty.cornerDownRight(), borderProperty.cornerDownLeft()
+            )
+    );
 
     public static final BorderProperty INSTANCE = new BorderProperty(
             false, false, false, false,
@@ -79,6 +132,38 @@ public record BorderProperty(
     }
 
     /**
+     * <p>
+     *     Returns a binary representation of the border property. Example:
+     * </p>
+     * <p>
+     *     <pre>
+     *         {@code
+     *         up = false
+     *         right = true
+     *         down = false
+     *         left = true
+     *         }
+     *     </pre>
+     *     ...would equal to
+     *     <pre>
+     *         {@code
+     *         0101
+     *         }
+     *     </pre>
+     *     ... where {@code 0 == false} and {@code 1 == true}.
+     * </p>
+     */
+    public int toBinaryRepresentationNoCorners() {
+        int flag = 0x0000;
+        if (up)    flag |= 1 << 3;
+        if (right) flag |= 1 << 2;
+        if (down)  flag |= 1 << 1;
+        if (left)  flag |= 1;
+
+        return flag;
+    }
+
+    /**
      * Converts the BorderProperty to a normal string representation. Formatted as "up_right_down_left".
      */
     public String toNormalString() {
@@ -93,4 +178,12 @@ public record BorderProperty(
                 up, right, down, left
         );
     }
+
+    /**
+     * Check if all borders are active (up, right, down, left). Corners are not considered in this check.
+     */
+    public boolean hasAllBorders() {
+        return up() && right() && left() && down();
+    }
+
 }

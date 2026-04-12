@@ -17,8 +17,8 @@ import static org.joml.Math.sin;
 public class ImUtil {
 
 	public static class Colors {
-		public static final Color red = new Color(217, 62, 62, 255);
-		public static final Color green = new Color(100, 255, 100, 255);
+		public static final ImGuiColor red = new ImGuiColor(217, 62, 62, 255);
+		public static final ImGuiColor green = new ImGuiColor(100, 255, 100, 255);
 	}
 
 	// Sets ImGui cursor centered horizontally for next element

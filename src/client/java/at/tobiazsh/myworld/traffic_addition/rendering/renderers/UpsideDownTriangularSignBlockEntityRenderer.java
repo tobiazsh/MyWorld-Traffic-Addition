@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.UpsideDownTriangularSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -31,10 +32,10 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
 
     @Override
     protected void renderTextureOnModel(String texturePath, PoseStack matrices, MultiBufferSource vertexConsumers, Direction facing, int light, int overlay) {
-        Identifier TEXTURE = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
+        Identifier texture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
-        RenderType renderLayer = RenderTypes.entityCutout(TEXTURE);
-
+        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
+        RenderType renderLayer = imageLayering.buildRenderType();
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
         matrices.pushPose();

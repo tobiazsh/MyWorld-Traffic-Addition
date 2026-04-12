@@ -3,7 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.*;
 
-public class ClientElementFactory {
+public class CustomizableSignElementFactory {
 
     public static ClientElementInterface toClientElement(BaseElement globalElement) {
         switch (globalElement) {
@@ -52,7 +52,7 @@ public class ClientElementFactory {
 
                 GEC.setName(GE.getName());
                 GEC.setColor(GE.getColor());
-                GEC.setClientElements((GE.getElements().stream().map(ClientElementFactory::toClientElement).toList()));
+                GEC.setClientElements((GE.getElements().stream().map(CustomizableSignElementFactory::toClientElement).toList()));
 
                 return GEC;
             }
@@ -102,7 +102,7 @@ public class ClientElementFactory {
 
                 globalGroup.setName(GEC.getName());
                 globalGroup.setColor(GEC.getColor());
-                globalGroup.setElements(GEC.unpackClient().stream().map(ClientElementFactory::toGlobalElement).toList()); // Unpack client elements to global elements
+                globalGroup.setElements(GEC.unpackClient().stream().map(CustomizableSignElementFactory::toGlobalElement).toList()); // Unpack client elements to global elements
                 return globalGroup;
             }
 

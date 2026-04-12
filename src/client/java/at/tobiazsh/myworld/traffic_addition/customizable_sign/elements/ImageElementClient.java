@@ -174,7 +174,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             if (isExternal) {
                 texture = new DynamicTexture(this.getResourcePath(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
                         .smartRegisterTexture()
-                        .register()
+                        .registerInManager()
                         .subscribe();
 
                 reference.dynamicTexture = texture;
@@ -190,7 +190,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
                 CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
                 texture.getId()); // Custom Render Layer to prevent z-fighting
 
-        RenderType renderLayer = imageLayering.buildRenderLayer();
+        RenderType renderLayer = imageLayering.buildRenderType();
 
         MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);

@@ -118,7 +118,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         Identifier texture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
-        RenderType renderLayer = imageLayering.buildRenderLayer();
+        RenderType renderLayer = imageLayering.buildRenderType();
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
         matrices.pushPose();

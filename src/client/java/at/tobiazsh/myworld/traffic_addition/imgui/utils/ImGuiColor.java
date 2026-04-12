@@ -11,7 +11,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Color {
+public class ImGuiColor {
 	public short red = 255;
 	public short green = 255;
 	public short blue = 255;
@@ -82,7 +82,7 @@ public class Color {
 		return hexCache.containsKey(rgba);
 	}
 
-	public Color (int r, int g, int b, int a) {
+	public ImGuiColor(int r, int g, int b, int a) {
 		setColors(r, g, b, a);
 	}
 

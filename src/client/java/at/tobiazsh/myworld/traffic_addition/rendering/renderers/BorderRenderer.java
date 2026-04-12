@@ -31,7 +31,7 @@ public class BorderRenderer {
         borderStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(borderBlockState);
         cornerStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(cornerBlockState);
 
-        borderRenderLayer = modelLayering.buildRenderLayer();
+        borderRenderLayer = modelLayering.buildRenderType();
     }
 
     // Here for optimization, so we don't have to create a new BlockPosFloat every time

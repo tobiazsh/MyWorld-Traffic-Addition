@@ -33,7 +33,7 @@ public class ModBlockEntities {
 
     public static BlockEntityType<UpsideDownTriangularSignBlockEntity> UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
-            Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "upsidedown_triangular_sign_block"),
+            Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "upside_down_triangular_sign_block"),
             FabricBlockEntityTypeBuilder.create(UpsideDownTriangularSignBlockEntity::new, UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock()).build()
     );
 

@@ -9,10 +9,12 @@ package at.tobiazsh.myworld.traffic_addition.filesystem;
 
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.utils.PathUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -174,7 +176,7 @@ public class FileSystem {
 			rootDir = new Folder(newPath.getFileName().toString(), path, fromResource);
 
 			// Populate the directory structure
-			populateDirectory(rootDir, newPath, path);
+			populateDirectory(rootDir, newPath);
 		} catch (Exception e) {
 			// Handle or log the exception
 			MyWorldTrafficAddition.LOGGER.error("Failed to crawl directory: {}", path, e);
@@ -213,11 +215,12 @@ public class FileSystem {
 	 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
 	 */
 
-	private static void populateDirectory(Folder rootDir, Path resourcePath, String basePath) throws IOException, URISyntaxException {
+	private static void populateDirectory(Folder rootDir, Path resourcePath) throws IOException, URISyntaxException {
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(resourcePath)) {
 			for (Path entry : directoryStream) {
-				String entryPath = basePath + entry.getFileName();
 				String fileName = entry.getFileName().toString();
+				Path resolved = Path.of(rootDir.path, fileName);
+				String entryPath = PathUtils.windowsToUnixPath(resolved.toString());
 
 				if (Files.isDirectory(entry)) {
 					entryPath = entryPath.concat("/");
@@ -249,7 +252,7 @@ public class FileSystem {
 		}
 	}
 
-	public static class DirectoryElement {
+	abstract public static class DirectoryElement {
 		public final String path;
 		public final String name;
         public final boolean isResource;
@@ -285,6 +288,20 @@ public class FileSystem {
         }
 
 		/**
+		 * Checks if the element exists in the filesystem
+		 * If it does exist as a file, but the type here is folder, it will return false as well (and vice versa)
+		 */
+		abstract public boolean exists();
+
+		/**
+		 * Convert to java.io.File
+		 * @return java.io.File
+		 */
+		public java.io.File toJavaFile() {
+			return new java.io.File(path);
+		}
+
+		/**
 		 * Get the size of the element.
 		 * @return Size of the element. 0 if it is a folder.
 		 */
@@ -314,6 +331,18 @@ public class FileSystem {
 
 		public Folder(String name, String path, boolean isResource) {
 			super(name, path, isResource);
+		}
+
+		@Override
+		public boolean exists() {
+			if (isResource) { // Extra handling for in-jar-folders
+				String folderPath = PathUtils.windowsToUnixPath(path);
+				folderPath = folderPath.endsWith("/") ? folderPath : folderPath + "/";
+				return MyWorldTrafficAddition.class.getResource(folderPath) != null;
+			}
+
+			java.io.File file = new java.io.File(path);
+			return file.exists() && file.isDirectory();
 		}
 
 		/**
@@ -443,7 +472,17 @@ public class FileSystem {
 			super(name, path, isResource);
 		}
 
-        public File(String path, boolean isResource) {
+		@Override
+		public boolean exists() {
+			if (isResource) // Handling for in-jar files
+				return MyWorldTrafficAddition.class.getResource(path) != null;
+
+			// Other file types
+			java.io.File file = new java.io.File(path);
+			return file.exists() && file.isFile();
+		}
+
+		public File(String path, boolean isResource) {
             super(evaluateFileName(path), path, isResource);
         }
 
@@ -488,14 +527,12 @@ public class FileSystem {
 
 
         public byte[] readBytes() throws IOException, NullPointerException {
-            if (isResource) {
-                try (InputStream stream = Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream()) {
-                    return stream.readAllBytes();
-                }
-            }
-
-            return Files.readAllBytes(Path.of(path));
-        }
+			try (BufferedInputStream bis = new BufferedInputStream(
+					isResource ? Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream() : new FileInputStream(path)
+			)) {
+				return bis.readAllBytes();
+			}
+		}
 	}
 }
 

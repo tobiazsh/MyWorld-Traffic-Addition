@@ -1,18 +1,18 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
+import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignInitializer;
 import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
-import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
-import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
-import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.ListUtils;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,18 +20,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity.*;
-import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.blockPosInDirection;
-import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 /**
  * Screen for customizing sign blocks
@@ -62,7 +51,7 @@ public class CustomizableSignSettingScreen extends Screen {
     private boolean isInitialized = false;
 
     /**
-     * Creates a new screen for customizing signDistances
+     * Creates a new screen for customizing signRelative
      */
     public CustomizableSignSettingScreen(Level world, BlockPos pos, Player player) {
         super(TITLE);
@@ -163,13 +152,7 @@ public class CustomizableSignSettingScreen extends Screen {
         this.clearWidgets();
     }
 
-    private boolean abort = false;
-
-    /**
-     * Initializes the sign structure by determining dimensions and configuring connected blocks
-     */
     private void initSign() {
-        // Determine sign dimensions
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
 
         if (currentSignBlockEntity == null) {
@@ -177,211 +160,25 @@ public class CustomizableSignSettingScreen extends Screen {
             return;
         }
 
-        Direction facing = currentSignBlockEntity.getFacing();
+        var result = CustomizableSignInitializer.initializeSign(currentSignBlockEntity);
 
-        BlockPosExtended masterPos = new BlockPosExtended(pos);
-
-        int signHeight = checkHeight(pos, facing);
-        int signWidth = checkWidth(pos, facing);
-
-        // Configure connected blocks
-        List<BlockPosExtended> signDistances = checkSigns(pos, facing, signWidth, signHeight);
-
-        if (signDistances == null)
-            return; // Can't normally happen, but just in case
-
-        List<BlockPosExtended> originalPositions = signDistances.stream().map(distance -> masterPos.addOffset(distance.invert())).toList();
-
-        if (!abort) {
-            if (!informMaster(originalPositions, masterPos, facing)) {
-                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "No sign found at one or more of the positions! Please check the structure!")), false);
-                return;
-            }
-
-            setSignBorder(originalPositions);
-            checkSignPoles(masterPos, DirectionUtils.getFacing(pos, world), signHeight, signWidth);
-
-            // Send size to server
-            ClientPlayNetworking.send(new SetSizeCustomizableSignPayload(pos, signHeight, signWidth));
-
-            // Send all sign positions to server
-            List<String> signDistancesString = signDistances.stream()
-                    .map(BlockPosExtended::toObjectString)
-                    .toList();
-
-            byte[] signDistanceBytes;
-
-            try {
-                signDistanceBytes = ListUtils.toByteArray(signDistancesString);
-            } catch (IOException e) {
-                MyWorldTrafficAddition.LOGGER.error("Failed to serialize sign positions for {}: {}", pos, e.getMessage());
-                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Error", "Failed to initialize sign structure!")), false);
-                return;
-            }
-
-            ClientPlayNetworking.send(new SetSignPositionsCustomizableSignBlockPayload(pos, signDistanceBytes));
+        if (result.hasError()) {
+            player.displayClientMessage(Component.literal(result.error().message()), false);
+            return;
         }
 
-        isInitialized = true;
-    }
+        FriendlyByteBuf resultBuf = new FriendlyByteBuf(Unpooled.buffer());
+        result.encode(resultBuf);
 
-    /**
-     * Determines the height of the sign structure by checking blocks above
-     */
-    private int checkHeight(BlockPos masterPos, Direction facing) {
-        int height = 1;
+        byte[] sentBytes = new byte[resultBuf.readableBytes()];
+        resultBuf.getBytes(0, sentBytes);
 
-        BlockPos currentPos = masterPos;
-
-        while (isUsableCustomizableSignBlockEntity(currentPos.above(), world, facing)) {
-            currentPos = currentPos.above();
-            height++;
-        }
-
-        return height;
-    }
-
-    /**
-     * Determines the width of the sign structure by checking adjacent blocks
-     */
-    private int checkWidth(BlockPos startingPos, Direction facing) {
-        int right = 1;
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
-
-        while (isUsableCustomizableSignBlockEntity(blockPosInDirection(rightDirection, startingPos, right), world, facing))
-            right++;
-
-        return right; // Subtract 1 to not double count the master block
-    }
-
-    /**
-     * Identifies and registers all sign blocks in the structure
-     *
-     * @param masterPos the position of the master sign block
-     * @param facing the direction the sign is facing
-     * @param signWidth the width of the sign structure in blocks
-     * @param signHeight the height of the sign structure in blocks
-     *
-     * @return a list of BlockPosExtended which each represent the offset of a sign block from the master position
-     */
-    private List<BlockPosExtended> checkSigns(BlockPos masterPos, @NotNull Direction facing, int signWidth, int signHeight) {
-        List<BlockPosExtended> signDistances = new ArrayList<>();
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
-
-        // Scan row by row, starting at master position
-        int scannedHeight = 0;
-        int scannedWidth = 0;
-        BlockPos currentUpPos = masterPos;
-        while (isUsableCustomizableSignBlockEntity(currentUpPos, world, facing)) {
-            BlockPos currentRightPos = currentUpPos;
-
-            // Scan a single row
-            scannedWidth = 0;
-            while (isUsableCustomizableSignBlockEntity(currentRightPos, world, facing)) {
-                signDistances.add(
-                        BlockPosExtended.getOffset(masterPos, currentRightPos)
-                );
-
-                currentRightPos = blockPosInDirection(rightDirection, currentRightPos, 1);
-
-                scannedWidth++;
-            }
-
-            if (scannedWidth != signWidth) {
-                player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
-                abort = true;
-                break;
-            }
-
-            scannedHeight++;
-            currentUpPos = currentUpPos.above();
-        }
-
-        if (scannedHeight != signHeight) {
-            player.displayClientMessage(Component.literal(tr("Minecraft.MWTA.Warn", "Sign is not complete! Please check the structure")), false);
-            abort = true;
-        }
-
-        if (abort) {
-            return null;
-        }
-
-        return signDistances;
-    }
-
-    /**
-     * Informs all other signDistances except the master about their new master position
-     *
-     * @return success status of operation
-     */
-    private boolean informMaster(List<BlockPosExtended> positions, BlockPosExtended masterPos, Direction facing) {
-        for (BlockPosExtended pos : positions) {
-            if (!isUsableCustomizableSignBlockEntity(pos, world, facing))
-                return false; // If something changed during that time, we can't inform the block of the new master and thus can't continue
-
-            ClientPlayNetworking.send(new SetMasterCustomizableSignBlockPayload(pos, pos.equals(masterPos), masterPos));
-            ClientPlayNetworking.send(new SetRenderStateCustomizableSignBlockPayload(pos, pos.equals(masterPos)));
-        }
-
-        return true;
-    }
-
-    /**
-     * Identifies and configures all sign poles connected to the sign structure
-     *
-     * @return success status of operation
-     */
-    private boolean checkSignPoles(BlockPosExtended masterPos, Direction facing, int signHeight, int signWidth) {
-        List<BlockPosExtended> distances = new ArrayList<>();
-        List<BlockPos> poles = new ArrayList<>();
-        Direction rightDirection = getRightSideDirection(facing.getOpposite());
-
-        // Start position; this is the topmost pole position in the sign structure
-        BlockPos start = blockPosInDirection(facing.getOpposite(), masterPos.above(signHeight - 1), 1);
-
-        for (int i = 0; i < signWidth; i++) {
-            BlockPos pos = blockPosInDirection(rightDirection, start, i);
-
-            while (world.getBlockEntity(pos) instanceof SignPoleBlockEntity) {
-                distances.add(
-                        BlockPosExtended.getOffset(masterPos, pos)
-                );
-
-                poles.add(pos);
-
-                pos = pos.below();
-            }
-        }
-
-        // Mark all poles as not renderable
-        poles.forEach(pole -> ClientPlayNetworking.send(new SetShouldRenderSignPolePayload(pole, false)));
-
-        List<String> distancesString = distances.stream()
-                .map(BlockPosExtended::toObjectString)
-                .toList();
-
-        try {
-            // Register poles in the master sign block
-            ClientPlayNetworking.send(new SetSignPolePositionsCustomizableSignBlockPayload(
-                    masterPos,
-                    ListUtils.toByteArray(distancesString)
-            ));
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to serialize sign pole positions for {}: {}", masterPos, e.getMessage());
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Determines and sets appropriate border types for all sign blocks based on position
-     */
-    private void setSignBorder(List<BlockPosExtended> positions) {
-        positions.forEach(pos -> {
-            BorderProperty borders = getBorderListBoundingBased(pos, world);
-            ClientPlayNetworking.send(new SetBorderTypeCustomizableSignBlockPayload(pos, borders.toObjectString()));
-        });
+        CustomClientNetworking.getInstance().sendBytesToServer(
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_initialization_transmission"),
+                sentBytes,
+                100,
+                0
+        );
     }
 
     // Scrolling implementation
