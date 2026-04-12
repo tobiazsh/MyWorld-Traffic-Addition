@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopu
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignFilter;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.exception.SignTextureParseException;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.SignTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import imgui.ImGui;
@@ -20,7 +19,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

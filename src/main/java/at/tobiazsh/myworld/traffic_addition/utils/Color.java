@@ -1,9 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.utils;
 
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Arrays;
-
 /**
  * Represents a color with alpha, red, green, and blue components.
  * @param a Alpha

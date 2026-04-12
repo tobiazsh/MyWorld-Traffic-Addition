@@ -4,12 +4,10 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlas;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
-import com.google.gson.JsonParser;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BackgroundLoader {

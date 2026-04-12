@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -17,7 +16,6 @@ import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
 import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
-import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_PARTICLES;
 
 /**
  * Custom RenderLayer exclusively for this mod to prevent z-fighting when viewing signs from further away. Pairs with CustomTextRenderer.

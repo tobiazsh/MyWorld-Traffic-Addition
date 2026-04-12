@@ -2,10 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.data_fix;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.data_fix.schema.V0;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.schemas.Schema;
-import net.minecraft.SharedConstants;
 import net.minecraft.util.datafix.fixes.*;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
