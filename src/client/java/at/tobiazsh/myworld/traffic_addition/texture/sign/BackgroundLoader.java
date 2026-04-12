@@ -42,9 +42,6 @@ public class BackgroundLoader {
 
             SpriteAtlas atlas = SpriteAtlasManager.INSTANCE.loadSpriteAtlas((FileSystem.File) direlm);
 
-            atlas.loadTexture();
-            atlas.initializeSprites();
-
             BACKGROUND_SPRITES.add(atlas);
         }
     }
