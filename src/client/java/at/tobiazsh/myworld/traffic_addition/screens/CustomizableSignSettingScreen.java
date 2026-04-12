@@ -170,9 +170,12 @@ public class CustomizableSignSettingScreen extends Screen {
         FriendlyByteBuf resultBuf = new FriendlyByteBuf(Unpooled.buffer());
         result.encode(resultBuf);
 
+        byte[] sentBytes = new byte[resultBuf.readableBytes()];
+        resultBuf.getBytes(0, sentBytes);
+
         CustomClientNetworking.getInstance().sendBytesToServer(
                 Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "customizable_sign_initialization_transmission"),
-                resultBuf.array(),
+                sentBytes,
                 100,
                 0
         );
