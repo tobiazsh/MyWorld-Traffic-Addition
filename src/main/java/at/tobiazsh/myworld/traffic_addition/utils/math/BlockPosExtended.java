@@ -68,6 +68,9 @@ public class BlockPosExtended extends BlockPos implements StringableObject<Block
         return new BlockPosExtended(offsetX, offsetY, offsetZ);
     }
 
+    /**
+     * @return The inverse of this BlockPosExtended, meaning all coordinates are negated.
+     */
     public BlockPosExtended inverse() {
         return new BlockPosExtended(-this.getX(), -this.getY(), -this.getZ());
     }
