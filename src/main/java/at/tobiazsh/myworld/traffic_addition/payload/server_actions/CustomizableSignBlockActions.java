@@ -19,6 +19,18 @@ public class CustomizableSignBlockActions {
                 new FriendlyByteBuf(Unpooled.wrappedBuffer(data))
         );
 
+        if (initializationResult.hasError()) {
+            MyWorldTrafficAddition.LOGGER.info("Player {} with UUID {} has just tried to initialize a sign, which failed, because: {}",
+                    from.getName(), from.getUUID(), initializationResult.error().message()
+            );
+
+            from.sendSystemMessage(Component.literal(
+                    "There has been an error initializing the sign."
+            ));
+
+            return;
+        }
+
         // Do various checks like sign width/height here in the next versions
 
         for (int i = 0; i < initializationResult.signAbsolute().size(); i++) {
