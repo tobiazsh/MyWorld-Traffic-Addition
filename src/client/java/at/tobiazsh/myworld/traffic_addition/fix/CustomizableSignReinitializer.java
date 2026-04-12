@@ -79,9 +79,12 @@ public class CustomizableSignReinitializer {
         FriendlyByteBuf bytes = new FriendlyByteBuf(Unpooled.buffer());
         initializationResult.encode(bytes);
 
+        byte[] sentBytes = new byte[bytes.readableBytes()];
+        bytes.getBytes(0, sentBytes);
+
         CustomClientNetworking.getInstance().sendBytesToServer(
                 Identifier.fromNamespaceAndPath("myworld_traffic_addition", "customizable_sign_initialization_transmission"),
-                bytes.array(),
+                sentBytes,
                 100,
                 0 // 32 kB
         );
