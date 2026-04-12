@@ -224,7 +224,7 @@ public class DynamicTexture extends AbstractTexture {
     }
 
     public int getTextureId() {
-        if (this.texture == null && isLoaded()) return 0;
+        if (this.texture == null || !isLoaded()) return 0;
         return ((GlTexture)this.texture).glId();
     }
 }
