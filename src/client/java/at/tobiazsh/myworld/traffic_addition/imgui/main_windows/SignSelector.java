@@ -195,7 +195,9 @@ public class SignSelector {
                 new SignBlockTextureChangePayload(
                         signPos,
                         windowsToUnixPath(relativizeResourcePath(results.get(selectedIndex.get()).path()).toString()),
-                        worldRegistryKey));
+                        worldRegistryKey
+                )
+        );
     }
 
     /**
