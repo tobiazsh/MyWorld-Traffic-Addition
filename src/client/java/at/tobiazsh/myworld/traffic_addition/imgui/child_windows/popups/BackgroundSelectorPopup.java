@@ -162,7 +162,7 @@ public class BackgroundSelectorPopup {
     }
 
     private static BackgroundType extractTypeFromBackground(Background bg) {
-        if (bg == Background.TRANSPARENT)
+        if (Objects.equals(bg.color, new Color(0, 0, 0, 0)))
             return BackgroundType.NONE;
 
         if (bg.isColor())
