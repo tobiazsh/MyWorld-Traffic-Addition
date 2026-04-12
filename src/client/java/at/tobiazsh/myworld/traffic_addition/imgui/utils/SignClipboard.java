@@ -42,7 +42,7 @@ public class SignClipboard {
     }
 
     public void pushRedoStack(CustomizableSignTextureData sign) {
-        if (redoStack.size() > 50) undoStack.removeFirst();
+        if (redoStack.size() > 50) redoStack.removeFirst();
         redoStack.add(sign);
     }
 
