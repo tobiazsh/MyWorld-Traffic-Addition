@@ -23,7 +23,7 @@
       { "name": "all_allowed", "path": "/regulatory/no_entry.png" },
       { "name": "border_control", "path": "/regulatory/border_control.png" },
       { "name": "cyclist_track", "path": "/regulatory/cyclist_track.png" },
-      { "name": "cyclists_track_end", "path": "/regulatory/cyclist_track_end.png" },
+      { "name": "cyclist_track_end", "path": "/regulatory/cyclist_track_end.png" },
       { "name": "entry_prohibited", "path": "/regulatory/entry_prohibited.png" },
       { "name": "lane_left_side", "path": "/regulatory/lane_left_side.png" },
       { "name": "lane_right_side", "path": "/regulatory/lane_right_side.png" },
