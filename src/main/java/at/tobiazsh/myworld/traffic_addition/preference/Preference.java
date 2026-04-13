@@ -159,6 +159,11 @@ public record Preference(String configFilePath) {
         return configFolder.resolve(configFilePath).toFile();
     }
 
+    /**
+     * Creates preferences file along parent directories if it does not exist
+     * @throws URISyntaxException If URI has faulty syntax
+     * @throws IOException If path could not be read or written
+     */
     public void createFileIfNotExist() throws URISyntaxException, IOException {
         File configFile = getConfigFile();
 
