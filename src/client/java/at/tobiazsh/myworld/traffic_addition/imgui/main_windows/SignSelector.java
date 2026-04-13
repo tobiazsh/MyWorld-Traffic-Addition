@@ -10,6 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.SignTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
+import at.tobiazsh.myworld.traffic_addition.utils.PathUtils;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.type.ImInt;
@@ -49,6 +50,9 @@ public class SignSelector {
 
     private FilterWindow filterWindow;
 
+    private final ImInt selectedIndex = new ImInt(0); // Use for ImGui
+    private int lastIndex = 0;
+
     public SignSelector(String windowId) {
         this.windowId = windowId;
 
@@ -77,7 +81,9 @@ public class SignSelector {
             lastIndex = selectedIndex.get();
 
             // Load texture into ImGui
-            previewTexture.loadTexturePath(results.get(selectedIndex.get()).path().toString().replaceAll("\\\\", "/"));
+            previewTexture.loadTexturePath(
+                    PathUtils.windowsToUnixPath(results.get(selectedIndex.get()).path().toString())
+            );
         }
 
         ImGui.separator();
@@ -170,10 +176,6 @@ public class SignSelector {
         return textures.stream().filter(filter::matches).toList();
     }
 
-
-    private final ImInt selectedIndex = new ImInt(0);
-    private int lastIndex = 0;
-
     private void selectionList() {
         ImGui.text(tr("Global", "Results"));
         ImGui.listBox("##resultBox", selectedIndex, resultNames, 15);
@@ -189,6 +191,9 @@ public class SignSelector {
     }
 
     private void apply() {
+        if (this.results.size() - 1 < selectedIndex.get())
+            return; // Prevent IndexOutOfBoundsException
+
         ClientPlayNetworking.send(
                 new SignBlockTextureChangePayload(
                         signPos,
@@ -207,6 +212,7 @@ public class SignSelector {
         this.filter = new SignFilter(null, null, signType); // Filter for the current sign type
         this.signPos = signPos;
         this.worldRegistryKey = world;
+        this.selectedIndex.set(0);
         refresh();
         resultNames = this.results.stream().map(SignTexture::name).toArray(String[]::new); // Convert SignTexture object to array with names for ImGui to be able to display them
     }
@@ -232,11 +238,6 @@ public class SignSelector {
         return this.signType;
     }
 
-
-
-
-
-    
     /**
      * The little filtering window where you can choose which signs you'd like to see out of so many
      */

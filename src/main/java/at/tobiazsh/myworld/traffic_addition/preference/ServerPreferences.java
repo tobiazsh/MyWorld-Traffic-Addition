@@ -1,5 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Objects;
 
 public class ServerPreferences {
@@ -25,6 +29,15 @@ public class ServerPreferences {
     private static long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
 
     public static void loadPreferences() {
+
+        try {
+            generalServerPreferences.createFileIfNotExist();
+        } catch (URISyntaxException e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to load Server Preferences as URI is faulty!", e);
+        } catch (IOException e) {
+            MyWorldTrafficAddition.LOGGER.error("Error while reading/writing while checking whether Server Preferences exists.", e);
+        }
+
         // Load server preferences
         Long MImageUP = generalServerPreferences.getLong("maximumImageUploadSize");
         maximumImageUploadSize = Objects.requireNonNullElse(MImageUP, maximumImageUploadSizeDefault); // Fallback to default

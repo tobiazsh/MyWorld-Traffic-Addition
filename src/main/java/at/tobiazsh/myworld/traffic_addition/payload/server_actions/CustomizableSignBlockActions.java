@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.payload.server_actions;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignInitializer;
 import io.netty.buffer.Unpooled;
@@ -50,6 +51,20 @@ public class CustomizableSignBlockActions {
             }
 
             sign.initialize(initializationResult, initializationResult.borders().get(i));
+        }
+
+        // Set sign poles unrendered
+        for (BlockPos polePos : initializationResult.poleAbsolute()) {
+            if (!(from.level().getBlockEntity(polePos) instanceof SignPoleBlockEntity poleBlockEntity)) {
+                MyWorldTrafficAddition.LOGGER.error("Couldn't set pole {} as unrendered!", polePos);
+                from.sendSystemMessage(Component.literal(
+                        "Couldn't set pole at position " + polePos + " as unrendered! Check if pole exists!"
+                ));
+
+                // Do not return because error is non-fatal and sign can be used without it
+            } else {
+                poleBlockEntity.setShouldRender(false);
+            }
         }
 
         MyWorldTrafficAddition.LOGGER.info(
