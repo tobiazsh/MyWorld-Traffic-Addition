@@ -161,11 +161,10 @@ public record Preference(String configFilePath) {
 
     /**
      * Creates preferences file along parent directories if it does not exist
-     * @return boolean whether it was created (meaning it didn't exist) or not (meaning it did exist beforehand)
      * @throws URISyntaxException If URI has faulty syntax
      * @throws IOException If path could not be read or written
      */
-    public boolean createFileIfNotExist() throws URISyntaxException, IOException {
+    public void createFileIfNotExist() throws URISyntaxException, IOException {
         File configFile = getConfigFile();
 
         if (!configFile.exists()) {
