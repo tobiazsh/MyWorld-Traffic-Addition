@@ -26,7 +26,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements MinecraftClientAccessor {
 
-    @Shadow @Final private Window window;
+    @Shadow
+    @Final
+    private Window window;
 
     // ---- ImGui ----
 

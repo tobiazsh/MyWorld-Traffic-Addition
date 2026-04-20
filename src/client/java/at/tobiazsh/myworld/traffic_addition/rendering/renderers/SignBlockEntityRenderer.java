@@ -18,17 +18,19 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.state.CameraRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
@@ -37,10 +39,15 @@ import com.mojang.math.Axis;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<@NotNull T, @NotNull SignBlockRenderState> {
 
     private final ModelManager bakedModelMgr;
+    private final RandomSource random = RandomSource.create();
 
     public static float zOffsetRenderLayer = 3f;
     public static float zOffsetRenderLayerDefault = 3f;
@@ -50,7 +57,12 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     }
 
     @Override
-    public void submit(SignBlockRenderState state, PoseStack matrices, @NotNull SubmitNodeCollector queue, @NotNull CameraRenderState cameraState) {
+    public void submit(
+            SignBlockRenderState state,
+            PoseStack matrices,
+            @NonNull SubmitNodeCollector queue,
+            @NonNull CameraRenderState camera
+    ) {
 
         int light = state.lightCoords;
 
@@ -81,18 +93,18 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
             renderSignHolder(queue, matrices, light, facing);
         }
 
-        BlockStateModel signBlockStateModel = bakedModelMgr.getBlockModelShaper().getBlockModel(state.blockState);
+        BlockStateModel signBlockStateModel = this.bakedModelMgr.getBlockStateModelSet().get(state.blockState);
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        signBlockStateModel.collectParts(random, parts);
 
         renderTextureOnModel(state.texturePath, matrices, provider, facing, light, OverlayTexture.NO_OVERLAY);
 
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.solidMovingBlock(),
-                signBlockStateModel,
-                1.0f, 1.0f, 1.0f,
-                light,
-                OverlayTexture.NO_OVERLAY,
-                0
+                parts,
+                new int[] {},
+                light, OverlayTexture.NO_OVERLAY, 0
         );
 
         matrices.popPose();
@@ -107,6 +119,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     public void extractRenderState(T blockEntity, SignBlockRenderState state, float tickProgress, @NotNull Vec3 cameraPos, @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         BlockEntityRenderer.super.extractRenderState(blockEntity, state, tickProgress, cameraPos, crumblingOverlay);
         state.texturePath = blockEntity.getTexturePath();
+        state.blockState = blockEntity.getBlockState();
     }
 
 
@@ -138,8 +151,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
     private void renderSignHolder(SubmitNodeCollector queue, PoseStack matrices, int light, Direction facing) {
 
-        BlockStateModel signHolderModel = bakedModelMgr.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().defaultBlockState());
-
         matrices.pushPose();
 
         moveHolderBack(facing, matrices);
@@ -148,11 +159,15 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         matrices.mulPose(Axis.YP.rotationDegrees(90 * getRotationManeuverCount(facing)));
         matrices.translate(-0.5, -0.5, -0.5);
 
+        BlockStateModel signBlockStateModel = this.bakedModelMgr.getBlockStateModelSet().get(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().defaultBlockState());
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        signBlockStateModel.collectParts(random, parts);
+
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.solidMovingBlock(),
-                signHolderModel,
-                1.0f, 1.0f, 1.0f,
+                parts,
+                new int[]{},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0

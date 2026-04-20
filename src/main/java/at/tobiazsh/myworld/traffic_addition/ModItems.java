@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.world.item.Item;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Registry;

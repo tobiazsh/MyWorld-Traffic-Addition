@@ -28,28 +28,26 @@ public class ImGuiRenderer {
      * Renders ImGui
      */
     public static void render() {
-        ImGuiImpl.draw(io -> {
-            ImGui.pushFont(ImGuiImpl.Roboto); // Use default font
+        ImGui.pushFont(ImGuiImpl.Roboto); // Use default font
 
-            ErrorPopup.render(); // Render error popup
+        ErrorPopup.render(); // Render error popup
 
-            if (showDemoWindow) { ImGui.showDemoWindow(); ImGui.showAboutWindow(); } // If demo window should be shown, do so
-            if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so
-            if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
+        if (showDemoWindow) { ImGui.showDemoWindow(); ImGui.showAboutWindow(); } // If demo window should be shown, do so
+        if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so
+        if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
 
-            if (shouldSnap) {
-                float width = Minecraft.getInstance().getWindow().getScreenWidth();
-                float height = Minecraft.getInstance().getWindow().getScreenHeight();
+        if (shouldSnap) {
+            float width = Minecraft.getInstance().getWindow().getScreenWidth();
+            float height = Minecraft.getInstance().getWindow().getScreenHeight();
 
-                ImGui.setNextWindowPos(0, 0);
-                ImGui.setNextWindowSize(width, height);
-            }
+            ImGui.setNextWindowPos(0, 0);
+            ImGui.setNextWindowSize(width, height);
+        }
 
-            if (showSignEditor) SignEditor.render(); // If the sign editor has to be rendered, do so
+        if (showSignEditor) SignEditor.render(); // If the sign editor has to be rendered, do so
 
-            SignSelector.signSelectors.forEach(SignSelector::render); // Render all sign selectors
+        SignSelector.signSelectors.forEach(SignSelector::render); // Render all sign selectors
 
-            ImGui.popFont(); // Pop default font
-        });
+        ImGui.popFont(); // Pop default font
     }
 }
