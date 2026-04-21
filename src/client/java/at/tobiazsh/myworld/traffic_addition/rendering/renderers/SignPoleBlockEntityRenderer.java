@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignPoleBlockRenderState;
+import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,7 @@ import java.util.List;
 public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPoleBlockEntity, SignPoleBlockRenderState> {
 
     private static RandomSource random = RandomSource.create();
+    @Nullable private static ImmutableList<BlockStateModelPart> signPoleParts = null;
 
     public SignPoleBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -37,9 +39,12 @@ public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPole
     public void submit(SignPoleBlockRenderState state, PoseStack matrices, SubmitNodeCollector queue, CameraRenderState renderState) {
         if(!state.shouldRender) return;
 
-        BlockStateModel signBlockStateModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState());
-        List<BlockStateModelPart> parts = new ArrayList<>();
-        signBlockStateModel.collectParts(random, parts);
+        if (signPoleParts == null) {
+            BlockStateModel signBlockStateModel = Minecraft.getInstance().getModelManager().getBlockStateModelSet().get(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState());
+            List<BlockStateModelPart> parts = new ArrayList<>();
+            signBlockStateModel.collectParts(random, parts);
+            signPoleParts = ImmutableList.copyOf(parts);
+        }
 
         matrices.pushPose();
 
@@ -50,7 +55,7 @@ public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPole
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.solidMovingBlock(),
-                parts,
+                signPoleParts,
                 new int[] {},
                 state.lightCoords,
                 OverlayTexture.NO_OVERLAY,
