@@ -47,7 +47,8 @@ import java.util.List;
 public class SignBlockEntityRenderer<T extends SignBlockEntity> implements BlockEntityRenderer<@NotNull T, @NotNull SignBlockRenderState> {
 
     private final ModelManager bakedModelMgr;
-    private final RandomSource random = RandomSource.create();
+    
+    private final static RandomSource random = RandomSource.create();
 
     public static float zOffsetRenderLayer = 3f;
     public static float zOffsetRenderLayerDefault = 3f;
