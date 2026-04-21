@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,4 +30,6 @@ public class CustomizableSignBlockRenderState extends BlockEntityRenderState {
 
     public List<BlockPosExtended> signPositionsRelative = new ArrayList<>();
     public List<BlockPosExtended> signPolePositionsRelative = new ArrayList<>();
+
+    public BlockState blockState;
 }

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.14-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
 	id 'maven-publish'
 	id "com.gradleup.shadow" version "8.3.0"
 
@@ -11,7 +11,7 @@ group = project.maven_group
 
 project.ext.imgui_version = "1.90.0"
 project.ext.lwjgl_version = "3.3.4"
-var versions = ["1.21.9", "1.21.10"]
+var versions = ["26.1", "26.1.1", "26.1.2"]
 
 base {
 	archivesName = project.archives_base_name
@@ -39,11 +39,10 @@ loom {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     // Dear ImGui Implementation
     include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
@@ -100,7 +99,7 @@ modrinth {
     projectId = "myworld-traffic-addition"
     versionNumber = project.version
     versionType = "release"
-    uploadFile = remapJar
+    uploadFile = jar
     gameVersions = versions
     loaders = ["fabric"]
     dependencies {

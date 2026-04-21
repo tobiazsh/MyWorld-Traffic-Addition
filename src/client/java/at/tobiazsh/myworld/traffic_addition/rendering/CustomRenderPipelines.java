@@ -1,6 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import net.minecraft.client.renderer.RenderPipelines;
 
 import static net.minecraft.client.renderer.RenderPipelines.*;
@@ -20,7 +22,7 @@ public class CustomRenderPipelines {
                 .withFragmentShader("core/rendertype_text_intensity")
                 .withSampler("Sampler0")
                 .withSampler("Sampler2")
-                .withDepthBias(0f, 0f)
+                .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false, 0f, 0f))
                 .build()
         );
 

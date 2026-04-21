@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class ModGroups {
 
     public static final ResourceKey<@NotNull CreativeModeTab> TRAFFIC_ADDITION_ITEM_GROUP_KEY = ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "traffic_addition"));
-    public static final CreativeModeTab TRAFFIC_ADDITION_ITEM_GROUP = FabricItemGroup.builder()
+    public static final CreativeModeTab TRAFFIC_ADDITION_ITEM_GROUP = FabricCreativeModeTab.builder()
             .icon(() -> new ItemStack(ModBlocks.BORDER_BLOCK.getBlock()))
             .title(Component.translatable("itemGroup.myworld_traffic_addition"))
             .build();
