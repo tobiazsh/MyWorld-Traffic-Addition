@@ -30,7 +30,7 @@ import java.util.List;
 @NullMarked
 public class SignPoleBlockEntityRenderer implements BlockEntityRenderer<SignPoleBlockEntity, SignPoleBlockRenderState> {
 
-    private static RandomSource random = RandomSource.create();
+    private static final RandomSource random = RandomSource.create();
     @Nullable private static ImmutableList<BlockStateModelPart> signPoleParts = null;
 
     public SignPoleBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}

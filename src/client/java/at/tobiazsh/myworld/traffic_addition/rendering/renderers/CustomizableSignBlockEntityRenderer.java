@@ -57,7 +57,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     public static final Map<BlockPos, List<ClientElementInterface>> elements =
             Collections.synchronizedMap(new WeakHashMap<>());
 
-    private RandomSource random = RandomSource.create();
+    private final RandomSource random = RandomSource.create();
 
     private ImmutableList<BlockStateModelPart> cachedPoleParts = null;
     private ImmutableList<BlockStateModelPart> cachedHolderParts = null;

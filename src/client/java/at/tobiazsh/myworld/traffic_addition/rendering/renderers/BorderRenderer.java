@@ -24,7 +24,7 @@ public class BorderRenderer {
 
     private static ImmutableList<BlockStateModelPart> borderParts;
     private static ImmutableList<BlockStateModelPart> cornerParts;
-    private static RandomSource random = RandomSource.create();
+    private static final RandomSource random = RandomSource.create();
     private static RenderType borderRenderLayer;
 
     /**
