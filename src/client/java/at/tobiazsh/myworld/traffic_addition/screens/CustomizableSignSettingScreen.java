@@ -156,14 +156,14 @@ public class CustomizableSignSettingScreen extends Screen {
         CustomizableSignBlockEntity currentSignBlockEntity = (CustomizableSignBlockEntity) world.getBlockEntity(pos);
 
         if (currentSignBlockEntity == null) {
-            player.displayClientMessage(Component.literal("Failed to initialize sign structure!"), false);
+            player.sendSystemMessage(Component.literal("Failed to initialize sign structure!"));
             return;
         }
 
         var result = CustomizableSignInitializer.initializeSign(currentSignBlockEntity);
 
         if (result.hasError()) {
-            player.displayClientMessage(Component.literal(result.error().message()), false);
+            player.sendSystemMessage(Component.literal(result.error().message()));
             return;
         }
 

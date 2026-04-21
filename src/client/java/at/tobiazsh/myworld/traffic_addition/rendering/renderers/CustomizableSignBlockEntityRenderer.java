@@ -17,9 +17,14 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -27,8 +32,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.state.CameraRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,6 +56,11 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     public static final Map<BlockPos, List<ClientElementInterface>> elements =
             Collections.synchronizedMap(new WeakHashMap<>());
+
+    private final RandomSource random = RandomSource.create();
+
+    private ImmutableList<BlockStateModelPart> cachedPoleParts = null;
+    private ImmutableList<BlockStateModelPart> cachedHolderParts = null;
 
     // Constructor
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -109,6 +117,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         state.textureData = blockEntity.getTextureData();
 
+        state.blockState = blockEntity.getBlockState();
+
         if (elements.containsKey(blockEntity.getBlockPos()) && !blockEntity.hasTextureUpdateOccurred.get()) {
             state.clientElements = elements.get(blockEntity.getBlockPos());
         } else {
@@ -134,6 +144,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         // If the block shouldn't render, exit function, for example when block isn't a master block
         if (!state.isRendering) return;
+        if (state.blockState == null) return; // Do not render if there's no appropriate block state
+        // (Alternatively substitute with default block state from ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock().defaultBlockPos()
 
         // Get the facing of the sign block
         Direction facing = state.blockState.getValue(CustomizableSignBlock.FACING);
@@ -148,14 +160,16 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // Rotate the sign
         rotateSign(rotation, matrices);
 
-        // Render master block sign block
-        BlockStateModel csbeStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(state.blockState);
+        // Optimize that and all other stuff that looks like this
+        BlockStateModel signBlockStateModel = this.bakedModelManager.getBlockStateModelSet().get(state.blockState);
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        signBlockStateModel.collectParts(random, parts);
 
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.cutoutMovingBlock(),
-                csbeStateModel,
-                1.0f, 1.0f, 1.0f,
+                parts,
+                new int[] {},
                 state.lightCoords,
                 OverlayTexture.NO_OVERLAY,
                 0
@@ -173,7 +187,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         // If the entity is master, render the other signs attached to it
         if (state.isMaster || !masterPresent) {
             renderSignPoles(queue, state, matrices, state.lightCoords);
-            renderSigns(queue, state, csbeStateModel, matrices, state.lightCoords, facing);
+            renderSigns(queue, state, ImmutableList.copyOf(parts), matrices, state.lightCoords, facing);
         }
 
         matrices.popPose();
@@ -182,7 +196,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
 
-    private void renderSigns(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, BlockStateModel blockStateModel, PoseStack matrices, int light, Direction facing) {
+    private void renderSigns(
+            SubmitNodeCollector queue,
+            CustomizableSignBlockRenderState state,
+            ImmutableList<BlockStateModelPart> parts,
+            PoseStack matrices,
+            int light,
+            Direction facing
+    ) {
         // Get the sign positions as a list of BlockPos
         List<BlockPosExtended> signPositionsAbsolute = calculatePosition(state.signPositionsRelative, new BlockPosExtended(state.blockPos));
 
@@ -200,8 +221,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             renderSign(
                     queue,
                     state,
-                    blockStateModel,
                     matrices,
+                    parts,
                     light,
                     facing,
                     state.signPositionsRelative.get(i),
@@ -218,8 +239,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     private void renderSign(
             SubmitNodeCollector queue,
             CustomizableSignBlockRenderState masterState,
-            BlockStateModel blockStateModel,
             PoseStack matrices,
+            ImmutableList<BlockStateModelPart> parts,
             int light,
             Direction facing,
             BlockPosExtended offset,
@@ -237,8 +258,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.cutoutMovingBlock(),
-                blockStateModel,
-                1.0f, 1.0f, 1.0f,
+                parts,
+                new int[] {},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0
@@ -281,22 +302,41 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the sign poles that hold the sign
-    private void renderSignPoles(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light) {
+    private void renderSignPoles(
+            SubmitNodeCollector queue,
+            CustomizableSignBlockRenderState state,
+            PoseStack matrices,
+            int light
+    ) {
         // Get the offset of each sign pole compacted in one string
         if (state.signPolePositionsRelative.isEmpty()) return; // If there are no sign poles, exit function
 
         // Define the BakedModel for the sign poles
-        BlockStateModel signPoleStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState());
+
+        if (this.cachedPoleParts == null) {
+            BlockStateModel signBlockStateModel = this.bakedModelManager.getBlockStateModelSet().get(ModBlocks.SIGN_POLE_BLOCK.getBlock().defaultBlockState());
+            List<BlockStateModelPart> parts = new ArrayList<>();
+            signBlockStateModel.collectParts(random, parts);
+            this.cachedPoleParts = ImmutableList.copyOf(parts);
+        }
 
         // Render each sign pole
-        state.signPolePositionsRelative.forEach(pos -> renderSignPole(queue, signPoleStateModel, matrices, light, pos));
+        state.signPolePositionsRelative.forEach(pos ->
+                renderSignPole(queue, cachedPoleParts, matrices, light, pos)
+        );
     }
 
 
 
 
     // Render one sign pole
-    private void renderSignPole(SubmitNodeCollector queue, BlockStateModel blockStateModel, PoseStack matrices, int light, BlockPos offset) {
+    private void renderSignPole(
+            SubmitNodeCollector queue,
+            ImmutableList<BlockStateModelPart> parts,
+            PoseStack matrices,
+            int light,
+            BlockPos offset
+    ) {
         matrices.pushPose();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Translate the sign pole to the correct position
@@ -305,8 +345,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.cutoutMovingBlock(),
-                blockStateModel,
-                1.0f, 1.0f, 1.0f,
+                parts,
+                new int[] {},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0
@@ -319,7 +359,13 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the texture of the whole sign
-    private void renderTexture(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light, Direction facing) {
+    private void renderTexture(
+            SubmitNodeCollector queue,
+            CustomizableSignBlockRenderState state,
+            PoseStack matrices,
+            int light,
+            Direction facing
+    ) {
         // If the block isn't a master block, exit function because there's nothing to render anyway since non-masters don't hold texture information
         if (!state.isMaster || !state.isInitialized) return;
 
@@ -329,7 +375,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
 
     // Render the elements that were placed when the sign was edited
-    private void renderElements(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, int height, PoseStack matrices, int light, Direction facing) {
+    private void renderElements(
+            SubmitNodeCollector queue,
+            CustomizableSignBlockRenderState state,
+            int height,
+            PoseStack matrices,
+            int light,
+            Direction facing
+    ) {
         if (state.clientElements.isEmpty()) return; // If there are no elements, exit
 
         List<ClientElementInterface> renderedElements = state.clientElements;
@@ -347,15 +400,34 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         }
     }
 
-    public static void renderElement(SubmitNodeCollector queue, ClientElementInterface element, int index, int height, PoseStack matrices, int light, Direction facing) {
+    public static void renderElement(
+            SubmitNodeCollector queue,
+            ClientElementInterface element,
+            int index,
+            int height,
+            PoseStack matrices,
+            int light,
+            Direction facing
+    ) {
         element.renderMinecraft(queue, index, height, matrices, light, facing);
     }
 
 
 
 
-    private void renderSignHolder(SubmitNodeCollector queue, CustomizableSignBlockRenderState state, PoseStack matrices, int light, Direction facing) {
-        BlockStateModel blockStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().defaultBlockState());
+    private void renderSignHolder(
+            SubmitNodeCollector queue,
+            CustomizableSignBlockRenderState state,
+            PoseStack matrices,
+            int light,
+            Direction facing
+    ) {
+        if (cachedHolderParts == null) {
+            BlockStateModel signBlockStateModel = this.bakedModelManager.getBlockStateModelSet().get(ModBlocks.SIGN_HOLDER_BLOCK.getBlock().defaultBlockState());
+            List<BlockStateModelPart> parts = new ArrayList<>();
+            signBlockStateModel.collectParts(random, parts);
+            this.cachedHolderParts = ImmutableList.copyOf(parts);
+        }
 
         matrices.pushPose();
 
@@ -369,8 +441,8 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         queue.submitBlockModel(
                 matrices,
                 RenderTypes.cutoutMovingBlock(),
-                blockStateModel,
-                1.0f, 1.0f, 1.0f,
+                cachedHolderParts,
+                new int[] {},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0

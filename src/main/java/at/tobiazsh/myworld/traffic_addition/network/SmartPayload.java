@@ -50,9 +50,9 @@ public class SmartPayload<T extends CustomPacketPayload> {
 
     public void registerPayload() {
         if (this.env == RECEIVE_ENVIRONMENT.SERVER)
-            PayloadTypeRegistry.playC2S().register(this.id, this.codec);
+            PayloadTypeRegistry.serverboundPlay().register(this.id, this.codec);
         else if (this.env == RECEIVE_ENVIRONMENT.CLIENT)
-            PayloadTypeRegistry.playS2C().register(this.id, this.codec);
+            PayloadTypeRegistry.clientboundPlay().register(this.id, this.codec);
         else
             MyWorldTrafficAddition.LOGGER.atError().log("Cannot register a payload without a receiving environment!");
     }

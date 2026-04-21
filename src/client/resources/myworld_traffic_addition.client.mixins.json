@@ -3,16 +3,18 @@
   "package": "at.tobiazsh.myworld.traffic_addition.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "font.GlyphStitcherMixin",
     "MinecraftMixin",
-    "RenderSystemAccessor",
     "TextureManagerAccessor",
     "font.BakedSheetGlyphMixin",
     "font.FontManagerAccessor",
     "font.FontManagerMixin",
-    "font.FontTextureMixin"
+    "font.FontTextureMixin",
+    "font.GlyphStitcherMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  },
+  "mixins": [
+    "GameRendererMixin"
+  ]
 }

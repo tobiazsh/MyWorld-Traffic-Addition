@@ -5,31 +5,40 @@ import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
+import com.google.common.collect.ImmutableList;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BorderRenderer {
 
-    private static BlockStateModel borderStateModel;
-    private static BlockStateModel cornerStateModel;
+    private static ImmutableList<BlockStateModelPart> borderParts;
+    private static ImmutableList<BlockStateModelPart> cornerParts;
+    private static final RandomSource random = RandomSource.create();
     private static RenderType borderRenderLayer;
 
     /**
      * Initializes the BorderRenderer with the necessary models and render layer.
      */
     public static void init(ModelManager bakedModelManager, CustomRenderLayer.ModelLayering modelLayering) {
-        BlockState borderBlockState = ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock().defaultBlockState();
-        BlockState cornerBlockState = ModBlocks.CUSTOMIZABLE_SIGN_CORNER_BIT.getBlock().defaultBlockState();
+        List<BlockStateModelPart> borderPartsMutable = new ArrayList<>();
+        List<BlockStateModelPart> cornerPartsMutable = new ArrayList<>();
 
-        borderStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(borderBlockState);
-        cornerStateModel = bakedModelManager.getBlockModelShaper().getBlockModel(cornerBlockState);
+        bakedModelManager.getBlockStateModelSet().get(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock().defaultBlockState()).collectParts(random, borderPartsMutable);
+        bakedModelManager.getBlockStateModelSet().get(ModBlocks.CUSTOMIZABLE_SIGN_CORNER_BIT.getBlock().defaultBlockState()).collectParts(random, cornerPartsMutable);
+
+        borderParts = ImmutableList.copyOf(borderPartsMutable);
+        cornerParts = ImmutableList.copyOf(cornerPartsMutable);
 
         borderRenderLayer = modelLayering.buildRenderType();
     }
@@ -49,6 +58,11 @@ public class BorderRenderer {
             int light,
             Direction facing
     ) {
+
+        if (
+                borderParts == null || borderParts.isEmpty() ||
+                cornerParts == null || cornerParts.isEmpty()
+        ) return;
 
         // Cannot store statically because it depends on the facing direction :(
         BlockPosFloat offsetLeft = new BlockPosFloat(0, 0, 0).offset(DirectionUtils.getRightSideDirection(facing).getOpposite(), -globalBorderOffset); // -15/32f == -0.46875f
@@ -127,8 +141,8 @@ public class BorderRenderer {
         queue.submitBlockModel(
                 matrices,
                 borderRenderLayer,
-                borderStateModel,
-                1.0f, 1.0f, 1.0f,
+                borderParts,
+                new int [] {},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0
@@ -165,8 +179,8 @@ public class BorderRenderer {
         queue.submitBlockModel(
                 matrices,
                 borderRenderLayer,
-                cornerStateModel,
-                1.0f, 1.0f, 1.0f,
+                cornerParts,
+                new int[] {},
                 light,
                 OverlayTexture.NO_OVERLAY,
                 0

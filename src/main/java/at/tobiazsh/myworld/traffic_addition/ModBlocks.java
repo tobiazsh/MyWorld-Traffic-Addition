@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.blocks.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.utils.RegisteredModBlock;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -111,7 +111,7 @@ public class ModBlocks {
     ).register(false);
 
     public static void initialize() {
-        ItemGroupEvents.modifyEntriesEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
+        CreativeModeTabEvents.modifyOutputEvent(ModGroups.TRAFFIC_ADDITION_ITEM_GROUP_KEY).register((itemGroup) -> {
             itemGroup.accept(ModBlocks.BORDER_BLOCK.getBlock().asItem());
             itemGroup.accept(ModBlocks.SIGN_POLE_BLOCK.getBlock().asItem());
             itemGroup.accept(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock().asItem());

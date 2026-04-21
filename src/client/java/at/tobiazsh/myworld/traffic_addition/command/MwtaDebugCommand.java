@@ -6,7 +6,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.tobiazsh.jengua.LanguageSaver;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.chat.Component;
@@ -17,8 +17,8 @@ import java.io.File;
 public class MwtaDebugCommand {
 
     public static void register(@NotNull CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("mwta_debug")
-                .then(ClientCommandManager.literal("saveLanguageFile").executes(MwtaDebugCommand::saveLanguageFile))
+        dispatcher.register(ClientCommands.literal("mwta_debug")
+                .then(ClientCommands.literal("saveLanguageFile").executes(MwtaDebugCommand::saveLanguageFile))
         );
     }
 

@@ -11,6 +11,11 @@ package at.tobiazsh.myworld.traffic_addition.imgui;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.opengl.GlDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import imgui.*;
 import imgui.extension.implot.ImPlot;
 import imgui.flag.ImGuiConfigFlags;
@@ -18,7 +23,11 @@ import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImInt;
+import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL33;
 
 import java.io.IOException;
@@ -142,18 +151,24 @@ public class ImGuiImpl {
         io.getFonts().setTexID(textureID);
     }
 
-    public static void draw(final RenderInterface renderInterface) {
+    public static void beginImGuiRendering() {
         registerPendingFonts();
         rebuildFontAtlasIfNeeded();
+
+        final RenderTarget framebuffer = Minecraft.getInstance().getMainRenderTarget();
+        GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, ((GlTexture) framebuffer.getColorTexture()).getFbo(((GlDevice) RenderSystem.getDevice().backend).directStateAccess(), null));
+        GL11C.glViewport(0, 0, framebuffer.width, framebuffer.height);
 
         imGuiImplGl3.newFrame();
         imGuiImplGlfw.newFrame();
         ImGui.newFrame();
+    }
 
-        renderInterface.render(ImGui.getIO());
-
+    public static void endImGuiRendering() {
         ImGui.render();
         imGuiImplGl3.renderDrawData(ImGui.getDrawData());
+
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 
         if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
             final long pointer = GLFW.glfwGetCurrentContext();

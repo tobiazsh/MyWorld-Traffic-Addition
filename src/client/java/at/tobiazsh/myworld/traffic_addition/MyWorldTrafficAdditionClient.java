@@ -33,8 +33,8 @@ import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
@@ -104,17 +104,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		ClientPreferences.loadGameplayPreferences();
 	}
 
-	public static void putBlockRenderLayer(Block block, ChunkSectionLayer renderLayer) {
-		BlockRenderLayerMap.putBlock(block, renderLayer);
-	}
+//	public static void putBlockRenderLayer(Block block, ChunkSectionLayer renderLayer) {
+//		ChunkSectionLayer(block, renderLayer);
+//	}
 
 	private static void putBlockRenderLayers() {
-		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), ChunkSectionLayer.CUTOUT);
-		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), ChunkSectionLayer.CUTOUT);
+//		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
 	}
 
 	private static void addBlockEntityRenderers() {
