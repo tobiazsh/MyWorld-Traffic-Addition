@@ -27,6 +27,12 @@ public class ServerPreferences {
 
     public static long customImageDownloadTimeout = 0;
     private static long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
+    public static final String maximumImageUploadSizeKey = "maximumImageUploadSize";
+    public static final String maximumThumbnailUploadSizeKey = "maximumThumbnailUploadSize";
+    public static final String maximumMetadataUploadSizeKey = "maximumMetadataUploadSize";
+    public static final String isPlayerUploadEnabledKey = "isPlayerUploadEnabled";
+    public static final String maximumUploadsPerPlayerKey = "maximumUploadsPerPlayer";
+    public static final String customImageDownloadTimeoutKey = "customImageDownloadTimeout";
 
     public static void loadPreferences() {
 
@@ -39,19 +45,19 @@ public class ServerPreferences {
         }
 
         // Load server preferences
-        Long MImageUP = generalServerPreferences.getLong("maximumImageUploadSize");
+        Long MImageUP = generalServerPreferences.getLong(maximumImageUploadSizeKey);
         maximumImageUploadSize = Objects.requireNonNullElse(MImageUP, maximumImageUploadSizeDefault); // Fallback to default
 
-        Long MThumbnailUP = generalServerPreferences.getLong("maximumThumbnailUploadSize");
+        Long MThumbnailUP = generalServerPreferences.getLong(maximumThumbnailUploadSizeKey);
         maximumThumbnailUploadSize = Objects.requireNonNullElse(MThumbnailUP, maximumThumbnailUploadSizeDefault); // Fallback to default
 
-        Long MMetadataUP = generalServerPreferences.getLong("maximumMetadataUploadSize");
+        Long MMetadataUP = generalServerPreferences.getLong(maximumMetadataUploadSizeKey);
         maximumMetadataUploadSize = Objects.requireNonNullElse(MMetadataUP, maximumMetadataUploadSizeDefault); // Fallback to default
 
-        Boolean isPUE = generalServerPreferences.getBoolean("isPlayerUploadEnabled");
+        Boolean isPUE = generalServerPreferences.getBoolean(isPlayerUploadEnabledKey);
         isPlayerUploadEnabled = Objects.requireNonNullElse(isPUE, isPlayerUploadEnabledDefault); // Fallback to default
 
-        Integer MUploadsPP = generalServerPreferences.getInt("maximumUploadsPerPlayer");
+        Integer MUploadsPP = generalServerPreferences.getInt(maximumUploadsPerPlayerKey);
         if (MUploadsPP != null && MUploadsPP > 0) {
             isUploadLimitSet = true;
             maximumUploadsPerPlayer = MUploadsPP;
@@ -60,7 +66,7 @@ public class ServerPreferences {
             maximumUploadsPerPlayer = 0;
         }
 
-        Long CIDT = generalServerPreferences.getLong("customImageDownloadTimeout");
+        Long CIDT = generalServerPreferences.getLong(customImageDownloadTimeoutKey);
         customImageDownloadTimeout = Objects.requireNonNullElse(CIDT, customImageDownloadTimeoutDefault); // Fallback to default
     }
 }
