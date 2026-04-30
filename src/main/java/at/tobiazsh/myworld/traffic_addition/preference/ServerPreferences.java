@@ -27,6 +27,12 @@ public class ServerPreferences {
 
     public static long customImageDownloadTimeout = 0;
     private static final long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
+
+    public static short maxCustomizableSignWidth = 60;
+    public static short maxCustomizableSignHeight = 60;
+    public static final short maxCustomizableSignWidthDefault = 60;
+    public static final short maxCustomizableSignHeightDefault = 60;
+
     public static final String maximumImageUploadSizeKey = "maximumImageUploadSize";
     public static final String maximumThumbnailUploadSizeKey = "maximumThumbnailUploadSize";
     public static final String maximumMetadataUploadSizeKey = "maximumMetadataUploadSize";
@@ -70,5 +76,11 @@ public class ServerPreferences {
 
         Long CIDT = generalServerPreferences.getLong(customImageDownloadTimeoutKey);
         customImageDownloadTimeout = Objects.requireNonNullElse(CIDT, customImageDownloadTimeoutDefault); // Fallback to default
+
+        Short MCustomizableSignWidth = generalServerPreferences.getShort(maxCustomizableSignWidthKey);
+        maxCustomizableSignWidth = Objects.requireNonNullElse(MCustomizableSignWidth, maxCustomizableSignWidthDefault);
+
+        Short MCustomizableSignHeight = generalServerPreferences.getShort(maxCustomizableSignHeightKey);
+        maxCustomizableSignHeight = Objects.requireNonNullElse(MCustomizableSignHeight, maxCustomizableSignHeightDefault);
     }
 }

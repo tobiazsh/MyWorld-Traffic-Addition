@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
@@ -19,6 +20,14 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 
 @NullMarked
 public class CustomizableSignInitializer {
+
+    public static int getMaxSignHeight() {
+        return ServerPreferences.maxCustomizableSignHeight;
+    }
+
+    public static int getMaxSignWidth() {
+        return ServerPreferences.maxCustomizableSignWidth;
+    }
 
     public record DetectionError(String message) {
         public static DetectionError combine(@Nullable DetectionError signError, @Nullable DetectionError poleError) {
@@ -267,6 +276,14 @@ public class CustomizableSignInitializer {
                 return SignLoopResult.failure("Not a rectangle!");
 
             height++;
+
+            if (height > getMaxSignHeight() || width > getMaxSignWidth())
+                return SignLoopResult.failure(
+                        String.format(
+                                "Sign exceeds maximum dimensions! Max dimensions: %d x %d",
+                                getMaxSignWidth(), getMaxSignHeight()
+                        )
+                );
         }
 
         ImmutableList<BorderProperty> borders = determineBorders(signAbsolute, right);
