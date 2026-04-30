@@ -33,6 +33,10 @@ public record Preference(String configFilePath) {
         saveToDisk(key, new JsonPrimitive(value));
     }
 
+    public void saveToDisk(String key, short value) {
+        saveToDisk(key, new JsonPrimitive(value));
+    }
+
     public void saveToDisk(String key, JsonElement value) {
         try {
             createFileIfNotExist();
@@ -60,6 +64,12 @@ public record Preference(String configFilePath) {
     public Integer getInt(String key) {
         JsonElement prim = loadFromDisk(key);
         return prim == null ? null : prim.getAsInt();
+    }
+
+    @Nullable
+    public Short getShort(String key) {
+        JsonElement prim = loadFromDisk(key);
+        return prim == null ? null : prim.getAsShort();
     }
 
     @Nullable
