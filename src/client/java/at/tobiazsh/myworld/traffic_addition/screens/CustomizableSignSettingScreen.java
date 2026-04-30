@@ -190,6 +190,12 @@ public class CustomizableSignSettingScreen extends Screen {
                 100,
                 0
         );
+
+        // Kick user out of screen because UI elements do not update on their own.
+        // This would require a callback from the server as soon as initialization was successful.
+        // That code would be a little unclean therefore I am not gonna do it right now.
+        // If anyone reading this is bored in the future, feel free to implement such callback.
+        this.onClose();
     }
 
     // Scrolling implementation
