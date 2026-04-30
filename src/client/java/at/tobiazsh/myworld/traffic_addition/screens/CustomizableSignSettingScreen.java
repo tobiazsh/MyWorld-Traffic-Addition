@@ -6,6 +6,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.utils.CustomizableSignInitializer;
+import at.tobiazsh.myworld.traffic_addition.widgets.BooleanDisplayWidget;
 import at.tobiazsh.myworld.traffic_addition.widgets.DegreeSliderWidget;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
@@ -81,6 +82,16 @@ public class CustomizableSignSettingScreen extends Screen {
      */
     private void drawChildren() {
         if (!showChildren) return;
+
+        // Show status whether already initialized or not
+        BooleanDisplayWidget initializationStatusWidget = new BooleanDisplayWidget(
+                MARGIN, currentYPosition, WIDGET_WIDTH, WIDGET_HEIGHT,
+                Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.init_status.true"),
+                Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".customizable_sign_edit_screen.init_status.false"),
+                isInitialized
+        );
+        addRenderableWidget(initializationStatusWidget);
+        advancePosition();
 
         // Initialize button
         addButton(
