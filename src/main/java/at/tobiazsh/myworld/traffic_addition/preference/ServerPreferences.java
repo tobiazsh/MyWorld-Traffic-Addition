@@ -26,13 +26,15 @@ public class ServerPreferences {
     public static int maximumUploadsPerPlayer = 0;
 
     public static long customImageDownloadTimeout = 0;
-    private static long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
+    private static final long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
     public static final String maximumImageUploadSizeKey = "maximumImageUploadSize";
     public static final String maximumThumbnailUploadSizeKey = "maximumThumbnailUploadSize";
     public static final String maximumMetadataUploadSizeKey = "maximumMetadataUploadSize";
     public static final String isPlayerUploadEnabledKey = "isPlayerUploadEnabled";
     public static final String maximumUploadsPerPlayerKey = "maximumUploadsPerPlayer";
     public static final String customImageDownloadTimeoutKey = "customImageDownloadTimeout";
+    public static final String maxCustomizableSignWidthKey = "maximumCustomizableSignWidth";
+    public static final String maxCustomizableSignHeightKey = "maximumCustomizableSignHeight";
 
     public static void loadPreferences() {
 
