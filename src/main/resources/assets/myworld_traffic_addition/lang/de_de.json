@@ -26,6 +26,7 @@
   "widget.myworld_traffic_addition.draw_editor_button": "Bearbeiter Anzeigen",
 
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Zum Master ernennen und konfigurieren",
+  "widget.myworld_traffic_addition.boolean_display_widget.narration": "Status: %s",
 
   "commands.myworld_traffic_addition.main_command.root": "Dies ist der Haupt-Command der MyWorld Traffic Addition Mod. Hiermit kannst du verschiedenste Dinge einrichten und ausführen, aber sei Vorsichtig!",
   "commands.myworld_traffic_addition.main_command.dev.set": "%s für %s auf %s gesetzt!",
