@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.data;
 
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Iterator;
@@ -26,6 +27,18 @@ public class CustomSignElementContainer implements Iterable<BaseElement> {
      */
     public List<BaseElement> getElements() {
         return elements;
+    }
+
+    /**
+     * Returns the number of elements on the sign.
+     * @implNote This method recursively counts all elements, meaning it also counts the elements of each group and their
+     * children. If you purely want the element count inside this container, use <code>getElements().size()</code>
+     */
+    public int getTotalElementCount() {
+        int childrensCount = getElements().stream().filter(e -> e instanceof GroupElement)
+                .mapToInt(e -> ((GroupElement) e).countTotalChildren()).sum();
+
+        return childrensCount + getElements().size();
     }
 
     /**
