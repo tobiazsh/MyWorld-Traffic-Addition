@@ -69,6 +69,15 @@ public class GroupElement extends BaseElement {
         calculateBounds();
     }
 
+    public int countTotalChildren() {
+        List<Integer> childrensChildrenCounts =
+                this.elements.stream().filter(e -> e instanceof GroupElement)
+                        .map(e -> ((GroupElement) e).countTotalChildren()).toList();
+
+        return childrensChildrenCounts.stream().mapToInt(Integer::intValue).sum() + elements.size();
+    }
+
+
     public float[] calculateBounds() {
         float minX = 0;
         float minY = 0;
