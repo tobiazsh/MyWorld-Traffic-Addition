@@ -227,7 +227,7 @@ public class ClientElementManager {
     }
 
     /**
-     * Sends the current data to the server to update the block entities data.
+     * Sends the current data to the server to update the block entity's data.
      * @param pos Position of the block entity
      * @throws IllegalStateException if the current JSON is empty
      */
