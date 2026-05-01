@@ -226,6 +226,11 @@ public class ClientElementManager {
                 .forEach(this::recursiveRegisterElement);
     }
 
+    /**
+     * Sends the current data to the server to update the block entities data.
+     * @param pos Position of the block entity
+     * @throws IllegalStateException if the current JSON is empty
+     */
     public void exportToSign(BlockPos pos) {
         updateFactor();
 
