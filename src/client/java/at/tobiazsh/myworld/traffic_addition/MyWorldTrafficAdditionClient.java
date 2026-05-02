@@ -272,4 +272,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
     }
 
+	public static boolean isSingleplayer() {
+		return Minecraft.getInstance().isSingleplayer();
+	}
+
 }
