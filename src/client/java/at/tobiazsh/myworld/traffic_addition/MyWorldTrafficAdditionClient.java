@@ -151,7 +151,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 					switch (ModVars.ImGuiWindowIds.values()[payload.windowId()]) {
 						case ABOUT -> ImGuiRenderer.showAboutWindow = true;
 						case DEMO -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow;
-						case PREF -> PreferencesWindow.open();
+						case PREF -> PreferencesWindow.INSTANCE.open();
 					}
 				})),
 

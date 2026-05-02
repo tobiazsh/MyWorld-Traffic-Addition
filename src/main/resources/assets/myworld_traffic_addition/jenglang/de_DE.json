@@ -91,35 +91,38 @@
         "Add Text Element": "Neues Textelement hinzufügen",
         "Choose Background": "Hintergrund auswählen"
       },
-      "PreferencesWindow": {
-        "If you change this value, you need to restart the game for it to take effect.": "Wenn du diesen Wert änderst, musst du das Spiel neu starten, damit die Änderung wirksam wird.",
-        "View Distance (Blocks)": "Sichtweite (Blöcke)",
-        "Customizable Sign Settings": "Dynamische Schilder Einstellungen",
-        "Clear Cache": "Cache leeren",
-        "Image RenderLayer Cache Size": "Bild RenderLayer Cache Größe",
-        "Clear all Caches": "Alle Caches leeren",
-        "The distance between the elements of the sign.\nHigher values may cause elements to overlap.": "Der Abstand zwischen den Elementen des Schildes.\nHöhere Werte können dazu führen, dass sich Elemente überlappen.",
-        "Caching Settings": "Caching Einstellungen",
-        "Element Distancing": "Element Abstand",
-        "Sign Settings": "Schilder Einstellungen",
-        "Clears cache for a specific cache register. May improve performance.": "Leert den Cache für einen bestimmten Cache-Eintrag. Kann die Leistung verbessern.",
-        "Back to Menu": "Zurück zum Menü",
-        "General Settings": "Allgemeine Einstellungen",
-        "Text RenderLayer Cache Size": "Text RenderLayer Cache Größe",
-        "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "Die Entfernung, in der die Schilder sichtbar sind.\nReduziert Flackern zwischen Hintergrund und Block.\nKann die Leistung beeinträchtigen.",
-        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "Die Anzahl der RenderLayers, die im LRU Cache gespeichert sind. Jedes Element hat seinen eigenen RenderLayer. Bei niedrigeren Werten ist die CPU-Auslastung höher, aber die RAM-Auslastung niedriger. Bei höheren Werten umgekehrt.",
-        "Calculation cache size": "Berechnungs-Cache Größe",
-        "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation.": "Anpassbare Schilder und Schildpfähle werden basierend auf ihrer Entfernung im NBT des Master-Schildes gespeichert, das in Base64 kodiert ist. Um ihre Position aus der Entfernung zu berechnen, muss MyWorld Traffic Addition den Wert dekodieren und dann in ihre Positionen umwandeln. Dies ist eine intensive Operation."
-      },
-      "Pref": {
-        "Title": {
-          "Language Settings": "Spracheinstellungen"
+      "Preferences": {
+        "PageTitle": {
+          "Language Settings": "Spracheinstellungen",
+          "Multiplayer Settings": "Mehrspieler-Einstellungen",
+          "Caching Settings": "Caching-Einstellungen",
+          "General Settings": "Allgemeine Einstellungen",
+          "Sign Settings": "Schilder-Einstellungen",
+          "Customizable Sign Settings": "Einstellungen Anpassbarer Schilder"
         },
-        "Lang": {
-          "Lang": {
-            "Language": "Sprache",
-            "MyWorld Traffic Addition\u0027s Language. Does not apply to base game!": "MyWorld Traffic Addition\u0027s Sprache. Wird nicht auf Minecraft übernommen!"
-          }
+        "SettingTitle": {
+          "Language": "Sprache",
+          "Caching": "Caching",
+          "Clear all Caches": "Alle Caches leeren",
+          "Clear Cache": "Cache leeren",
+          "Image RenderLayer Cache Size": "Bild-RenderLayer Cache Größe",
+          "Text RenderLayer Cache Size": "Text-RenderLayer Cache Größe",
+          "View Distance (Blocks)": "Sichtweite (Blocks)",
+          "Element Distancing": "Abstand zwischen Elementen"
+        },
+        "SettingDescription": {
+          "Language": "Sprache von MyWorld Traffic Addition. Wird nicht auf Minecraft angewandt!",
+          "Clear all Caches": "Alle Caches leeren.",
+          "Clears cache for a specific cache register. May improve performance.": "Leert den Cache für einen bestimmten Cache-Eintrag. Kann die Leistung beeinflussen.",
+          "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "Die Anzahl der RenderLayers, die im LRU Cache gespeichert sind. Jedes Element hat seinen eigenen RenderLayer. Bei niedrigeren Werten ist die CPU-Auslastung höher, aber die RAM-Auslastung niedriger. Bei höheren Werten umgekehrt.",
+          "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "Die Entfernung, in der die Schilder sichtbar sind.\nReduziert Flackern zwischen Hintergrund und Block.\nKann die Leistung beeinflussen.",
+          "The distance between the elements of the sign.\nHigher values may cause elements to overlap.": "Der Abstand zwischen den Elementen des Schildes.\nHöhere Werte können dazu führen, dass sich Elemente überlappen."
+        },
+        "Misc": {
+          "Clear Cache": "Cache leeren",
+          "Clear Caches for": "Cache leeren für",
+          "Do you really want to clear the cache?": "Möchtest du wirklich den Cache leeren?",
+          "If you change this value, you need to restart the game for it to take effect.": "Wenn du diesen Wert änderst, musst du das Spiel neustarten, damit es angewandt wird."
         }
       },
       "AboutWindow": {

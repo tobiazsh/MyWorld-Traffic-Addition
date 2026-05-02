@@ -34,7 +34,7 @@ public class ImGuiRenderer {
 
         if (showDemoWindow) { ImGui.showDemoWindow(); ImGui.showAboutWindow(); } // If demo window should be shown, do so
         if (showAboutWindow) AboutWindow.render(); // If about window should be shown, do so
-        if (PreferencesWindow.show) PreferencesWindow.render(); // If pref window should be shown, do so
+        if (PreferencesWindow.INSTANCE.show) PreferencesWindow.INSTANCE.render(); // If pref window should be shown, do so
 
         if (shouldSnap) {
             float width = Minecraft.getInstance().getWindow().getScreenWidth();

@@ -91,36 +91,38 @@
         "Add Text Element": "Add Text Element",
         "Choose Background": "Choose Background"
       },
-      "PreferencesWindow": {
-        "If you change this value, you need to restart the game for it to take effect.": "If you change this value, you need to restart the game for it to take effect.",
-        "View Distance (Blocks)": "View Distance (Blocks)",
-        "Customizable Sign Settings": "Customizable Sign Settings",
-        "Clear Cache": "Clear Cache",
-        "Image RenderLayer Cache Size": "Image RenderLayer Cache Size",
-        "Clear all Caches": "Clear all Caches",
-        "The distance between the elements of the sign.\nHigher values may cause elements to overlap.": "The distance between the elements of the sign.\nHigher values may cause elements to overlap.",
-        "Caching Settings": "Caching Settings",
-        "Element Distancing": "Element Distancing",
-        "Sign Settings": "Sign Settings",
-        "Clears cache for a specific cache register. May improve performance.": "Clears cache for a specific cache register. May improve performance.",
-        "Back to Menu": "Back to Menu",
-        "General Settings": "General Settings",
-        "Text RenderLayer Cache Size": "Text RenderLayer Cache Size",
-        "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.",
-        "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.",
-        "Calculation cache size": "Calculation cache size",
-        "The size of the calculation cache. Higher values may improve performance but use more RAM.": "The size of the calculation cache. Higher values may improve performance but use more RAM.",
-        "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation.": "Customizable signs and sign poles are stored based on their distance in the master sign's NBT encoded in Base64. To calculate their position from distance, MyWorld Traffic Addition has to decode the value and then cast it to their positions. This is an intensive operation."
-      },
-      "Pref": {
-        "Title": {
-          "Language Settings": "Language Settings"
+      "Preferences": {
+        "PageTitle": {
+          "Language Settings": "Language Settings",
+          "Multiplayer Settings": "Multiplayer Settings",
+          "Caching Settings": "Caching Settings",
+          "General Settings": "General Settings",
+          "Sign Settings": "Sign Settings",
+          "Customizable Sign Settings": "Customizable Sign Settings"
         },
-        "Lang": {
-          "Lang": {
-            "Language": "Language",
-            "MyWorld Traffic Addition\u0027s Language. Does not apply to base game!": "MyWorld Traffic Addition\u0027s Language. Does not apply to base game!"
-          }
+        "SettingTitle": {
+          "Language": "Language",
+          "Caching": "Caching",
+          "Clear all Caches": "Clear all Caches",
+          "Clear Cache": "Clear Cache",
+          "Image RenderLayer Cache Size": "Image RenderLayer Cache Size",
+          "Text RenderLayer Cache Size": "Text RenderLayer Cache Size",
+          "View Distance (Blocks)": "View Distance (Blocks)",
+          "Element Distancing": "Element Distancing"
+        },
+        "SettingDescription": {
+          "Language": "MyWorld Traffic Addition's Language. Does not apply to base game!",
+          "Clear all Caches": "Clear all Caches",
+          "Clears cache for a specific cache register. May improve performance.": "Clears cache for a specific cache register. May improve performance.",
+          "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.": "The amount of RenderLayers stored in the LRU Cache. Each Element has its own RenderLayer. When lower, CPU usage is higher but RAM usage is lower. When higher, vice versa.",
+          "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.": "The distance in which the signs are visible.\nReduces flickering between the background and the block.\nMay impact performance.",
+          "The distance between the elements of the sign.\nHigher values may cause elements to overlap.": "The distance between the elements of the sign.\nHigher values may cause elements to overlap."
+        },
+        "Misc": {
+          "Clear Cache": "Clear Cache",
+          "Clear Caches for": "Clear Caches for",
+          "Do you really want to clear the cache?": "Do you really want to clear the cache?",
+          "If you change this value, you need to restart the game for it to take effect.": "If you change this value, you need to restart the game for it to take effect."
         }
       },
       "AboutWindow": {
