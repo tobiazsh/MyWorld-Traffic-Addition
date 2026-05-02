@@ -60,6 +60,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
                     .getVersion()
                     .getFriendlyString();
 
+	private static boolean serverIsDedicated;
+
 	private static final List<SmartPayload<? extends CustomPacketPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPacketPayload>> clientSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPacketPayload>> smartPayloads = new ArrayList<>();
@@ -209,6 +211,10 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	}
 
     private static void registerEvents() {
+		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+			serverIsDedicated = server.isDedicatedServer();
+		});
+
         ServerLifecycleEvents.AFTER_SAVE.register((server, flush, force) -> {
             ServerBlacklist.saveBlacklist();
         });
@@ -218,6 +224,10 @@ public class MyWorldTrafficAddition implements ModInitializer {
             OnlineImageBackend.shutdown();
         });
     }
+
+	private static boolean isServerDedicated() {
+		return serverIsDedicated;
+	}
 
 	@Contract("_ -> new")
     public static @NotNull Identifier createId(String id) {
