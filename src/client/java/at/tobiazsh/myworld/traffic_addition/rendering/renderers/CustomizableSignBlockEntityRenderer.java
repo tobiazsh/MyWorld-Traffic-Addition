@@ -44,8 +44,6 @@ import java.util.*;
 
 public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<@NotNull CustomizableSignBlockEntity, @NotNull CustomizableSignBlockRenderState> {
 
-    public static final int DEFAULT_CALCULATION_CACHE_SIZE = 256; // Default size for the calculation cache, can be adjusted if needed
-
     private final ModelManager bakedModelManager;
 
     public static float zOffsetRenderLayer = 3f;
