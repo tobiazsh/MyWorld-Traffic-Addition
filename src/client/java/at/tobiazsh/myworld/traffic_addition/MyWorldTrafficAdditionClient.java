@@ -34,11 +34,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -60,7 +57,7 @@ import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	public static CustomizableSignSettingScreen customizableSignSettingScreen;
-    public static final SignSelector signSelector = new SignSelector("NormalSignSelector");
+    public static final SignSelector SIGN_SELECTOR = new SignSelector("NormalSignSelector");
 
 	private static final List<GlobalReceiverClient<? extends CustomPacketPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends @NotNull BlockEntity, ? extends @NotNull BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
@@ -68,7 +65,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
 
     static {
-        SignSelector.signSelectors.add(signSelector);
+        SignSelector.signSelectors.add(SIGN_SELECTOR);
     }
 
 	@Override
@@ -134,8 +131,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 						return;
 					}
 
-					Minecraft.getInstance().setScreen(new EmptyScreen(Component.literal("Sign Selection"), signSelector::close));
-                    signSelector.open(SignBlock.getSignSelectionEnum(payload.selection_type()), payload.pos(), payload.dimensionRegistryKey());
+					Minecraft.getInstance().setScreen(new EmptyScreen(Component.literal("Sign Selection"), SIGN_SELECTOR::close));
+                    SIGN_SELECTOR.open(SignBlock.getSignSelectionEnum(payload.selection_type()), payload.pos(), payload.dimensionRegistryKey());
 				}),
 
 				new GlobalReceiverClient<>(OpenCustomizableSignEditScreen.Id, (payload) -> {
