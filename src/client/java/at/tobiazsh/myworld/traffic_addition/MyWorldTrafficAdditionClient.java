@@ -85,8 +85,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		registerCustomProtocols();
 
-		putBlockRenderLayers();
-
 		OnlineImageCache.createCacheDir();
 
 		ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
@@ -102,19 +100,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	private static void loadPreferences() {
 		ClientPreferences.loadGameplayPreferences();
-	}
-
-//	public static void putBlockRenderLayer(Block block, ChunkSectionLayer renderLayer) {
-//		ChunkSectionLayer(block, renderLayer);
-//	}
-
-	private static void putBlockRenderLayers() {
-//		putBlockRenderLayer(ModBlocks.TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-//		putBlockRenderLayer(ModBlocks.UPSIDE_DOWN_TRIANGULAR_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-//		putBlockRenderLayer(ModBlocks.OCTAGONAL_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-//		putBlockRenderLayer(ModBlocks.SIGN_HOLDER_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
-//		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BORDER.getBlock(), ChunkSectionLayer.CUTOUT);
-//		putBlockRenderLayer(ModBlocks.CUSTOMIZABLE_SIGN_BLOCK.getBlock(), ChunkSectionLayer.CUTOUT);
 	}
 
 	private static void addBlockEntityRenderers() {
