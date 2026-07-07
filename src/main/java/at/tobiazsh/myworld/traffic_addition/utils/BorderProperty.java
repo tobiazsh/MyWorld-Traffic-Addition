@@ -134,7 +134,6 @@ public record BorderProperty(
     /**
      * <p>
      *     Returns a binary representation of the border property. Example:
-     * </p>
      * <p>
      *     <pre>
      *         {@code
@@ -151,7 +150,6 @@ public record BorderProperty(
      *         }
      *     </pre>
      *     ... where {@code 0 == false} and {@code 1 == true}.
-     * </p>
      */
     public int toBinaryRepresentationNoCorners() {
         int flag = 0x0000;
