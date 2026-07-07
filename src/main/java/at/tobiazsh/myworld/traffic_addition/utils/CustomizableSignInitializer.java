@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.utils;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
@@ -22,11 +22,11 @@ import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRight
 public class CustomizableSignInitializer {
 
     public static int getMaxSignHeight() {
-        return ServerPreferences.maxCustomizableSignHeight;
+        return ServerPreferencesManager.maxCustomizableSignHeight;
     }
 
     public static int getMaxSignWidth() {
-        return ServerPreferences.maxCustomizableSignWidth;
+        return ServerPreferencesManager.maxCustomizableSignWidth;
     }
 
     public record DetectionError(String message) {

@@ -1,86 +1,42 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlBoolean;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlInteger;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlLong;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlShort;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Objects;
+public class ServerPreferences implements PreferenceHierarchy {
 
-public class ServerPreferences {
+    // DO NOT BLINDLY CHANGE OBJECT NAMES! It's essential for TOML!
+    public final CustomizableSigns customizableSigns = new CustomizableSigns();
 
-    public static Preference generalServerPreferences = new Preference("myworld_traffic_addition/server_config.json");
+    // These classes are private
+    public static class CustomizableSigns {
+        private CustomizableSigns() {}
 
-    public static long maximumImageUploadSize = 1024 * 1024 * 5; // 5MB; Default
-    private static final long maximumImageUploadSizeDefault = 1024 * 1024 * 5; // 5MB; Default
+        // DO NOT BLINDLY CHANGE OBJECT NAMES! It's essential for TOML!
+        public final OnlineImages onlineImages = new OnlineImages();
+        public final General general = new General();
 
-    public static long maximumThumbnailUploadSize = 1024 * 512; // 512KB; Default
-    private static final long maximumThumbnailUploadSizeDefault = 1024 * 512; // 512KB; Default
+        public static class OnlineImages {
+            private OnlineImages() {}
 
-    public static long maximumMetadataUploadSize = 1024 * 100; // 100KB; Default
-    private static final long maximumMetadataUploadSizeDefault = 1024 * 100; // 100KB; Default
-
-    public static boolean isPlayerUploadEnabled = true;
-    private static final boolean isPlayerUploadEnabledDefault = true; // Default
-
-    public static boolean isUploadLimitSet = false;
-    public static int maximumUploadsPerPlayer = 0;
-
-    public static long customImageDownloadTimeout = 0;
-    private static final long customImageDownloadTimeoutDefault = 15_000; // Default; 15 Seconds; Time in milliseconds
-
-    public static short maxCustomizableSignWidth = 60;
-    public static short maxCustomizableSignHeight = 60;
-    public static final short maxCustomizableSignWidthDefault = 60;
-    public static final short maxCustomizableSignHeightDefault = 60;
-
-    public static final String maximumImageUploadSizeKey = "maximumImageUploadSize";
-    public static final String maximumThumbnailUploadSizeKey = "maximumThumbnailUploadSize";
-    public static final String maximumMetadataUploadSizeKey = "maximumMetadataUploadSize";
-    public static final String isPlayerUploadEnabledKey = "isPlayerUploadEnabled";
-    public static final String maximumUploadsPerPlayerKey = "maximumUploadsPerPlayer";
-    public static final String customImageDownloadTimeoutKey = "customImageDownloadTimeout";
-    public static final String maxCustomizableSignWidthKey = "maximumCustomizableSignWidth";
-    public static final String maxCustomizableSignHeightKey = "maximumCustomizableSignHeight";
-
-    public static void loadPreferences() {
-
-        try {
-            generalServerPreferences.createFileIfNotExist();
-        } catch (URISyntaxException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to load Server Preferences as URI is faulty!", e);
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Error while reading/writing while checking whether Server Preferences exists.", e);
+            public final Preference<TomlLong> maxSize =                new Preference<>(new TomlLong(5_242_880L), "max_size"); // 5 MiB
+            public final Preference<TomlLong> maxThumbnailSize =       new Preference<>(new TomlLong(524_288L), "max_thumbnail_size"); // 512 KiB
+            public final Preference<TomlLong> maxMetadataSize =        new Preference<>(new TomlLong(12_800L), "max_metadata_size"); // 100 KiB
+            public final Preference<TomlBoolean> uploadEnabled =       new Preference<>(new TomlBoolean(true), "upload_enabled");
+            public final Preference<TomlBoolean> hasLimit =            new Preference<>(new TomlBoolean(false), "has_limit");
+            public final Preference<TomlInteger> maxUploadsPerPlayer = new Preference<>(new TomlInteger(10), "max_uploads_per_player");
+            public final Preference<TomlLong> downloadTimeout =        new Preference<>(new TomlLong(15_000L), "download_timeout");
         }
 
-        // Load server preferences
-        Long MImageUP = generalServerPreferences.getLong(maximumImageUploadSizeKey);
-        maximumImageUploadSize = Objects.requireNonNullElse(MImageUP, maximumImageUploadSizeDefault); // Fallback to default
+        public static class General {
+            private General() {}
 
-        Long MThumbnailUP = generalServerPreferences.getLong(maximumThumbnailUploadSizeKey);
-        maximumThumbnailUploadSize = Objects.requireNonNullElse(MThumbnailUP, maximumThumbnailUploadSizeDefault); // Fallback to default
+            public final Preference<TomlShort> maxWidth =     new Preference<>(new TomlShort((short) 60), "max_width");
+            public final Preference<TomlShort> maxHeight =    new Preference<>(new TomlShort((short) 60), "max_height");
 
-        Long MMetadataUP = generalServerPreferences.getLong(maximumMetadataUploadSizeKey);
-        maximumMetadataUploadSize = Objects.requireNonNullElse(MMetadataUP, maximumMetadataUploadSizeDefault); // Fallback to default
-
-        Boolean isPUE = generalServerPreferences.getBoolean(isPlayerUploadEnabledKey);
-        isPlayerUploadEnabled = Objects.requireNonNullElse(isPUE, isPlayerUploadEnabledDefault); // Fallback to default
-
-        Integer MUploadsPP = generalServerPreferences.getInt(maximumUploadsPerPlayerKey);
-        if (MUploadsPP != null && MUploadsPP > 0) {
-            isUploadLimitSet = true;
-            maximumUploadsPerPlayer = MUploadsPP;
-        } else {
-            isUploadLimitSet = false;
-            maximumUploadsPerPlayer = 0;
+            public final Preference<TomlShort> maxElements =  new Preference<>(new TomlShort((short) 30), "max_elements");
         }
-
-        Long CIDT = generalServerPreferences.getLong(customImageDownloadTimeoutKey);
-        customImageDownloadTimeout = Objects.requireNonNullElse(CIDT, customImageDownloadTimeoutDefault); // Fallback to default
-
-        Short MCustomizableSignWidth = generalServerPreferences.getShort(maxCustomizableSignWidthKey);
-        maxCustomizableSignWidth = Objects.requireNonNullElse(MCustomizableSignWidth, maxCustomizableSignWidthDefault);
-
-        Short MCustomizableSignHeight = generalServerPreferences.getShort(maxCustomizableSignHeightKey);
-        maxCustomizableSignHeight = Objects.requireNonNullElse(MCustomizableSignHeight, maxCustomizableSignHeightDefault);
     }
 }

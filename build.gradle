@@ -44,6 +44,8 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.22.0"
+
     // Dear ImGui Implementation
     include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
 

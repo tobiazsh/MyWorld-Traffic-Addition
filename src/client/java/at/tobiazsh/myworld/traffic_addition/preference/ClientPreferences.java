@@ -7,23 +7,23 @@ import java.util.Objects;
 
 public class ClientPreferences {
 
-    public static final Preference gameplayPreference = new Preference("myworld_traffic_addition/gameplay_config.json");
+    public static final PreferenceJsonLoader GAMEPLAY_PREFERENCE_LOADER = new PreferenceJsonLoader("myworld_traffic_addition/gameplay_config.json");
 
     public static void loadGameplayPreferences() {
         // SIGNS
         SignBlockEntityRenderer.zOffsetRenderLayer = Objects.requireNonNullElse(
-                gameplayPreference.getFloat("viewDistanceSigns"),
+                GAMEPLAY_PREFERENCE_LOADER.getFloat("viewDistanceSigns"),
                 SignBlockEntityRenderer.zOffsetRenderLayerDefault
         );
 
         // CUSTOMIZABLE SIGNS
         CustomizableSignBlockEntityRenderer.zOffsetRenderLayer = Objects.requireNonNullElse(
-                gameplayPreference.getFloat("viewDistanceCustomizableSigns"),
+                GAMEPLAY_PREFERENCE_LOADER.getFloat("viewDistanceCustomizableSigns"),
                 CustomizableSignBlockEntityRenderer.zOffsetRenderLayerDefault
         );
 
         CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer = Objects.requireNonNullElse(
-                gameplayPreference.getFloat("elementDistancingCustomizableSigns"),
+                GAMEPLAY_PREFERENCE_LOADER.getFloat("elementDistancingCustomizableSigns"),
                 CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault
         );
 

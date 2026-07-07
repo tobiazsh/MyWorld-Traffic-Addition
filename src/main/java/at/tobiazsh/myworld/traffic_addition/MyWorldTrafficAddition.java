@@ -8,7 +8,7 @@ import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
 import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.payload.server_actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.payload.server_actions.SignBlockActions;
@@ -92,7 +92,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 
 		MyWorldTrafficAddition.LOGGER.info("Loading preferences...");
-		ServerPreferences.loadPreferences();
+		ServerPreferencesManager.loadPreferences();
         ServerBlacklist.loadBlacklist();
 
 		GlobalDataFixer.register();
@@ -179,7 +179,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request the maximum image upload size
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {
-            CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), String.valueOf(ServerPreferences.maximumImageUploadSize));
+            CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), String.valueOf(ServerPreferencesManager.maximumImageUploadSize));
 		});
 
 		// Send custom image to server (client -> server as always)

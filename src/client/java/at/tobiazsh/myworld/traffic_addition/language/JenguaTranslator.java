@@ -44,7 +44,7 @@ public class JenguaTranslator {
         MyWorldTrafficAddition.LOGGER.info("Setting up Jengua Translator successful!");
         MyWorldTrafficAddition.LOGGER.info("Attempting to set language from preferences...");
 
-        String setLanguage = ClientPreferences.gameplayPreference.getString("mwtaLanguage");
+        String setLanguage = ClientPreferences.GAMEPLAY_PREFERENCE_LOADER.getString("mwtaLanguage");
 
         if (
                 setLanguage == null ||

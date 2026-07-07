@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
 
 /**
@@ -55,7 +55,7 @@ public class CustomRenderLayer {
         private static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
                 "BUILT_IMAGE_LAYERING",
                 Objects.requireNonNullElse(
-                        gameplayPreference.getInt("imageRenderLayerCacheSize"),
+                        GAMEPLAY_PREFERENCE_LOADER.getInt("imageRenderLayerCacheSize"),
                         DEFAULT_IMAGE_CACHE_SIZE
                 )
         ); // Stores all the built image render layers of all textures
@@ -152,7 +152,7 @@ public class CustomRenderLayer {
         private static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
                 "BUILT_TEXT_LAYERING",
                 Objects.requireNonNullElse(
-                        gameplayPreference.getInt("textRenderLayerCacheSize"),
+                        GAMEPLAY_PREFERENCE_LOADER.getInt("textRenderLayerCacheSize"),
                         DEFAULT_TEXT_CACHE_SIZE
                 )
         ); // Stores all the built text render layers of all fonts

@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferences;
+import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
 import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
 import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
@@ -147,7 +147,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                     MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
                 }
         })
-            .orTimeout(ServerPreferences.customImageDownloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .orTimeout(ServerPreferencesManager.customImageDownloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
             .exceptionally(e -> {
                 setErrorTexture();
                 MyWorldTrafficAddition.LOGGER.error("Image download completed exceptionally for OnlineImageElementClient with ID: {}\nMaybe image does not exist anymore or connection timed out!", getId(), e);

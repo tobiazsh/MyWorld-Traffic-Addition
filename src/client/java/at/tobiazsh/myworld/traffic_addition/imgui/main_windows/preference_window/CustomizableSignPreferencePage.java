@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class CustomizableSignPreferencePage extends PreferencePage {
 
@@ -56,10 +56,10 @@ public class CustomizableSignPreferencePage extends PreferencePage {
     @Override
     public void apply() {
         CustomizableSignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceCustomizableSigns[0] / 128;
-        gameplayPreference.saveToDisk(VIEW_DISTANCE_KEY, viewDistanceCustomizableSigns[0] / 128);
+        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(VIEW_DISTANCE_KEY, viewDistanceCustomizableSigns[0] / 128);
 
         CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer = elementDistancingCustomizableSigns[0];
-        gameplayPreference.saveToDisk(ELEMENT_DISTANCE_KEY, elementDistancingCustomizableSigns[0]);
+        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(ELEMENT_DISTANCE_KEY, elementDistancingCustomizableSigns[0]);
     }
 
     @Override

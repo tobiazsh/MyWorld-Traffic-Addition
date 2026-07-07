@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class LanguagePreferencePage extends PreferencePage {
 
@@ -69,7 +69,7 @@ public class LanguagePreferencePage extends PreferencePage {
                 .map(lang -> tr("Global.Lang", lang))
                 .toArray(String[]::new);
 
-        String savedLanguage = gameplayPreference.getString(LANGUAGE_PREF_KEY);
+        String savedLanguage = GAMEPLAY_PREFERENCE_LOADER.getString(LANGUAGE_PREF_KEY);
 
         // If language is valid, then use it (else just fallback to "auto")
         if (savedLanguage != null && !savedLanguage.isEmpty()) {
@@ -81,8 +81,8 @@ public class LanguagePreferencePage extends PreferencePage {
     @Override
     public void apply() {
         // Only save if not saved yet
-        if (!currentLanguage.equals(gameplayPreference.getString(LANGUAGE_PREF_KEY)))
-            gameplayPreference.saveToDisk(LANGUAGE_PREF_KEY, currentLanguage);
+        if (!currentLanguage.equals(GAMEPLAY_PREFERENCE_LOADER.getString(LANGUAGE_PREF_KEY)))
+            GAMEPLAY_PREFERENCE_LOADER.saveToDisk(LANGUAGE_PREF_KEY, currentLanguage);
 
         if (currentLanguage.equals("auto"))
             JenguaTranslator.autoSetLanguage();

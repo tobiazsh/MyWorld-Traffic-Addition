@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.gameplayPreference;
+import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class CachingPreferencePage extends PreferencePage {
 
@@ -112,20 +112,20 @@ public class CachingPreferencePage extends PreferencePage {
     @Override
     public void initialize() {
         imageRenderLayerCacheSize[0] = Objects.requireNonNullElse(
-                gameplayPreference.getInt(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY),
+                GAMEPLAY_PREFERENCE_LOADER.getInt(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY),
                 CustomRenderLayer.DEFAULT_IMAGE_CACHE_SIZE
         );
 
         textRenderLayerCacheSize[0] = Objects.requireNonNullElse(
-                gameplayPreference.getInt(TEXT_RENDER_LAYER_CACHE_SIZE_KEY),
+                GAMEPLAY_PREFERENCE_LOADER.getInt(TEXT_RENDER_LAYER_CACHE_SIZE_KEY),
                 CustomRenderLayer.DEFAULT_TEXT_CACHE_SIZE
         );
     }
 
     @Override
     public void apply() {
-        gameplayPreference.saveToDisk(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY, imageRenderLayerCacheSize[0]);
-        gameplayPreference.saveToDisk(TEXT_RENDER_LAYER_CACHE_SIZE_KEY, textRenderLayerCacheSize[0]);
+        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY, imageRenderLayerCacheSize[0]);
+        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(TEXT_RENDER_LAYER_CACHE_SIZE_KEY, textRenderLayerCacheSize[0]);
     }
 
     @Override

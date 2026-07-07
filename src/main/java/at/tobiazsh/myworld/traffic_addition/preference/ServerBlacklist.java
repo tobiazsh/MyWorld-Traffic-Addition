@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class ServerBlacklist {
 
-    public static Preference serverBlacklistPreference = new Preference("myworld_traffic_addition/blacklists/server_blacklist.json");
+    public static PreferenceJsonLoader serverBlacklistPreferenceLoader = new PreferenceJsonLoader("myworld_traffic_addition/blacklists/server_blacklist.json");
 
     public static HashSet<UUID> bannedImageUploadPlayers;
     public static HashSet<UUID> restoreList;
@@ -20,7 +20,7 @@ public class ServerBlacklist {
     }
 
     private static void loadBannedImageUpload() {
-        JsonArray list = serverBlacklistPreference.getJsonArray("bannedImageUploadPlayers");
+        JsonArray list = serverBlacklistPreferenceLoader.getJsonArray("bannedImageUploadPlayers");
         if (list == null) {
             bannedImageUploadPlayers = new HashSet<>();
             return;
@@ -44,7 +44,7 @@ public class ServerBlacklist {
     public static void saveBannedImageUpload() {
         JsonArray list = new JsonArray();
         bannedImageUploadPlayers.forEach(uuid -> list.add(uuid.toString()));
-        serverBlacklistPreference.saveToDisk("bannedImageUploadPlayers", list);
+        serverBlacklistPreferenceLoader.saveToDisk("bannedImageUploadPlayers", list);
     }
 
     // ---------------------------------------------------------------

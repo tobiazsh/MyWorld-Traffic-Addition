@@ -43,7 +43,7 @@ public class SignPreferencePage extends PreferencePage {
     @Override
     public void apply() {
         SignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceSigns[0] / 128;
-        ClientPreferences.gameplayPreference.saveToDisk(VIEW_DISTANCE_SIGNS_KEY, viewDistanceSigns[0] / 128);
+        ClientPreferences.GAMEPLAY_PREFERENCE_LOADER.saveToDisk(VIEW_DISTANCE_SIGNS_KEY, viewDistanceSigns[0] / 128);
     }
 
     @Override
