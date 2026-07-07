@@ -218,16 +218,13 @@ public class SpriteAtlas implements AutoCloseable {
      *     }
      *     }
      *     </pre>
-     * </p>
      * <p>
      *     Note that {@code isAuto} defaults to {@code true} if not specified otherwise, and that the structure as well
      *     as the loading method {@link SpriteAtlas#fromJsonAuto(JsonObject)} will be used. Therefor setting
      *     {@code isAuto} to {@code false} is required if manual handling should be used. For more information, see
      *     loading method.
-     * </p>
      * <p>
      *     For structure of sprites, see {@link Sprite#fromJson(JsonObject)}
-     * </p>
      * @param jsonAtlas JsonObject representing the SpriteAtlas
      * @return Deserialized SpriteAtlas
      */

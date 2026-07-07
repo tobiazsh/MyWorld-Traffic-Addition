@@ -50,6 +50,7 @@ public class ImageUtils {
      * @param height Current height
      * @param channels The channels of the image. This will later correlate to STBImageResize formats "stbir_pixel_formats". For more information, please take a look at {@link STBImageResize}
      * @return Triplet(A, B, C)
+     * <ul>
      * <li>
      *     A = Width of the scaled image (Integer)
      * </li>
@@ -59,6 +60,7 @@ public class ImageUtils {
      * <li>
      *     C = ByteBuffer containing the raw pixel data
      * </li>
+     * </ul>
      */
     public static Triplet<Integer, Integer, ByteBuffer> scaleImage(ByteBuffer imageData, float scale, int width, int height, int channels, Runnable onAbort) {
         int newWidth = (int) Math.ceil(width * scale);

@@ -26,7 +26,7 @@ public class CustomServerNetworking extends CustomNetworking<BiConsumer<ServerPl
     /**
      * Send a byte array to the server
      * @param player The player to send it to
-     * @param channelName The name of the channel. Has to be the same on server & client
+     * @param channelName The name of the channel. Has to be the same on server and client
      * @param dataBytes The data to send
      * @param rate The speed of the transfer in milliseconds. If the rate is 200, then every 200 ms a chunk is sent. Use anything smaller than 0 to send all chunks immediately. This is to help network starvation.
      * @param chunkSize The maximum size of a chunk in bytes. Anything higher than 32 KB (32000) or lower than 1 Byte will automatically set it to 32 KB. Together with the rate of transmission, you can control the speed of transmission in KB/ms.
