@@ -28,4 +28,8 @@ public class Preference<T extends TomlValue> {
     public T getValue() {
         return value;
     }
+
+    public T getOrDefault() {
+        return value != null ? value : defaultValue;
+    }
 }
