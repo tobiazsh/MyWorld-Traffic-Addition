@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.toml.TomlValue;
 
-public class Preference<T extends TomlValue> {
+public class Preference<T extends TomlValue<?>> {
     private T value;
     private final T defaultValue;
     private String id;
