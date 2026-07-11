@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static at.tobiazsh.myworld.traffic_addition.preference.LegacyPreferenceConverter.LegacyKeys.*;
+import static at.tobiazsh.myworld.traffic_addition.preference.LegacyServerPreferenceConverter.LegacyKeys.*;
 
 public class LegacyPreferenceConverter {
 
