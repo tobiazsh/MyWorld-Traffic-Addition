@@ -30,7 +30,6 @@ public class ClientPreferences implements PreferenceHierarchy {
 
         public final Preference<TomlInteger> imageRenderLayerCacheSize = new Preference<>(new TomlInteger(200), "image_render_layer_cache_size");
         public final Preference<TomlInteger> textRenderLayerCacheSize = new Preference<>(new TomlInteger(100), "text_render_layer_cache_size");
-        public final Preference<TomlInteger> calculationCacheSize = new Preference<>(new TomlInteger(256), "calculation_cache_size");
     }
 
     public static class General {
