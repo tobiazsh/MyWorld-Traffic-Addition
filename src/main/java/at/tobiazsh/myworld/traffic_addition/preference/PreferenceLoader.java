@@ -16,11 +16,11 @@ public class PreferenceLoader {
      * @param <P> The type of PreferenceHierarchy class
      * @throws PreferenceReadException If the file could not be read or deserialized
      */
-    public static <P extends PreferenceHierarchy> P load(File file) throws PreferenceReadException {
+    public static <P extends PreferenceHierarchy> P load(File file, Class<P> preferenceClass) throws PreferenceReadException {
         TomlMapper mapper = new TomlMapper();
 
         try {
-            return mapper.readValue(file, (Class<P>) PreferenceHierarchy.class);
+            return mapper.readValue(file, preferenceClass);
         } catch (IOException e) {
             throw new PreferenceReadException(
                     String.format("Failed to read preferences from %s", file.getAbsolutePath()),
