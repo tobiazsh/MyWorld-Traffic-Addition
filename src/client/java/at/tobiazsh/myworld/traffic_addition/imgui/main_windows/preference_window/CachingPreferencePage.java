@@ -1,25 +1,20 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_window;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
-import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlInteger;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Objects;
-
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class CachingPreferencePage extends PreferencePage {
 
-    private static final String IMAGE_RENDER_LAYER_CACHE_SIZE_KEY = "imageRenderLayerCacheSize";
     private int[] imageRenderLayerCacheSize = {0};
-
-    private static final String TEXT_RENDER_LAYER_CACHE_SIZE_KEY = "textRenderLayerCacheSize";
     private int[] textRenderLayerCacheSize = {0};
 
     @Override
@@ -111,26 +106,27 @@ public class CachingPreferencePage extends PreferencePage {
 
     @Override
     public void initialize() {
-        imageRenderLayerCacheSize[0] = Objects.requireNonNullElse(
-                GAMEPLAY_PREFERENCE_LOADER.getInt(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY),
-                CustomRenderLayer.DEFAULT_IMAGE_CACHE_SIZE
-        );
+        var rendering = MyWorldTrafficAdditionClient.getClientPreferences().rendering;
 
-        textRenderLayerCacheSize[0] = Objects.requireNonNullElse(
-                GAMEPLAY_PREFERENCE_LOADER.getInt(TEXT_RENDER_LAYER_CACHE_SIZE_KEY),
-                CustomRenderLayer.DEFAULT_TEXT_CACHE_SIZE
-        );
+        imageRenderLayerCacheSize[0] = rendering.imageRenderLayerCacheSize.getOrDefault().value();
+        textRenderLayerCacheSize[0] = rendering.textRenderLayerCacheSize.getOrDefault().value();
     }
 
     @Override
     public void apply() {
-        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(IMAGE_RENDER_LAYER_CACHE_SIZE_KEY, imageRenderLayerCacheSize[0]);
-        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(TEXT_RENDER_LAYER_CACHE_SIZE_KEY, textRenderLayerCacheSize[0]);
+        var rendering = MyWorldTrafficAdditionClient.getClientPreferences().rendering;
+
+        rendering.imageRenderLayerCacheSize.set(new TomlInteger(imageRenderLayerCacheSize[0]));
+        rendering.textRenderLayerCacheSize.set(new TomlInteger(textRenderLayerCacheSize[0]));
     }
 
     @Override
     public void setDefault() {
-        imageRenderLayerCacheSize = new int[]{CustomRenderLayer.DEFAULT_IMAGE_CACHE_SIZE};
-        textRenderLayerCacheSize = new int[]{CustomRenderLayer.DEFAULT_TEXT_CACHE_SIZE};
+        var rendering = MyWorldTrafficAdditionClient.getClientPreferences().rendering;
+
+        rendering.imageRenderLayerCacheSize.setDefault();
+        rendering.textRenderLayerCacheSize.setDefault();
+
+        initialize(); // Reinitialize to update the values on ImGui
     }
 }

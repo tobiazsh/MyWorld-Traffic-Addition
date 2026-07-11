@@ -1,8 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_window;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlFloat;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -12,7 +12,6 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 public class SignPreferencePage extends PreferencePage {
 
     private float[] viewDistanceSigns = {0};
-    private static final String VIEW_DISTANCE_SIGNS_KEY = "viewDistanceSigns";
 
     @Override
     public @NonNull Identifier getId() {
@@ -36,19 +35,26 @@ public class SignPreferencePage extends PreferencePage {
 
     @Override
     public void initialize() {
+        var signs = MyWorldTrafficAdditionClient.getClientPreferences().signs;
+
         // By that time, ClientPreferences has already loaded in the values from disk, so we can directly use them to initialize the variables.
-        viewDistanceSigns[0] = SignBlockEntityRenderer.zOffsetRenderLayer * 128;
+        viewDistanceSigns[0] = signs.viewDistance.getOrDefault().value();
     }
 
     @Override
     public void apply() {
-        SignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceSigns[0] / 128;
-        ClientPreferences.GAMEPLAY_PREFERENCE_LOADER.saveToDisk(VIEW_DISTANCE_SIGNS_KEY, viewDistanceSigns[0] / 128);
+        var signs = MyWorldTrafficAdditionClient.getClientPreferences().signs;
+
+        signs.viewDistance.set(new TomlFloat(viewDistanceSigns[0] / 128));
+
+        initialize();
     }
 
     @Override
     public void setDefault() {
-        viewDistanceSigns = new float[]{SignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};
+        var signs = MyWorldTrafficAdditionClient.getClientPreferences().signs;
+
+        signs.viewDistance.setDefault();
     }
 
 }

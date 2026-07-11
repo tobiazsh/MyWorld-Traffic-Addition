@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.block_entities.SignPoleBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
@@ -49,9 +50,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     private final ModelManager bakedModelMgr;
     
     private final static RandomSource random = RandomSource.create();
-
-    public static float zOffsetRenderLayer = 3f;
-    public static float zOffsetRenderLayerDefault = 3f;
 
     public SignBlockEntityRenderer(ModelManager bakedModelMgr) {
         this.bakedModelMgr = bakedModelMgr;
@@ -131,7 +129,12 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     protected void renderTextureOnModel(String texturePath, PoseStack matrices, MultiBufferSource vertexConsumers, Direction facing, int light, int overlay) {
         Identifier texture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
-        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffsetRenderLayer, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
+        float zOffset = MyWorldTrafficAdditionClient.getClientPreferences()
+                .signs.viewDistance
+                .getOrDefault()
+                .value();
+
+        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
         RenderType renderLayer = imageLayering.buildRenderType();
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 

@@ -1,7 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_window;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlString;
 import imgui.ImGui;
 import imgui.type.ImInt;
 import net.minecraft.resources.Identifier;
@@ -11,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class LanguagePreferencePage extends PreferencePage {
 
@@ -49,6 +50,8 @@ public class LanguagePreferencePage extends PreferencePage {
         // NOTE: I've documented this code a bit too much, but I was confused when I read the original code again,
         // so I thought a little over-documentation would be better than under-documentation in this case.
 
+        var general = MyWorldTrafficAdditionClient.getClientPreferences().general;
+
         // Initialize array
         availableLanguages = new String[JenguaTranslator.getAvailableLanguages().length + 1]; // Leave idx 0 for "auto"
 
@@ -69,7 +72,9 @@ public class LanguagePreferencePage extends PreferencePage {
                 .map(lang -> tr("Global.Lang", lang))
                 .toArray(String[]::new);
 
-        String savedLanguage = GAMEPLAY_PREFERENCE_LOADER.getString(LANGUAGE_PREF_KEY);
+        String savedLanguage = general.language
+                .getOrDefault()
+                .value(); // Get language from preferences
 
         // If language is valid, then use it (else just fallback to "auto")
         if (savedLanguage != null && !savedLanguage.isEmpty()) {
@@ -80,19 +85,24 @@ public class LanguagePreferencePage extends PreferencePage {
 
     @Override
     public void apply() {
+        var general = MyWorldTrafficAdditionClient.getClientPreferences().general;
+
         // Only save if not saved yet
-        if (!currentLanguage.equals(GAMEPLAY_PREFERENCE_LOADER.getString(LANGUAGE_PREF_KEY)))
-            GAMEPLAY_PREFERENCE_LOADER.saveToDisk(LANGUAGE_PREF_KEY, currentLanguage);
+        if (!currentLanguage.equals(general.language.getOrDefault().value()))
+            general.language.set(new TomlString(currentLanguage));
 
         if (currentLanguage.equals("auto"))
             JenguaTranslator.autoSetLanguage();
         else
             JenguaTranslator.translator.setLanguage(currentLanguage);
+
+        initialize();
     }
 
     @Override
     public void setDefault() {
-        currentLanguageIdx.set(0); // Set to "auto"
-        currentLanguage = "auto";
+        var general = MyWorldTrafficAdditionClient.getClientPreferences().general;
+
+        general.language.setDefault();
     }
 }

@@ -9,6 +9,8 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.CustomizableSignBlockRenderState;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
@@ -46,10 +48,14 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     private final ModelManager bakedModelManager;
 
+    @Deprecated(since = "1.9.0")
     public static float zOffsetRenderLayer = 3f;
+    @Deprecated(since = "1.9.0")
     public static final float zOffsetRenderLayerDefault = 3f;
 
-    public static float elementDistancingRenderLayer = 0.75f;
+    @Deprecated(since = "1.9.0")
+    public static float elementDistancingRenderLayer = 0.75f; // TODO: Change to preferences
+    @Deprecated(since = "1.9.0")
     public static final float elementDistancingRenderLayerDefault = 0.75f;
 
     public static final Map<BlockPos, List<ClientElementInterface>> elements =
@@ -64,10 +70,15 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
     public CustomizableSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
         bakedModelManager = Minecraft.getInstance().getModelManager();
 
+        float zOffset = MyWorldTrafficAdditionClient.getClientPreferences()
+                .customizableSigns.viewDistance
+                .getOrDefault()
+                .value();
+
         BorderRenderer.init(
                 bakedModelManager,
                 new CustomRenderLayer.ModelLayering(
-                        zOffsetRenderLayer,
+                        zOffset,
                         CustomRenderLayer.ModelLayering.LayeringType.CUTOUT_Z_OFFSET_BACKWARD
                 )
         ); // Initialize the border renderer with the baked model manager

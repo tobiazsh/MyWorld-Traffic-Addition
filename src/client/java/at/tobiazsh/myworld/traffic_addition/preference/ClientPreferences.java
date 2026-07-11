@@ -1,33 +1,41 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderers.SignBlockEntityRenderer;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlFloat;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlInteger;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlString;
 
-import java.util.Objects;
+public class ClientPreferences implements PreferenceHierarchy {
 
-public class ClientPreferences {
+    // DO NOT BLINDLY CHANGE OBJECT NAMES! It's essential for TOML!
+    public final CustomizableSigns customizableSigns = new CustomizableSigns();
+    public final Signs signs = new Signs();
+    public final Rendering rendering = new Rendering();
+    public final General general = new General();
 
-    public static final PreferenceJsonLoader GAMEPLAY_PREFERENCE_LOADER = new PreferenceJsonLoader("myworld_traffic_addition/gameplay_config.json");
+    public static class CustomizableSigns {
+        private CustomizableSigns() {}
 
-    public static void loadGameplayPreferences() {
-        // SIGNS
-        SignBlockEntityRenderer.zOffsetRenderLayer = Objects.requireNonNullElse(
-                GAMEPLAY_PREFERENCE_LOADER.getFloat("viewDistanceSigns"),
-                SignBlockEntityRenderer.zOffsetRenderLayerDefault
-        );
-
-        // CUSTOMIZABLE SIGNS
-        CustomizableSignBlockEntityRenderer.zOffsetRenderLayer = Objects.requireNonNullElse(
-                GAMEPLAY_PREFERENCE_LOADER.getFloat("viewDistanceCustomizableSigns"),
-                CustomizableSignBlockEntityRenderer.zOffsetRenderLayerDefault
-        );
-
-        CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer = Objects.requireNonNullElse(
-                GAMEPLAY_PREFERENCE_LOADER.getFloat("elementDistancingCustomizableSigns"),
-                CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault
-        );
-
-        /* LANGUAGE PREFERENCES LOADED INSIDE MinecraftClientMixin.java! */
+        public final Preference<TomlFloat> elementDistancing = new Preference<>(new TomlFloat(0.75f), "view_distance");
+        public final Preference<TomlFloat> viewDistance = new Preference<>(new TomlFloat(3f), "element_distancing");
     }
 
+    public static class Signs {
+        private Signs() {}
+
+        public final Preference<TomlFloat> viewDistance = new Preference<>(new TomlFloat(3f), "view_distance");
+    }
+
+    public static class Rendering {
+        private Rendering() {}
+
+        public final Preference<TomlInteger> imageRenderLayerCacheSize = new Preference<>(new TomlInteger(200), "image_render_layer_cache_size");
+        public final Preference<TomlInteger> textRenderLayerCacheSize = new Preference<>(new TomlInteger(100), "text_render_layer_cache_size");
+        public final Preference<TomlInteger> calculationCacheSize = new Preference<>(new TomlInteger(256), "calculation_cache_size");
+    }
+
+    public static class General {
+        private General() {}
+
+        public final Preference<TomlString> language = new Preference<>(new TomlString("auto"), "language");
+    }
 }

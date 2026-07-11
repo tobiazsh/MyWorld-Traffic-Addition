@@ -15,6 +15,7 @@ import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
 import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.preference.PreferenceLoader;
 import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
 import at.tobiazsh.myworld.traffic_addition.screens.EmptyScreen;
@@ -34,6 +35,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
@@ -46,6 +48,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +64,17 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	private static final List<GlobalReceiverClient<? extends CustomPacketPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends @NotNull BlockEntity, ? extends @NotNull BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
+
+	public static final File clientPreferencesLocation =
+			FabricLoader.getInstance().getConfigDir()
+					.resolve(MyWorldTrafficAddition.MOD_ID)
+					.resolve("client_preferences.toml").toFile();
+
+	/**
+	 * Can be null if preferences haven't yet been loaded.
+	 */
+	private static final ClientPreferences clientPreferences =
+			PreferenceLoader.load(clientPreferencesLocation, ClientPreferences.class);
 
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
 
@@ -91,12 +105,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		});
 
 		CustomizableSignReinitializer.register();
-
-		loadPreferences();
-	}
-
-	private static void loadPreferences() {
-		ClientPreferences.loadGameplayPreferences();
 	}
 
 	private static void addBlockEntityRenderers() {
@@ -207,6 +215,9 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Clearing image cache...");
 		OnlineImageCache.clearCache();
 
+		MyWorldTrafficAddition.LOGGER.info("Saving preferences...");
+		savePreferences();
+
 		MyWorldTrafficAddition.LOGGER.info("Thank you for playing MyWorld Traffic Addition! <3");
 	}
 
@@ -254,8 +265,14 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
         CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
     }
 
-	public static boolean isSingleplayer() {
-		return Minecraft.getInstance().isSingleplayer();
+	// ---------------- PREFERENCES ----------------
+
+	private static void savePreferences() {
+		PreferenceLoader.save(clientPreferencesLocation, clientPreferences);
+	}
+
+	public static ClientPreferences getClientPreferences() {
+		return clientPreferences;
 	}
 
 }

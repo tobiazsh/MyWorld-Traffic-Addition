@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -14,16 +15,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
 
 /**
  * Custom RenderLayer exclusively for this mod to prevent z-fighting when viewing signs from further away. Pairs with CustomTextRenderer.
  */
 public class CustomRenderLayer {
-
-    public static final int DEFAULT_IMAGE_CACHE_SIZE = 200;
-    public static final int DEFAULT_TEXT_CACHE_SIZE = 100;
 
     public static final String TEXTURE_NAME = "Sampler0";
 
@@ -54,10 +51,7 @@ public class CustomRenderLayer {
 
         private static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
                 "BUILT_IMAGE_LAYERING",
-                Objects.requireNonNullElse(
-                        GAMEPLAY_PREFERENCE_LOADER.getInt("imageRenderLayerCacheSize"),
-                        DEFAULT_IMAGE_CACHE_SIZE
-                )
+                MyWorldTrafficAdditionClient.getClientPreferences().rendering.imageRenderLayerCacheSize.getOrDefault().value()
         ); // Stores all the built image render layers of all textures
 
         /**
@@ -151,10 +145,7 @@ public class CustomRenderLayer {
 
         private static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
                 "BUILT_TEXT_LAYERING",
-                Objects.requireNonNullElse(
-                        GAMEPLAY_PREFERENCE_LOADER.getInt("textRenderLayerCacheSize"),
-                        DEFAULT_TEXT_CACHE_SIZE
-                )
+                MyWorldTrafficAdditionClient.getClientPreferences().rendering.textRenderLayerCacheSize.getOrDefault().value()
         ); // Stores all the built text render layers of all fonts
 
 

@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.language;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
 import io.github.tobiazsh.jengua.Language;
 import io.github.tobiazsh.jengua.LanguageLoader;
@@ -44,7 +44,7 @@ public class JenguaTranslator {
         MyWorldTrafficAddition.LOGGER.info("Setting up Jengua Translator successful!");
         MyWorldTrafficAddition.LOGGER.info("Attempting to set language from preferences...");
 
-        String setLanguage = ClientPreferences.GAMEPLAY_PREFERENCE_LOADER.getString("mwtaLanguage");
+        String setLanguage = MyWorldTrafficAdditionClient.getClientPreferences().general.language.getOrDefault().value();
 
         if (
                 setLanguage == null ||

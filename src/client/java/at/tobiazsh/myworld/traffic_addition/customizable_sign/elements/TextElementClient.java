@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
@@ -150,7 +151,9 @@ public class TextElementClient extends TextElement implements ClientElementInter
         float effectiveWidthScale = w * scaleX;
         float effectiveHeightScale = h * scaleY;
 
-        float zOffset = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer + (indexInList + 1) * CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
+        float viewDistance = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns.viewDistance.getOrDefault().value();
+        float elementDistancing = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns.elementDistancing.getOrDefault().value();
+        float zOffset = viewDistance + (indexInList + 1) * elementDistancing;
         BlockPosFloat zPos = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, 0, 0)
                 .offset(facing.getOpposite(), 1)

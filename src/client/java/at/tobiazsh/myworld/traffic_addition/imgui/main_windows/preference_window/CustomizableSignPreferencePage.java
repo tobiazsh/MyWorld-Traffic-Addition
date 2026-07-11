@@ -1,21 +1,19 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_window;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlFloat;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
-import static at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences.GAMEPLAY_PREFERENCE_LOADER;
 
 public class CustomizableSignPreferencePage extends PreferencePage {
 
     private float[] viewDistanceCustomizableSigns = {0};
-    private static final String VIEW_DISTANCE_KEY = "viewDistanceCustomizableSigns";
-
     private float[] elementDistancingCustomizableSigns = {0};
-    private static final String ELEMENT_DISTANCE_KEY = "elementDistancingCustomizableSigns";
 
     @Override
     public @NonNull Identifier getId() {
@@ -48,23 +46,27 @@ public class CustomizableSignPreferencePage extends PreferencePage {
 
     @Override
     public void initialize() {
+        var customizableSignPref = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns;
         // By that time, ClientPreferences has already loaded in the values from disk, so we can directly use them to initialize the variables.
-        viewDistanceCustomizableSigns[0] = CustomizableSignBlockEntityRenderer.zOffsetRenderLayer * 128;
-        elementDistancingCustomizableSigns[0] = CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer;
+        viewDistanceCustomizableSigns[0] = customizableSignPref.viewDistance.getOrDefault().value() * 128;
+        elementDistancingCustomizableSigns[0] = customizableSignPref.elementDistancing.getOrDefault().value();
     }
 
     @Override
     public void apply() {
-        CustomizableSignBlockEntityRenderer.zOffsetRenderLayer = viewDistanceCustomizableSigns[0] / 128;
-        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(VIEW_DISTANCE_KEY, viewDistanceCustomizableSigns[0] / 128);
+        var customizableSignPref = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns;
 
-        CustomizableSignBlockEntityRenderer.elementDistancingRenderLayer = elementDistancingCustomizableSigns[0];
-        GAMEPLAY_PREFERENCE_LOADER.saveToDisk(ELEMENT_DISTANCE_KEY, elementDistancingCustomizableSigns[0]);
+        customizableSignPref.viewDistance.set(new TomlFloat(viewDistanceCustomizableSigns[0] / 128));
+        customizableSignPref.elementDistancing.set(new TomlFloat(elementDistancingCustomizableSigns[0]));
+
+        initialize();
     }
 
     @Override
     public void setDefault() {
-        viewDistanceCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.zOffsetRenderLayerDefault * 128};
-        elementDistancingCustomizableSigns = new float[]{CustomizableSignBlockEntityRenderer.elementDistancingRenderLayerDefault};
+        var customizableSignPref = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns;
+
+        customizableSignPref.viewDistance.setDefault();
+        customizableSignPref.elementDistancing.setDefault();
     }
 }
