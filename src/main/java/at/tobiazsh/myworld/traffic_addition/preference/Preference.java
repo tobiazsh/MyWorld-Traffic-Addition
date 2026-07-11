@@ -1,35 +1,52 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.toml.TomlValue;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class Preference<T extends TomlValue<?>> {
-    private T value;
-    private final T defaultValue;
-    private String id;
+    @Nullable private T value;
+    @NonNull private final T defaultValue;
+    @NonNull private String id;
 
-    public Preference(T defaultValue, String id) {
+    public Preference(@NonNull T defaultValue, @NonNull String id) {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
         this.id = id;
     }
 
+    /**
+     * Resets the current value to the defined default value.
+     */
     public void setDefault() {
         this.value = defaultValue;
     }
 
+    /**
+     * Sets the current value to the provided value.
+     */
     public void set(T value) {
         this.value = value;
     }
 
-    public T getDefault() {
+    /**
+     * Returns the defined default value.
+     */
+    public @NonNull T getDefault() {
         return defaultValue;
     }
 
-    public T getValue() {
+    /**
+     * Returns the current value.
+     */
+    public @Nullable T getValue() {
         return value;
     }
 
-    public T getOrDefault() {
+    /**
+     * Returns the current value, or the default value if the current value is unset.
+     */
+    public @NonNull T getOrDefault() {
         return value != null ? value : defaultValue;
     }
 }
