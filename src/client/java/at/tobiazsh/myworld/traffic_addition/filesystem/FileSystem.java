@@ -210,7 +210,6 @@ public class FileSystem {
 	 * Populate the directory structure from the specified path in resources
 	 * @param rootDir Original directory
 	 * @param resourcePath Path to the resource
-	 * @param basePath Base path of the resource
 	 * @throws IOException IOException is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system.
 	 * @throws URISyntaxException URISyntaxException is thrown when an error occurs while creating the URI from the specified path.
 	 */
