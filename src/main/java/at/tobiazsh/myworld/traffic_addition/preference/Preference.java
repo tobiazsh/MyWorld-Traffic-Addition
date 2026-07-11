@@ -15,6 +15,10 @@ public class Preference<T extends TomlValue<?>> {
         this.id = id;
     }
 
+    public @NonNull String getId() {
+        return id;
+    }
+
     /**
      * Resets the current value to the defined default value.
      */
