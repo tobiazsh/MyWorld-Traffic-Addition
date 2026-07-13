@@ -21,9 +21,7 @@ public class LanguagePreferencePage extends PreferencePage {
 
     private String currentLanguage = "auto"; // Set auto by default
     private final ImInt currentLanguageIdx = new ImInt(0); // Set idx of "auto" by default
-
-    private static final String LANGUAGE_PREF_KEY = "mwtaLanguage"; // = "MyWorld Traffic Addition Language"
-
+    
     @Override
     public @NonNull Identifier getId() {
         return MyWorldTrafficAddition.createId("preference/language");
