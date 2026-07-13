@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.toml.TomlValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -15,6 +16,7 @@ public class Preference<T extends TomlValue<?>> {
         this.id = id;
     }
 
+    @JsonIgnore
     public @NonNull String getId() {
         return id;
     }
@@ -36,6 +38,7 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the defined default value.
      */
+    @JsonIgnore
     public @NonNull T getDefault() {
         return defaultValue;
     }
@@ -50,6 +53,7 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the current value, or the default value if the current value is unset.
      */
+    @JsonIgnore
     public @NonNull T getOrDefault() {
         return value != null ? value : defaultValue;
     }
