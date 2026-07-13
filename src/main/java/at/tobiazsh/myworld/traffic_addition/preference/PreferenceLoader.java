@@ -2,12 +2,19 @@ package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.exception.PreferenceReadException;
 import at.tobiazsh.myworld.traffic_addition.exception.PreferenceWriteException;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 
 import java.io.File;
 import java.io.IOException;
 
 public class PreferenceLoader {
+
+    private static TomlMapper createMapper() {
+        TomlMapper mapper = new TomlMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
 
     /**
      * Loads a TOML file from storage and tries to deserialize to any class of type PreferenceHierarchy.
@@ -17,7 +24,7 @@ public class PreferenceLoader {
      * @throws PreferenceReadException If the file could not be read or deserialized
      */
     public static <P extends PreferenceHierarchy> P load(File file, Class<P> preferenceClass) throws PreferenceReadException {
-        TomlMapper mapper = new TomlMapper();
+        TomlMapper mapper = createMapper();
 
         try {
             return mapper.readValue(file, preferenceClass);
@@ -37,10 +44,10 @@ public class PreferenceLoader {
      * @throws PreferenceWriteException If the file could not be written or serialized
      */
     public static <P extends PreferenceHierarchy> void save(File file, P preferences) throws PreferenceWriteException {
-        TomlMapper mapper = new TomlMapper();
+        TomlMapper mapper = createMapper();
 
         try {
-            mapper.writeValue(file, preferences);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, preferences);
         } catch (IOException e) {
             throw new PreferenceWriteException("Failed to serialize preferences", e);
         }
