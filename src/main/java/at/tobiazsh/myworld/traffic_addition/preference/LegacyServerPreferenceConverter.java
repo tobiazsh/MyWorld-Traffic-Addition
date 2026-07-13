@@ -1,17 +1,13 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.toml.*;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.preference.LegacyServerPreferenceConverter.LegacyKeys.*;
 
-public class LegacyPreferenceConverter {
+public class LegacyServerPreferenceConverter {
 
     public record IdLocation(String tomlClass, String id) {
         public static IdLocation of(String tomlClass, String id) {
@@ -69,7 +65,7 @@ public class LegacyPreferenceConverter {
     @SuppressWarnings("deprecation")
     public static ServerPreferences produceNewServerPreferences(File oldPreferences) {
         PreferenceJsonLoader loader = new PreferenceJsonLoader(oldPreferences.getPath());
-        PreferencesSetter setter = new PreferencesSetter(loader);
+        PreferenceSetHelper setter = new PreferenceSetHelper(loader);
         ServerPreferences preferences = new ServerPreferences();
 
         setter.setLongPreference(
@@ -135,54 +131,4 @@ public class LegacyPreferenceConverter {
 
         return preferences;
     }
-
-    @SuppressWarnings("deprecation")
-    public static class PreferencesSetter {
-        private final PreferenceJsonLoader loader;
-
-        public PreferencesSetter(PreferenceJsonLoader loader) {
-            this.loader = loader;
-        }
-
-        /**
-         * Helper method for setting a value on a preference from the old loader method.
-         * @param preference The preference to set
-         * @param key The key of the old preference
-         * @param getter The getter for the preference
-         * @param constructor The constructor for the TomlValue
-         * @param <P> The primitive type of the value
-         * @param <T> The TomlValue type
-         */
-        public <P, T extends TomlValue<P>> void setPreference(
-                @NotNull Preference<T> preference,
-                @NotNull String key,
-                @NotNull BiFunction<PreferenceJsonLoader, String, P> getter,
-                @NotNull Function<P, T> constructor
-        ) {
-            P value = Objects.requireNonNullElse(
-                    getter.apply(loader, key),
-                    preference.getDefault().value()
-            );
-
-            preference.set(constructor.apply(value));
-        }
-
-        /**
-         * Helper method to quickly set a long preference from the old loader method.
-         * @param preference The preference to set
-         * @param key The key of the old preference
-         */
-        public void setLongPreference(
-                Preference<TomlLong> preference,
-                String key
-        ) {
-            setPreference(
-                    preference,
-                    key,
-                    PreferenceJsonLoader::getLong,
-                    TomlLong::new
-            );
-        }
-    }
-
 }
