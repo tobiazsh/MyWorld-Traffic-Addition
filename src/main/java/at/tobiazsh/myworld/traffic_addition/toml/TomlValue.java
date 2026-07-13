@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.toml;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public sealed interface TomlValue<T> permits
         TomlArray,
         TomlBoolean,
@@ -11,5 +13,6 @@ public sealed interface TomlValue<T> permits
         TomlString,
         TomlTable {
 
+    @JsonValue
     T value();
 }
