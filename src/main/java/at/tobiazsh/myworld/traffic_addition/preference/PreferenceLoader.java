@@ -40,8 +40,7 @@ public class PreferenceLoader {
         TomlMapper mapper = new TomlMapper();
 
         try {
-            String toml = mapper.writeValueAsString(preferences);
-            mapper.writeValue(file, toml);
+            mapper.writeValue(file, preferences);
         } catch (IOException e) {
             throw new PreferenceWriteException("Failed to serialize preferences", e);
         }
