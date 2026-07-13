@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.preference;
 
 import at.tobiazsh.myworld.traffic_addition.toml.TomlValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -46,6 +47,7 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the current value.
      */
+    @JsonValue
     public @Nullable T getValue() {
         return value;
     }
