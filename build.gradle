@@ -35,6 +35,10 @@ loom {
 	accessWidenerPath = file("src/main/resources/myworld_traffic_addition.classtweaker")
 }
 
+configurations {
+    unitTestImplementation.extendsFrom implementation
+    unitTestRuntimeOnly.extendsFrom runtimeOnly
+}
 
 dependencies {
     // To change the versions see the gradle.properties file
@@ -62,8 +66,19 @@ dependencies {
 }
 
 shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier = "shadow"
+    enableAutoRelocation = true
     relocate "org.lwjgl", "at.tobias.myworld_traffic_addition.lwjgl"
+    //relocate "io.github.wasabithumb.jtoml", "at.tobias.myworld_traffic_addition.jtoml"
+
+    mergeServiceFiles()
 }
+
+loom.nestJars(tasks.named('shadowJar', org.gradle.jvm.tasks.Jar), objects.fileCollection().tap {
+    it.setFrom(fileTree(tasks.processIncludeJars.outputDirectory))
+    it.builtBy(tasks.processIncludeJars)
+})
 
 processResources {
     inputs.property "version", project.version
@@ -87,7 +102,12 @@ java {
 	targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.build {
+    dependsOn(shadowJar)
+}
+
 jar {
+    enabled = true
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
