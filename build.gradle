@@ -22,6 +22,14 @@ repositories {
     gradlePluginPortal()
 }
 
+sourceSets {
+    unitTest {
+        java.srcDir('src/unitTest/java')
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
 loom {
 	splitEnvironmentSourceSets()
 
@@ -49,6 +57,13 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.22.0"
+    implementation 'io.github.wasabithumb:jtoml:1.5.2'
+
+
+    unitTestImplementation 'io.github.wasabithumb:jtoml:1.5.2'
+    unitTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    unitTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    unitTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Dear ImGui Implementation
     include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
@@ -113,6 +128,10 @@ jar {
 	}
 }
 
+test {
+    useJUnitPlatform()
+}
+
 
 // PUBLISHING
 
@@ -128,6 +147,14 @@ modrinth {
         required.project "fabric-api"
     }
 }
+
+tasks.register('unitTest', Test) {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.unitTest.output.classesDirs
+    classpath = sourceSets.unitTest.runtimeClasspath
+}
+
+tasks.named('check') { dependsOn 'unitTest' }
 
 tasks.register("publishAll") {
     dependsOn("modrinth")
