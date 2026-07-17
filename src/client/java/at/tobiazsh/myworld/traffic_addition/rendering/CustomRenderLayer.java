@@ -51,7 +51,7 @@ public class CustomRenderLayer {
 
         private static final LRUCache<ImageLayering> BUILT_IMAGE_LAYERING = new LRUCache<>(
                 "BUILT_IMAGE_LAYERING",
-                MyWorldTrafficAdditionClient.getClientPreferences().rendering.imageRenderLayerCacheSize.getOrDefault().value()
+                MyWorldTrafficAdditionClient.getClientPreferences().rendering.imageRenderLayerCacheSize.getOrDefault()
         ); // Stores all the built image render layers of all textures
 
         /**
@@ -145,7 +145,7 @@ public class CustomRenderLayer {
 
         private static final LRUCache<TextLayering> BUILT_TEXT_LAYERING = new LRUCache<>(
                 "BUILT_TEXT_LAYERING",
-                MyWorldTrafficAdditionClient.getClientPreferences().rendering.textRenderLayerCacheSize.getOrDefault().value()
+                MyWorldTrafficAdditionClient.getClientPreferences().rendering.textRenderLayerCacheSize.getOrDefault()
         ); // Stores all the built text render layers of all fonts
 
 

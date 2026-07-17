@@ -9,7 +9,6 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 
 
 import at.tobiazsh.myworld.traffic_addition.ModBlocks;
-import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.*;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.CustomizableSignBlockRenderState;
@@ -72,8 +71,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
         float zOffset = MyWorldTrafficAdditionClient.getClientPreferences()
                 .customizableSigns.viewDistance
-                .getOrDefault()
-                .value();
+                .getOrDefault();
 
         BorderRenderer.init(
                 bakedModelManager,

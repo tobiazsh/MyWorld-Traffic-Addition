@@ -44,13 +44,12 @@ public class JenguaTranslator {
         MyWorldTrafficAddition.LOGGER.info("Setting up Jengua Translator successful!");
         MyWorldTrafficAddition.LOGGER.info("Attempting to set language from preferences...");
 
-        String setLanguage = MyWorldTrafficAdditionClient.getClientPreferences().general.language.getOrDefault().value();
+        String setLanguage = MyWorldTrafficAdditionClient.getClientPreferences().general.language.getOrDefault();
 
         if (
-                setLanguage == null ||
-                        setLanguage.isEmpty() ||
-                        setLanguage.equalsIgnoreCase("auto") ||
-                        !JenguaTranslator.translator.getAvailableLanguages().contains(setLanguage)
+                setLanguage.isEmpty()
+                        || setLanguage.equalsIgnoreCase("auto")
+                        || !JenguaTranslator.translator.getAvailableLanguages().contains(setLanguage)
         ) {
             MyWorldTrafficAddition.LOGGER.info("Setting Jengua language based on Minecraft's language...");
             JenguaTranslator.autoSetLanguage();

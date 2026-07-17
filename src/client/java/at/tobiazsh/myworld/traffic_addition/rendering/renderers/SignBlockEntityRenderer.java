@@ -131,8 +131,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         float zOffset = MyWorldTrafficAdditionClient.getClientPreferences()
                 .signs.viewDistance
-                .getOrDefault()
-                .value();
+                .getOrDefault();
 
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
         RenderType renderLayer = imageLayering.buildRenderType();

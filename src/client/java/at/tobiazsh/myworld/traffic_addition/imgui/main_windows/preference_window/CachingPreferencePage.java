@@ -5,7 +5,6 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
-import at.tobiazsh.myworld.traffic_addition.toml.TomlInteger;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -108,16 +107,16 @@ public class CachingPreferencePage extends PreferencePage {
     public void initialize() {
         var rendering = MyWorldTrafficAdditionClient.getClientPreferences().rendering;
 
-        imageRenderLayerCacheSize[0] = rendering.imageRenderLayerCacheSize.getOrDefault().value();
-        textRenderLayerCacheSize[0] = rendering.textRenderLayerCacheSize.getOrDefault().value();
+        imageRenderLayerCacheSize[0] = rendering.imageRenderLayerCacheSize.getOrDefault();
+        textRenderLayerCacheSize[0] = rendering.textRenderLayerCacheSize.getOrDefault();
     }
 
     @Override
     public void apply() {
         var rendering = MyWorldTrafficAdditionClient.getClientPreferences().rendering;
 
-        rendering.imageRenderLayerCacheSize.set(new TomlInteger(imageRenderLayerCacheSize[0]));
-        rendering.textRenderLayerCacheSize.set(new TomlInteger(textRenderLayerCacheSize[0]));
+        rendering.imageRenderLayerCacheSize.set(imageRenderLayerCacheSize[0]);
+        rendering.textRenderLayerCacheSize.set(textRenderLayerCacheSize[0]);
     }
 
     @Override

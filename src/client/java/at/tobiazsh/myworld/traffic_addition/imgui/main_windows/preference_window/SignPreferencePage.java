@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.toml.TomlFloat;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -38,14 +37,14 @@ public class SignPreferencePage extends PreferencePage {
         var signs = MyWorldTrafficAdditionClient.getClientPreferences().signs;
 
         // By that time, ClientPreferences has already loaded in the values from disk, so we can directly use them to initialize the variables.
-        viewDistanceSigns[0] = signs.viewDistance.getOrDefault().value();
+        viewDistanceSigns[0] = signs.viewDistance.getOrDefault();
     }
 
     @Override
     public void apply() {
         var signs = MyWorldTrafficAdditionClient.getClientPreferences().signs;
 
-        signs.viewDistance.set(new TomlFloat(viewDistanceSigns[0] / 128));
+        signs.viewDistance.set(viewDistanceSigns[0] / 128);
 
         initialize();
     }

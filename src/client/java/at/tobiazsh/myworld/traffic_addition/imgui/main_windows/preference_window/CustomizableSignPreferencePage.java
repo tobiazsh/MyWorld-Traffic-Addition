@@ -2,8 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
-import at.tobiazsh.myworld.traffic_addition.toml.TomlFloat;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -48,16 +46,16 @@ public class CustomizableSignPreferencePage extends PreferencePage {
     public void initialize() {
         var customizableSignPref = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns;
         // By that time, ClientPreferences has already loaded in the values from disk, so we can directly use them to initialize the variables.
-        viewDistanceCustomizableSigns[0] = customizableSignPref.viewDistance.getOrDefault().value() * 128;
-        elementDistancingCustomizableSigns[0] = customizableSignPref.elementDistancing.getOrDefault().value();
+        viewDistanceCustomizableSigns[0] = customizableSignPref.viewDistance.getOrDefault() * 128;
+        elementDistancingCustomizableSigns[0] = customizableSignPref.elementDistancing.getOrDefault();
     }
 
     @Override
     public void apply() {
         var customizableSignPref = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns;
 
-        customizableSignPref.viewDistance.set(new TomlFloat(viewDistanceCustomizableSigns[0] / 128));
-        customizableSignPref.elementDistancing.set(new TomlFloat(elementDistancingCustomizableSigns[0]));
+        customizableSignPref.viewDistance.set(viewDistanceCustomizableSigns[0] / 128);
+        customizableSignPref.elementDistancing.set(elementDistancingCustomizableSigns[0]);
 
         initialize();
     }

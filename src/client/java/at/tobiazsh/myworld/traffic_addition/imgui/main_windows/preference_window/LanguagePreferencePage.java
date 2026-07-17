@@ -3,7 +3,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
-import at.tobiazsh.myworld.traffic_addition.toml.TomlString;
 import imgui.ImGui;
 import imgui.type.ImInt;
 import net.minecraft.resources.Identifier;
@@ -21,7 +20,7 @@ public class LanguagePreferencePage extends PreferencePage {
 
     private String currentLanguage = "auto"; // Set auto by default
     private final ImInt currentLanguageIdx = new ImInt(0); // Set idx of "auto" by default
-    
+
     @Override
     public @NonNull Identifier getId() {
         return MyWorldTrafficAddition.createId("preference/language");
@@ -71,8 +70,7 @@ public class LanguagePreferencePage extends PreferencePage {
                 .toArray(String[]::new);
 
         String savedLanguage = general.language
-                .getOrDefault()
-                .value(); // Get language from preferences
+                .getOrDefault(); // Get language from preferences
 
         // If language is valid, then use it (else just fallback to "auto")
         if (savedLanguage != null && !savedLanguage.isEmpty()) {
@@ -86,8 +84,8 @@ public class LanguagePreferencePage extends PreferencePage {
         var general = MyWorldTrafficAdditionClient.getClientPreferences().general;
 
         // Only save if not saved yet
-        if (!currentLanguage.equals(general.language.getOrDefault().value()))
-            general.language.set(new TomlString(currentLanguage));
+        if (!currentLanguage.equals(general.language.getOrDefault()))
+            general.language.set(currentLanguage);
 
         if (currentLanguage.equals("auto"))
             JenguaTranslator.autoSetLanguage();
