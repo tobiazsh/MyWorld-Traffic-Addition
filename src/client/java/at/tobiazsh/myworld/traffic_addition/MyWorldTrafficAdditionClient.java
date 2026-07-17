@@ -49,9 +49,9 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,15 +67,15 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	private static final List<GlobalReceiverClient<? extends CustomPacketPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends @NotNull BlockEntity, ? extends @NotNull BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
 
-	public static final File clientPreferencesLocation =
+	public static final Path clientPreferencesLocation =
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
-					.resolve("client_preferences.toml").toFile();
+					.resolve("client_preferences.toml");
 
-	public static final File legacyClientPreferencesLocation =
+	public static final Path legacyClientPreferencesLocation =
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
-					.resolve("gameplay_config.json").toFile();
+					.resolve("gameplay_config.json");
 
 	/**
 	 * Can be null if preferences haven't yet been loaded.
@@ -275,7 +275,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 	private static void savePreferences() {
 		PreferenceLoader.savePreferenceToFileOrCallback(
-				clientPreferencesLocation,
+				clientPreferencesLocation.toFile(),
 				clientPreferences,
 				MyWorldTrafficAddition.LOGGER::error
 		);
@@ -290,18 +290,18 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	 * If neither file could be found, it will be created with the newer format.
 	 */
 	private static ClientPreferences loadOrConvertOrCreate() {
-		if (Files.exists(clientPreferencesLocation.toPath())) {
+		if (Files.exists(clientPreferencesLocation)) {
 			return PreferenceLoader.loadPreferenceFromFileOrDefault(
-					clientPreferencesLocation,
+					clientPreferencesLocation.toFile(),
 					new ClientPreferences(),
 					ClientPreferences::new,
                     MyWorldTrafficAddition.LOGGER::warn
 			);
-		} else if (Files.exists(legacyClientPreferencesLocation.toPath())) {
+		} else if (Files.exists(legacyClientPreferencesLocation)) {
 			MyWorldTrafficAddition.LOGGER.info("Found legacy client preferences file. Converting to new format...");
 
 			ClientPreferences converted =
-					LegacyClientPreferenceConverter.produceNewClientPreferences(legacyClientPreferencesLocation);
+					LegacyClientPreferenceConverter.produceNewClientPreferences(legacyClientPreferencesLocation.toFile());
 
 			MyWorldTrafficAddition.LOGGER.info("""
 				Converted legacy client preferences file to new format.
