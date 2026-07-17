@@ -7,8 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
 import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
-import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
+import at.tobiazsh.myworld.traffic_addition.preference.*;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.payload.server_actions.CustomizableSignBlockActions;
 import at.tobiazsh.myworld.traffic_addition.payload.server_actions.SignBlockActions;
@@ -31,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +62,17 @@ public class MyWorldTrafficAddition implements ModInitializer {
                     .getFriendlyString();
 
 	private static boolean serverIsDedicated;
+
+	public static final ServerPreferences serverPreferences = loadOrConvertOrCreate();
+	private static final Path serverPreferencesLocation =
+			FabricLoader.getInstance().getConfigDir()
+					.resolve(MyWorldTrafficAddition.MOD_ID)
+					.resolve("server_preferences.toml");
+
+	private static final Path legacyClientPreferencesLocation =
+			FabricLoader.getInstance().getConfigDir()
+					.resolve(MyWorldTrafficAddition.MOD_ID)
+					.resolve("server_config.json");
 
 	private static final List<SmartPayload<? extends CustomPacketPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPacketPayload>> clientSmartPayloads = new ArrayList<>();
@@ -179,7 +191,11 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		// Request the maximum image upload size
 		CustomServerNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "request_maximum_image_upload_size"), (player, data) -> {
-            CustomServerNetworking.getInstance().sendStringToClient(player, Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"), String.valueOf(ServerPreferencesManager.maximumImageUploadSize));
+            CustomServerNetworking.getInstance().sendStringToClient(
+					player,
+					Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_maximum_image_upload_size"),
+					String.valueOf(serverPreferences.customizableSigns.onlineImages.maxSize)
+			);
 		});
 
 		// Send custom image to server (client -> server as always)
@@ -234,4 +250,33 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		return Identifier.fromNamespaceAndPath(MOD_ID, id);
 	}
 
+	/**
+	 * Either load normally, or convert from old format if the file is in the old format.
+	 * If neither file could be found, it will be created with the newer format.
+	 */
+	private static ServerPreferences loadOrConvertOrCreate() {
+		if (Files.exists(serverPreferencesLocation)) {
+			return PreferenceLoader.loadPreferenceFromFileOrDefault(
+					serverPreferencesLocation.toFile(),
+					new ServerPreferences(),
+					ServerPreferences::new,
+					MyWorldTrafficAddition.LOGGER::warn
+			);
+		} else if (Files.exists(legacyClientPreferencesLocation)) {
+			MyWorldTrafficAddition.LOGGER.info("Found legacy client preferences file. Converting to new format...");
+
+			ServerPreferences converted =
+					LegacyServerPreferenceConverter.produceNewServerPreferences(legacyClientPreferencesLocation.toFile());
+
+			MyWorldTrafficAddition.LOGGER.info("""
+				Converted legacy client preferences file to new format.
+				Old file is kept as a backup.
+			""");
+
+			return converted;
+		} else {
+			MyWorldTrafficAddition.LOGGER.info("No client preferences file found. Using empty preferences.");
+			return new ServerPreferences();
+		}
+	}
 }
