@@ -1,7 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.toml.*;
-
 import java.io.File;
 import java.util.Map;
 
@@ -62,72 +60,30 @@ public class LegacyServerPreferenceConverter {
         return ID_MAPPINGS.get(id);
     }
 
+    /**
+     * Converts an old server preference file to the new TOML format.
+     * @param oldPreferences The old server preference file.
+     * @return The new server preferences.
+     */
     @SuppressWarnings("deprecation")
     public static ServerPreferences produceNewServerPreferences(File oldPreferences) {
         PreferenceJsonLoader loader = new PreferenceJsonLoader(oldPreferences.getPath());
-        PreferenceSetHelper setter = new PreferenceSetHelper(loader);
         ServerPreferences preferences = new ServerPreferences();
 
-        setter.setLongPreference(
-                preferences.customizableSigns.onlineImages.downloadTimeout,
-                customImageDownloadTimeoutKey
-        );
-
-        setter.setLongPreference(
-                preferences.customizableSigns.onlineImages.maxSize,
-                maximumImageUploadSizeKey
-        );
-
-        setter.setLongPreference(
-                preferences.customizableSigns.onlineImages.maxThumbnailSize,
-                maximumThumbnailUploadSizeKey
-        );
-
-        setter.setLongPreference(
-                preferences.customizableSigns.onlineImages.maxMetadataSize,
-                maximumMetadataUploadSizeKey
-        );
-
-        setter.setPreference(
-                preferences.customizableSigns.onlineImages.uploadEnabled,
-                isPlayerUploadEnabledKey,
-                PreferenceJsonLoader::getBoolean,
-                TomlBoolean::new
-        );
-
-        setter.setPreference(
-                preferences.customizableSigns.onlineImages.maxUploadsPerPlayer,
-                maximumUploadsPerPlayerKey,
-                PreferenceJsonLoader::getInt,
-                TomlInteger::new
-        );
+        preferences.customizableSigns.onlineImages.downloadTimeout.set(loader.getLong(customImageDownloadTimeoutKey));
+        preferences.customizableSigns.onlineImages.maxSize.set(loader.getLong(maximumImageUploadSizeKey));
+        preferences.customizableSigns.onlineImages.maxThumbnailSize.set(loader.getLong(maximumThumbnailUploadSizeKey));
+        preferences.customizableSigns.onlineImages.maxMetadataSize.set(loader.getLong(maximumMetadataUploadSizeKey));
+        preferences.customizableSigns.onlineImages.uploadEnabled.set(loader.getBoolean(isPlayerUploadEnabledKey));
+        preferences.customizableSigns.onlineImages.maxUploadsPerPlayer.set(loader.getInt(maximumUploadsPerPlayerKey));
 
         preferences.customizableSigns.onlineImages.hasLimit.set(
-                new TomlBoolean(
-                        preferences.customizableSigns.onlineImages.maxUploadsPerPlayer.getValue().value() == 0
-                )
+                preferences.customizableSigns.onlineImages.maxUploadsPerPlayer.getOrDefault() > 0
         );
 
-        setter.setPreference(
-                preferences.customizableSigns.general.maxHeight,
-                maxCustomizableSignHeightKey,
-                PreferenceJsonLoader::getShort,
-                TomlShort::new
-        );
-
-        setter.setPreference(
-                preferences.customizableSigns.general.maxWidth,
-                maxCustomizableSignWidthKey,
-                PreferenceJsonLoader::getShort,
-                TomlShort::new
-        );
-
-        setter.setPreference(
-                preferences.customizableSigns.general.maxElements,
-                maxCustomizableSignElementsKey,
-                PreferenceJsonLoader::getShort,
-                TomlShort::new
-        );
+        preferences.customizableSigns.general.maxHeight.set(loader.getShort(maxCustomizableSignHeightKey));
+        preferences.customizableSigns.general.maxWidth.set(loader.getShort(maxCustomizableSignWidthKey));
+        preferences.customizableSigns.general.maxElements.set(loader.getShort(maxCustomizableSignElementsKey));
 
         return preferences;
     }
