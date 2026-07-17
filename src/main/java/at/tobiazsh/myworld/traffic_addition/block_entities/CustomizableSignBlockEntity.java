@@ -16,6 +16,9 @@ import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.codecs.ListCodec;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -89,6 +92,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * @param json The block data
      * @param player The player who sent it
      */
+    @Environment(EnvType.SERVER)
     public static void setTransmittedTexture(String json, ServerPlayer player) {
         JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
 
@@ -120,14 +124,25 @@ public class CustomizableSignBlockEntity extends BlockEntity {
             return;
         }
 
-        Objects.requireNonNull(player.level().getServer()).execute(() -> {
-            ((CustomizableSignBlockEntity) blockEntity)
-                    .setTextureData(
-                            CustomizableSignTextureData.fromJson(
-                                    JsonParser.parseString(texture).getAsJsonObject()
-                            )
-                    );
-        });
+        var textureData = CustomizableSignTextureData.fromJson(JsonParser.parseString(texture).getAsJsonObject());
+
+        int maxElements = MyWorldTrafficAddition.getServerPreferences().customizableSigns.general.maxElements.getOrDefault();
+
+        if (textureData.getElementContainer().getTotalElementCount() > maxElements) {
+            MyWorldTrafficAddition.LOGGER.warn(
+                    "Player {} with UUID {} tried to update the sign's" +
+                            "texture but the maximum amount has already been reached.",
+                    player.getName(), player.getUUID()
+            );
+
+            player.sendSystemMessage(Component.translatable("interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements"));
+
+            return;
+        }
+
+        Objects.requireNonNull(player.level().getServer()).execute(() ->
+            ((CustomizableSignBlockEntity) blockEntity).setTextureData(textureData)
+        );
 
         ((CustomizableSignBlockEntity) blockEntity).updateTextureVars();
     }

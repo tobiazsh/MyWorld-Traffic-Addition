@@ -34,5 +34,6 @@
   "commands.myworld_traffic_addition.main_command.root": "Deis is da Haupt-Command va da MyWorld Traffic Addition Mod. Mit dem kounnst vülle Dinge eistölln und a vülle Sochn ausfühan, oba sei Vorsichtig!",
   "commands.myworld_traffic_addition.main_command.dev.set": "%s fia %s va %s g'seitzt!",
 
-  "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "Dies Schüdl wird grod va an ondrem Spüla berorbat', du kaust desweg'n ned drauf zuagreifn!"
+  "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "Deis Schüdl wird grod va an ondrem Spüla berorbat', du kaust desweg'n ned drauf zuagreifn!",
+  "interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements": "Deis Schüdl hot z'vülle Elemente. Entfern a poa, bevorst as beorbeitn kounnst."
 }

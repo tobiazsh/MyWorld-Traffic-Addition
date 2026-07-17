@@ -34,5 +34,6 @@
   "commands.myworld_traffic_addition.main_command.root": "Dies ist der Haupt-Command der MyWorld Traffic Addition Mod. Hiermit kannst du verschiedenste Dinge einrichten und ausführen, aber sei Vorsichtig!",
   "commands.myworld_traffic_addition.main_command.dev.set": "%s für %s auf %s gesetzt!",
 
-  "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "Dieses Schild wird gerade von einem anderen Spieler bearbeitet, du kannst deswegen nicht daraus zugreifen!"
+  "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "Dieses Schild wird gerade von einem anderen Spieler bearbeitet, du kannst deswegen nicht daraus zugreifen!",
+  "interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements": "Dieses Schild hat zu viele Elemente, um es zu bearbeiten! Bitte entferne einige Elemente, bevor du es bearbeiten kannst."
 }

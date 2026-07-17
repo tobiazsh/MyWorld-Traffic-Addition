@@ -34,5 +34,6 @@
 	"commands.myworld_traffic_addition.main_command.root": "This is the main command of MyWorld Traffic Addition. You can configure and execute different things with it, but be cautious!",
 	"commands.myworld_traffic_addition.main_command.dev.set": "Set %s for %s to %s!",
 
-    "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "This sign is currently being edited by another player and you may thus not access it."
+    "interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited": "This sign is currently being edited by another player and you may thus not access it.",
+	"interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements": "This sign has too many elements! Remove a few before you can edit it."
 }
