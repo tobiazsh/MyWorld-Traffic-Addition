@@ -102,8 +102,6 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 		SmartPayload.bulkRegisterGlobalReceivers(serverSmartPayloads);
 
-		MyWorldTrafficAddition.LOGGER.info("Loading preferences...");
-		ServerPreferencesManager.loadPreferences();
         ServerBlacklist.loadBlacklist();
 
 		GlobalDataFixer.register();
