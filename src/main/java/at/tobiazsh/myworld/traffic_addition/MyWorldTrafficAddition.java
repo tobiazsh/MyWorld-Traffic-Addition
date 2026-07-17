@@ -63,7 +63,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	private static boolean serverIsDedicated;
 
-	public static final ServerPreferences serverPreferences = loadOrConvertOrCreate();
+	private static final ServerPreferences serverPreferences = loadOrConvertOrCreate();
 	private static final Path serverPreferencesLocation =
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
@@ -309,5 +309,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 			MyWorldTrafficAddition.LOGGER.info("No client preferences file found. Using empty preferences.");
 			return new ServerPreferences();
 		}
+	}
+
+	public static ServerPreferences getServerPreferences() {
+		return serverPreferences;
 	}
 }
