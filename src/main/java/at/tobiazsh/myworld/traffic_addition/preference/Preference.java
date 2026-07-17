@@ -1,23 +1,25 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.toml.TomlValue;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
+import at.tobiazsh.myworld.traffic_addition.preference.codec.Codec;
+import io.github.wasabithumb.jtoml.value.TomlValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public class Preference<T extends TomlValue<?>> {
+import java.util.Objects;
+
+public class Preference<T> {
     @Nullable private T value;
     @NonNull private final T defaultValue;
-    @NonNull private String id;
+    @NonNull private final String id;
+    @NonNull private final Codec<T> codec;
 
-    public Preference(@NonNull T defaultValue, @NonNull String id) {
+    public Preference(@NonNull T defaultValue, @NonNull String id, @NonNull Codec<T> codec) {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
         this.id = id;
+        this.codec = codec;
     }
 
-    @JsonIgnore
     public @NonNull String getId() {
         return id;
     }
@@ -39,7 +41,6 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the defined default value.
      */
-    @JsonIgnore
     public @NonNull T getDefault() {
         return defaultValue;
     }
@@ -47,7 +48,6 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the current value.
      */
-    @JsonValue
     public @Nullable T getValue() {
         return value;
     }
@@ -55,8 +55,29 @@ public class Preference<T extends TomlValue<?>> {
     /**
      * Returns the current value, or the default value if the current value is unset.
      */
-    @JsonIgnore
     public @NonNull T getOrDefault() {
         return value != null ? value : defaultValue;
+    }
+
+    public @NonNull TomlValue getValueSerialized() {
+        return codec.serialize(getOrDefault());
+    }
+
+    public @NonNull Codec<T> getCodec() {
+        return codec;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Preference<?> preference)) return false;
+
+        return this.id.equals(preference.id) &&
+                Objects.equals(getOrDefault(), preference.getOrDefault());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, getOrDefault());
     }
 }
