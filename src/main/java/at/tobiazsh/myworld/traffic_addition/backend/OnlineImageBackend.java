@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -79,8 +78,12 @@ public class OnlineImageBackend {
                 return;
             }
 
+            boolean uploadEnabled = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.uploadEnabled.getOrDefault();
+            boolean hasLimit = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.hasLimit.getOrDefault();
+            int uploadLimit = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.maxUploadsPerPlayer.getOrDefault();
+
             // Check if uploads are enabled
-            if (!ServerPreferencesManager.isPlayerUploadEnabled) {
+            if (!uploadEnabled) {
                 errorToClient(
                         source,
                         new Error("Image Upload Error", "Image uploads are disabled on this server!")
@@ -90,13 +93,17 @@ public class OnlineImageBackend {
             }
 
             // Check if upload limit is set
-            if (ServerPreferencesManager.isUploadLimitSet) {
+            if (hasLimit) {
                 // Check if player maxed out their upload limit
                 AtomicInteger userUploads = perPlayerCounts.getOrDefault(source.getUUID(), new AtomicInteger(0));
-                if (userUploads.get() == ServerPreferencesManager.maximumUploadsPerPlayer) {
+                if (userUploads.get() >= uploadLimit) {
                     errorToClient(
                             source,
-                            new Error("Image Upload Error", "You have maxed out your upload limit! Delete some of your uploaded images to upload new ones.\nUpload limit per player on server: " + ServerPreferencesManager.maximumUploadsPerPlayer)
+                            new Error(
+                                    "Image Upload Error",
+                                    "You have maxed out your upload limit! Delete some of your uploaded images to upload new ones.\n" +
+                                            "Upload limit per player on server: " + uploadLimit
+                            )
                     );
                     MyWorldTrafficAddition.LOGGER.info("Blocked image upload attempt from player with UUID {} because they maxed out their upload limit!", source.getUUID());
                     return;
@@ -120,15 +127,20 @@ public class OnlineImageBackend {
             int thumbnailSize = buffer.getInt();
             int metadataSize = buffer.getInt();
 
+            long maxImageSize = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.maxSize.getOrDefault();
+            long maxThumbnailSize = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.maxThumbnailSize.getOrDefault();
+            long maxMetadataSize = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.maxMetadataSize.getOrDefault();
+
             // Hard rejection if any of the sizes exceed maximum allowed size
             if (
                     imageSize < 0 || thumbnailSize < 0 || metadataSize < 0 ||
-                    imageSize > ServerPreferencesManager.maximumImageUploadSize ||
-                    thumbnailSize > ServerPreferencesManager.maximumThumbnailUploadSize ||
-                    metadataSize > ServerPreferencesManager.maximumMetadataUploadSize) {
+                    imageSize > maxImageSize ||
+                    thumbnailSize > maxThumbnailSize ||
+                    metadataSize > maxMetadataSize
+            ){
                 errorToClient(
                         source,
-                        new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + ServerPreferencesManager.maximumImageUploadSize + " bytes.")
+                        new Error("Image Upload Error", "Uploaded image, thumbnail or metadata exceeds maximum allowed size of " + maxImageSize + " bytes.")
                 );
 
                 return;

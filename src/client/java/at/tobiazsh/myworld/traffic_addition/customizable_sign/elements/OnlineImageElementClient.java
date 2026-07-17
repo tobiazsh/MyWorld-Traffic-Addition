@@ -129,6 +129,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
         setLoadingTexture();
 
+        long downloadTimeout = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.downloadTimeout.getOrDefault();
+
         OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
             .thenAccept(image -> {
                 if (image != null && image.length > 0) {
@@ -147,7 +149,7 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                     MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
                 }
         })
-            .orTimeout(ServerPreferencesManager.customImageDownloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .orTimeout(downloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
             .exceptionally(e -> {
                 setErrorTexture();
                 MyWorldTrafficAddition.LOGGER.error("Image download completed exceptionally for OnlineImageElementClient with ID: {}\nMaybe image does not exist anymore or connection timed out!", getId(), e);
