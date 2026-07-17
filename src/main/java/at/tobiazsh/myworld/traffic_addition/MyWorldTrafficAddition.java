@@ -83,6 +83,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ServerLifecycleEvents.AFTER_SAVE.register((id, freeze, force) ->
+				// If this causes too much lag, prefer before shutdown and not after save
 				MyWorldTrafficAddition.saveServerPreferences()
 		);
 
