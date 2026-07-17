@@ -82,6 +82,10 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ServerLifecycleEvents.AFTER_SAVE.register((id, freeze, force) ->
+				MyWorldTrafficAddition.saveServerPreferences()
+		);
+
 		MyWorldTrafficAddition.LOGGER.info("Initializing {} {}", MOD_ID_HUMAN, MOD_VERSION);
 		ModItems.initialize();
 		ModGroups.initialize();
@@ -311,6 +315,14 @@ public class MyWorldTrafficAddition implements ModInitializer {
 			MyWorldTrafficAddition.LOGGER.info("No client preferences file found. Using empty preferences.");
 			return new ServerPreferences();
 		}
+	}
+
+	private static void saveServerPreferences() {
+		PreferenceLoader.savePreferenceToFileOrCallback(
+				serverPreferencesLocation.toFile(),
+				serverPreferences,
+				MyWorldTrafficAddition.LOGGER::error
+		);
 	}
 
 	public static ServerPreferences getServerPreferences() {
