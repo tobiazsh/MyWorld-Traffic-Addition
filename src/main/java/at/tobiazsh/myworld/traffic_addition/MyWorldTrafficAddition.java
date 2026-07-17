@@ -62,7 +62,7 @@ public class MyWorldTrafficAddition implements ModInitializer {
 
 	private static boolean serverIsDedicated;
 
-	private static final ServerPreferences serverPreferences = loadOrConvertOrCreate();
+	// Preference file locations must be initialized before attempting to load preferences
 	private static final Path serverPreferencesLocation =
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
@@ -72,6 +72,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
 					.resolve("server_config.json");
+
+	// Load preferences after the paths are available
+	private static final ServerPreferences serverPreferences = loadOrConvertOrCreate();
 
 	private static final List<SmartPayload<? extends CustomPacketPayload>> serverSmartPayloads = new ArrayList<>();
 	private static final List<SmartPayload<? extends CustomPacketPayload>> clientSmartPayloads = new ArrayList<>();
