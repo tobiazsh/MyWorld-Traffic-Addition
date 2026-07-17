@@ -130,12 +130,14 @@ public class MyWorldTrafficAddition implements ModInitializer {
                 new SmartPayload<>(CustomizableSignSettingScreenClosed.Id, CustomizableSignBlockActions::handleCustomizableSignEditScreenClosed, CustomizableSignSettingScreenClosed.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER),
 
 				// OTHER
-                new SmartPayload<>(ChunkedDataPayload.Id, (payload, context) -> {
-                    CustomServerNetworking.getInstance().processChunkedPayload(
-                            payload,
-                            (protocolId, data, handler) -> context.server().execute(() -> handler.accept(context.player(), data))
-                    );
-                }, ChunkedDataPayload.CODEC, SmartPayload.RECEIVE_ENVIRONMENT.SERVER)
+                new SmartPayload<>(ChunkedDataPayload.Id, (payload, context) ->
+						CustomServerNetworking.getInstance().processChunkedPayload(
+								payload,
+								(protocolId, data, handler) -> context.server().execute(() -> handler.accept(context.player(), data))
+						),
+						ChunkedDataPayload.CODEC,
+						SmartPayload.RECEIVE_ENVIRONMENT.SERVER
+				)
 		));
 	}
 
@@ -255,9 +257,9 @@ public class MyWorldTrafficAddition implements ModInitializer {
 	}
 
     private static void registerEvents() {
-		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-			serverIsDedicated = server.isDedicatedServer();
-		});
+		ServerLifecycleEvents.SERVER_STARTING.register(server ->
+				serverIsDedicated = server.isDedicatedServer()
+		);
 
         ServerLifecycleEvents.AFTER_SAVE.register((server, flush, force) -> {
             ServerBlacklist.saveBlacklist();
