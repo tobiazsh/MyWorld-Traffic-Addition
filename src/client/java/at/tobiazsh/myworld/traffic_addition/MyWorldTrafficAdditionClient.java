@@ -15,6 +15,7 @@ import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
 import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
 import at.tobiazsh.myworld.traffic_addition.preference.ClientPreferences;
+import at.tobiazsh.myworld.traffic_addition.preference.LegacyClientPreferenceConverter;
 import at.tobiazsh.myworld.traffic_addition.preference.PreferenceLoader;
 import at.tobiazsh.myworld.traffic_addition.rendering.RegistrableBlockEntityRender;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.*;
@@ -50,6 +51,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,11 +72,15 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 					.resolve(MyWorldTrafficAddition.MOD_ID)
 					.resolve("client_preferences.toml").toFile();
 
+	public static final File legacyClientPreferencesLocation =
+			FabricLoader.getInstance().getConfigDir()
+					.resolve(MyWorldTrafficAddition.MOD_ID)
+					.resolve("gameplay_config.json").toFile();
+
 	/**
 	 * Can be null if preferences haven't yet been loaded.
 	 */
-	private static final ClientPreferences clientPreferences =
-			PreferenceLoader.load(clientPreferencesLocation, ClientPreferences.class);
+	private static final ClientPreferences clientPreferences = loadOrConvertOrCreate();
 
 	public static final ImGui imgui = new ImGui(); // I have to use this since a static reference crashes the program when I call calcTextSize / calcItemSize
 
@@ -268,11 +274,45 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	// ---------------- PREFERENCES ----------------
 
 	private static void savePreferences() {
-		PreferenceLoader.save(clientPreferencesLocation, clientPreferences);
+		PreferenceLoader.savePreferenceToFileOrCallback(
+				clientPreferencesLocation,
+				clientPreferences,
+				MyWorldTrafficAddition.LOGGER::error
+		);
 	}
 
 	public static ClientPreferences getClientPreferences() {
 		return clientPreferences;
+	}
+
+	/**
+	 * Either load normally, or convert from old format if the file is in the old format.
+	 * If neither file could be found, it will be created with the newer format.
+	 */
+	private static ClientPreferences loadOrConvertOrCreate() {
+		if (Files.exists(clientPreferencesLocation.toPath())) {
+			return PreferenceLoader.loadPreferenceFromFileOrDefault(
+					clientPreferencesLocation,
+					new ClientPreferences(),
+					ClientPreferences::new,
+                    MyWorldTrafficAddition.LOGGER::warn
+			);
+		} else if (Files.exists(legacyClientPreferencesLocation.toPath())) {
+			MyWorldTrafficAddition.LOGGER.info("Found legacy client preferences file. Converting to new format...");
+
+			ClientPreferences converted =
+					LegacyClientPreferenceConverter.produceNewClientPreferences(legacyClientPreferencesLocation);
+
+			MyWorldTrafficAddition.LOGGER.info("""
+				Converted legacy client preferences file to new format.
+				Old file is kept as a backup.
+			""");
+
+			return converted;
+		} else {
+			MyWorldTrafficAddition.LOGGER.info("No client preferences file found. Using empty preferences.");
+			return new ClientPreferences();
+		}
 	}
 
 }
