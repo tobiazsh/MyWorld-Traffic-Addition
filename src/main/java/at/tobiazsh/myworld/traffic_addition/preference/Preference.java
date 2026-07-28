@@ -1,13 +1,36 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.preference.codec.Codec;
+import at.tobiazsh.myworld.traffic_addition.permission.Permission;
+import at.tobiazsh.myworld.traffic_addition.toml.LeafHandler;
+import at.tobiazsh.myworld.traffic_addition.toml.NodeFactory;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlLeaf;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlNode;
+import at.tobiazsh.myworld.traffic_addition.toml.codec.Codec;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.TomlScanner;
 import io.github.wasabithumb.jtoml.value.TomlValue;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
-public class Preference<T> {
+public class Preference<T> implements TomlLeaf {
+
+    @SuppressWarnings("unchecked")
+    public static final Class<Preference<?>> LEAF_TYPE =
+            (Class<Preference<?>>) (Class<?>) Preference.class;
+
+    public static final TomlScanner<TomlNode<Preference<?>>, Preference<?>> SCANNER =
+            new TomlScanner<>(
+                    NodeFactory.of(TomlNode<Preference<?>>::new),
+                    LeafHandler.of(
+                            (node, permission) -> node.entries().put(
+                                    permission.getId(),
+                                    permission
+                            )
+                    ),
+                    LEAF_TYPE
+            );
+
     @Nullable private T value;
     @NonNull private final T defaultValue;
     @NonNull private final String id;

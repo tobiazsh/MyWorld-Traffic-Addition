@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.preference.annotation;
+package at.tobiazsh.myworld.traffic_addition.toml.serialization.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PreferenceRoot {
+public @interface TomlRoot {
 }

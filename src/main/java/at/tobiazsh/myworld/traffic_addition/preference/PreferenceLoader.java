@@ -1,6 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.preference.serialization.PreferenceSerializer;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.PreferenceSerializer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -92,7 +92,7 @@ public class PreferenceLoader {
     public static <T extends PreferenceHierarchy> void savePreferencesToFile(File file, T clazz)
             throws IOException
     {
-        String toml = PreferenceSerializer.serializeToToml(PreferenceSerializer.scan(clazz));
+        String toml = PreferenceSerializer.serializeToToml(Preference.SCANNER.scan(clazz)).trim();
         Files.write(Path.of(file.getAbsolutePath()), toml.getBytes());
     }
 

@@ -1,17 +1,17 @@
 package at.tobiazsh.myworld.traffic_addition.preference;
 
-import at.tobiazsh.myworld.traffic_addition.preference.annotation.PreferenceChild;
-import at.tobiazsh.myworld.traffic_addition.preference.annotation.PreferenceRoot;
-import at.tobiazsh.myworld.traffic_addition.preference.codec.Codecs;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.annotation.TomlChild;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.annotation.TomlRoot;
+import at.tobiazsh.myworld.traffic_addition.toml.codec.Codecs;
 
-@PreferenceRoot
+@TomlRoot
 public class ServerPreferences implements PreferenceHierarchy {
 
     // DO NOT BLINDLY CHANGE OBJECT NAMES! It's essential for TOML!
     public final CustomizableSigns customizableSigns = new CustomizableSigns();
 
     // These classes are private
-    @PreferenceChild(value = "customizable_signs")
+    @TomlChild(value = "customizable_signs")
     public static class CustomizableSigns {
         private CustomizableSigns() {}
 
@@ -19,7 +19,7 @@ public class ServerPreferences implements PreferenceHierarchy {
         public final OnlineImages onlineImages = new OnlineImages();
         public final General general = new General();
 
-        @PreferenceChild(value = "online_images")
+        @TomlChild(value = "online_images")
         public static class OnlineImages {
             private OnlineImages() {}
 
@@ -32,7 +32,7 @@ public class ServerPreferences implements PreferenceHierarchy {
             public final Preference<Long> downloadTimeout =        new Preference<>(15_000L, "download_timeout", Codecs.LONG);
         }
 
-        @PreferenceChild(value = "general")
+        @TomlChild(value = "general")
         public static class General {
             private General() {}
 

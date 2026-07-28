@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.preference.codec;
+package at.tobiazsh.myworld.traffic_addition.toml.codec;
 
 import at.tobiazsh.myworld.traffic_addition.exception.DecodeException;
 import io.github.wasabithumb.jtoml.value.primitive.TomlPrimitive;
