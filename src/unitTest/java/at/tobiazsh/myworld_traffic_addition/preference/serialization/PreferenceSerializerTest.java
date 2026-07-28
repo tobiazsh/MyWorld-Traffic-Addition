@@ -1,12 +1,12 @@
 package at.tobiazsh.myworld_traffic_addition.preference.serialization;
 
 import at.tobiazsh.myworld.traffic_addition.preference.Preference;
-import at.tobiazsh.myworld.traffic_addition.preference.annotation.PreferenceChild;
-import at.tobiazsh.myworld.traffic_addition.preference.annotation.PreferenceRoot;
-import at.tobiazsh.myworld.traffic_addition.preference.codec.Codec;
-import at.tobiazsh.myworld.traffic_addition.preference.codec.Codecs;
-import at.tobiazsh.myworld.traffic_addition.preference.serialization.PreferenceNode;
-import at.tobiazsh.myworld.traffic_addition.preference.serialization.PreferenceSerializer;
+import at.tobiazsh.myworld.traffic_addition.toml.TomlNode;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.annotation.TomlChild;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.annotation.TomlRoot;
+import at.tobiazsh.myworld.traffic_addition.toml.codec.Codec;
+import at.tobiazsh.myworld.traffic_addition.toml.codec.Codecs;
+import at.tobiazsh.myworld.traffic_addition.toml.serialization.PreferenceSerializer;
 import io.github.wasabithumb.jtoml.value.primitive.TomlPrimitive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -65,14 +65,14 @@ public class PreferenceSerializerTest {
         }
     }
 
-    @PreferenceRoot
+    @TomlRoot
     public static class PreferenceClass {
 
         public General general = new General();
         public Advanced advancedField = new Advanced(); // Chose a more complex name on purpose!
         public RenderingSettings renderingSettings = new RenderingSettings();
 
-        @PreferenceChild("general")
+        @TomlChild("general")
         public static class General {
             private General() {}
 
@@ -89,7 +89,7 @@ public class PreferenceSerializerTest {
             }
         }
 
-        @PreferenceChild
+        @TomlChild
         public static class Advanced {
             private Advanced() {}
 
@@ -104,7 +104,7 @@ public class PreferenceSerializerTest {
             }
         }
 
-        @PreferenceChild("rendering_settings")
+        @TomlChild("rendering_settings")
         public static class RenderingSettings {
             private RenderingSettings() {}
 
@@ -142,31 +142,30 @@ public class PreferenceSerializerTest {
 
     @Test
     void scan() {
-        PreferenceNode rootNode = new PreferenceNode("PreferenceClass", new PreferenceClass());
+        TomlNode<Preference<?>> rootNode = new TomlNode<>("PreferenceClass", new PreferenceClass());
 
-        PreferenceNode generalNode = new PreferenceNode("general", new PreferenceClass());
-        PreferenceNode advancedNode = new PreferenceNode("advancedField", new PreferenceClass());
-        PreferenceNode renderingSettings = new PreferenceNode("rendering_settings", new PreferenceClass());
+        TomlNode<Preference<?>> generalNode = new TomlNode<>("general", new PreferenceClass());
+        TomlNode<Preference<?>> advancedNode = new TomlNode<>("advancedField", new PreferenceClass());
+        TomlNode<Preference<?>> renderingSettings = new TomlNode<>("rendering_settings", new PreferenceClass());
 
-        generalNode.preferences().put("enable_feature_x", new Preference<>(true, "enable_feature_x", Codecs.BOOLEAN));
-        generalNode.preferences().put("max_connections", new Preference<>(10, "max_connections", Codecs.INTEGER));
-        advancedNode.preferences().put("advanced_option", new Preference<>("default", "advanced_option", Codecs.STRING));
-        renderingSettings.preferences().put("render_dog", new Preference<>(new TestDog(0.5f, 0.5f, "brown"), "render_dog", TestDog.CODEC));
+        generalNode.entries().put("enable_feature_x", new Preference<>(true, "enable_feature_x", Codecs.BOOLEAN));
+        generalNode.entries().put("max_connections", new Preference<>(10, "max_connections", Codecs.INTEGER));
+        advancedNode.entries().put("advanced_option", new Preference<>("default", "advanced_option", Codecs.STRING));
+        renderingSettings.entries().put("render_dog", new Preference<>(new TestDog(0.5f, 0.5f, "brown"), "render_dog", TestDog.CODEC));
 
         rootNode.children().put(generalNode.id(), generalNode);
         rootNode.children().put(advancedNode.id(), advancedNode);
         rootNode.children().put(renderingSettings.id(), renderingSettings);
 
-        PreferenceNode node = PreferenceSerializer.scan(new PreferenceClass());
+        TomlNode<Preference<?>> node = Preference.SCANNER.scan(new PreferenceClass());
         Assertions.assertEquals(rootNode, node, "The scanned preference node does not match the expected structure.");
     }
 
     @Test
     void serialize() {
-        PreferenceNode node = PreferenceSerializer.scan(new PreferenceClass());
+        TomlNode<Preference<?>> node = Preference.SCANNER.scan(new PreferenceClass());
 
         String toml = """
-                
                 [advancedField]
                 advanced_option = "default"
                 
@@ -185,7 +184,6 @@ public class PreferenceSerializerTest {
     @Test
     void deserialize() {
         String toml = """
-                
                 [advancedField]
                 advanced_option = "hehe, this is more advanced and therefore I am intellectually superior :)"
                 
