@@ -13,47 +13,50 @@ import at.tobiazsh.myworld.traffic_addition.utils.Color;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
 
 public class BackgroundRenderer {
     public static class MinecraftRenderer {
-        public static void renderMinecraft(Background background, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumerProvider, int light, int backgroundOverlay, Direction facing, BorderProperty borders, float zOffsetRenderLayer) {
+        public static void renderMinecraft(
+                Background background,
+                PoseStack matrices,
+                @NonNull SubmitNodeCollector queue,
+                int light,
+                int backgroundOverlay,
+                Direction facing,
+                BorderProperty borders,
+                float zOffsetRenderLayer
+        ) {
             if (background.isColor())
-                renderColor(background, matrices, vertexConsumerProvider, light, backgroundOverlay, facing, zOffsetRenderLayer);
+                renderColor(background, matrices, queue, light, backgroundOverlay, facing, zOffsetRenderLayer);
             else
-                renderTexture(background, matrices, vertexConsumerProvider, light, backgroundOverlay, facing, borders, zOffsetRenderLayer);
+                renderTexture(background, matrices, queue, light, backgroundOverlay, facing, borders, zOffsetRenderLayer);
         }
 
-        private static void renderColor(Background background, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumerProvider, int light, int backgroundOverlay, Direction facing, float zOffsetRenderLayer) {
+        private static void renderColor(
+                Background background,
+                PoseStack poseStack,
+                @NonNull SubmitNodeCollector queue,
+                int light,
+                int backgroundOverlay,
+                Direction facing,
+                float zOffsetRenderLayer
+        ) {
             if (!background.isColor()) return; // Do NOT render if it's not color
             CustomRenderLayer.ColorLayering backgroundLayer = new CustomRenderLayer.ColorLayering(zOffsetRenderLayer);
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
             BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
-            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(backgroundRenderLayer);
-
-            matrices.pushPose();
-
-            // Now render that
-            // Position the vertices
-            // Offest background so it's not directly in side the sign block
-            matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z);
-
-            matrices.translate(0.5, 0.5, 0.5);
-            matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-            matrices.translate(-0.5, -0.5, -0.5);
-
             Color color = background.color;
-
             if (color == null) return;
 
             float r = color.r() / 255f;
@@ -61,15 +64,37 @@ public class BackgroundRenderer {
             float b = color.b() / 255f;
             float a = color.a() / 255f;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            poseStack.pushPose();
 
-            matrices.popPose();
+            // Now render that
+            // Position the vertices
+            // Offest background so it's not directly in side the sign block
+            poseStack.translate(forwardShift.x, forwardShift.y, forwardShift.z);
+
+            poseStack.translate(0.5, 0.5, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+            poseStack.translate(-0.5, -0.5, -0.5);
+
+            queue.submitCustomGeometry(poseStack, backgroundRenderLayer, (pose, vertexConsumer) -> {
+                vertexConsumer.addVertex(pose, 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            });
+
+            poseStack.popPose();
         }
 
-        private static void renderTexture(Background background, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumerProvider, int light, int backgroundOverlay, Direction facing, BorderProperty borders, float zOffsetRenderLayer) {
+        private static void renderTexture(
+                Background background,
+                PoseStack poseStack,
+                @NonNull SubmitNodeCollector queue,
+                int light,
+                int backgroundOverlay,
+                Direction facing,
+                BorderProperty borders,
+                float zOffsetRenderLayer
+        ) {
             if (background.isColor()) return; // Do NOT render if it's color
             if (background.texture == null) return;
 
@@ -91,8 +116,8 @@ public class BackgroundRenderer {
             } catch (SpriteNotFoundException | NullPointerException e) { // Fallback if error during background getter
                 renderColor(
                         Background.WHITE, // Least destructive background
-                        matrices,
-                        vertexConsumerProvider,
+                        poseStack,
+                        queue,
                         light,
                         backgroundOverlay,
                         facing,
@@ -113,15 +138,13 @@ public class BackgroundRenderer {
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
             BlockPosFloat forwardShift = new BlockPosFloat(0, 0, 0).offset(facing, zOffset);
 
-            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(backgroundRenderLayer);
+            poseStack.pushPose();
 
-            matrices.pushPose();
+            poseStack.translate(forwardShift.x, forwardShift.y, forwardShift.z);
 
-            matrices.translate(forwardShift.x, forwardShift.y, forwardShift.z);
-
-            matrices.translate(0.5, 0.5, 0.5);
-            matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-            matrices.translate(-0.5, -0.5, -0.5);
+            poseStack.translate(0.5, 0.5, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+            poseStack.translate(-0.5, -0.5, -0.5);
 
             float uMargin = (bgSpr.u2 - bgSpr.u1) / 2048.0f;
             float vMargin = (bgSpr.v2 - bgSpr.v1) / 2048.0f;
@@ -132,11 +155,14 @@ public class BackgroundRenderer {
             float innerV1 = bgSpr.v1 + vMargin;
             float innerV2 = bgSpr.v2 - vMargin;
 
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            vertexConsumer.addVertex(matrices.last().pose(), 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-            matrices.popPose();
+            queue.submitCustomGeometry(poseStack, backgroundRenderLayer, (pose, vertexConsumer) -> {
+                vertexConsumer.addVertex(pose, 0.0f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1f, 0f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV2).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU2, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 0.0f, 1f, 0.0f).setColor(1.0f, 1.0f, 1.0f, 1.0f).setUv(innerU1, innerV1).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+            });
+
+            poseStack.popPose();
         }
     }
 

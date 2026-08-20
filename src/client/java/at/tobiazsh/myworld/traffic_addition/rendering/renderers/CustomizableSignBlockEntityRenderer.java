@@ -19,7 +19,6 @@ import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -40,6 +39,7 @@ import com.mojang.math.Axis;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -244,7 +244,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
 
     // Render one sign
     private void renderSign(
-            SubmitNodeCollector queue,
+            @NonNull SubmitNodeCollector queue,
             CustomizableSignBlockRenderState masterState,
             PoseStack matrices,
             ImmutableList<BlockStateModelPart> parts,
@@ -254,9 +254,6 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
             BorderProperty borderType,
             int backgroundOverlay
     ) {
-
-        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
-
         matrices.pushPose();
 
         matrices.translate(offset.getX(), offset.getY(), offset.getZ()); // Set the sign to the correct offset
@@ -275,7 +272,7 @@ public class CustomizableSignBlockEntityRenderer implements BlockEntityRenderer<
         BackgroundRenderer.MinecraftRenderer.renderMinecraft(
                 masterState.textureData.getBackground(),
                 matrices,
-                vertexConsumerProvider,
+                queue,
                 light,
                 backgroundOverlay,
                 facing,

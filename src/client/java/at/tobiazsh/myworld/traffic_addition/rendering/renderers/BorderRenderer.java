@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;

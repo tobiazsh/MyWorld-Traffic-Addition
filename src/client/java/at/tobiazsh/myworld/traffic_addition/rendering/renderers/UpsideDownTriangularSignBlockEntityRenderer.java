@@ -15,14 +15,13 @@ import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.Direction;
+import org.jspecify.annotations.NonNull;
 
 @Environment(EnvType.CLIENT)
 public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntityRenderer<UpsideDownTriangularSignBlockEntity> {
@@ -32,27 +31,35 @@ public class UpsideDownTriangularSignBlockEntityRenderer extends SignBlockEntity
     }
 
     @Override
-    protected void renderTextureOnModel(String texturePath, PoseStack matrices, MultiBufferSource vertexConsumers, Direction facing, int light, int overlay) {
+    protected void renderTextureOnModel(
+            String texturePath,
+            PoseStack poseStack,
+            @NonNull SubmitNodeCollector queue,
+            Direction facing,
+            int light,
+            int overlay
+    ) {
         Identifier texture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
         float zOffset = MyWorldTrafficAdditionClient.getClientPreferences().signs.viewDistance.getOrDefault();
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
         RenderType renderLayer = imageLayering.buildRenderType();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
-        matrices.pushPose();
-        matrices.scale(1.0f, 1.0f, 1.0f);
-        matrices.translate(-0.5, -0.5, -0.5);
-        matrices.translate(0.57, 1, 0);
-        matrices.translate(0, 0.05, 0);
+        poseStack.pushPose();
+        poseStack.scale(1.0f, 1.0f, 1.0f);
+        poseStack.translate(-0.5, -0.5, -0.5);
+        poseStack.translate(0.57, 1, 0);
+        poseStack.translate(0, 0.05, 0);
 
-        rotateTexture(facing, matrices);
+        rotateTexture(facing, poseStack);
 
-        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        queue.submitCustomGeometry(poseStack, renderLayer, (pose, vertexConsumer) -> {
+            vertexConsumer.addVertex(pose, -0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, 0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, 0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, -0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        });
 
-        matrices.popPose();
+        poseStack.popPose();
     }
 }

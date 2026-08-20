@@ -17,8 +17,6 @@ import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderstates.SignBlockRenderState;
 import at.tobiazsh.myworld.traffic_addition.utils.math.Coordinates;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -65,7 +63,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         int light = state.lightCoords;
 
-        MultiBufferSource provider = Minecraft.getInstance().renderBuffers().bufferSource();
         Direction facing = state.blockState.getValue(SignBlock.FACING);
 
         BlockEntity blockEntityBehind = Minecraft.getInstance().level.getBlockEntity( getBlockPosBehind(facing, state.blockPos) );
@@ -96,7 +93,7 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
         List<BlockStateModelPart> parts = new ArrayList<>();
         signBlockStateModel.collectParts(random, parts);
 
-        renderTextureOnModel(state.texturePath, matrices, provider, facing, light, OverlayTexture.NO_OVERLAY);
+        renderTextureOnModel(state.texturePath, matrices, queue, facing, light, OverlayTexture.NO_OVERLAY);
 
         queue.submitBlockModel(
                 matrices,
@@ -126,7 +123,14 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
     // ----------------------------------------------------
     // RENDER UTILITY METHODS -----------------------------
 
-    protected void renderTextureOnModel(String texturePath, PoseStack matrices, MultiBufferSource vertexConsumers, Direction facing, int light, int overlay) {
+    protected void renderTextureOnModel(
+            String texturePath,
+            PoseStack matrices,
+            @NonNull SubmitNodeCollector queue,
+            Direction facing,
+            int light,
+            int overlay
+    ) {
         Identifier texture = Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, texturePath);
 
         float zOffset = MyWorldTrafficAdditionClient.getClientPreferences()
@@ -135,7 +139,6 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(zOffset, CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT, texture);
         RenderType renderLayer = imageLayering.buildRenderType();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer);
 
         matrices.pushPose();
         matrices.scale(1.0f, 1.0f, 1.0f);
@@ -144,10 +147,12 @@ public class SignBlockEntityRenderer<T extends SignBlockEntity> implements Block
 
         rotateTexture(facing, matrices);
 
-        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), 0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
-        vertexConsumer.addVertex(matrices.last().pose(), -0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        queue.submitCustomGeometry(matrices, renderLayer, (pose, vertexConsumer) -> {
+            vertexConsumer.addVertex(pose, -0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, 0.5f, -0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 1.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, 0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(1.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+            vertexConsumer.addVertex(pose, -0.5f, 0.5f, 0.0f).setColor(1f, 1f, 1f, 1f).setUv(0.0f, 0.0f).setLight(light).setOverlay(overlay).setNormal(0, 0, 1);
+        });
 
         matrices.popPose();
     }

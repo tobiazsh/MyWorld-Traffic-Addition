@@ -4,7 +4,6 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.rendering.renderers.CustomizableSignBlockEntityRenderer;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
@@ -18,7 +17,6 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
@@ -26,6 +24,7 @@ import com.mojang.math.Axis;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -128,8 +127,14 @@ public class TextElementClient extends TextElement implements ClientElementInter
     }
 
     @Override
-    public void renderMinecraft(SubmitNodeCollector queue, int indexInList, int csbeHeight, PoseStack matrices, int light, Direction facing) {
-
+    public void renderMinecraft(
+            @NonNull SubmitNodeCollector queue,
+            int indexInList,
+            int csbeHeight,
+            PoseStack poseStack,
+            int light,
+            Direction facing
+    ) {
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
         float x = this.calcBlocks(getX());
@@ -162,47 +167,45 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 .offset(Direction.DOWN, y)
                 .offset(Direction.DOWN, h * 0.35f); // Fix Up/Down alignment
 
-        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
-
-        matrices.pushPose();
+        poseStack.pushPose();
 
         // Move to correct position
-        matrices.translate(zPos.x, zPos.y, zPos.z);
-        matrices.translate(renderPos.x, renderPos.y, renderPos.z);
+        poseStack.translate(zPos.x, zPos.y, zPos.z);
+        poseStack.translate(renderPos.x, renderPos.y, renderPos.z);
 
         // Rotate to face the same direction as the block
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing)));
-        matrices.translate(-0.5, -0.5, -0.5);
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing)));
+        poseStack.translate(-0.5, -0.5, -0.5);
 
         // Turn by 180 degrees, because it's inverted
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.mulPose(Axis.ZN.rotationDegrees(180));
-        matrices.translate(-0.5, -0.5, -0.5);
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.ZN.rotationDegrees(180));
+        poseStack.translate(-0.5, -0.5, -0.5);
 
         // Rotate by given rotation
-        matrices.translate(w * 0.5f, h * 0.6f * 0.5f, 0.0f); // Translate to text center
-        matrices.mulPose(Axis.ZP.rotationDegrees(rotation)); // Apply rotation
-        matrices.translate(-w * 0.5f, -h * 0.6f * 0.5f, 0.0f); // Translate back
+        poseStack.translate(w * 0.5f, h * 0.6f * 0.5f, 0.0f); // Translate to text center
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation)); // Apply rotation
+        poseStack.translate(-w * 0.5f, -h * 0.6f * 0.5f, 0.0f); // Translate back
 
         // Scale up to match size
-        matrices.scale(effectiveWidthScale, effectiveHeightScale, 1);
+        poseStack.scale(effectiveWidthScale, effectiveHeightScale, 1);
 
-        Matrix4f positionMatrix = matrices.last().pose();
+        Matrix4f positionMatrix = poseStack.last().pose();
 
         textRenderer.draw(
                 this.getText(),
                 0,0, zOffset,
                 ImGuiColor.toHexARGB(color),
                 false,
-                positionMatrix,
-                vertexConsumerProvider,
+                queue,
+                poseStack,
                 CustomRenderLayer.TextLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_INTENSITY,
                 0,
                 light
         );
 
-        matrices.popPose();
+        poseStack.popPose();
     }
 
     /**

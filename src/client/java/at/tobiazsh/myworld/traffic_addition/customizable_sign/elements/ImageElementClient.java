@@ -12,12 +12,10 @@ import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -26,6 +24,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
 
 import java.util.UUID;
 
@@ -33,6 +32,11 @@ import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivo
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class ImageElementClient extends ImageElement implements ClientElementInterface, TexturableElementInterface {
+
+    private static final StagedVertexBuffer vertexBuffer = new StagedVertexBuffer(
+            () -> "Image Element Renderer Vertex Buffer",
+            RenderType.SMALL_BUFFER_SIZE
+    );
 
     public boolean textureLoaded = false;
 
@@ -142,16 +146,16 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * Renders an ImageElement in Minecraft
      * @param indexInList Index of the element in the list; For layering purposes
      * @param csbeHeight Height of the CustomizableSignBlockEntity
-     * @param matrices MatrixStack
+     * @param poseStack PoseStack
      * @param light Light level
      * @param facing Direction the element should face
      */
     @Override
     public void renderMinecraft(
-            SubmitNodeCollector queue,
+            @NonNull SubmitNodeCollector queue,
             int indexInList,
             int csbeHeight,
-            PoseStack matrices,
+            PoseStack poseStack,
             int light,
             Direction facing
     ) {
@@ -194,59 +198,58 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
         RenderType renderLayer = imageLayering.buildRenderType();
 
-        MultiBufferSource.BufferSource vertexConsumerProvider = Minecraft.getInstance().gameRenderer.renderBuffers.bufferSource(); // ClassTweaker aka. AccessWidener!
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(renderLayer);
+        poseStack.pushPose();
+        Matrix4f positionMatrix = poseStack.last().pose();
 
-        matrices.pushPose();
-        Matrix4f positionMatrix = matrices.last().pose();
-
-        matrices.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
-        matrices.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
-        matrices.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
+        poseStack.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
+        poseStack.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
+        poseStack.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
 
         // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
-        matrices.translate(0.5, 0.5, 0.5);
-        matrices.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
-        matrices.translate(-0.5, -0.5, -0.5);
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        poseStack.translate(-0.5, -0.5, -0.5);
 
         // Rotate around the element's center
-        matrices.translate(w / 2, h / 2, 0); // Move origin to element center
-        matrices.mulPose(Axis.ZN.rotationDegrees(rotation));
-        matrices.translate(-w / 2, -h / 2, 0); // Move origin back
+        poseStack.translate(w / 2, h / 2, 0); // Move origin to element center
+        poseStack.mulPose(Axis.ZN.rotationDegrees(rotation));
+        poseStack.translate(-w / 2, -h / 2, 0); // Move origin back
 
         // Top left
-        vertexConsumer.addVertex(positionMatrix, 0 , 0, 0)
-                .setUv(0, 1)
-                .setColor(color[0], color[1], color[2], color[3])
-                .setLight(light)
-                .setOverlay(overlay)
-                .setNormal(0, 0, 1);
+        queue.submitCustomGeometry(poseStack, renderLayer, (_, vertexConsumer) -> {
+            vertexConsumer.addVertex(positionMatrix, 0 , 0, 0)
+                    .setUv(0, 1)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
 
-        // Top right
-        vertexConsumer.addVertex(positionMatrix, w, 0, 0)
-                .setUv(1, 1)
-                .setColor(color[0], color[1], color[2], color[3])
-                .setLight(light)
-                .setOverlay(overlay)
-                .setNormal(0, 0, 1);
+            // Top right
+            vertexConsumer.addVertex(positionMatrix, w, 0, 0)
+                    .setUv(1, 1)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
 
-        // Bottom right
-        vertexConsumer.addVertex(positionMatrix, w, h, 0)
-                .setUv(1, 0)
-                .setColor(color[0], color[1], color[2], color[3])
-                .setLight(light)
-                .setOverlay(overlay)
-                .setNormal(0, 0, 1);
+            // Bottom right
+            vertexConsumer.addVertex(positionMatrix, w, h, 0)
+                    .setUv(1, 0)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
 
-        // Bottom left
-        vertexConsumer.addVertex(positionMatrix, 0, h, 0)
-                .setUv(0, 0)
-                .setColor(color[0], color[1], color[2], color[3])
-                .setLight(light)
-                .setOverlay(overlay)
-                .setNormal(0, 0, 1);
+            // Bottom left
+            vertexConsumer.addVertex(positionMatrix, 0, h, 0)
+                    .setUv(0, 0)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
+        });
 
-        matrices.popPose();
+        poseStack.popPose();
     }
 
     @Override

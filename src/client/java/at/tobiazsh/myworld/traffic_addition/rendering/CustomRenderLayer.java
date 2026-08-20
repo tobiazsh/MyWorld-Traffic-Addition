@@ -166,7 +166,7 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderType> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.TEXT_INTENSITY)
+                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.GUI_TEXT)
                             .withTexture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))
