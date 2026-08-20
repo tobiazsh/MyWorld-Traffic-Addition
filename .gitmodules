@@ -1,0 +1,6 @@
+[submodule "imgui_api"]
+	path = imgui_api
+	url = https://github.com/IMS212/imgui_api
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/IMS212/imgui_api
