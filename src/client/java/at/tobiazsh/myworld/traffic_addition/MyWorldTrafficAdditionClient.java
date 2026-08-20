@@ -136,7 +136,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 						return;
 					}
 
-                    Minecraft.getInstance().setScreen(new SignPoleRotationScreen(Minecraft.getInstance().level, pos, Minecraft.getInstance().player));
+                    Minecraft.getInstance().gui.setScreen(new SignPoleRotationScreen(Minecraft.getInstance().level, pos, Minecraft.getInstance().player));
 				}),
 
 				new GlobalReceiverClient<>(OpenSignSelectionPayload.Id, (payload) -> {
@@ -145,7 +145,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 						return;
 					}
 
-					Minecraft.getInstance().setScreen(new EmptyScreen(Component.literal("Sign Selection"), SIGN_SELECTOR::close));
+					Minecraft.getInstance().gui.setScreen(new EmptyScreen(Component.literal("Sign Selection"), SIGN_SELECTOR::close));
                     SIGN_SELECTOR.open(SignBlock.getSignSelectionEnum(payload.selection_type()), payload.pos(), payload.dimensionRegistryKey());
 				}),
 
@@ -158,7 +158,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 					}
 
 					customizableSignSettingScreen = new CustomizableSignSettingScreen(Minecraft.getInstance().level, pos, Minecraft.getInstance().player);
-					Minecraft.getInstance().setScreen(customizableSignSettingScreen);
+					Minecraft.getInstance().gui.setScreen(customizableSignSettingScreen);
 				}),
 
 				new GlobalReceiverClient<>(ShowImGuiWindow.Id, (payload -> {

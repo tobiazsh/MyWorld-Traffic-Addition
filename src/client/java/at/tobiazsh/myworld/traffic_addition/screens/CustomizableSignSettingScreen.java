@@ -156,7 +156,7 @@ public class CustomizableSignSettingScreen extends Screen {
         this.onClose();
         CustomizableSignSettingScreen screen = new CustomizableSignSettingScreen(this.world, this.pos, this.player);
         screen.showChildren = showChildren;
-        Minecraft.getInstance().setScreen(screen);
+        Minecraft.getInstance().gui.setScreen(screen);
     }
 
     private void clearAll() {
