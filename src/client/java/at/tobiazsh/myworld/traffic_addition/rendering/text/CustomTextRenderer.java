@@ -2,17 +2,17 @@ package at.tobiazsh.myworld.traffic_addition.rendering.text;
 
 import at.tobiazsh.myworld.traffic_addition.access.client.GlyphIdentifierHolder;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
@@ -36,19 +36,25 @@ public class CustomTextRenderer extends Font {
             float zOffset,
             int color,
             boolean shadow,
-            Matrix4f matrix,
-            MultiBufferSource vertexConsumers,
+            @NonNull SubmitNodeCollector queue,
+            PoseStack poseStack,
             CustomRenderLayer.TextLayering.LayeringType layeringType,
             int backgroundColor,
             int light
     ) {
         Font.PreparedText glyphDrawable = this.prepareText(string, x, y, color, shadow, backgroundColor);
-        glyphDrawable.visit(CustomGlyphDrawer.drawing(vertexConsumers, matrix, layeringType, light, zOffset)); // <-- Custom Glyph Drawer
+        glyphDrawable.visit(CustomGlyphDrawer.drawing(queue, poseStack, layeringType, light, zOffset)); // <-- Custom Glyph Drawer
     }
 
     @Environment(EnvType.CLIENT)
     public interface CustomGlyphDrawer extends Font.GlyphVisitor {
-        static CustomGlyphDrawer drawing(MultiBufferSource vertexConsumers, Matrix4f matrix, CustomRenderLayer.TextLayering.LayeringType layeringType, int light, float zOffset) {
+        static CustomGlyphDrawer drawing(
+                @NonNull SubmitNodeCollector queue,
+                PoseStack poseStack,
+                CustomRenderLayer.TextLayering.LayeringType layeringType,
+                int light,
+                float zOffset
+        ) {
             return new CustomGlyphDrawer() {
                 @Override
                 public void acceptGlyph(TextRenderable.@NotNull Styled glyph) {
@@ -62,7 +68,6 @@ public class CustomTextRenderer extends Font {
 
                 private void draw(TextRenderable glyph) {
                     // Get the id from the default render layer
-
                     Optional<Identifier> optionalTextureBinding = Optional.empty();
 
                     if (glyph instanceof BakedSheetGlyph.GlyphInstance glyphInstance) { // AccessWidener on GlyphInstance!
@@ -79,8 +84,12 @@ public class CustomTextRenderer extends Font {
                     );
 
                     // User RenderLayer
-                    VertexConsumer vertexConsumer = vertexConsumers.getBuffer(renderLayer.buildRenderType());
-                    glyph.render(matrix, vertexConsumer, light, false);
+                    queue.submitCustomGeometry(
+                            poseStack,
+                            renderLayer.buildRenderType(),
+                            (pose, vertexConsumer) ->
+                                    glyph.render(pose.pose(), vertexConsumer, light, false)
+                    );
                 }
             };
         }
