@@ -4,7 +4,8 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.image.ByteImage;
 import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
-import net.minecraft.util.Tuple;
+
+import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.system.MemoryUtil;
 

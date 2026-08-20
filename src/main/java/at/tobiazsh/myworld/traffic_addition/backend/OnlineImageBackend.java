@@ -8,13 +8,13 @@ import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.preference.ServerBlacklist;
+import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.jetbrains.annotations.NotNull;
 

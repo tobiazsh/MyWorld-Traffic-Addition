@@ -1,9 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
 import imgui.ImGui;
-import net.minecraft.util.Tuple;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;

@@ -10,13 +10,13 @@ import at.tobiazsh.myworld.traffic_addition.metadata.CustomImageMetadata;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
+import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
 import imgui.flag.ImGuiCol;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
 import org.jspecify.annotations.NullMarked;
 import org.lwjgl.system.MemoryUtil;
 
