@@ -9,9 +9,7 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
-project.ext.imgui_version = "1.90.0"
-project.ext.lwjgl_version = "3.3.4"
-var versions = ["26.1", "26.1.1", "26.1.2"]
+var versions = ["26.2"]
 
 base {
 	archivesName = project.archives_base_name
@@ -65,16 +63,8 @@ dependencies {
     unitTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     unitTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // Dear ImGui Implementation
-    include implementation("io.github.spair:imgui-java-binding:${project.imgui_version}")
-
-    include implementation("io.github.spair:imgui-java-lwjgl3:${project.imgui_version}") {
-        exclude group: "org.lwjgl"
-    }
-
-    include implementation("io.github.spair:imgui-java-natives-windows:${project.imgui_version}")
-    include implementation("io.github.spair:imgui-java-natives-linux:${project.imgui_version}")
-    include implementation("io.github.spair:imgui-java-natives-macos:${project.imgui_version}")
+    // ImGuiB3D
+    implementation "io.github.tobiazsh.imguib3d:${project.minecraft_version}:${project.imguib3d_version}"
 
     // Other dependencies
     include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}") // Jengua; Translation library
