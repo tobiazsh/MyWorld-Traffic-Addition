@@ -8,7 +8,6 @@ package at.tobiazsh.myworld.traffic_addition.mixin.client;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont;
@@ -25,23 +24,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements MinecraftClientAccessor {
-
-    @Shadow
-    @Final
-    private Window window;
-
-    // ---- ImGui ----
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    public void customInit(CallbackInfo ci) {
-        ImGuiImpl.create(window.handle()); // Initialize ImGui with the Minecraft window handle
-        JenguaTranslator.setup(); // Setup Jengua and load configured language
-    }
-
-    @Inject(method = "close", at = @At("RETURN"))
-    public void closeImGui(CallbackInfo ci) {
-        ImGuiImpl.dispose();
-    }
 
     // ---- Font ----
 
