@@ -15,12 +15,12 @@ import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
 import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
-import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementPropertyWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.ElementPropertyViewer;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
@@ -76,20 +76,18 @@ public class SignEditor {
         ImGuiRenderer.showSignEditor = false;
         isClosed = true;
         ClientElementManager.getInstance().clearAll();
-        clearFontAtlas();
     }
 
     public static void disposeChildWindows() {
         ElementsWindow.shouldRender = false;
         ElementAddWindow.shouldRender = false;
-        ElementPropertyWindow.shouldRender = false;
     }
 
     public static void render() {
         renderMain();
         ElementsWindow.render();
         ElementAddWindow.render();
-        ElementPropertyWindow.render();
+        ElementPropertyViewer.getMainViewer().render();
         ConfirmationPopup.render();
         FileDialogPopup.render();
         OnlineImageGallery.render();
@@ -276,8 +274,11 @@ public class SignEditor {
 
             ImGui.separator();
 
+            ImGui.beginDisabled();
             if (ImGui.menuItem(tr("Global", "Undo"), "CTRL + U")) undo();
             if (ImGui.menuItem(tr("Global", "Redo"), "CTRL + Shift + U")) redo();
+            ImGui.endDisabled();
+            ImGui.text("Undo/Redo is currently not available.");
 
             ImGui.endMenu();
         }
@@ -290,12 +291,15 @@ public class SignEditor {
         }
 
         if (ImGui.beginMenu(tr("Global", "View"))) {
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Window"), "CTRL + E")) ElementsWindow.toggle();
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Properties Window"), "CTRL + P")) ElementPropertyWindow.toggle();
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Window"), "CTRL + E"))
+                ElementsWindow.toggle();
+
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Properties Window")))
+                ElementPropertyViewer.getMainViewer().toggleVisibility();
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element and Properties Window"))) { // Useful since normally you'd want to have both windows open
                 ElementsWindow.toggle();
-                ElementPropertyWindow.toggle();
+                ElementPropertyViewer.getMainViewer().toggleVisibility();
             }
 
             if (ImGui.menuItem(tr("Global", "Zoom In"), "CTRL + I")) SignPreview.zoomIn();
@@ -424,7 +428,6 @@ public class SignEditor {
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopup.shouldOpen = true; // Open Json Preview
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle(); // Element Window Toggle
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.P)) ElementPropertyWindow.toggle(); // Element Properties Toggle
 
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open(); // Add Element Open
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) ClientElementManager.getInstance().addElement(TextElementClient.createNew()); // Add Text Element
