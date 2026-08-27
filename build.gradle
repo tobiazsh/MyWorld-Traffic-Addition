@@ -41,6 +41,12 @@ loom {
 	accessWidenerPath = file("src/main/resources/myworld_traffic_addition.classtweaker")
 }
 
+fabricApi {
+    configureDataGeneration {
+        client = true
+    }
+}
+
 configurations {
     unitTestImplementation.extendsFrom implementation
     unitTestRuntimeOnly.extendsFrom runtimeOnly

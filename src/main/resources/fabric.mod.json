@@ -20,6 +20,9 @@
 		],
 		"client": [
 			"at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient"
+		],
+		"fabric-datagen": [
+			"at.tobiazsh.myworld.traffic_addition.datagen.MyWorldTrafficAdditionDataGenerator"
 		]
 	},
 	"mixins": [
