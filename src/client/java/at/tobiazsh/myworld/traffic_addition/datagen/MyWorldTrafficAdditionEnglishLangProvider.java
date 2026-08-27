@@ -18,7 +18,7 @@ public class MyWorldTrafficAdditionEnglishLangProvider extends FabricLanguagePro
             @NonNull TranslationBuilder translationBuilder
     ) {
         generatePropertyViewerTranslations(translationBuilder);
-
+        generateErrorPopupTranslations(translationBuilder);
     }
 
     private void generatePropertyViewerTranslations(@NonNull TranslationBuilder translationBuilder) {
@@ -41,5 +41,11 @@ public class MyWorldTrafficAdditionEnglishLangProvider extends FabricLanguagePro
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.size", "Font Size");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.family", "Font Family");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.apply", "Apply");
+    }
+
+    private void generateErrorPopupTranslations(@NonNull TranslationBuilder translationBuilder) {
+        translationBuilder.add("text.mwta.error-popup.title", "Error");
+        translationBuilder.add("text.mwta.error-popup.message", "Message");
+        translationBuilder.add("text.mwta.error-popup.close", "Close");
     }
 }
