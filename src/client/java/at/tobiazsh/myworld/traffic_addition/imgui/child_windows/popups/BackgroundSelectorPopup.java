@@ -2,10 +2,11 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlasManager;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
 import at.tobiazsh.myworld.traffic_addition.utils.Color;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import net.minecraft.resources.Identifier;
@@ -35,12 +36,11 @@ public class BackgroundSelectorPopup {
     private boolean shouldOpen = false;
 
     private BackgroundType backgroundType;
-
     private final Background oldBackground;
 
-    private String id;
-
+    private final String id;
     private final String windowTitle;
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
     private final CustomizableSignTextureData textureData;
 
@@ -67,12 +67,12 @@ public class BackgroundSelectorPopup {
 
     public void render() {
         ImGui.setNextWindowSize(500, 400);
-        ImGui.pushFont(ImGuiImpl.Roboto);
+
         if (ImGui.beginPopupModal(windowTitle)) {
 
-            ImGui.pushFont(ImGuiImpl.RobotoBold);
+            fontScope.push(DefaultFonts.RobotoBold);
             ImGui.text(tr("ImGui.Child.PopUps.BackgroundSelector", "Background Type"));
-            ImGui.popFont();
+            fontScope.pop();
 
             if (ImGui.beginCombo("##bgType_" + id, tr("ImGui.Main.Background", backgroundType.translationName))) {
 
@@ -116,8 +116,6 @@ public class BackgroundSelectorPopup {
             ImGui.openPopup(windowTitle);
             shouldOpen = false;
         }
-
-        ImGui.popFont();
     }
 
     private void renderColorOptions() {
