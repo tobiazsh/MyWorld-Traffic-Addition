@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
 import at.tobiazsh.myworld.traffic_addition.backend.OnlineImageBackend;
 import at.tobiazsh.myworld.traffic_addition.payload.client_actions.ClearCSBETextureRenderState;
+import at.tobiazsh.myworld.traffic_addition.payload.custom_network.SetCustomizableSignTexturePayload;
 import at.tobiazsh.myworld.traffic_addition.preference.*;
 import at.tobiazsh.myworld.traffic_addition.network.SmartPayload;
 import at.tobiazsh.myworld.traffic_addition.payload.server_actions.CustomizableSignBlockActions;
@@ -191,7 +192,10 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		CustomServerNetworking.getInstance().registerProtocolHandler(
 				Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"),
 				(player, data) ->
-						CustomizableSignBlockEntity.setTransmittedTexture(new String(data), player)
+						CustomizableSignBlockEntity.setTransmittedTexture(
+								SetCustomizableSignTexturePayload.DECODER.decode(data),
+								player
+						)
 		);
 
 		// Customizable Sign Initialization

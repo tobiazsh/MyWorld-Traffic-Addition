@@ -10,6 +10,7 @@ package at.tobiazsh.myworld.traffic_addition.block_entities;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
+import at.tobiazsh.myworld.traffic_addition.payload.custom_network.SetCustomizableSignTexturePayload;
 import at.tobiazsh.myworld.traffic_addition.utils.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.CustomizableSignBlock;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
@@ -89,42 +90,14 @@ public class CustomizableSignBlockEntity extends BlockEntity {
 
     /**
      * Sets the received block data on the server. (Client -> Server)
-     * @param json The block data
+     * @param payload The payload containing the data to set
      * @param player The player who sent it
      */
     @Environment(EnvType.SERVER)
-    public static void setTransmittedTexture(String json, ServerPlayer player) {
-        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-
-        if (!jsonObject.has("texture")) {
-            MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because json data does not contain the texture data! Received Data: {}", json);
-            return;
-        }
-
-        String texture = jsonObject.get("texture").toString();
-
-        if (!jsonObject.has("blockEntityPosition")) {
-            MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because json data does not contain the block entity position data! Received Data: {}", json);
-            return;
-        }
-
-        JsonObject blockEntityData = jsonObject.getAsJsonObject("blockEntityPosition");
-
-        if (!blockEntityData.has("x") || !blockEntityData.has("y") || !blockEntityData.has("z")) {
-            MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because json data does not contain intact block entity position data! Received Data: {}", json);
-            return;
-        }
-
-        BlockPos pos = new BlockPos(blockEntityData.get("x").getAsInt(), blockEntityData.get("y").getAsInt(), blockEntityData.get("z").getAsInt());
-
+    public static void setTransmittedTexture(SetCustomizableSignTexturePayload payload, ServerPlayer player) {
+        BlockPos pos = new BlockPos(payload.x(), payload.y(), payload.z());
         BlockEntity blockEntity = player.level().getBlockEntity(pos);
-
-        if (!(blockEntity instanceof CustomizableSignBlockEntity)) {
-            MyWorldTrafficAddition.LOGGER.error("Couldn't set transmitted texture because block entity at position {} is not a CustomizableSignBlockEntity!", pos);
-            return;
-        }
-
-        var textureData = CustomizableSignTextureData.fromJson(JsonParser.parseString(texture).getAsJsonObject());
+        var textureData = payload.textureData();
 
         int maxElements = MyWorldTrafficAddition.getServerPreferences().customizableSigns.general.maxElements.getOrDefault();
 
@@ -238,6 +211,7 @@ public class CustomizableSignBlockEntity extends BlockEntity {
     public CustomizableSignTextureData getTextureData() {
         return this.textureData;
     }
+
     public void setTextureData(CustomizableSignTextureData customizableSignTextureData) {
         this.textureData = customizableSignTextureData;
         updateGame();

@@ -2,13 +2,14 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.event.ElementListChangedEvent;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
+import at.tobiazsh.myworld.traffic_addition.payload.custom_network.SetCustomizableSignTexturePayload;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
-import com.google.gson.JsonObject;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
@@ -38,6 +39,8 @@ public class ClientElementManager {
     private final List<ClientElementInterface> elements = new CopyOnWriteArrayList<>();
     private float pixelOfOneBlock = 1.0f; // Current scale factor for elements, used for rendering
     private BorderProperty[][] borders; // Stores the borders from the whole sign in a 2D array
+
+    public final ElementListChangedEvent elementListChangedEvent = new ElementListChangedEvent();
 
     public CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
 
@@ -93,6 +96,7 @@ public class ClientElementManager {
         element.setFactor(pixelOfOneBlock); // Set the current scale factor for the element
         element.setParentId(BaseElementInterface.MAIN_CANVAS_ID);
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public void addElement(int index, ClientElementInterface element) {
@@ -101,6 +105,7 @@ public class ClientElementManager {
         element.setFactor(pixelOfOneBlock); // Set the current scale factor for the element
         element.setParentId(BaseElementInterface.MAIN_CANVAS_ID);
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public void addElementFirst(ClientElementInterface element) {
@@ -109,6 +114,7 @@ public class ClientElementManager {
         element.setFactor(pixelOfOneBlock); // Set the current scale factor for the element
         element.setParentId(BaseElementInterface.MAIN_CANVAS_ID);
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public void addAllElements(int index, List<ClientElementInterface> elements) {
@@ -117,6 +123,7 @@ public class ClientElementManager {
         elements.forEach(element -> element.setFactor(pixelOfOneBlock)); // Set the current scale factor for all elements
         elements.forEach(element -> element.setParentId(BaseElementInterface.MAIN_CANVAS_ID)); // Set the parent ID for all elements
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public void addAllElements(List<ClientElementInterface> elements) {
@@ -125,6 +132,7 @@ public class ClientElementManager {
         elements.forEach(element -> element.setFactor(pixelOfOneBlock)); // Set the current scale factor for all elements
         elements.forEach(element -> element.setParentId(BaseElementInterface.MAIN_CANVAS_ID)); // Set the parent ID for all elements
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public void removeElement(ClientElementInterface element) {
@@ -142,6 +150,7 @@ public class ClientElementManager {
         }
 
         this.removeElement(index); // Remove the element by index
+        elementListChangedEvent.notifyListeners();
     }
 
     public void removeElement(int index) {
@@ -155,6 +164,7 @@ public class ClientElementManager {
 
         elements.remove(index);
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     public int indexOfElement(ClientElementInterface element) {
@@ -186,6 +196,7 @@ public class ClientElementManager {
         this.elements.addAll(newElements);
         updateFactor(); // Update the factor of all elements to the current scale factor
         registerUnregistered();
+        elementListChangedEvent.notifyListeners();
     }
 
     /**
@@ -228,7 +239,7 @@ public class ClientElementManager {
 
     /**
      * Sends the current data to the server to update the block entity's data.
-     * @param pos Position of the block entity
+     * @param blockEntity The sign block entity to update
      * @throws IllegalStateException if the current JSON is empty
      */
     public void exportToSign(BlockPos pos) {
@@ -245,25 +256,26 @@ public class ClientElementManager {
             throw new IllegalStateException("Cannot export to sign: Current JSON is empty! It seems like nothing has been edited!");
         }
 
-        JsonObject blockEntityPosition = new JsonObject();
-        blockEntityPosition.addProperty("x", pos.getX());
-        blockEntityPosition.addProperty("y", pos.getY());
-        blockEntityPosition.addProperty("z", pos.getZ());
+        var payload = new SetCustomizableSignTexturePayload(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                textureData
+        );
 
-        JsonObject constructedJson = new JsonObject();
-        constructedJson.add("blockEntityPosition", blockEntityPosition);
-        constructedJson.add("texture", textureData.toJson());
-
-        String jsonString = constructedJson.toString();
-
-        CustomClientNetworking.getInstance().sendStringToServer(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"), jsonString);
+        CustomClientNetworking.getInstance().sendBytesToServer(
+                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"),
+                payload.encode(),
+                32000,
+                50
+        );
     }
 
     public void updateFactor() {
         elements.forEach(element -> element.setFactor(pixelOfOneBlock));
     }
 
-    public float getPixelOfOneBlock() {
+    public float getPixelsPerBlock() {
         return pixelOfOneBlock;
     }
 
@@ -272,6 +284,9 @@ public class ClientElementManager {
         updateFactor(); // Update the factor of all elements when the scale factor changes
     }
 
+    /**
+     * Clears the current elements and disposes their resources.
+     */
     public void clearAll() {
         getElements().forEach(e -> {
             try {
