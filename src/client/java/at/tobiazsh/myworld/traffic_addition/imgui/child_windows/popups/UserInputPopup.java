@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
+@Deprecated
 public class UserInputPopup {
 
     public enum InputType {
