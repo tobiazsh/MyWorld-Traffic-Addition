@@ -13,6 +13,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
+import at.tobiazsh.myworld.traffic_addition.error.ErrorReporter;
 import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
@@ -38,203 +39,182 @@ import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiWindowFlags;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.Roboto;
-import static at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl.clearFontAtlas;
-import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 import static at.tobiazsh.myworld.traffic_addition.filesystem.SavesDirectory.createSavesDir;
+import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class SignEditor {
 
-    private static BlockPos masterBlockPos = null;
-    
-    private static CustomizableSignBlockEntity blockEntity;
+    private CustomizableSignBlockEntity blockEntity;
 
-    private static int signWidthBlocks;
-    private static int signHeightBlocks;
+    private int signWidthBlocks;
+    private int signHeightBlocks;
 
-    private static boolean isClosed = true;
-    private static boolean isDebug = false;
+    private boolean isVisible = false;
+    private boolean isDebug = false;
 
-    public static String backgroundTexturePath;
-    public static ClientElementInterface selectedElement = null;
-    public static ImVec2 signRatio; // Initialized when screen is opened;
+    private ClientElementInterface selectedElement = null; // Maybe not necessary ??? There HAS to be another way!
+    private ImVec2 signRatio;
 
-    private static BackgroundSelectorPopup backgroundSelector;
-    private static JsonInjector jsonInjector;
+    private BackgroundSelectorPopup backgroundSelector; // Maybe does not need to be here? Otherwise initialized when button is clicked
+    private JsonInjector jsonInjector;
+    private JsonPreviewPopup jsonPreviewPopup;
+    private SignPreview signPreview = SignPreview.createDefault();
+    private ElementPropertyViewer propertyViewer;
+    private ElementAddWindow elementAddWindow;
 
-    private static void quit() {
+    private final ErrorReporter errorReporter;
+
+    private ClientElementManager clientElementManager = null;
+
+    private final String id;
+
+    public SignEditor(String id, ErrorReporter errorReporter) {
+        this.id = id;
+        this.errorReporter = errorReporter;
+    }
+
+    private void quit() {
         ImGui.closeCurrentPopup();
-        ImGuiRenderer.showSignEditor = false;
-        isClosed = true;
-        ClientElementManager.getInstance().clearAll();
+        isVisible = false;
+        this.clientElementManager.clearAll();
     }
 
-    public static void disposeChildWindows() {
-        ElementsWindow.shouldRender = false;
-        ElementAddWindow.shouldRender = false;
-    }
+    public void render() {
+        if (!isVisible) return;
 
-    public static void render() {
         renderMain();
         ElementsWindow.render();
-        ElementAddWindow.render();
-        ElementPropertyViewer.getMainViewer().render();
+
+        if (elementAddWindow != null)
+            elementAddWindow.render();
+
+        if (propertyViewer != null)
+            propertyViewer.render();
+
         ConfirmationPopup.render();
-        FileDialogPopup.render();
         OnlineImageGallery.render();
 
-        backgroundSelector.render();
+        if (backgroundSelector != null)
+            backgroundSelector.render();
     }
 
-    public static void open(BlockPos masterBlockPos, @NotNull Level world, boolean isInit) {
-
-        if (!isInit) {
-            ErrorPopup.open(new Error(
+    /**
+     * Initializes the sign editor and sets all the necessary parameters based on the provided master block entity.
+     * @param masterBlockEntity The master block entity representing the customizable sign to be edited.
+     */
+    public void initialize(CustomizableSignBlockEntity masterBlockEntity) {
+        if (!masterBlockEntity.isInitialized()) {
+            // TODO: Switch to Minecraft's built-in translations
+            errorReporter.reportError(new Error(
                     tr("ImGui.Main.SignEditor.Error", "Sign not initialized!"),
                     tr("ImGui.Main.SignEditor.Error", "The sign has not been initialized yet! This is crucial, so please do not proceed without initializing the sign first!")
-            ), SignEditor::quit);
+            ), this::quit);
         }
 
-        ClientElementManager.getInstance().clearAll();
+        this.isVisible = true;
+        this.blockEntity = masterBlockEntity;
 
-        SignEditor.masterBlockPos = masterBlockPos;
+        // selectedElement = null; -> This should not be here. It needs to be exported.
 
-        disposeChildWindows();
+        this.signHeightBlocks = masterBlockEntity.getHeight();
+        this.signWidthBlocks = masterBlockEntity.getWidth();
 
-        selectedElement = null;
+        // backgroundTexturePath = null; -> This should not be here. Use customizable sign texture data instead.
 
-        if (world.getBlockEntity(masterBlockPos) instanceof CustomizableSignBlockEntity csbe) blockEntity = csbe;
-        else {
-            MyWorldTrafficAddition.LOGGER.error("Error (Rendering Sign Editor): Couldn't determine Sign (CustomizableSignBlockEntity not found)");
-        }
+        this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
+        this.clientElementManager.importFromSign(masterBlockEntity); // Import the elements from the sign block entity
+        this.clientElementManager.setPixelOfOneBlock(signRatio.y / signHeightBlocks);
 
-        getSignSize();
+        // TODO: Rewrite buggy undo/redo system
+        // Then clear stack here
 
-        signRatio = createRatio(SignPreview.previewMaxWidth, SignPreview.previewMaxHeight, signWidthBlocks, signHeightBlocks);
-
-        backgroundTexturePath = "";
-
-        SignClipboard.getInstance().clearUndoStack();
-        SignClipboard.getInstance().clearRedoStack();
-
-        // Read from sign block entity
-        ClientElementManager.getInstance().importFromSign(blockEntity);
-
-        calcFactor(); // Calculate the factor for the sign (the value to be multiplied to get MC blocks)
-
-        ImGuiRenderer.showSignEditor = true;
-        isClosed = false;
-
-        backgroundSelector = new BackgroundSelectorPopup(
-                ClientElementManager.getInstance().textureData,
-                "bg_" + System.identityHashCode(ClientElementManager.getInstance().textureData)
+        this.signRatio = calculateRatio(
+                this.signPreview.previewMaxWidth,
+                this.signPreview.previewMaxHeight,
+                signWidthBlocks,
+                signHeightBlocks
         );
 
-        // DEBUG INIT
+        this.jsonPreviewPopup = new JsonPreviewPopup("jsonPreview_" + id);
 
-        jsonInjector = new JsonInjector(
-                "jsonInjector_" + blockEntity.hashCode(),
-                blockEntity
+        this.elementAddWindow = new ElementAddWindow(
+                "elementAddWindow_" + id,
+                this.clientElementManager::addElementFirst
+        );
+
+        this.backgroundSelector = new BackgroundSelectorPopup(
+                this.clientElementManager.textureData,
+                "bg_" + id
+        );
+
+        this.propertyViewer = new ElementPropertyViewer("propertyViewer_" + id);
+
+        this.jsonInjector = new JsonInjector(
+                "jsonInjector_" + id,
+                masterBlockEntity,
+                errorReporter
         );
     }
 
-    private static void getSignSize() {
-        signHeightBlocks = blockEntity.getHeight();
-        signWidthBlocks = blockEntity.getWidth();
+    public void open() {
+        this.isVisible = true;
     }
 
-    private static ImVec2 createRatio(float maxWidth, float maxHeight, float width, float height) {
-        float newWidth, newHeight;
-
-        if (width > height) {
-            newHeight = maxHeight;
-            newWidth = (newHeight / height) * width;
-
-            // Ensure new width does not exceed maxWidth
-            if (newWidth > maxWidth) {
-                newWidth = maxWidth;
-
-                newHeight = (newWidth / width) * height;
-            }
-        } else if (width == height) {
-            // Handle square case by comparing maxWidth and maxHeight
-            newWidth = Math.min(maxWidth, maxHeight);
-            newHeight = newWidth;  // Square ratio so both should be the same
-        } else {
-            newWidth = maxWidth;
-            newHeight = (newWidth / width) * height;
-
-            // Ensure new height does not exceed maxHeight
-            if (newHeight > maxHeight) {
-                newHeight = maxHeight;
-
-                newWidth = (newHeight / height) * width;
-            }
-        }
-
-        return new ImVec2(newWidth, newHeight);
-    }
-
-    public static void renderMain(){
-        ImGui.pushFont(Roboto);
+    public void renderMain(){
         ImGui.begin(tr("ImGui.Main.SignEditor", "Sign Editor"), ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoNavInputs);
 
         renderMenuBar();
         renderDebug();
         handleHotKeys();
 
-        JsonPreviewPopup.render();
-        if (JsonPreviewPopup.shouldOpen) JsonPreviewPopup.open(ClientElementManager.getInstance().textureData);
+        this.jsonPreviewPopup.render();
+
+        ImGui.setCursorPos(0, 0); // Reset cursor position to the top-left corner
+
+        // Position for the preview (in the middle)
+        float zoom = this.signPreview.getZoom();
+        float previewX = (ImGui.getWindowWidth() - signRatio.x * zoom) * 0.5f; // signRatio.x * getZoom() because the size of the sign changes with zoom
+        float previewY = (ImGui.getWindowHeight() + ImGui.getFontSize() - signRatio.y * zoom) * 0.5f; // I just tried until it worked lmao
+
+        // Set the cursor position once, to the top-left of the entire centered grid
+        ImGui.setCursorPos(previewX, previewY);
+
+        this.signPreview.render(
+                signRatio.x,
+                signRatio.y,
+                this.clientElementManager.getPixelsPerBlock(),
+                new ImVec2(previewX, previewY),
+                this.clientElementManager.getElements(),
+                this.clientElementManager.textureData.getBackground(),
+                this.clientElementManager.getBorders()
+        );
 
         // Status bar showing dimensions, zoomed dimensions, pixel/block ratio and zoom percentage
         ImGui.setCursorPosY(ImGui.getWindowHeight() - ImGui.getFontSize() - ImGui.getStyle().getWindowPaddingY()); // Position the status bar at the bottom of the window
         renderStatusBar();
 
-        ImGui.setCursorPos(0, 0); // Reset cursor position to the top-left corner
-
-        // Position for the preview (in the middle)
-        float previewX = (ImGui.getWindowWidth() - signRatio.x * SignPreview.getZoom()) * 0.5f; // signRatio.x * getZoom() because the size of the sign changes with zoom
-        float previewY = (ImGui.getWindowHeight() + ImGui.getFontSize() - signRatio.y * SignPreview.getZoom()) * 0.5f; // I just tried until it worked lmao
-
-        // Set the cursor position once, to the top-left of the entire centered grid
-        ImGui.setCursorPos(previewX, previewY);
-
-        SignPreview.render(
-                signRatio.x,
-                signRatio.y,
-                ClientElementManager.getInstance().getPixelOfOneBlock(),
-                new ImVec2(previewX, previewY),
-                ClientElementManager.getInstance().getElements(),
-                ClientElementManager.getInstance().textureData.getBackground(),
-                ClientElementManager.getInstance().getBorders()
-        );
-
         ImGui.end();
-        ImGui.popFont();
     }
 
-    private static void renderStatusBar() {
+    private void renderStatusBar() {
         ImGui.pushStyleColor(ImGuiCol.ChildBg, new ImVec4(0.141f, 0.141f, 0.141f, 1.0f)); // Opaque gray background
         ImGui.beginChild("##Statusbar", new ImVec2(ImGui.getWindowSizeX(), ImGui.getFontSize()), false);
 
         // Pixels display (left-bound)
-        String pixelString = Math.round(signRatio.x * 100) * 0.01 + " x " + Math.round(signRatio.y * 100) * 0.01 +
-                " (" + Math.round(signRatio.x * SignPreview.getZoom() * 100) * 0.01 + " x " + Math.round(signRatio.y * SignPreview.getZoom() * 100) * 0.01 + ") " + tr("Global", "At").toLowerCase() + " "
-                + ClientElementManager.getInstance().getPixelOfOneBlock() + " px/block";
+        float zoom = this.signPreview.getZoom();
+        String pixelString = Math.round(signRatio.x * 100) * 0.01 + " x " + Math.round(signRatio.y * 100) * 0.01 +                       // e.g. 800 x 600
+                " (" + Math.round(signRatio.x * zoom * 100) * 0.01 + " x " + Math.round(signRatio.y * zoom * 100) * 0.01 + ") "          // e.g. (1600 x 1200) (zoomed)
+                + tr("Global", "At").toLowerCase() + " " + this.clientElementManager.getPixelsPerBlock() + " px/block";   // e.g. at 20 px/block
 
+        // Example: 800 x 600 (1600 x 1200) at 20 px/block
         ImGui.text(pixelString);
 
         // Zoom Display (right-bound)
-        String zoomString = Math.round(SignPreview.getZoom() * 100) + "%%";
+        String zoomString = Math.round(zoom * 100) + "%%";
         ImGui.sameLine(ImGui.getContentRegionAvailX() - ImGui.calcTextSize(zoomString).x);
         ImGui.text(zoomString);
 
@@ -242,18 +222,19 @@ public class SignEditor {
         ImGui.popStyleColor();
     }
 
-    private static void renderMenuBar() {
+    private void renderMenuBar() {
         ImGui.beginMenuBar();
         if (ImGui.beginMenu(tr("Global", "File"))) {
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Save to Sign"), "CTRL + S"))
-                ClientElementManager.getInstance().exportToSign(masterBlockPos);
+                this.clientElementManager.exportToSign(blockEntity.getBlockPos());
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Save to Sign and Quit"), "CTRL + W")) {
-                ClientElementManager.getInstance().exportToSign(masterBlockPos);
+                this.clientElementManager.exportToSign(blockEntity.getBlockPos());
                 quit();
             }
 
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Show Json"), "CTRL + F")) JsonPreviewPopup.shouldOpen = true;
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Show Json"), "CTRL + F"))
+                this.jsonPreviewPopup.open(this.clientElementManager.textureData);
 
             if (ImGui.menuItem(tr("Global", "Quit"), "CTRL + Q")) quit();
 
@@ -274,10 +255,10 @@ public class SignEditor {
 
             ImGui.separator();
 
-            ImGui.beginDisabled();
-            if (ImGui.menuItem(tr("Global", "Undo"), "CTRL + U")) undo();
-            if (ImGui.menuItem(tr("Global", "Redo"), "CTRL + Shift + U")) redo();
-            ImGui.endDisabled();
+            //ImGui.beginDisabled();
+            //if (ImGui.menuItem(tr("Global", "Undo"), "CTRL + U")) undo();
+            //if (ImGui.menuItem(tr("Global", "Redo"), "CTRL + Shift + U")) redo();
+            //ImGui.endDisabled();
             ImGui.text("Undo/Redo is currently not available.");
 
             ImGui.endMenu();
@@ -295,23 +276,28 @@ public class SignEditor {
                 ElementsWindow.toggle();
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Properties Window")))
-                ElementPropertyViewer.getMainViewer().toggleVisibility();
+                this.propertyViewer.toggleVisibility();
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element and Properties Window"))) { // Useful since normally you'd want to have both windows open
                 ElementsWindow.toggle();
-                ElementPropertyViewer.getMainViewer().toggleVisibility();
+                this.propertyViewer.toggleVisibility();
             }
 
-            if (ImGui.menuItem(tr("Global", "Zoom In"), "CTRL + I")) SignPreview.zoomIn();
-            if (ImGui.menuItem(tr("Global", "Zoom Out"), "CTRL + O")) SignPreview.zoomOut();
+            if (ImGui.menuItem(tr("Global", "Zoom In"), "CTRL + I")) this.signPreview.zoomIn();
+            if (ImGui.menuItem(tr("Global", "Zoom Out"), "CTRL + O")) this.signPreview.zoomOut();
 
             ImGui.endMenu();
         }
 
         if(ImGui.beginMenu(tr("Global", "Elements"))) {
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Image Element") + "...", "CTRL + SHIFT + A")) ElementAddWindow.open();
-            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Text Element") + "...", "CTRL + SHIFT + T")) ClientElementManager.getInstance().addElementFirst(TextElementClient.createNew());
-            if (ImGui.menuItem(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery") + "...")) OnlineImageGallery.open();
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Image Element") + "...", "CTRL + SHIFT + A"))
+                this.elementAddWindow.open();
+
+            if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Add Text Element") + "...", "CTRL + SHIFT + T"))
+                this.clientElementManager.addElementFirst(TextElementClient.createNew());
+
+            if (ImGui.menuItem(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery") + "..."))
+                OnlineImageGallery.open();
 
             ImGui.separator();
 
@@ -342,7 +328,13 @@ public class SignEditor {
             }
 
             if (ImGui.menuItem("Test Error Popup")) {
-                ErrorPopup.open(new Error("Test Error", "This is a test error message."), () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed."));
+                this.errorReporter.reportError(
+                        new Error(
+                                "Test Error",
+                                "This is a test error message."
+                        ),
+                        () -> MyWorldTrafficAddition.LOGGER.info("Error popup closed.")
+                );
             }
 
             if (ImGui.menuItem("Test TFD Popup O")) DebugFunctions.testNfd_open();
@@ -359,65 +351,60 @@ public class SignEditor {
         ImGui.endMenuBar();
     }
 
-    private static void renderDebug() {
+    private void renderDebug() {
         if (!isDebug) return;
-
         jsonInjector.render();
     }
 
-    public static void calcFactor() {
-         ClientElementManager.getInstance().setPixelOfOneBlock(signRatio.y / signHeightBlocks);
-    }
-
-    private static void pasteElement() {
+    private void pasteElement() {
         ClientElementInterface elementToPaste = SignClipboard.getInstance().getCopiedElement();
 
         if (elementToPaste == null) return; // Can't paste if empty or no ID
 
         elementToPaste.onPaste();
-        ClientElementManager.getInstance().addElementFirst(elementToPaste);
+        this.clientElementManager.addElementFirst(elementToPaste);
     }
 
-    private static void copySign() {
-        if (ClientElementManager.getInstance().textureData.toJson().isEmpty()) return; // Can't copy if empty
+    private void copySign() {
+        if (this.clientElementManager.textureData.toJson().isEmpty()) return; // Can't copy if empty
 
-        SignClipboard.getInstance().setCopiedSign(ClientElementManager.getInstance().textureData);
+        SignClipboard.getInstance().setCopiedSign(this.clientElementManager.textureData);
     }
 
-    private static void pasteSign() {
+    private void pasteSign() {
         if (SignClipboard.getInstance().getCopiedSign() == null || SignClipboard.getInstance().getCopiedSign().toJson().isEmpty()) return; // Can't paste if empty
 
-        ClientElementManager.getInstance().setData(SignClipboard.getInstance().getCopiedSign(), blockEntity);
+        this.clientElementManager.setData(SignClipboard.getInstance().getCopiedSign(), blockEntity);
     }
 
-    public static void addUndo() {
-        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
-    }
+//    public static void addUndo() {
+//        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
+//    }
 
-    private static void undo() {
-        if (SignClipboard.getInstance().undoEmpty()) return; // Can't undo if empty
+//    private static void undo() {
+//        if (SignClipboard.getInstance().undoEmpty()) return; // Can't undo if empty
+//
+//        SignClipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().textureData);
+//        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popUndoStack(), blockEntity);
+//    }
+//
+//    private static void redo() {
+//        if (SignClipboard.getInstance().redoEmpty()) return; // Can't redo if empty
+//
+//        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
+//        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popRedoStack(), blockEntity);
+//    }
 
-        SignClipboard.getInstance().pushRedoStack(ClientElementManager.getInstance().textureData);
-        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popUndoStack(), blockEntity);
-    }
-
-    private static void redo() {
-        if (SignClipboard.getInstance().redoEmpty()) return; // Can't redo if empty
-
-        SignClipboard.getInstance().pushUndoStack(ClientElementManager.getInstance().textureData);
-        ClientElementManager.getInstance().setData(SignClipboard.getInstance().popRedoStack(), blockEntity);
-    }
-
-    private static void handleHotKeys() {
+    private void handleHotKeys() {
         boolean ctrl = ImGui.isKeyDown(ImGuiKey.LeftCtrl) || ImGui.isKeyDown(ImGuiKey.RightCtrl);
         boolean shift = ImGui.isKeyDown(ImGuiKey.LeftShift) || ImGui.isKeyDown(ImGuiKey.RightShift);
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) SignPreview.zoomIn(); // Zoom In
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) SignPreview.zoomOut(); // Zoom Out
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) ClientElementManager.getInstance().exportToSign(masterBlockPos); // Save
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.I)) this.signPreview.zoomIn();  // Zoom In
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.O)) this.signPreview.zoomOut(); // Zoom Out
+        if (ctrl && ImGui.isKeyPressed(ImGuiKey.S)) this.clientElementManager.exportToSign(blockEntity.getBlockPos()); // Save
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.W)) { // Save and Quit
-            ClientElementManager.getInstance().exportToSign(masterBlockPos);
+            this.clientElementManager.exportToSign(blockEntity.getBlockPos());
             quit();
         }
 
@@ -425,31 +412,29 @@ public class SignEditor {
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) backgroundSelector.open();
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.F)) JsonPreviewPopup.shouldOpen = true; // Open Json Preview
-
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle(); // Element Window Toggle
 
-        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) ElementAddWindow.open(); // Add Element Open
-        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.T)) ClientElementManager.getInstance().addElement(TextElementClient.createNew()); // Add Text Element
+        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) this.elementAddWindow.open(); // Add Element Open
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.U)) undo(); // Undo
-        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.U)) redo(); // Redo
+//        if (ctrl && ImGui.isKeyPressed(ImGuiKey.U)) undo(); // Undo
+//        if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.U)) redo(); // Redo
 
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.V)) pasteElement(); // Paste Element
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.H)) pasteSign(); // Paste Sign
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.C)) copySign(); // Copy Sign
     }
 
-    private static void clearCanvas() {
+    private void clearCanvas() {
         ConfirmationPopup.show(tr("ImGui.Main.SignEditor", "Are you sure you want to clear the canvas?"), tr("ImGui.Global.Warn", "This action cannot be undone!"), (confirmed) -> {
-            if (confirmed) ClientElementManager.getInstance().clearAll();
+            if (confirmed)
+                this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
         });
     }
 
-    private static void exportSign() {
+    private void exportSign() {
         createSavesDir();
 
-        String data = JsonUtil.toPrettyJson(ClientElementManager.getInstance().textureData.toJson().toString());
+        String data = JsonUtil.toPrettyJson(this.clientElementManager.textureData.toJson().toString());
 
         try {
             NativeFileDialogs.writeFileWithDialog(
@@ -461,11 +446,10 @@ public class SignEditor {
                     SavesDirectory.getSignSaveDir(),
                     "New Customizable Sign",
                     data.getBytes(StandardCharsets.UTF_8),
-                    (abort) -> {
-                    }
+                    (_) -> {}
             );
         } catch (IOException e) {
-            ErrorPopup.open(
+            this.errorReporter.reportError(
                     new Error(
                             tr("ImGui.Main.Export", "Export failed!"),
                             "An error occurred while exporting the sign data. Please check logs."
@@ -477,7 +461,7 @@ public class SignEditor {
         }
     }
 
-    private static void importSign() {
+    private void importSign() {
         createSavesDir();
 
         try {
@@ -488,7 +472,7 @@ public class SignEditor {
                             new String[]{"*.MWTACSIGN", "*.mwtacsign", "*.JSON", "*. json"}
                     ),
                     SavesDirectory.getSignSaveDir(),
-                    (abort) -> {}
+                    (_) -> {}
             );
 
             if (readFile.length == 0) // Abort
@@ -500,10 +484,9 @@ public class SignEditor {
                     (JsonObject) JsonParser.parseString(readData)
             );
 
-            ClientElementManager.getInstance().setData(parsedTexture, blockEntity);
-
+            this.clientElementManager.setData(parsedTexture, blockEntity);
         } catch (IOException e) {
-            ErrorPopup.open(
+            errorReporter.reportError(
                     new Error(
                             tr("ImGui.Main.Import", "Import failed!"),
                             "An error occurred while reading the file. Please check logs"
@@ -513,7 +496,7 @@ public class SignEditor {
 
             MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
         } catch (IllegalArgumentException e) {
-            ErrorPopup.open(
+            errorReporter.reportError(
                     new Error(
                             tr("ImGui.Main.Import", "Import failed!"),
                             tr("ImGui.Main.Import", "The file you provided does not appear to have valid sign data!")
@@ -523,7 +506,7 @@ public class SignEditor {
         }
     }
 
-    private static void importElement() {
+    private void importElement() {
         try {
             byte[] readFile = NativeFileDialogs.readFileWithDialog(
                     "Import Element...",
@@ -532,7 +515,7 @@ public class SignEditor {
                             new String[]{"*.MWTACSELEMENT", "*.mwtacselement", "*.JSON", "*. json"}
                     ),
                     SavesDirectory.getElementSaveDir(),
-                    (abort) -> {}
+                    (_) -> {}
             );
 
             if (readFile.length == 0) // Abort
@@ -548,9 +531,9 @@ public class SignEditor {
                 throw new IllegalStateException("Customizable Sign Element does not appear to be valid!");
 
             element.onImport();
-            ClientElementManager.getInstance().addElementFirst(element);
+            this.clientElementManager.addElementFirst(element);
         } catch (IOException e) {
-            ErrorPopup.open(
+            errorReporter.reportError(
                     new Error(
                             tr("ImGui.Main.Import", "Import failed!"),
                             "An error occurred while reading the file. Please check logs"
@@ -560,7 +543,7 @@ public class SignEditor {
 
             MyWorldTrafficAddition.LOGGER.error("Failed to import sign!", e);
         } catch (IllegalArgumentException e) {
-            ErrorPopup.open(
+            errorReporter.reportError(
                     new Error(
                             tr("ImGui.Main.Import", "Import failed!"),
                             tr("ImGui.Main.Import", "The file you provided does not appear to have valid element data!")
@@ -570,10 +553,26 @@ public class SignEditor {
         }
     }
 
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // Getters --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /**
+     * Calculates the ratio of the sign's width and height to fit within the maximum width and height while maintaining
+     * the aspect ratio.
+     * @param maxWidth The maximum width available for the sign preview.
+     * @param maxHeight The maximum height available for the sign preview.
+     * @param width The actual width of the sign in blocks.
+     * @param height The actual height of the sign in blocks.
+     * @return An {@link ImVec2} containing the scaled width and height that fit within the specified maximum dimensions.
+     */
+    @SuppressWarnings("SameParameterValue")
+    private ImVec2 calculateRatio(
+            float maxWidth,
+            float maxHeight,
+            float width,
+            float height
+    ) {
+        if (width == 0 || height == 0) return new ImVec2(1, 1); // Avoid division by zero
 
-    public static boolean isClosed() {
-        return isClosed;
+        float scale = Math.min(maxWidth / width, maxHeight / height);
+
+        return new ImVec2(width * scale, height * scale);
     }
 }

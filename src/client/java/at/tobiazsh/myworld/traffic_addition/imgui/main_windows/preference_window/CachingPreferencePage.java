@@ -3,8 +3,8 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -15,6 +15,10 @@ public class CachingPreferencePage extends PreferencePage {
 
     private int[] imageRenderLayerCacheSize = {0};
     private int[] textRenderLayerCacheSize = {0};
+
+    public CachingPreferencePage(ImGuiFontScope fontScope) {
+        super(fontScope);
+    }
 
     @Override
     public @NonNull Identifier getId() {

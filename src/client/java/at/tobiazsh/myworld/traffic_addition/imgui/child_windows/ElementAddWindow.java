@@ -11,77 +11,80 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ImageElementClient;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.texture.Texture;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.*;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiWindowFlags;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ElementAddWindow {
-	public static boolean shouldRender = false;
-	public static boolean shouldConfig = false;
-	public static String windowId = null;
-	private static FileSystem.Folder folder = null;
+	private boolean isVisible = false;
+	private final String id;
+	private @Nullable List<ElementIcon> icons = null;
+
+	private final Consumer<ImageElementClient> onAdd;
+	private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+
+	private static final float ICON_MARGIN = 10f; // Margin between icons
+
+	public ElementAddWindow(@NonNull String id, Consumer<ImageElementClient> onAdd) {
+		this.id = id;
+		this.onAdd = onAdd;
+	}
 
 	/**
 	 * Renders the element add window if the "shouldRender" flag is set to true.
 	 * The window displays a list of elements that can be added to the sign editor.
 	 */
-	public static void render() {
-		if (shouldConfig) loadPreviews();
-		if (!shouldRender) return;
+	public void render() {
+		if (!isVisible) return;
 
-		if (windowId == null)
-			windowId = tr("ImGui.Child.ElementAddWindow", "Add New Element");
-
-		ImGui.pushFont(ImGuiImpl.Roboto);
-		if (ImGui.begin(windowId, ImGuiWindowFlags.MenuBar)) {
+		if (ImGui.begin(id, ImGuiWindowFlags.MenuBar)) {
 
 			if (ImGui.beginMenuBar()) {
-				if (ImGui.menuItem(tr("Global", "Cancel"))) shouldRender = false; // "Cancel" button
+				if (ImGui.menuItem(tr("Global", "Cancel"))) isVisible = false; // "Cancel" button
 
 				ImGui.endMenuBar();
 			}
 
 			// Display the title of the window in bold font
-			ImGui.pushFont(ImGuiImpl.RobotoBold);
+			fontScope.push(DefaultFonts.RobotoBold);
 			ImGui.text(tr("ImGui.Child.ElementAddWindow", "Add New Element")); // "Add New Element" title
-			ImGui.popFont();
+			fontScope.pop();
 
 			ImGui.separator();
 
 			// Begin a child window for the elements display
 			if (ImGui.beginChild("##elementsDisplay")) {
-				if (folder != null) {
+				if (icons != null) {
+					float usedSpaceX = 0;
+					float windowWidth = ImGui.getContentRegionAvailX();
+					boolean firstEntry = true;
 
-					float availableWidth = ImGui.getWindowWidth();
-					float usedWidth = 0; // Track how much width is used on the current line
-
-					for (int i=0; i < folder.size(); i++) {
-						FileSystem.DirectoryElement icon = folder.at(i);
-						ElementIcon elementIcon = new ElementIcon(icon.name, icon.path);
-						elementIcon.render();
-
-						float iconWidth = elementIcon.width + 10; // Add 10 to account for the spacing between icons
-
-						// If the icon fits on the current line, render it
-						if (usedWidth + iconWidth > availableWidth) {
-							ImGui.newLine();
-							usedWidth = 0;
-						} else {
+					for (ElementIcon icon : icons) {
+						if (!firstEntry && (usedSpaceX + icon.getWidth() < windowWidth)) {
 							ImGui.sameLine();
+						} else {
+							usedSpaceX = 0;
 						}
 
-						usedWidth += iconWidth;
+						firstEntry = false;
+						icon.render();
+						usedSpaceX += icon.getWidth() + ICON_MARGIN;
 					}
 				}
 			}
@@ -89,65 +92,155 @@ public class ElementAddWindow {
 		}
 
 		ImGui.end();
-		ImGui.popFont();
 	}
 
 	/**
 	 * Loads the previews of the elements from the icons folder and online image server.
 	 */
-	public static void loadPreviews() {
+	public void loadPreviews() {
 		try {
-			folder = Objects.requireNonNull(FileSystem.listFilesRecursive("/assets/%s/textures/imgui/sign_res/icons/".formatted(MyWorldTrafficAddition.MOD_ID), true)).concentrateFileType("PNG");
+			var folder = Objects.requireNonNull(
+					FileSystem.listFilesRecursive(
+							"/assets/%s/textures/imgui/sign_res/icons/".formatted(MyWorldTrafficAddition.MOD_ID),
+							true
+					)
+			).concentrateFileType("PNG");
+
+			if (folder == null || folder.size() <= 0)
+				return;
+
+			icons = folder.content.stream()
+					.map(icon -> new ElementIcon(icon.name, icon.path, this.id, this.onAdd, this.fontScope))
+					.toList();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-
-		shouldConfig = false;
 	}
 
 	/**
 	 * Toggles the "shouldRender" boolean to show/hide the element add window
 	 */
-	public static void open() {
-		shouldRender = true;
-		shouldConfig = true;
+	public void open() {
+		if (icons == null)
+			loadPreviews();
+
+		isVisible = true;
 	}
 
-	public static class ElementIcon {
-		public String name, path;
-		public ImVec2 pos = new ImVec2(0, 0);
-		private float width, height, previewSize;
-		private Texture texture = null;
-		public static float defaultWidth = 230f;
-		public static float defaultHeight = 325f;
+	/**
+	 * Disposes of the textures used by the element icons and hides the element add window.
+	 */
+	public void close() {
+		isVisible = false;
+		disposeTextures();
+		icons = null;
+	}
+
+	/**
+	 * Disposes of the textures used by the element icons to free up memory.
+	 */
+	private void disposeTextures() {
+		if (icons == null) return;
+
+		for (ElementIcon icon : icons)
+			icon.disposeTexture();
+	}
+
+	private static class ElementIcon {
+		private final String name;
+		private final String parentId;
+        private final String path;
+		private final float width;
+		private final float height;
+		private final float previewSize;
+		private @Nullable ImGuiTexture previewTexture = null;
+
+		private final Consumer<ImageElementClient> onAdd;
+		private final ImGuiFontScope fontScope;
+
+		private static final float DEFAULT_WIDTH = 230f;
+		private static final float DEFAULT_HEIGHT = 325f;
 
 		private static final int elementIconBackgroundColor = ImGui.getColorU32(new ImVec4(54 / 255f, 50 / 255f, 50 / 255f, 255 / 255f));
 
+		public ElementIcon(
+				String name,
+				String path,
+				String parentId,
+				float width,
+				float height,
+				Consumer<ImageElementClient> onAdd,
+				ImGuiFontScope fontScope
+		) {
+			this.name = name;
+			this.path = path;
+			this.parentId = parentId;
+			this.height = height;
+			this.width = width;
+			this.previewSize = width / 5 * 4;
+			this.onAdd = onAdd;
+			this.fontScope = fontScope;
+
+			this.setTexture(path);
+		}
+
+		public ElementIcon(
+				String name,
+				String path,
+				String parentId,
+				Consumer<ImageElementClient> onAdd,
+				ImGuiFontScope fontScope
+		) {
+			this(name, path, parentId, DEFAULT_WIDTH, DEFAULT_HEIGHT, onAdd, fontScope);
+		}
+
 		/**
-		 * Adds an element to the sign editor canvas.
-		 * @param element The element to be added
+		 * Registers and assigns the texture of the element icon.
+		 * @param path The path to the texture
 		 */
-		public static void addElement(ImageElementClient element) {
-			ClientElementManager.getInstance().addElementFirst(element);
-			shouldRender = false;
+		private void setTexture(String path) {
+			try {
+				this.previewTexture = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(ElementAddWindow.class.getResourceAsStream(path)),
+						"ElementIcon_" + path
+				);
+			} catch (IOException e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load texture for element icon: {}", path, e);
+			}
+		}
+
+		/**
+		 * Constructs a new ImageElementClient and passes it to the onAdd consumer when the "Add" button is clicked.
+		 */
+		public void addElement() {
+			var element = (ImageElementClient) CustomizableSignElementFactory.toClientElement(
+					new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)
+			);
+
+			onAdd.accept(element);
 		}
 
 		/**
 		 * Renders the element icon.
 		 */
 		public void render() {
-			// Ensure texture is initialized
-			if (texture == null) {
-				texture = Textures.smartRegisterTexture(path);
-			}
-
 			// Begin a child window for the element icon
-			if (ImGui.beginChild("##ElementIcon_" + this.path, this.width, this.height, false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+			if (ImGui.beginChild(
+					"##ElementIcon_" + this.path + "_" + parentId,
+					this.width,
+					this.height,
+					false,
+					ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse
+			)) {
 				ImDrawList drawList = ImGui.getWindowDrawList();
 				ImVec2 cursor = ImGui.getCursorScreenPos();
 
 				// Draw a filled rectangle as the background for the icon
-				drawList.addRectFilled(pos.x + cursor.x, pos.y + cursor.y, pos.x + cursor.x + this.width, pos.y + cursor.y + this.height, elementIconBackgroundColor);
+				drawList.addRectFilled(
+						cursor.x, cursor.y,
+						cursor.x + this.width, cursor.y + this.height,
+						elementIconBackgroundColor
+				);
 
 				float margin = (this.width - this.previewSize) / 2;
 				ImGui.setCursorPos(margin, margin);
@@ -156,25 +249,36 @@ public class ElementAddWindow {
 				float overlayHeight = this.height - margin * 3 - ImGui.getFontSize(); // Calculated so that the button still has enough space to not overlap with the overlay
 
 				// Begin a child window for the overlay
-				if (ImGui.beginChild("##Overlay_" + this.path, this.width - margin * 2, overlayHeight, false, ImGuiWindowFlags.NoScrollbar)) {
+				if (ImGui.beginChild(
+						"##Overlay_" + this.path + "_" + parentId,
+						this.width - margin * 2,
+						overlayHeight,
+						false,
+						ImGuiWindowFlags.NoScrollbar
+				)) {
 					// Begin a child window for the preview
-					if (ImGui.beginChild("##Preview_" + this.path, previewSize, previewSize, false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
-						if (texture != null) {
-							ImGui.image(texture.getTextureId(), previewSize, previewSize);
-						}
+					if (ImGui.beginChild(
+							"##Preview_" + this.path + "_" + parentId,
+							previewSize,
+							previewSize,
+							false,
+							ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse
+					)) {
+						if (previewTexture != null && previewTexture.isUsable())
+							ImGui.image(previewTexture.getTextureId(), previewSize, previewSize);
 					}
 					ImGui.endChild();
 
 					ImGui.spacing();
 
 					// Display the element name in bold font
-					ImGui.pushFont(ImGuiImpl.RobotoBold);
+					fontScope.push(DefaultFonts.RobotoBold);
 					ImGui.textWrapped(name);
-					ImGui.popFont();
+					fontScope.pop();
 
 					ImGui.spacing();
 
-					// Display the element path in colour and wrapped text
+					// Display the element path in color and wrapped text
 					ImGui.pushStyleColor(ImGuiCol.Text, ImGui.getColorU32(92 / 255f, 93 / 255f, 94 / 255f, 1.0f));
 					ImGui.textWrapped(path);
 					ImGui.popStyleColor();
@@ -182,58 +286,26 @@ public class ElementAddWindow {
 				ImGui.endChild();
 
 				ImGui.setCursorPos(margin, this.height - margin - ImGui.getFontSize());
-				if (ImGui.button(tr("Global", "Add"))) { // "Add" button
-					addElement((ImageElementClient) CustomizableSignElementFactory.toClientElement(new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)));
-				}
 
+				if (ImGui.button(tr("Global", "Add"))) // "Add" button
+					addElement();
 			}
 			ImGui.endChild();
 		}
 
-		public ElementIcon (String name, String path, float width, float height) {
-			this.name = name;
-			this.path = path;
-			this.height = height;
-			this.width = width;
-			this.previewSize = width / 5 * 4;
-			this.setTexture(path);
+		public float getWidth() {
+			return width;
 		}
 
-		public ElementIcon(String name, String path) {
-			this(name, path, defaultWidth, defaultHeight);
+		public float getHeight() {
+			return height;
 		}
 
-		public ElementIcon(String name, String path, float size) {
-			this(name, path);
-			this.setSize(size);
-		}
+		public void disposeTexture() {
+			if (this.previewTexture != null && !this.previewTexture.isDisposed())
+				this.previewTexture.dispose();
 
-		public ElementIcon setSize(float size) {
-			width = 230f * size;
-			height = 325f * size;
-			this.previewSize = width / 5 * 4;
-
-			return this;
-		}
-
-		/**
-		 * Resizes the preview of the element icon. 1.0f = 100%.
-		 * @param previewSize The new Size
-		 * @return ElementIcon
-		 */
-		public ElementIcon setPreviewSize(float previewSize) {
-			this.previewSize = previewSize;
-			return this;
-		}
-
-		/**
-		 * Sets the texture of the element icon.
-		 * @param path The path to the texture
-		 * @return The element icon
-		 */
-		public ElementIcon setTexture(String path) {
-			this.texture = Textures.smartRegisterTexture(path);
-			return this;
+			this.previewTexture = null;
 		}
 	}
 }

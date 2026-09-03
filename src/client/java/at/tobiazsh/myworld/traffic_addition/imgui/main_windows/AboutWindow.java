@@ -8,9 +8,10 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -20,17 +21,24 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class AboutWindow {
 
-    public static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
-    public static String author = "Tobiazsh (Tobias)";
-    public static String description = tr("MWTA", "A Minecraft Mod for improved roads and general canvases in Minecraft"); // Description
-    public static String[] other = {
+    private final static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
+    private final static String author = "Tobiazsh (Tobias)";
+    private final static String description = tr("MWTA", "A Minecraft Mod for improved roads and general canvases in Minecraft"); // Description
+    private final static String[] other = {
             tr("ImGui.Main.AboutWindow", "Made in Austria"),
             tr("ImGui.Main.AboutWindow", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯")
     }; // Other information
 
-    public static void render() {
-        ImGui.pushFont(ImGuiImpl.Roboto);
-        ImGui.begin(tr("Global", "About") + " " + title, ImGuiWindowFlags.MenuBar); // "About MyWorld Traffic Addition" title
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+
+    private final String id;
+
+    public AboutWindow(String id) {
+        this.id = id;
+    }
+
+    public void render() {
+        ImGui.begin(tr("Global", "About") + " " + title + "###" + id, ImGuiWindowFlags.MenuBar);
 
         if (ImGui.beginMenuBar()) {
             if (ImGui.beginMenu(tr("Global", "Window"))) { // "Window" menu
@@ -42,16 +50,12 @@ public class AboutWindow {
             ImGui.endMenuBar();
         }
 
-        ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.RobotoBoldBig);
-
+        fontScope.push(DefaultFonts.RobotoBoldLarge);
         float titleWidth = imgui.calcTextSize(title).x;
         float windowWidth = ImGui.getWindowWidth();
         ImGui.setCursorPosX((windowWidth - titleWidth) / 2);
         ImGui.text(title);
-
-        ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.Roboto);
+        fontScope.pop();
 
         ImGui.newLine();
 
@@ -71,12 +75,9 @@ public class AboutWindow {
 
         ImGui.newLine();
 
-        ImGui.popFont();
-        ImGui.pushFont(ImGuiImpl.RobotoBold);
-
+        fontScope.push(DefaultFonts.RobotoNormal);
         ImGui.text(tr("ImGui.Main.AboutWindow", "THANK YOU FOR DOWNLOADING <3!")); // "THANK YOU FOR DOWNLOADING <3!"
-
-        ImGui.popFont();
+        fontScope.pop();
 
         ImGui.end();
     }

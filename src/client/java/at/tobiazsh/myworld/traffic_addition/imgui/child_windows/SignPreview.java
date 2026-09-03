@@ -15,15 +15,36 @@ import java.util.List;
 
 public class SignPreview {
 
-    private static float zoomFactor = 1.0f;
-    private static float zoomSpeed = 0.05f;
-    private static float zoomMin = 0.5f;
-    private static float zoomMax = 3.0f;
+    private float zoomFactor;
 
-    public static final float previewMaxWidth = 950.0f; // Tweak if necessary in the future
-    public static final float previewMaxHeight = 950.0f; // Tweak if necessary in the future
+    private final float zoomSpeed;
+    private final float zoomMin;
+    private final float zoomMax;
 
-    public static void render(
+    public final float previewMaxWidth; // Tweak if necessary in the future
+    public final float previewMaxHeight; // Tweak if necessary in the future
+
+    public SignPreview(
+            float zoomFactor,
+            float zoomSpeed,
+            float zoomMin,
+            float zoomMax,
+            float previewMaxWidth,
+            float previewMaxHeight
+    ) {
+        this.zoomFactor = zoomFactor;
+        this.zoomSpeed = zoomSpeed;
+        this.zoomMin = zoomMin;
+        this.zoomMax = zoomMax;
+        this.previewMaxWidth = previewMaxWidth;
+        this.previewMaxHeight = previewMaxHeight;
+    }
+
+    public static SignPreview createDefault() {
+        return new SignPreview(1.0f, 0.05f, 0.5f, 3.0f, 950.0f, 950.0f);
+    }
+
+    public void render(
             float signWidthPixels, float signHeightPixels,
             float pxOfBlock, // Pixel of one block
             ImVec2 position,
@@ -69,60 +90,28 @@ public class SignPreview {
         ImGui.popStyleVar(2);
     }
 
-    public static void renderElement(ClientElementInterface element, float scale) {
+    private void renderElement(ClientElementInterface element, float scale) {
         element.renderImGui(scale);
     }
 
     /**
      * Returns the current zoom pxOfBlock
      */
-    public static float getZoom() {
+    public float getZoom() {
         return zoomFactor;
     }
 
     /**
      * Zooms the canvas in
      */
-    public static void zoomIn() {
-        zoomFactor += zoomSpeed;
+    public void zoomIn() {
+        zoomFactor = Math.min(zoomFactor + zoomSpeed, zoomMax);
     }
 
     /**
      * Zooms the canvas out
      */
-    public static void zoomOut() {
-        zoomFactor -= zoomSpeed;
-    }
-
-    /**
-     * Sets the zoom of the canvas
-     * @param zoom Zoom in percent
-     */
-    public static void setZoom(float zoom) {
-        zoomFactor = zoom;
-    }
-
-    /**
-     * Sets the zoom speed
-     * @param speed speed of the zoom (1.0f = 100%)
-     */
-    public static void setZoomSpeed(float speed) {
-        zoomSpeed = speed;
-    }
-
-    /**
-     * Sets the minimum zoom
-     * @param min Maximum zoom in percent
-     */
-    public static void setZoomMin(float min) {
-        zoomMin = min;
-    }
-
-    /**
-     * Sets the maximum zoom
-     * @param max Maximum zoom in percent
-     */
-    public static void setZoomMax(float max) {
-        zoomMax = max;
+    public void zoomOut() {
+        zoomFactor = Math.max(zoomFactor - zoomSpeed, zoomMin);
     }
 }

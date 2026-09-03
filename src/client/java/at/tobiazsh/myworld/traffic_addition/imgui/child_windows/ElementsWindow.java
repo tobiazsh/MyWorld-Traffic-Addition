@@ -2,7 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.ElementPropertyViewer;
 import at.tobiazsh.myworld.traffic_addition.utils.ArrayTools;
 import imgui.ImGui;
 
@@ -55,7 +55,7 @@ public class ElementsWindow {
                     @Override
                     public void elementSelectedAction() {
                         selectedElement = element;
-                        ElementPropertyWindow.initVars(element, signRatio);
+                        ElementPropertyViewer.getMainViewer().prepare(element, signRatio.x, signRatio.y);
                     }
 
                     @Override

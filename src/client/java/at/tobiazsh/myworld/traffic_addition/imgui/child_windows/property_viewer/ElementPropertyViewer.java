@@ -1,27 +1,25 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontHelper;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import org.jspecify.annotations.Nullable;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.*;
 
 public class ElementPropertyViewer {
-
-    private static final ElementPropertyViewer MAIN_VIEWER = new ElementPropertyViewer("mainViewer");
 
     private boolean isVisible = false;
 
     private @Nullable PropertyViewerExtension extension;
     private ClientElementInterface element;
 
-    private final AtomicBoolean pushedBold = new AtomicBoolean(false);
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+
     private final String id;
 
     private final ImString nameBuffer = new ImString(256);
@@ -46,10 +44,6 @@ public class ElementPropertyViewer {
 
     public ElementPropertyViewer(String id) {
         this.id = id;
-    }
-
-    public static ElementPropertyViewer getMainViewer() {
-        return MAIN_VIEWER;
     }
 
     public void setCanvasSize(float widthPixels, float heightPixels) {
@@ -99,9 +93,9 @@ public class ElementPropertyViewer {
     }
 
     private void renderName() {
-        FontHelper.pushRobotoBold(pushedBold);
+        fontScope.push(DefaultFonts.RobotoBold);
         ImGui.inputText(trIC("text.mwta.sign-editor.property-viewer.name", id, "nameInput"), nameBuffer, 256);
-        FontHelper.popRobotoBold(pushedBold);
+        fontScope.pop();
 
         if (ImGui.button(trIC("text.mwta.sign-editor.property-viewer.name.apply", id, "applyNameBtn")))
             element.setName(nameBuffer.get());
@@ -109,9 +103,9 @@ public class ElementPropertyViewer {
 
     private void renderDimensions() {
         if (ImGui.beginChild("Dimensions##" + id)) {
-            FontHelper.pushRobotoBold(pushedBold);
+            fontScope.push(DefaultFonts.RobotoBold);
             ImGui.text(trIC("text.mwta.sign-editor.property-viewer.dimensions", id, "dimensionsTitle"));
-            FontHelper.popRobotoBold(pushedBold);
+            fontScope.pop();
 
             ImGui.beginGroup();
             {
@@ -185,9 +179,9 @@ public class ElementPropertyViewer {
     }
 
     private void renderRotation() {
-        FontHelper.pushRobotoBold(pushedBold);
+        fontScope.push(DefaultFonts.RobotoBold);
         ImGui.text(trIC("text.mwta.sign-editor.property-viewer.rotation", id, "rotationTitle"));
-        FontHelper.popRobotoBold(pushedBold);
+        fontScope.pop();
 
         if (ImGui.dragFloat(
                 trIC("text.mwta.sign-editor.property-viewer.rotation", id, "rotationInput"),
@@ -196,9 +190,9 @@ public class ElementPropertyViewer {
     }
 
     private void renderColor() {
-        FontHelper.pushRobotoBold(pushedBold);
+        fontScope.push(DefaultFonts.RobotoBold);
         ImGui.text(trIC("text.mwta.sign-editor.property-viewer.color", id, "colorTitle"));
-        FontHelper.popRobotoBold(pushedBold);
+        fontScope.pop();
 
         if (ImGui.colorEdit4(
                 trIC("text.mwta.sign-editor.property-viewer.color", id, "colorInput"),

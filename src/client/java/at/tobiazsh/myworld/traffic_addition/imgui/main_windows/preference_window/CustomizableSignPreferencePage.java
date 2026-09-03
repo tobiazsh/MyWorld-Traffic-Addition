@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -12,6 +13,10 @@ public class CustomizableSignPreferencePage extends PreferencePage {
 
     private float[] viewDistanceCustomizableSigns = {0};
     private float[] elementDistancingCustomizableSigns = {0};
+
+    public CustomizableSignPreferencePage(ImGuiFontScope fontScope) {
+        super(fontScope);
+    }
 
     @Override
     public @NonNull Identifier getId() {

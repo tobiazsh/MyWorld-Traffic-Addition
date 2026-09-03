@@ -48,6 +48,8 @@ public class SignSelector {
     private ResourceKey<@NotNull Level> worldRegistryKey;
     private final String windowId;
 
+    private final ErrorPopup errorPopup;
+
     private FilterWindow filterWindow;
 
     private final ImInt selectedIndex = new ImInt(0); // Use for ImGui
@@ -55,6 +57,7 @@ public class SignSelector {
 
     public SignSelector(String windowId) {
         this.windowId = windowId;
+        errorPopup = new ErrorPopup("signSelectorErrorPopup_" + windowId);
 
         filterWindow = new FilterWindow(() -> {
         }, () -> {
@@ -70,6 +73,8 @@ public class SignSelector {
             return;
 
         ImGui.begin(tr("Main.SignSelector", "Sign Selector") + "###SignSelector" + windowId);
+
+        errorPopup.render();
 
         searchBar();
         selectionList();
@@ -124,7 +129,7 @@ public class SignSelector {
                             }, () -> MyWorldTrafficAddition.LOGGER.warn("No textures.json found in folder: {}", textureFolder.name)));
 
         } catch (IOException | URISyntaxException e) {
-            ErrorPopup.open(new Error(
+            errorPopup.reportError(new Error(
                     "Error",
                     "An error occurred while trying to read the sign textures. Stack Trace is available in the log."
             ), this::close); // No need for translations as this should not happen in normal use

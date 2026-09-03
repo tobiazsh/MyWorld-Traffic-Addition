@@ -4,10 +4,10 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlock
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
+import at.tobiazsh.myworld.traffic_addition.error.ErrorReporter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 
@@ -15,16 +15,18 @@ import java.util.Optional;
 
 public class JsonInjector {
 
-    public JsonInjector(String id, CustomizableSignBlockEntity blockEntity) {
+    private boolean shouldOpen = false;
+    private ImString text = new ImString(10000);
+
+    private final String id;
+    private final CustomizableSignBlockEntity blockEntity;
+    private final ErrorReporter reporter;
+
+    public JsonInjector(String id, CustomizableSignBlockEntity blockEntity, ErrorReporter reporter) {
         this.id = id;
         this.blockEntity = blockEntity;
+        this.reporter = reporter;
     }
-
-    protected boolean shouldOpen = false;
-    protected ImString text = new ImString(10000);
-
-    protected final String id;
-    protected final CustomizableSignBlockEntity blockEntity;
 
     public void open() {
         shouldOpen = true;
@@ -90,6 +92,6 @@ public class JsonInjector {
     }
 
     private void throwError(Error error) {
-        ErrorPopup.open(error, this::close);
+        reporter.reportError(error, this::close);
     }
 }

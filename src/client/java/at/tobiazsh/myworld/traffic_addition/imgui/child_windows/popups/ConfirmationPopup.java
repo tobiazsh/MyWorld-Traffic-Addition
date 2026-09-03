@@ -1,6 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import imgui.ImGui;
 
 import java.util.function.Consumer;

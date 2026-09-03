@@ -1,13 +1,14 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontHelper;
+import at.tobiazsh.myworld.traffic_addition.error.ErrorReporter;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import at.tobiazsh.myworld.traffic_addition.error.Error;
@@ -16,14 +17,14 @@ import org.jetbrains.annotations.NotNull;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
-public class ErrorPopup {
+public class ErrorPopup implements ErrorReporter {
 
     private static final String errorIconPath = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
     private Runnable onClose;
     private final Queue<Tuple<@NotNull Error, @NotNull Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
     private final AtomicReference<String> text = new AtomicReference<>("");
     private final AtomicReference<String> message = new AtomicReference<>("");
-    private final AtomicBoolean pushedBold = new AtomicBoolean(false);
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
     private final String id;
 
     public ErrorPopup(String id) {
@@ -35,7 +36,7 @@ public class ErrorPopup {
                 trIC("text.mwta.error-popup.title", id, "errorPopup"), ImGuiWindowFlags.AlwaysAutoResize
         )) {
 
-            FontHelper.pushRobotoBold(pushedBold);
+            fontScope.push(DefaultFonts.RobotoBold);
 
             ImGui.image(Textures.smartRegisterTexture(errorIconPath).getTextureId(), 20, 20);
 
@@ -48,7 +49,7 @@ public class ErrorPopup {
 
             ImGui.text(trIC("text.mwta.error-popup.message", id, "errorMessage") + ":");
 
-            FontHelper.popRobotoBold(pushedBold);
+            fontScope.pop();
 
             ImGui.textWrapped(message.get());
 
@@ -89,5 +90,10 @@ public class ErrorPopup {
         text.set(e.getTitle() != null ? e.getTitle() : "");
         message.set(e.getMessage() != null ? e.getMessage() : "");
         onClose = p.b();
+    }
+
+    @Override
+    public void reportError(Error error, Runnable onClose) {
+        open(error, onClose);
     }
 }

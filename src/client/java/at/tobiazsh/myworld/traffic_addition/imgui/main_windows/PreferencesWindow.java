@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.Confirmat
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_window.*;
 
 import com.google.common.collect.ImmutableList;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -21,12 +22,14 @@ public class PreferencesWindow {
     private final String id;
     public boolean show = false;
 
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+
     private final ImmutableList<PreferencePage> pages = ImmutableList.of(
-            new LanguagePreferencePage(),
-            new CachingPreferencePage(),
-            new SignPreferencePage(),
-            new CustomizableSignPreferencePage(),
-            new MultiplayerPreferencePage()
+            new LanguagePreferencePage(fontScope),
+            new CachingPreferencePage(fontScope),
+            new SignPreferencePage(fontScope),
+            new CustomizableSignPreferencePage(fontScope),
+            new MultiplayerPreferencePage(fontScope)
     );
 
     private PreferencePage currentPreferencePage = null; // null = menu!
