@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows.preference_windo
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.type.ImInt;
 import net.minecraft.resources.Identifier;
@@ -20,6 +21,10 @@ public class LanguagePreferencePage extends PreferencePage {
 
     private String currentLanguage = "auto"; // Set auto by default
     private final ImInt currentLanguageIdx = new ImInt(0); // Set idx of "auto" by default
+
+    public LanguagePreferencePage(ImGuiFontScope fontScope) {
+        super(fontScope);
+    }
 
     @Override
     public @NonNull Identifier getId() {
