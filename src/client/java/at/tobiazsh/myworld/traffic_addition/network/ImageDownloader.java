@@ -95,7 +95,7 @@ public class ImageDownloader {
 
         connection.setConnectTimeout(connectTimeout);
         connection.setReadTimeout(readTimeout);
-        connection.setRequestProperty(requestProperty.getA(), requestProperty.getB());
+        connection.setRequestProperty(requestProperty.a(), requestProperty.b());
 
         long totalBytes = connection.getContentLength();
         if (totalBytes <= 0) {
