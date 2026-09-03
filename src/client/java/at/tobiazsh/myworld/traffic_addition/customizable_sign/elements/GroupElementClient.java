@@ -160,7 +160,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
     @Override
     public void onPaste() {
-        getClientElements().forEach(e -> e.setFactor(ClientElementManager.getInstance().getPixelOfOneBlock()));
+        getClientElements().forEach(e -> e.setFactor(ClientElementManager.getInstance().getPixelsPerBlock()));
         getClientElements().stream().filter(e -> e instanceof GroupElementClient).forEach(ClientElementInterface::onPaste);
         setBounds();
     }
