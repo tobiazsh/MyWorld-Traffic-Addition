@@ -2,11 +2,13 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
 import at.tobiazsh.myworld.traffic_addition.error.ErrorReporter;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.Tuple;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
 
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,12 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import imgui.flag.ImGuiWindowFlags;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
 public class ErrorPopup implements ErrorReporter {
 
+    private static @Nullable ImGuiTexture errorIconTexture = null;
     private static final String errorIconPath = "/assets/myworld_traffic_addition/textures/imgui/icons/info.png";
+
     private Runnable onClose;
     private final Queue<Tuple<@NotNull Error, @NotNull Runnable>> errorQueue = new ConcurrentLinkedQueue<>();
     private final AtomicReference<String> text = new AtomicReference<>("");
@@ -38,7 +43,10 @@ public class ErrorPopup implements ErrorReporter {
 
             fontScope.push(DefaultFonts.RobotoBold);
 
-            ImGui.image(Textures.smartRegisterTexture(errorIconPath).getTextureId(), 20, 20);
+            if (errorIconTexture != null && errorIconTexture.isUsable())
+                ImGui.image(errorIconTexture.getTextureId(), 20, 20);
+            else
+                ImGui.text("[!]");
 
             ImGui.sameLine();
             ImGui.spacing();
@@ -74,6 +82,7 @@ public class ErrorPopup implements ErrorReporter {
     public void open(Error error, Runnable close) {
         if (close == null) close = () -> {}; // Avoid null pointer exceptions
         errorQueue.add(new Tuple<>(error, close));
+        createTextures(); // Create textures on every open since open doesn't happen that often
     }
 
     public boolean hasErrors() {
@@ -90,6 +99,19 @@ public class ErrorPopup implements ErrorReporter {
         text.set(e.getTitle() != null ? e.getTitle() : "");
         message.set(e.getMessage() != null ? e.getMessage() : "");
         onClose = p.b();
+    }
+
+    public void createTextures() {
+        if (errorIconTexture == null) {
+            try {
+                errorIconTexture = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(getClass().getResourceAsStream(errorIconPath)),
+                        "Error Icon"
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to load error icon texture", e);
+            }
+        }
     }
 
     @Override
