@@ -3,8 +3,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.BackgroundRenderer;
-import at.tobiazsh.myworld.traffic_addition.texture.Texture;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import imgui.ImGui;
 import imgui.ImVec2;
