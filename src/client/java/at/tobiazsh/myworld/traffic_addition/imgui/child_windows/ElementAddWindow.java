@@ -213,8 +213,11 @@ public class ElementAddWindow {
 		 * Constructs a new ImageElementClient and passes it to the onAdd consumer when the "Add" button is clicked.
 		 */
 		public void addElement() {
-			var element = (ImageElementClient) CustomizableSignElementFactory.toClientElement(
-					new ImageElement(1.0f, path, ClientElementInterface.MAIN_CANVAS_ID)
+			var element = new ImageElementClient(
+					0, 0,
+					1.0f,
+					path,
+					ClientElementInterface.MAIN_CANVAS_ID
 			);
 
 			onAdd.accept(element);

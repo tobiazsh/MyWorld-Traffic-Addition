@@ -2,6 +2,8 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -12,18 +14,15 @@ public interface BaseElementInterface {
 
     // ------------- STATIC VARIABLES ------------------------------------------------
 
-    UUID MAIN_CANVAS_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    ParentElementId MAIN_CANVAS_ID = ParentElementId.of(UUID.fromString("00000000-0000-0000-0000-000000000000"));
 
 
     // ------------- METHODS --------------------------------------------------------
 
-    UUID getId();
-    void setId(UUID id);
+    ElementId getId();
 
-    UUID getParentId();
-    void setParentId(UUID parentId);
-
-    void setClicked(boolean clicked);
+    ParentElementId getParentId();
+    void setParentId(ParentElementId parentId);
 
     void setPosition(float x, float y);
 
@@ -75,7 +74,7 @@ public interface BaseElementInterface {
         return value / scale;
     }
 
-    Map<String, UUID> uuidMigrationMap = new HashMap<>(); // For migration purposes, to map old IDs to new ones
+    Map<String, ElementId> uuidMigrationMap = new HashMap<>(); // For migration purposes, to map old IDs to new ones
 
     /**
      * Converts a JSON Object to an element of the type specified in the json object
@@ -113,13 +112,13 @@ public interface BaseElementInterface {
         }
 
         String idStr = object.get("Id").getAsString();
-        UUID id;
+        ElementId id;
 
         try {
-            id = UUID.fromString(idStr);
+            id = ElementId.of(UUID.fromString(idStr));
         } catch (IllegalArgumentException e) {
             MyWorldTrafficAddition.LOGGER.debug("Couldn't read element with name {} from JSON because the ID {} is not a valid UUID! Generating one!", name, idStr);
-            id = UUID.randomUUID(); // Generate a new ID if the old one is not valid
+            id = ElementId.of(UUID.randomUUID()); // Generate a new ID if the old one is not valid
             if (!Objects.equals(idStr, "null")) uuidMigrationMap.put(idStr, id); // Store the old ID to new ID mapping for migration purposes
         }
 
@@ -132,8 +131,8 @@ public interface BaseElementInterface {
                     factor,
                     rotation,
                     object.get("Texture").getAsString(),
-                    MAIN_CANVAS_ID,
-                    id
+                    id,
+                    MAIN_CANVAS_ID
             );
 
             case TEXT_ELEMENT -> element = new TextElement(
@@ -149,8 +148,8 @@ public interface BaseElementInterface {
 
                     object.get("Text").getAsString(),
                     false,
-                    MAIN_CANVAS_ID,
-                    id
+                    id,
+                    MAIN_CANVAS_ID
             );
 
             case GROUP_ELEMENT -> {
@@ -159,8 +158,8 @@ public interface BaseElementInterface {
                         size[0], size[1],
                         rotation,
                         name,
-                        MAIN_CANVAS_ID,
-                        id
+                        id,
+                        MAIN_CANVAS_ID
                 );
 
                 JsonArray elementsArray = object.getAsJsonArray("Elements");
@@ -185,8 +184,8 @@ public interface BaseElementInterface {
                     factor,
                     rotation,
                     UUID.fromString(object.get("PictureReference").getAsString()),
-                    MAIN_CANVAS_ID,
-                    id
+                    id,
+                    MAIN_CANVAS_ID
             );
 
             default -> {
@@ -199,15 +198,15 @@ public interface BaseElementInterface {
         // Another migration happening here: Old elements used String as their ID, new elements use UUID.
         if (object.has("ParentId")) {
             String parentIdStr = object.get("ParentId").getAsString();
-            UUID parentId;
+            ParentElementId parentId;
 
             try {
-                parentId = UUID.fromString(parentIdStr);
+                parentId = ParentElementId.ofString(parentIdStr);
             } catch (IllegalArgumentException e) {
                 MyWorldTrafficAddition.LOGGER.error("Couldn't read element with name {} from JSON because the ParentId {} is not a valid UUID!", name, parentIdStr);
 
                 if (uuidMigrationMap.containsKey(parentIdStr)) {
-                    parentId = uuidMigrationMap.get(parentIdStr); // Use the migrated ID if available
+                    parentId = uuidMigrationMap.get(parentIdStr).toParent(); // Use the migrated ID if available
                 } else {
                     MyWorldTrafficAddition.LOGGER.warn("Using default MAIN_CANVAS_ID for element with name {} due to invalid ParentId.", name);
                     parentId = MAIN_CANVAS_ID; // Default to MAIN_CANVAS_ID if the parent ID is not valid

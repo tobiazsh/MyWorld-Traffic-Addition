@@ -8,6 +8,7 @@ import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.payload.custom_network.SetCustomizableSignTexturePayload;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosExtended;
 import net.minecraft.core.Vec3i;
@@ -30,9 +31,9 @@ public class ClientElementManager {
         return INSTANCE;
     }
 
-    private final Map<UUID, ClientElementInterface> elementIds = new HashMap<>(); // Map of elements currently rendered anywhere
+    private final Map<ElementId, ClientElementInterface> elementIds = new HashMap<>(); // Map of elements currently rendered anywhere
 
-    public boolean idExists(UUID id) {
+    public boolean idExists(ElementId id) {
         return elementIds.containsKey(id);
     }
 
@@ -45,36 +46,16 @@ public class ClientElementManager {
     public CustomizableSignTextureData textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>());
 
     public void registerElement(ClientElementInterface element) {
-
-        UUID elementId = element.getId() != null ? element.getId() : UUID.randomUUID();
-
-        while (idExists(elementId)) { // ASTRONOMICALLY unlikely, but just in case
-            elementId = UUID.randomUUID(); // Ensure the ID is unique
-        }
-
-        registerElement(element, elementId); // Register the element with a unique ID
-    }
-
-    public void registerElement(ClientElementInterface element, UUID id) {
         if (element == null) {
             MyWorldTrafficAddition.LOGGER.error("Tried to register a null element! This should never happen!");
             return; // Prevent registering null elements
         }
 
-        if (id == null) {
-            MyWorldTrafficAddition.LOGGER.error("Tried to register an element with a null ID!");
-            return; // Prevent registering elements with invalid IDs
-        }
-
-        elementIds.put(id, element);
-        element.setId(id);
+        elementIds.put(element.getId(), element);
     }
 
     public void unregisterElement(ClientElementInterface element) {
-        if (element.getId() == null) return;
-        UUID uuid = element.getId();
-        elementIds.remove(uuid);
-        element.setId(null); // Clear the ID from the element
+        elementIds.remove(element.getId());
     }
 
     public void recursiveRegisterElement(ClientElementInterface element) {
@@ -84,7 +65,7 @@ public class ClientElementManager {
         }
     }
 
-    public ClientElementInterface getElementById(UUID id) {
+    public ClientElementInterface getElementById(ElementId id) {
         return elementIds.get(id);
     }
 
@@ -158,11 +139,38 @@ public class ClientElementManager {
 
         unregisterElement(element); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
 
-        if (element instanceof TexturableElementInterface) {
-            ((TexturableElementInterface) element).markTextureStale();
-        }
+        // Texture is automatically disposed when the texture is not used anymore... see HybridTextureSweeper
 
         elements.remove(index);
+        registerUnregistered();
+        elementListChangedEvent.notifyListeners();
+    }
+
+    /**
+     * Moves an element from one index to another in the list. Does not switch the elements, but rather inserts the
+     * element at the specified location.
+     * @param fromIndex The index of the element to move. If the index is invalid, the method will log an error and
+     *                  return without making any changes.
+     * @param toIndex The index to move the element to. If the index is smaller than or equal to 0, the element will be
+     *                moved to the start of the list. If the index is greater than or equal to the size of the list, the
+     *                element will be moved to the end of the list.
+     */
+    public void moveElement(int fromIndex, int toIndex) {
+        if (fromIndex < 0 || fromIndex >= elements.size()) {
+            MyWorldTrafficAddition.LOGGER.warn("Tried to move an element with invalid indices: from {} to {}", fromIndex, toIndex);
+            return;
+        }
+
+        ClientElementInterface element = elements.remove(fromIndex);
+
+        if (toIndex <= 0) {
+            elements.addFirst(element);
+        } else if (toIndex >= elements.size()) {
+            elements.addLast(element);
+        } else {
+            elements.add(toIndex, element);
+        }
+
         registerUnregistered();
         elementListChangedEvent.notifyListeners();
     }
@@ -171,7 +179,7 @@ public class ClientElementManager {
         return elements.indexOf(element);
     }
 
-    public int totalElements() {
+    public int elementCount() {
         return elements.size();
     }
 
@@ -239,7 +247,7 @@ public class ClientElementManager {
 
     /**
      * Sends the current data to the server to update the block entity's data.
-     * @param blockEntity The sign block entity to update
+     * @param pos The position of the block entity to update.
      * @throws IllegalStateException if the current JSON is empty
      */
     public void exportToSign(BlockPos pos) {
@@ -285,17 +293,9 @@ public class ClientElementManager {
     }
 
     /**
-     * Clears the current elements and disposes their resources.
+     * Clears the current elements. Resources are automatically disposed by Minecraft each tick.
      */
     public void clearAll() {
-        getElements().forEach(e -> {
-            try {
-                e.dispose();
-            } catch (Exception ex) {
-                MyWorldTrafficAddition.LOGGER.error("Error disposing element {}: {}", e, ex.getMessage());
-            }
-        });
-
         elements.clear();
         elementIds.clear();
         textureData = new CustomizableSignTextureData(Background.TRANSPARENT, new ArrayList<>()); // Reset the raw data

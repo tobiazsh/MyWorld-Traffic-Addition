@@ -96,8 +96,8 @@ public class CustomizableSignElementFactory {
                         GEC.getX(), GEC.getY(),
                         GEC.getWidth(), GEC.getHeight(),
                         GEC.getRotation(),
-                        GEC.getParentId(),
-                        GEC.getId()
+                        GEC.getId(),
+                        GEC.getParentId()
                 );
 
                 globalGroup.setName(GEC.getName());

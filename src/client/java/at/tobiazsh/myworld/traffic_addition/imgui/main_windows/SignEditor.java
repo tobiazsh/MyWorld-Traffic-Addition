@@ -16,10 +16,9 @@ import at.tobiazsh.myworld.traffic_addition.debug.DebugFunctions;
 import at.tobiazsh.myworld.traffic_addition.error.ErrorReporter;
 import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementAddWindow;
-import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.ElementsWindow;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list.ElementList;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.ElementPropertyViewer;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
@@ -32,6 +31,7 @@ import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlock
 import at.tobiazsh.myworld.traffic_addition.utils.JsonUtil;
 import com.google.gson.*;
 
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.ImVec4;
@@ -59,12 +59,17 @@ public class SignEditor {
     private ClientElementInterface selectedElement = null; // Maybe not necessary ??? There HAS to be another way!
     private ImVec2 signRatio;
 
+    private final SignPreview signPreview = SignPreview.createDefault();
     private BackgroundSelectorPopup backgroundSelector; // Maybe does not need to be here? Otherwise initialized when button is clicked
     private JsonInjector jsonInjector;
     private JsonPreviewPopup jsonPreviewPopup;
-    private SignPreview signPreview = SignPreview.createDefault();
     private ElementPropertyViewer propertyViewer;
     private ElementAddWindow elementAddWindow;
+    private ConfirmationPopup confirmationPopup;
+    private OnlineImageGallery onlineImageGallery;
+    private ElementList elementList = new ElementList("elementListWindow", this.clientElementManager);
+
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
     private final ErrorReporter errorReporter;
 
@@ -87,7 +92,7 @@ public class SignEditor {
         if (!isVisible) return;
 
         renderMain();
-        ElementsWindow.render();
+        elementList.render();
 
         if (elementAddWindow != null)
             elementAddWindow.render();
@@ -95,8 +100,8 @@ public class SignEditor {
         if (propertyViewer != null)
             propertyViewer.render();
 
-        ConfirmationPopup.render();
-        OnlineImageGallery.render();
+        confirmationPopup.render();
+        onlineImageGallery.render();
 
         if (backgroundSelector != null)
             backgroundSelector.render();
@@ -151,6 +156,10 @@ public class SignEditor {
                 "bg_" + id
         );
 
+        this.confirmationPopup = new ConfirmationPopup("confirmationPopup_" + id, this.fontScope);
+
+        this.onlineImageGallery = new OnlineImageGallery("onlineImageGallery_" + id);
+
         this.propertyViewer = new ElementPropertyViewer("propertyViewer_" + id);
 
         this.jsonInjector = new JsonInjector(
@@ -162,6 +171,10 @@ public class SignEditor {
 
     public void open() {
         this.isVisible = true;
+    }
+
+    public boolean isOpen() {
+        return this.isVisible;
     }
 
     public void renderMain(){
@@ -273,13 +286,13 @@ public class SignEditor {
 
         if (ImGui.beginMenu(tr("Global", "View"))) {
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Window"), "CTRL + E"))
-                ElementsWindow.toggle();
+                elementList.toggleVisibility();
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element Properties Window")))
                 this.propertyViewer.toggleVisibility();
 
             if (ImGui.menuItem(tr("ImGui.Main.SignEditor", "Toggle Element and Properties Window"))) { // Useful since normally you'd want to have both windows open
-                ElementsWindow.toggle();
+                elementList.toggleVisibility();
                 this.propertyViewer.toggleVisibility();
             }
 
@@ -297,7 +310,7 @@ public class SignEditor {
                 this.clientElementManager.addElementFirst(TextElementClient.createNew());
 
             if (ImGui.menuItem(tr("ImGui.Child.PopUps.OnlineImageGallery", "Online Image Gallery") + "..."))
-                OnlineImageGallery.open();
+                onlineImageGallery.open();
 
             ImGui.separator();
 
@@ -318,10 +331,6 @@ public class SignEditor {
         }
 
         if (isDebug) if (ImGui.beginMenu("Debug")) {
-
-            if (ImGui.menuItem("Toggle Snap to Window")) {
-                ImGuiRenderer.shouldSnap = !ImGuiRenderer.shouldSnap;
-            }
 
             if (ImGui.menuItem("Create saves folder")) {
                 createSavesDir();
@@ -412,7 +421,7 @@ public class SignEditor {
 
         if (ctrl && ImGui.isKeyPressed(ImGuiKey.G)) backgroundSelector.open();
 
-        if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) ElementsWindow.toggle(); // Element Window Toggle
+        // if (ctrl && ImGui.isKeyPressed(ImGuiKey.E)) elementList.toggleVisibility(); // Element Window Toggle
 
         if (ctrl && shift && ImGui.isKeyPressed(ImGuiKey.A)) this.elementAddWindow.open(); // Add Element Open
 
@@ -425,10 +434,14 @@ public class SignEditor {
     }
 
     private void clearCanvas() {
-        ConfirmationPopup.show(tr("ImGui.Main.SignEditor", "Are you sure you want to clear the canvas?"), tr("ImGui.Global.Warn", "This action cannot be undone!"), (confirmed) -> {
-            if (confirmed)
-                this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
-        });
+        this.confirmationPopup.show(
+                tr("ImGui.Main.SignEditor", "Are you sure you want to clear the canvas?"),
+                tr("ImGui.Global.Warn", "This action cannot be undone!"),
+                (confirmed) -> {
+                    if (confirmed)
+                        this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
+                }
+        );
     }
 
     private void exportSign() {

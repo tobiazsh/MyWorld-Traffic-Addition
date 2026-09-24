@@ -284,7 +284,7 @@ public class OnlineImageBackend {
         while (iterator.hasNext()) {
             Map.Entry<UUID, Tuple<@NotNull CustomImageMetadata, @NotNull Boolean>> entry = iterator.next();
             UUID imageUUID = entry.getKey();
-            boolean hidden = entry.getValue().getB();
+            boolean hidden = entry.getValue().b();
 
             Path parentDir = hidden ? CustomImageDirectory.getHiddenCustomImageDir() : CustomImageDirectory.getCustomImageDir();
             Path metadataPath = parentDir.resolve(imageUUID + "_metadata.json");
@@ -292,7 +292,7 @@ public class OnlineImageBackend {
             // If metadata file does not exist, remove entry from map
             if (!Files.exists(metadataPath)) {
                 iterator.remove();
-                perPlayerCounts.computeIfPresent(entry.getValue().getA().getUploaderUUID(), (k, v) -> {
+                perPlayerCounts.computeIfPresent(entry.getValue().a().getUploaderUUID(), (k, v) -> {
                     v.decrementAndGet();
                     return v.get() <= 0 ? null : v;
                 });
@@ -355,17 +355,17 @@ public class OnlineImageBackend {
             if (privateImagesOnly) {
                 UUID playerUUID = player.getUUID();
                 sendableData = metadataMap.values().stream()
-                        .filter(entry -> entry.getA().getUploaderUUID().equals(playerUUID))
-                        .map(Tuple::getA)
+                        .filter(entry -> entry.a().getUploaderUUID().equals(playerUUID))
+                        .map(Tuple::a)
                         .toList(); // Get only the Json of the entries that are uploaded by the player
             } else {
                 if (isPlayerMod)
                     sendableData = metadataMap.values().stream()
-                            .map(Tuple::getA).toList(); // Get all Json entries including hidden ones
+                            .map(Tuple::a).toList(); // Get all Json entries including hidden ones
                 else
                     sendableData = metadataMap.values().stream()
-                            .filter(entry -> !entry.getB())
-                            .map(Tuple::getA).toList(); // Get only the Json of the entries that are not hidden
+                            .filter(entry -> !entry.b())
+                            .map(Tuple::a).toList(); // Get only the Json of the entries that are not hidden
             }
             endIndex = Math.min(endIndex, sendableData.size()); // Ensure we don't go out of bounds
 
@@ -594,8 +594,8 @@ public class OnlineImageBackend {
                 return;
             }
 
-            boolean hidden = stored.getB();
-            CustomImageMetadata metadata = stored.getA();
+            boolean hidden = stored.b();
+            CustomImageMetadata metadata = stored.a();
 
             // Compare uploader's UUID with the player's UUID to verify if the player is allowed to delete the image
             UUID playerUUID = player.getUUID();
@@ -661,8 +661,8 @@ public class OnlineImageBackend {
             return;
         }
 
-        boolean hidden = stored.getB();
-        CustomImageMetadata metadata = stored.getA();
+        boolean hidden = stored.b();
+        CustomImageMetadata metadata = stored.a();
 
         deleteImage(imageUUID, metadata.getUploaderUUID(), hidden);
     }

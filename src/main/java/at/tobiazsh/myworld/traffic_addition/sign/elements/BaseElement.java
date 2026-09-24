@@ -7,6 +7,8 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -15,21 +17,27 @@ import java.util.*;
 public abstract class BaseElement implements BaseElementInterface {
 
 	protected float x, y, width, height, factor, rotation;
-	protected String name;
-	protected UUID id, parentId;
+	protected String name = "New Element";
+	protected final ElementId id;
+	protected ParentElementId parentId;
 	protected float[] color = new float[]{1f, 1f, 1f, 1f};
-	public boolean clicked = false;
 
 	/***********************************
 	 * !!!! IMPORTANT INFORMATION !!!!
-	 * ID Logic moved to client side
-	 * since server side has got
-	 * nothing to do with it! You can
-	 * find it in: ClientElementManger
-	 * on the client side!
+	 * ID Logic moved back to the
+	 * BaseElement class since it just
+	 * makes more sense to have it here.
+	 * Furthermore, the ID is now final,
+	 * since it should not be changed after
+	 * A reason for moving it back here
+	 * is that the JSON also needs to
+	 * store the ID. Everything already
+	 * must match at the JSON level
+	 * (parent id, id mismatch)
+	 * and since this class is serialized
+	 * it makes so much more sense to
+	 * have the ID here.
 	 ***********************************/
-
-	// !! CHANGED ID FROM STRING TO UUID !!
 
 	public enum ELEMENT_TYPE {
 		NONE,
@@ -39,79 +47,92 @@ public abstract class BaseElement implements BaseElementInterface {
 		ONLINE_IMAGE_ELEMENT,
 	}
 
-	private BaseElement(float x, float y, float width, float height, float factor) {
+	public BaseElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			ElementId id,
+			ParentElementId parentId
+	) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.factor = factor;
-		generateName();
-	}
-
-	public BaseElement(float x, float y, float width, float height, float factor, UUID parentId) {
-		this(x, y, width, height, factor);
-		this.parentId = parentId;
-		generateName();
-	}
-
-	public BaseElement(float x, float y, float width, float height, float factor, UUID parentId, UUID id) {
-		this(x, y, width, height, factor);
-		this.parentId = parentId;
-		this.id = id;
-		generateName();
-	}
-
-	public BaseElement(float x, float y, float width, float height, float factor, float rotation, UUID parentId) {
-		this(x, y, width, height, factor, parentId);
-		this.rotation = rotation;
-		generateName();
-	}
-
-	public BaseElement(float x, float y, float width, float height, float factor, float rotation, UUID parentId, UUID id) {
-		this(x, y, width, height, factor, parentId, id);
-		this.rotation = rotation;
-		generateName();
-	}
-
-	public BaseElement(float x, float y, float width, float height, float factor, float rotation, float[] color, UUID parentId, UUID id) {
-		this(x, y, width, height, factor);
-		this.color = color;
 		this.rotation = rotation;
 		this.id = id;
 		this.parentId = parentId;
-		generateName();
 	}
 
-	public BaseElement(float x, float y, float width, float height, float factor, float rotation, float[] color, String name, UUID parentId, UUID id) {
-		this(x, y, width, height, factor);
+	public BaseElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			ParentElementId parentId
+	) {
+		this(x, y, width, height, factor, 0, ElementId.random(), parentId);
+	}
+
+	public BaseElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			ParentElementId parentId
+	) {
+		this (x, y, width, height, factor, rotation, ElementId.random(), parentId);
+	}
+
+	public BaseElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			float[] color,
+			ElementId id,
+			ParentElementId parentId
+	) {
+		this(x, y, width, height, factor, rotation, id, parentId);
 		this.color = color;
+	}
+
+	public BaseElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			float[] color,
+			String name,
+			ElementId id,
+			ParentElementId parentId
+	) {
+		this(x, y, width, height, factor, rotation, color, id, parentId);
 		this.name = name;
-		this.rotation = rotation;
-		this.id = id;
-		this.parentId = parentId;
 	}
 
-	public UUID getId() {
+	@Override
+	public ElementId getId() {
 		return id;
 	}
 
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	private void generateName() {
-		this.name = "New Element";
-	}
-
-	public void setClicked(boolean clicked) {
-		this.clicked = clicked;
-	}
-
-	public UUID getParentId() {
+	@Override
+	public ParentElementId getParentId() {
 		return parentId;
 	}
 
-	public void setParentId(UUID parentId) {
+	@Override
+	public void setParentId(ParentElementId parentId) {
 		this.parentId = parentId;
 	}
 

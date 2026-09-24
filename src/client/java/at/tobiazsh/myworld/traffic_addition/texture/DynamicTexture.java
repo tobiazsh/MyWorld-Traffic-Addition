@@ -4,10 +4,10 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.TextureFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -22,6 +22,7 @@ import java.util.Objects;
  * Accepts both resource paths and absolute file paths for loading images.
  * Injects the texture into Minecraft's TextureManager and can be managed via the DynamicTextureManager.
  */
+@Deprecated
 public class DynamicTexture extends AbstractTexture {
 
     // private
@@ -186,7 +187,7 @@ public class DynamicTexture extends AbstractTexture {
         GpuDevice gpu = RenderSystem.getDevice();
         this.close();
         Objects.requireNonNull(this.id);
-        this.texture = gpu.createTexture(this.id.toString(), 5, TextureFormat.RGBA8, image.getWidth(), image.getHeight(), 1, 1);
+        this.texture = gpu.createTexture(this.id.toString(), 5, GpuFormat.RGBA8_SNORM, image.getWidth(), image.getHeight(), 1, 1);
         this.textureView = gpu.createTextureView(this.texture);
         gpu.createCommandEncoder().writeToTexture(this.texture, image);
     }

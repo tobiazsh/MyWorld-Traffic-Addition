@@ -1,23 +1,41 @@
 package at.tobiazsh.myworld.traffic_addition.sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GroupElement extends BaseElement {
 
     private List<BaseElement> elements = new CopyOnWriteArrayList<>();
 
-    public GroupElement(float x, float y, float width, float height, float rotation, String name, UUID parentId, UUID id) {
-        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, name, parentId, id);
+    public GroupElement(
+            float x,
+            float y,
+            float width,
+            float height,
+            float rotation,
+            String name,
+            ElementId id,
+            ParentElementId parentId
+    ) {
+        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, name, id, parentId);
     }
 
-    public GroupElement(float x, float y, float width, float height, float rotation, UUID parentId, UUID id) {
-        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, parentId, id);
+    public GroupElement(
+            float x,
+            float y,
+            float width,
+            float height,
+            float rotation,
+            ElementId id,
+            ParentElementId parentId
+    ) {
+        super(x, y, width, height, 1, rotation, new float[]{255, 255, 255, 255}, id, parentId);
     }
 
     public List<BaseElement> getElements() {
@@ -123,7 +141,7 @@ public class GroupElement extends BaseElement {
     }
 
     public void setChildrenParentElementId() {
-        this.elements.forEach(element -> element.setParentId(this.id));
+        this.elements.forEach(element -> element.setParentId(this.id.toParent()));
     }
 
     /**

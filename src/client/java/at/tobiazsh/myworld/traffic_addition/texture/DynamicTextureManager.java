@@ -5,6 +5,7 @@ import net.minecraft.resources.Identifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 public class DynamicTextureManager {
 
     private static final Map<Identifier, DynamicTexture> textures = new ConcurrentHashMap<>();

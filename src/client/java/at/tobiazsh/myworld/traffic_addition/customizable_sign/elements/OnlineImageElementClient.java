@@ -1,38 +1,60 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
-import at.tobiazsh.myworld.traffic_addition.preference.ServerPreferencesManager;
-import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
-import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
-import at.tobiazsh.myworld.traffic_addition.texture.Texture;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
+import at.tobiazsh.myworld.traffic_addition.texture.*;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.OnlineImageElement;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
+import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
+import com.mojang.math.Axis;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
+import imgui.ImDrawList;
 import imgui.ImGui;
+import imgui.ImVec2;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
+import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface, TexturableElementInterface {
+import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
+import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
-    public AtomicBoolean textureLoaded = new AtomicBoolean(false);
-    public AtomicBoolean isTexturePlaceholder = new AtomicBoolean(true);
-    private boolean shouldLogNotRenderable = true;
+@SuppressWarnings("DuplicatedCode")
+public class OnlineImageElementClient extends OnlineImageElement implements ClientElementInterface {
 
-    private final AtomicBoolean shouldRegisterTexture = new AtomicBoolean(false);
-    private final AtomicBoolean autoSizeAfterDownload = new AtomicBoolean(false);
+    private static AtomicBoolean loadingLoadFailed = new AtomicBoolean(false);
+    private static AtomicBoolean notFoundLoadFailed = new AtomicBoolean(false);
+
+    private static @Nullable HybridTexture loadingTexture;
+    private static @Nullable HybridTexture notFoundTexture;
+
+    private static @Nullable HybridTexture hybridTexture;
+
+    public CompletableFuture<byte[]> imageFuture;
+
     private final AtomicBoolean shouldAutoSize = new AtomicBoolean(false);
-    private final CompletableFuture<byte[]> imageFuture = new CompletableFuture<>();
-
-    DynamicTexture dynamicTexture = null;
 
     private final AtomicBoolean mayDownload = new AtomicBoolean(true); // Flag to control if the image should be downloaded
+
+    private ImVec2 p0, p1, p2, p3;
 
     public OnlineImageElementClient(
             float x, float y,
@@ -40,9 +62,9 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             float factor,
             float rotation,
             UUID pictureReference,
-            UUID id, UUID parentId
+            ElementId id, ParentElementId parentId
     ) {
-        super(x, y, width, height, factor, rotation, pictureReference, parentId, id);
+        super(x, y, width, height, factor, rotation, pictureReference, id, parentId);
     }
 
     public OnlineImageElementClient(
@@ -51,62 +73,238 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
             float factor,
             float rotation,
             UUID pictureReference,
-            UUID parentId
+            ParentElementId parentId
     ) {
         super(x, y, width, height, factor, rotation, pictureReference, parentId);
     }
 
-    @Override
+    /**
+     * Renders the image element in an ImGui Context.
+     */
     public void renderImGui(float scale) {
-        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderImGui(scale));
+        initiateRender();
+
+        HybridTexture texture = getRenderedTexture();
+
+        if (texture == null)
+            return; // If ABSOLUTELY no texture is available, don't render anything; should never happen, but just in case
+
+        ImDrawList drawList = ImGui.getWindowDrawList();
+
+        ImVec2 windowPos = new ImVec2(ImGui.getCursorScreenPosX(), ImGui.getCursorScreenPosY());
+        float[] color = this.getColor();
+
+        // Calculate points and account for scale
+        var p0 = new ImVec2(windowPos.x + x * scale, windowPos.y + y * scale); // Top Left Vertices
+        var p1 = new ImVec2(windowPos.x + (x + width) * scale, windowPos.y + y * scale); // Top Right Vertices
+        var p2 = new ImVec2(windowPos.x + (x + width) * scale, windowPos.y + (y + height) * scale); // Bottom Right Vertices
+        var p3 = new ImVec2(windowPos.x + x * scale, windowPos.y + (y + height) * scale); // Bottom Left Vertices
+
+        rotateTexture(
+                rotation,
+                new ImVec2(
+                        windowPos.x + (this.x + this.width / 2) * scale,
+                        windowPos.y + (this.y + this.height / 2) * scale
+                )
+        );
+
+        float uv0X = 0.0f, uv0Y = 0.0f;
+        float uv1X = 1.0f, uv1Y = 0.0f;
+        float uv2X = 1.0f, uv2Y = 1.0f;
+        float uv3X = 0.0f, uv3Y = 1.0f;
+
+        drawList.addImageQuad(
+                texture.getImGuiTexture().getTextureId(),
+                p0.x, p0.y,
+                p1.x, p1.y,
+                p2.x, p2.y,
+                p3.x, p3.y,
+                uv0X, uv0Y,
+                uv1X, uv1Y,
+                uv2X, uv2Y,
+                uv3X, uv3Y,
+                ImGui.colorConvertFloat4ToU32(color[0], color[1], color[2], color[3]) // Color doesn't work yet
+        );
     }
 
+    /**
+     * Renders an ImageElement in Minecraft
+     * @param indexInList Index of the element in the list; For layering purposes
+     * @param csbeHeight Height of the CustomizableSignBlockEntity
+     * @param poseStack PoseStack
+     * @param light Light level
+     * @param facing Direction the element should face
+     */
+    @SuppressWarnings("ExtractMethodRecommender")
     @Override
-    public void renderMinecraft(SubmitNodeCollector queue, int indexInList, int csbeHeight, PoseStack matrices, int light, Direction facing) {
-        initiateRender(() -> toImageElementCL(isTexturePlaceholder.get()).renderMinecraft(queue, indexInList, csbeHeight, matrices, light, facing));
-    }
+    public void renderMinecraft(
+            @NonNull SubmitNodeCollector queue,
+            int indexInList,
+            int csbeHeight,
+            PoseStack poseStack,
+            int light,
+            Direction facing
+    ) {
+        initiateRender();
 
-    public ImageElementClient toImageElementCL(boolean isPlaceholder) {
-        return new ImageElementClient(
-                getX(), getY(),
-                getWidth(), getHeight(),
-                getFactor(),
-                getRotation(),
-                elementTexture,
-                getParentId()
-        ).fromOnlineImage(this, isPlaceholder);
+        HybridTexture texture = getRenderedTexture();
+
+        if (texture == null)
+            return; // If ABSOLUTELY no texture is available, don't render anything; should never happen, but just in case
+
+        int overlay = OverlayTexture.NO_OVERLAY;
+
+        float w = this.calcBlocks(getWidth());
+        float h = this.calcBlocks(getHeight());
+        float x = this.calcBlocks(getX());
+        float y = this.calcBlocks(getY());
+        float rotation = this.getRotation();
+        float[] color = this.getColor();
+
+        float viewDistance = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns.viewDistance.getOrDefault();
+        float elementDistancing = MyWorldTrafficAdditionClient.getClientPreferences().customizableSigns.elementDistancing.getOrDefault();
+        float zOffset = viewDistance + (indexInList + 1) * elementDistancing;
+        BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
+        BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(getRightSideDirection(facing.getOpposite()), x);
+
+        // Bind texture to vertices
+        CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(
+                zOffset,
+                CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
+                texture.getIdentifier()
+        ); // Custom Render Layer to prevent z-fighting
+
+        RenderType renderLayer = imageLayering.buildRenderType();
+
+        poseStack.pushPose();
+        Matrix4f positionMatrix = poseStack.last().pose();
+
+        poseStack.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
+        poseStack.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
+        poseStack.translate(renderPos.x, renderPos.y, renderPos.z); // Shift element to the right position
+
+        // Rotate to the same direction as the block (opposite because the block is facing a certain direction but the canvas is on the opposite)
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(DirectionUtils.getFacingRotation(facing.getOpposite())));
+        poseStack.translate(-0.5, -0.5, -0.5);
+
+        // Rotate around the element's center
+        poseStack.translate(w / 2, h / 2, 0); // Move origin to element center
+        poseStack.mulPose(Axis.ZN.rotationDegrees(rotation));
+        poseStack.translate(-w / 2, -h / 2, 0); // Move origin back
+
+        // Top left
+        queue.submitCustomGeometry(poseStack, renderLayer, (_, vertexConsumer) -> {
+            vertexConsumer.addVertex(positionMatrix, 0 , 0, 0)
+                    .setUv(0, 1)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
+
+            // Top right
+            vertexConsumer.addVertex(positionMatrix, w, 0, 0)
+                    .setUv(1, 1)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
+
+            // Bottom right
+            vertexConsumer.addVertex(positionMatrix, w, h, 0)
+                    .setUv(1, 0)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
+
+            // Bottom left
+            vertexConsumer.addVertex(positionMatrix, 0, h, 0)
+                    .setUv(0, 0)
+                    .setColor(color[0], color[1], color[2], color[3])
+                    .setLight(light)
+                    .setOverlay(overlay)
+                    .setNormal(0, 0, 1);
+        });
+
+        poseStack.popPose();
     }
 
     // TEXTURES
 
+    /**
+     * Rotates the dynTexture by a given angle
+     * @param angle The angle to rotate by
+     * @param center The center point to rotate around
+     */
+    public void rotateTexture(float angle, ImVec2 center){
+        // For efficiency
+        if (angle == 0) return;
 
-    @Override
-    public DynamicTexture getDynamicTexture() {
-        return dynamicTexture;
+        float radians = (float) Math.toRadians(angle);
+
+        p0 = rotatePivot(p0, center, radians);
+        p1 = rotatePivot(p1, center, radians);
+        p2 = rotatePivot(p2, center, radians);
+        p3 = rotatePivot(p3, center, radians);
     }
 
-    @Override // TexturableElementInterface
-    public boolean isTextureLoaded() {
-        return textureLoaded.get();
-    }
+    private void loadStaticTextures() {
+        if (loadingTexture == null && !loadingLoadFailed.get()) {
+            try {
+                ImGuiTexture imguiTexture = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(getClass().getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/textures/imgui/loading_placeholder.png")),
+                        MyWorldTrafficAddition.MOD_ID + ":OnlineImageLoadingTexture"
+                );
 
-    @Override // TexturableElementInterface
-    public void setTexture(Texture texture) {
-        this.elementTexture = texture;
-    }
+                loadingTexture = HybridTexture.ofImGuiTexture(
+                        imguiTexture,
+                        Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element.loading")
+                );
 
-    @Override
-    public Texture getTexture() {
-        return this.elementTexture;
-    }
-
-    @Override
-    public void loadTexture() {
-        if (shouldRegisterTexture.get()) {
-            elementTexture = Textures.smartRegisterTexture(resourcePath);
-            textureLoaded.set(true);
-            shouldRegisterTexture.set(false);
+                loadingTexture.pin();
+                loadingTexture.register();
+            } catch (IOException e) {
+                loadingLoadFailed.set(true);
+                throw new RuntimeException(e);
+            }
         }
+
+        if (notFoundTexture == null && !notFoundLoadFailed.get()) { // Not found acts as a fallback!
+            try {
+                ImGuiTexture imguiTexture = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(getClass().getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/textures/imgui/not_found.png")),
+                        MyWorldTrafficAddition.MOD_ID + ":OnlineImageNotFoundTexture"
+                );
+
+                notFoundTexture = HybridTexture.ofImGuiTexture(
+                        imguiTexture,
+                        Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element.not_found")
+                );
+
+                notFoundTexture.pin();
+                notFoundTexture.register();
+            } catch (IOException e) {
+                notFoundLoadFailed.set(true);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Method to retrieve next best texture for rendering.
+     */
+    private @Nullable HybridTexture getRenderedTexture() {
+        if (!imageFuture.isDone())
+            return loadingTexture; // If the image is still downloading, show loading texture
+
+        if (imageFuture.isCompletedExceptionally())
+            return notFoundTexture;
+
+        if (hybridTexture != null && hybridTexture.isUsableMinecraft() && hybridTexture.isUsableImGui())
+            return hybridTexture; // If the image is downloaded and usable, show it
+
+        return notFoundTexture; // If the image is downloaded but not usable, show not found texture
     }
 
     // Sends request with
@@ -120,101 +318,71 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     private void requestImageDownload() {
         mayDownload.set(false); // Only allow one download request
 
-        if (OnlineImageCache.isImageCached(this.getPictureReference() + ".png")) {
-            resourcePath = OnlineImageCache.getCachedImagePath(getPictureReference().toString() + ".png").toString();
-            isTexturePlaceholder.set(false);
-            shouldRegisterTexture.set(true);
+        if (OnlineImageCache.isImageCached(this.getPictureReference().toString())) {
+            Path path = OnlineImageCache.getCachedImagePath(getPictureReference().toString());
+            loadTexture(path);
             return;
         }
 
-        setLoadingTexture();
-
         long downloadTimeout = MyWorldTrafficAddition.getServerPreferences().customizableSigns.onlineImages.downloadTimeout.getOrDefault();
 
-        OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
-            .thenAccept(image -> {
-                if (image != null && image.length > 0) {
-                    Path path = OnlineImageCache.cacheImage(image, getPictureReference().toString() + ".png");
-                    resourcePath = path.toString();
-                    textureLoaded.set(false); // Mark as not loaded to trigger loading
-                    shouldRegisterTexture.set(true); // Trigger registration on next loadTexture call
-                    isTexturePlaceholder.set(false);
+        imageFuture = OnlineImageNetworking.fetchImage(imageFuture, getPictureReference())
+                .orTimeout(downloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+                .whenComplete((image, throwable) -> {
+                    if (throwable != null) {
+                        hybridTexture = null;
+                        MyWorldTrafficAddition.LOGGER.error("Image download failed for ID: {}", getId(), throwable);
+                        return;
+                    }
 
-                    shouldAutoSize.set(autoSizeAfterDownload.get()); // Trigger auto-size if requested
-                    autoSizeAfterDownload.set(false); // Reset flag
+                    if (image == null || image.length == 0) {
+                        hybridTexture = null;
+                        MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
+                    }
 
-                    MyWorldTrafficAddition.LOGGER.info("Image downloaded successfully for OnlineImageElementClient with ID: {}", getId());
-                } else {
-                    setErrorTexture();
-                    MyWorldTrafficAddition.LOGGER.error("Failed to download image for OnlineImageElementClient with ID: {}", getId());
-                }
-        })
-            .orTimeout(downloadTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
-            .exceptionally(e -> {
-                setErrorTexture();
-                MyWorldTrafficAddition.LOGGER.error("Image download completed exceptionally for OnlineImageElementClient with ID: {}\nMaybe image does not exist anymore or connection timed out!", getId(), e);
-                return null;
-        });
+                    try {
+                        Path path = OnlineImageCache.cacheImage(image, getPictureReference().toString());
+                        loadTexture(path);
+
+                        shouldAutoSize.set(shouldAutoSize.get()); // Trigger auto-size if requested
+                        shouldAutoSize.set(false); // Reset flag
+                    } catch (IOException e) {
+                        hybridTexture = null;
+                        MyWorldTrafficAddition.LOGGER.error("Failed to cache downloaded image for OnlineImageElementClient with ID: {}", getId(), e);
+                    }
+                })
+                .exceptionally(_ -> new byte[0]); // Return empty byte array on exception
     }
 
-    private void setLoadingTexture() {
-        resourcePath = CommonTextures.LOADING_PLACEHOLDER.getResourcePath();
-        elementTexture = CommonTextures.LOADING_PLACEHOLDER; // Set to loading placeholder while downloading
-        textureLoaded.set(true); // Mark placeholder as available so render paths display it
-        isTexturePlaceholder.set(true); // Mark as placeholder so ImageElementClient knows to load it from resource
-    }
-
-    private void setErrorTexture() {
-        resourcePath = CommonTextures.NOT_FOUND_PLACEHOLDER.getResourcePath();
-        elementTexture = CommonTextures.NOT_FOUND_PLACEHOLDER; // Set to loading placeholder while downloading
-        textureLoaded.set(true); // Mark placeholder as available so render paths display it
-        isTexturePlaceholder.set(true); // Mark as placeholder so ImageElementClient knows to load it from resource
-    }
-
-    @Override
-    public void markTextureStale() {
-        if (dynamicTexture == null) return;
+    private void loadTexture(Path path) {
         try {
-            dynamicTexture.unsubscribe();
-        } catch (Exception e) {
-            MyWorldTrafficAddition.LOGGER.warn("Failed to unsubscribe dynamic texture", e);
+            ImGuiTexture imguiTexture = ImGuiTextureFactory.fromFile(path, MyWorldTrafficAddition.MOD_ID + ":OnlineImageElement_" + getPictureReference().toString());
+
+            hybridTexture = HybridTexture.ofImGuiTexture(
+                    imguiTexture,
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element." + getPictureReference().toString())
+            );
+
+            hybridTexture.register();
+
+            if (shouldAutoSize.get()) {
+                setSizeToTexture();
+                shouldAutoSize.set(false);
+            }
+        } catch (IOException e) {
+            hybridTexture = null;
+            MyWorldTrafficAddition.LOGGER.error("Failed to load texture from path for OnlineImageElementClient with ID: {}", getId(), e);
         }
-        dynamicTexture = null;
-        textureLoaded.set(false); // Force reload
     }
 
     /**
      * Helper method to initiate rendering, handling texture loading and download requests.
-     * @param onTextureLoaded Executed once the texture has been loaded successfully.
-     * @return True if successful, false if not.
      */
-    private boolean initiateRender(Runnable onTextureLoaded) {
-        loadTexture(); // Ensure texture is loaded
-        autoSizeIfNegative(); // Adjust size if set to -1
+    private void initiateRender() {
+        loadStaticTextures();
 
-        if (shouldAutoSize.get()) {
-            autoSize();
-            shouldAutoSize.set(false);
-        }
-
-        if (textureLoaded.get()) {
-            onTextureLoaded.run();
-            return true; // Texture is loaded, render normally
-        }
-
-        if (mayDownload.get()) {
+        if (mayDownload.get())
             requestImageDownload();
-        }
-
-        if (getResourcePath() == null || getResourcePath().isEmpty()) {
-            if (shouldLogNotRenderable) {
-                MyWorldTrafficAddition.LOGGER.debug("OnlineImageElementClient with ID: {} is not renderable yet (no resource path)", getId());
-                shouldLogNotRenderable = false; // Only log once
-            }
-            return false; // No resource path set, nothing to render
-        }
-
-        return true;
     }
 
     @Override
@@ -243,69 +411,33 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
         return copy;
     }
 
-    /**
-     * Sizes auto if width/height are -1.
-     */
-    private void autoSizeIfNegative() {
-        if (elementTexture == null || elementTexture.isEmpty()) return;
-
-        if (width == -1) {
-            if (elementTexture != null && !elementTexture.isEmpty()) {
-                width = elementTexture.getWidth();
-            }
-        }
-
-        if (height == -1) {
-            if (elementTexture != null && !elementTexture.isEmpty()) {
-                height = elementTexture.getHeight();
-            }
-        }
-    }
-
-    /**
-     * Sizes auto despite width/height not being -1.
-     */
-    private void autoSize() {
-        if (elementTexture == null || elementTexture.isEmpty()) return;
-        width = elementTexture.getWidth();
-        height = elementTexture.getHeight();
-    }
-
-    public OnlineImageElementClient resizeAfterDownload() {
-        autoSizeAfterDownload.set(true);
-        return this;
+    @Override
+    public @Nullable ImGuiTexture getThumbnailTexture() {
+        return null;
     }
 
     @Override
-    public void renderPreview(float w, float h) {
-        int textureId;
+    public String getGenericTranslatableName() {
+        return "Online Image Element";
+    }
 
-        if (textureLoaded.get()) {
-            if (!this.getTexture().isEmpty()) {
-                textureId = this.getTexture().getTextureId();
-            } else if (imageFuture.isCompletedExceptionally() || imageFuture.isCancelled()) {
-                textureId = CommonTextures.NOT_FOUND_PLACEHOLDER.getTextureId();
-            } else {
-                textureId = CommonTextures.LOADING_PLACEHOLDER.getTextureId();
-            }
-        } else {
-            textureId = CommonTextures.LOADING_PLACEHOLDER.getTextureId();
+    /**
+     * Sets the size of the image element to the size of the texture. If the texture is not loaded, it will print an
+     * error message.
+     */
+    public void setSizeToTexture() {
+        if (hybridTexture == null) {
+            MyWorldTrafficAddition.LOGGER.warn("Error autosizing image element: Texture has not been loaded yet!");
+            return;
         }
 
-        float startX = ImGui.getCursorScreenPosX();
-        float startY = ImGui.getCursorScreenPosY();
+        float width = hybridTexture.getTextureWidth(0);
+        float height = hybridTexture.getTextureHeight(0);
 
-        ImGui.image(textureId, w, h);
+        setSize(width, height);
+    }
 
-        float iconSize = Math.min(32f, Math.min(w / 2f, h / 2f));
-        float padding = 4f;
-
-        float iconX = startX + w - iconSize - padding;
-        float iconY = startY + h - iconSize - padding;
-
-        ImGui.setCursorScreenPos(iconX, iconY); // Set Position to bottom-right corner
-        ImGui.image(CommonTextures.INTERNET_GLOBE.getTextureId(), iconSize, iconSize); // Draw internet globe icon
-
-        ImGui.setCursorScreenPos(startX, startY); // Reset cursor position
+    public void autoSizeAfterLoad() {
+        shouldAutoSize.set(true);
     }
 }

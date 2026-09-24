@@ -2,20 +2,19 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
-import at.tobiazsh.myworld.traffic_addition.texture.CommonTextures;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
+import at.tobiazsh.myworld.traffic_addition.texture.*;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
-import at.tobiazsh.myworld.traffic_addition.utils.crypto.Crypto;
+import at.tobiazsh.myworld.traffic_addition.utils.crypto.Encoding;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
-import at.tobiazsh.myworld.traffic_addition.utils.IdentifierUtils;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.ImageElement;
-import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
-import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImDrawList;
 import imgui.ImGui;
 import imgui.ImVec2;
-import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -25,25 +24,28 @@ import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import java.util.UUID;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
-public class ImageElementClient extends ImageElement implements ClientElementInterface, TexturableElementInterface {
+@SuppressWarnings("DuplicatedCode")
+public class ImageElementClient extends ImageElement implements ClientElementInterface {
 
-    private static final StagedVertexBuffer vertexBuffer = new StagedVertexBuffer(
-            () -> "Image Element Renderer Vertex Buffer",
-            RenderType.SMALL_BUFFER_SIZE
-    );
+    private @Nullable HybridTexture hybridTexture = null;
+    private final AtomicBoolean textureLoadFailed = new AtomicBoolean(false);
 
-    public boolean textureLoaded = false;
+    private static @Nullable HybridTexture fallbackHybridTexture = null;
+    private static final AtomicBoolean fallbackLoadingFailed = new AtomicBoolean(false);
 
-    private boolean isExternal = false;
-    private OnlineImageElementClient reference = null;
+    private final AtomicBoolean autoSize = new AtomicBoolean(false);
 
-    DynamicTexture dynamicTexture = null;
+    private static final int DEFAULT_WIDTH = 64;
+    private static final int DEFAULT_HEIGHT = 64;
 
     public ImageElementClient(
             float x, float y,
@@ -51,7 +53,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             float factor,
             float rotation,
             String path,
-            UUID parentId
+            ParentElementId parentId
     ) {
         super(x, y, width, height, factor, rotation, path, parentId);
     }
@@ -61,32 +63,22 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             float width, float height,
             float factor,
             float rotation,
-            Texture texture,
-            UUID parentId
+            String path,
+            ElementId id,
+            ParentElementId parentId
     ) {
-        super(x, y, width, height, factor, rotation, null, parentId);
-        this.elementTexture = texture;
-        this.textureLoaded = true; // Assume dynTexture is loaded if provided
+        super(x, y, width, height, factor, rotation, path, id, parentId);
     }
 
     public ImageElementClient(
             float x, float y,
-            float width, float height,
             float factor,
-            float rotation,
             String path,
-            UUID id,
-            UUID parentId
+            ParentElementId parentId
     ) {
-        this(x, y, width, height, factor, rotation, path, parentId);
-        this.id = id; // Set the ID for the element
-    }
-
-    public void checkSize() {
-        if (this.width == -1 || this.height == -1) {
-            MyWorldTrafficAddition.LOGGER.debug("ImageElement has not been initialized properly! x, y, width or height is -1! Sizing auto!");
-            this.sizeAuto();
-        }
+        super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, factor, 0, path, parentId);
+        autoSize.set(true);
+        // TODO: Maybe make an option to center the image after auto sizing? Currently it will be top left corner. Check with ElementAddWindow.
     }
 
     private ImVec2 p0, p1, p2, p3;
@@ -94,17 +86,16 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     /**
      * Renders the image element in an ImGui Context.
      */
+    @Override
     public void renderImGui(float scale) {
-        ImDrawList drawList = ImGui.getWindowDrawList();
+        ensureFallbackLoaded();
 
-        if (!this.textureLoaded) this.loadTexture();
-
-        if (this.getTexture() == null) {
-            MyWorldTrafficAddition.LOGGER.error("Texture is null for ImageElement!");
+        if (fallbackHybridTexture == null || !fallbackHybridTexture.isUsableImGui())
             return;
-        }
 
-        checkSize();
+        ensureTextureLoaded();
+
+        ImDrawList drawList = ImGui.getWindowDrawList();
 
         ImVec2 windowPos = new ImVec2(ImGui.getCursorScreenPosX(), ImGui.getCursorScreenPosY());
         float[] color = this.getColor();
@@ -128,8 +119,12 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         float uv2X = 1.0f, uv2Y = 1.0f;
         float uv3X = 0.0f, uv3Y = 1.0f;
 
+        var texture = hybridTexture != null && hybridTexture.isUsableImGui() ? hybridTexture : fallbackHybridTexture;
+
+        texture.touch();
+
         drawList.addImageQuad(
-                this.getTexture().getTextureId(),
+                texture.getImGuiTexture().getTextureId(),
                 p0.x, p0.y,
                 p1.x, p1.y,
                 p2.x, p2.y,
@@ -150,6 +145,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
      * @param light Light level
      * @param facing Direction the element should face
      */
+    @SuppressWarnings("ExtractMethodRecommender")
     @Override
     public void renderMinecraft(
             @NonNull SubmitNodeCollector queue,
@@ -159,6 +155,13 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             int light,
             Direction facing
     ) {
+        ensureFallbackLoaded();
+
+        if (fallbackHybridTexture == null || !fallbackHybridTexture.isUsableMinecraft())
+            return;
+
+        ensureTextureLoaded();
+
         int overlay = OverlayTexture.NO_OVERLAY;
 
         float w = this.calcBlocks(getWidth());
@@ -174,32 +177,22 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         BlockPosFloat shiftForward = new BlockPosFloat(0, 0, 0).offset(facing, ClientElementInterface.zOffset + ((indexInList + 1) * 0.00001f));
         BlockPosFloat renderPos = new BlockPosFloat(0, y * (-1), 0).offset(getRightSideDirection(facing.getOpposite()), x);
 
-        DynamicTexture texture = isExternal ? reference.dynamicTexture : dynamicTexture;
+        var texture = this.hybridTexture != null && this.hybridTexture.isUsableMinecraft() ?
+                this.hybridTexture :
+                fallbackHybridTexture;
 
-        if (texture == null) {
-            if (isExternal) {
-                texture = new DynamicTexture(this.getResourcePath(), Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "dynamic." + Crypto.encodeBase32(this.getResourcePath()).toLowerCase()), false)
-                        .smartRegisterTexture()
-                        .registerInManager()
-                        .subscribe();
-
-                reference.dynamicTexture = texture;
-            } else {
-                texture = new DynamicTexture(this.getResourcePath(), IdentifierUtils.trimAssets(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, this.getResourcePath())), true); // Do not register
-                dynamicTexture = texture;
-            }
-        }
+        texture.touch();
 
         // Bind texture to vertices
         CustomRenderLayer.ImageLayering imageLayering = new CustomRenderLayer.ImageLayering(
                 zOffset,
                 CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_CUTOUT,
-                texture.getId()); // Custom Render Layer to prevent z-fighting
+                texture.getIdentifier()
+        ); // Custom Render Layer to prevent z-fighting
 
         RenderType renderLayer = imageLayering.buildRenderType();
 
         poseStack.pushPose();
-        Matrix4f positionMatrix = poseStack.last().pose();
 
         poseStack.translate(0, csbeHeight - h, 0); // Render element on top left corner (Default Position)
         poseStack.translate(shiftForward.x, shiftForward.y, shiftForward.z); // Shift element forward depending on layer position to prevent z-fighting
@@ -215,7 +208,8 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         poseStack.mulPose(Axis.ZN.rotationDegrees(rotation));
         poseStack.translate(-w / 2, -h / 2, 0); // Move origin back
 
-        // Top left
+        Matrix4f positionMatrix = poseStack.last().pose();
+
         queue.submitCustomGeometry(poseStack, renderLayer, (_, vertexConsumer) -> {
             vertexConsumer.addVertex(positionMatrix, 0 , 0, 0)
                     .setUv(0, 1)
@@ -252,25 +246,6 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         poseStack.popPose();
     }
 
-    @Override
-    public void markTextureStale() {
-        // Do not mark as stale if it's a normal image element as those are static and should always be available
-    }
-
-    /**
-     * Sets the UV coordinates of the image element
-     * @param p0tl Top left UV coordinate
-     * @param p1tr Top right UV coordinate
-     * @param p2br Bottom right UV coordinate
-     * @param p3bl Bottom left UV coordinate
-     */
-    public void setUV(ImVec2 p0tl, ImVec2 p1tr, ImVec2 p2br, ImVec2 p3bl) {
-        this.p0 = p0tl;
-        this.p1 = p1tr;
-        this.p2 = p2br;
-        this.p3 = p3bl;
-    }
-
     /**
      * Rotates the dynTexture by a given angle
      * @param angle The angle to rotate by
@@ -288,60 +263,88 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         p3 = rotatePivot(p3, center, radians);
     }
 
-    @Override
-    public DynamicTexture getDynamicTexture() {
-        return dynamicTexture;
+    private static void ensureFallbackLoaded() {
+        if (fallbackHybridTexture != null || !fallbackLoadingFailed.get())
+            return;
+
+        try {
+            ImGuiTexture imguiFallbackTexture = ImGuiTextureFactory.fromStream(
+                    Objects.requireNonNull(MyWorldTrafficAddition.class.getResourceAsStream("/assets/myworld_traffic_addition/textures/imgui/element_icon.png")),
+                    MyWorldTrafficAddition.MOD_ID + ":ImageFallbackTexture"
+            );
+
+            fallbackHybridTexture = HybridTexture.ofImGuiTexture(
+                    imguiFallbackTexture,
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "image_element.fallback")
+            );
+
+            fallbackHybridTexture.pin(); // Don't let the fallback texture be swept away by the HybridTextureSweeper
+            fallbackHybridTexture.register();
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to load fallback texture for ImageElement!", e);
+            fallbackLoadingFailed.set(true);
+        }
     }
 
-    @Override // TexturableElementInterface
-    public Texture getTexture() {
-        return elementTexture;
-    }
+    /**
+     * Loads the texture for the image element. If the texture fails to load, it will not be attempted in the future.
+     */
+    private void ensureTextureLoaded() {
+        if (textureLoadFailed.get()) return;
 
-    @Override // TexturableElementInterface
-    public void loadTexture() {
-        if (resourcePath == null || resourcePath.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.debug("Error (Loading dynTexture on ImageElement): Couldn't load dynTexture because resource path is empty!");
+        if (
+                this.hybridTexture != null &&
+                this.hybridTexture.isUsableMinecraft() &&
+                this.hybridTexture.isUsableImGui()
+        ) {
             return;
         }
 
-        elementTexture = Textures.smartRegisterTexture(resourcePath);
-        textureLoaded = true;
-    }
+        Identifier key = Identifier.fromNamespaceAndPath(
+                MyWorldTrafficAddition.MOD_ID,
+                Encoding.encodeBase32(resourcePath)
+        );
 
-    @Override // TexturableElementInterface
-    public void setTexture(Texture texture) {
-        this.elementTexture = texture;
-    }
+        Optional<HybridTexture> loadedTexture = HybridTexture.tryGetFromManager(key);
 
-    @Override // TexturableElementInterface
-    public boolean isTextureLoaded() {
-        return textureLoaded;
-    }
-
-    // Always call after loadTexture() was called!
-
-    public void sizeAuto() {
-        if (elementTexture.isEmpty()) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine size because dynTexture hasn't been initialized! Initialize with ImageElement.loadTexture()!");
+        if (loadedTexture.isPresent()) {
+            this.hybridTexture = loadedTexture.get();
             return;
         }
 
-        float w = elementTexture.getWidth();
-        float h = elementTexture.getHeight();
+        try {
+            ImGuiTexture imGuiTexture = ImGuiTextureFactory.fromStream(
+                    Objects.requireNonNull(MyWorldTrafficAddition.class.getResourceAsStream(resourcePath)),
+                    "Image Element Texture " + key
+            );
 
-        if (w == -1) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine width because width in Texture class is -1. Possible cause: No dynTexture ID has been associated with that resource path. Make sure that the dynTexture has been registered!");
+            this.hybridTexture = HybridTexture.ofImGuiTexture(imGuiTexture, key);
+            this.hybridTexture.pin();
+            /* ↑ Pin the texture ↑ because the same texture is shared across ImageElements */
+        } catch (Exception e) {
+            MyWorldTrafficAddition.LOGGER.error("Failed to load fallback texture for ImageElement!", e);
+            textureLoadFailed.set(true);
             return;
         }
 
-        if (h == -1) {
-            System.err.println("Error (Loading ImageElement size): Couldn't determine height because height in Texture class is -1. Possible cause: No dynTexture ID has been associated with that resource path. Make sure that the dynTexture has been registered!");
+        if (autoSize.get())
+            setSizeToTexture();
+    }
+
+    /**
+     * Sets the size of the image element to the size of the texture. If the texture is not loaded, it will print an
+     * error message.
+     */
+    public void setSizeToTexture() {
+        if (hybridTexture == null) {
+            MyWorldTrafficAddition.LOGGER.warn("Error autosizing image element: Texture has not been loaded yet!");
             return;
         }
 
-        setHeight(h);
-        setWidth(w);
+        float width = hybridTexture.getTextureWidth(0);
+        float height = hybridTexture.getTextureHeight(0);
+
+        setSize(width, height);
     }
 
     @Override
@@ -370,17 +373,13 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         return copy;
     }
 
-    public ImageElementClient fromOnlineImage(OnlineImageElementClient reference, boolean isResource) {
-        this.resourcePath = reference.getResourcePath();
-        this.isExternal = !isResource;
-        this.resourcePath = reference.getResourcePath();
-        this.reference = reference;
-        return this;
+    @Override
+    public @Nullable ImGuiTexture getThumbnailTexture() {
+        return this.hybridTexture != null ? this.hybridTexture.getImGuiTexture() : null;
     }
 
     @Override
-    public void renderPreview(float w, float h) {
-        int textureId = this.getTexture().isEmpty() ? CommonTextures.NOT_FOUND_PLACEHOLDER.getTextureId() : this.getTexture().getTextureId();
-        ImGui.image(textureId, w ,h);
+    public String getGenericTranslatableName() {
+        return "Image Element";
     }
 }

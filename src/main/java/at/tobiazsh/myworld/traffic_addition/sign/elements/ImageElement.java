@@ -14,6 +14,8 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
  * 2. render()
  */
 
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import com.google.gson.JsonObject;
 
@@ -22,36 +24,54 @@ import java.util.UUID;
 public class ImageElement extends BaseElement {
 
 	public String resourcePath;
-	public Texture elementTexture = new Texture();
 
-	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath, UUID parentId) {
-		super(x, y, width, height, factor, parentId);
+	public ImageElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			String resourcePath,
+			ParentElementId parentId
+	) {
+		super(x, y, width, height, factor, rotation, parentId);
 		this.resourcePath = resourcePath;
-		this.rotation = rotation;
 	}
 
-	public ImageElement(float x, float y, float width, float height, float factor, float rotation, String resourcePath, UUID parentId, UUID id) {
-		super(x, y, width, height, factor, parentId);
+	public ImageElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			float rotation,
+			String resourcePath,
+			ElementId id,
+			ParentElementId parentId
+	) {
+		super(x, y, width, height, factor, rotation, id, parentId);
 		this.resourcePath = resourcePath;
-		this.rotation = rotation;
-		this.id = id;
 	}
 
-	public ImageElement(float x, float y, float width, float height, float factor, String resourcePath, UUID parentId) {
+	public ImageElement(
+			float x,
+			float y,
+			float width,
+			float height,
+			float factor,
+			String resourcePath,
+			ParentElementId parentId
+	) {
 		this(x, y, width, height, factor, 0, resourcePath, parentId);
 	}
 
-	public ImageElement(float factor, String resourcePath, UUID parentId) {
+	public ImageElement(float factor, String resourcePath, ParentElementId parentId) {
 		this(0, 0, -1, -1, factor, resourcePath, parentId);
 	}
 
 	public String getResourcePath() {
 		return resourcePath;
-	}
-
-	public ImageElement setResourcePath(String resourcePath) {
-		this.resourcePath = resourcePath;
-		return this;
 	}
 
 	@Override

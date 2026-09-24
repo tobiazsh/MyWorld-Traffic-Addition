@@ -1,37 +1,41 @@
 package at.tobiazsh.myworld.traffic_addition.sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonObject;
 
 import java.util.UUID;
 
-public class OnlineImageElement extends ImageElement {
+public class OnlineImageElement extends BaseElement {
 
     protected final UUID pictureReference;
 
-//    public OnlineImageElement(float x, float y, float width, float height, float factor, float rotation, UUID pictureReference, String parentId) {
-//        super(x, y, width, height, factor, rotation, (String) null, parentId);
-//        this.pictureReference = pictureReference;
-//    }
-
-    public OnlineImageElement(float x, float y, float width, float height, float factor, float rotation, UUID pictureReference, UUID parentId) {
-        super(x, y, width, height, factor, rotation, null, parentId);
+    public OnlineImageElement(
+            float x,
+            float y,
+            float width,
+            float height,
+            float factor,
+            float rotation,
+            UUID pictureReference,
+            ElementId id,
+            ParentElementId parentId
+    ) {
+        super(x, y, width, height, factor, rotation, id, parentId);
         this.pictureReference = pictureReference;
     }
 
-    public OnlineImageElement(float x, float y, float width, float height, float factor, float rotation, UUID pictureReference, UUID parentId, UUID id) {
-        super(x, y, width, height, factor, rotation, null, parentId, id);
-        this.pictureReference = pictureReference;
-    }
-
-
-//    public OnlineImageElement(float x, float y, float width, float height, float factor, UUID pictureReference, String parentId) {
-//        super(x, y, width, height, factor, null, parentId);
-//        this.pictureReference = pictureReference;
-//    }
-
-    public OnlineImageElement(float factor, UUID pictureReference, UUID parentId) {
-        super(factor, null, parentId);
-        this.pictureReference = pictureReference;
+    public OnlineImageElement(
+            float x,
+            float y,
+            float width,
+            float height,
+            float factor,
+            float rotation,
+            UUID pictureReference,
+            ParentElementId parentId
+    ) {
+        this(x, y, width, height, factor, rotation, pictureReference, ElementId.random(), parentId);
     }
 
     public UUID getPictureReference() {

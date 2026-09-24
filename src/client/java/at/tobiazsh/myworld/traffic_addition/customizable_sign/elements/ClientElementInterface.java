@@ -1,9 +1,14 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.PropertyViewerExtension;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
 
 public interface ClientElementInterface extends BaseElementInterface {
     float zOffset = 0.08f;
@@ -27,14 +32,11 @@ public interface ClientElementInterface extends BaseElementInterface {
      */
     ClientElementInterface copy();
 
-    /**
-     * Renders a preview of the element in the sign editor. Used for the element list.
-     * Must be used inside an ImGui window.
-     */
-    void renderPreview(float w, float h);
+    default Optional<PropertyViewerExtension> getPropertyViewerExtension() {
+        return Optional.empty();
+    }
 
-    /**
-     * Disposes resources used by the element.
-     */
-    default void dispose() { }
+    @Nullable ImGuiTexture getThumbnailTexture();
+
+    String getGenericTranslatableName();
 }

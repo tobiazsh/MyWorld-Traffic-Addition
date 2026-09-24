@@ -2,31 +2,47 @@ package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.GroupElement;
-import at.tobiazsh.myworld.traffic_addition.texture.Textures;
-import imgui.ImGui;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
+
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
+
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GroupElementClient extends GroupElement implements ClientElementInterface {
 
-    private static final int groupIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/group.png").getTextureId();
+    private static @Nullable ImGuiTexture groupIcon = null;
+    private static boolean triedCreateTexture = false; // Flag to ensure we only try to create the texture once
 
     private final List<ClientElementInterface> clientElements;
+    private List<ClientElementInterface> clientElementsView = List.of(); // Unmodifiable view of the client elements list
     private boolean expanded = false;
 
-    public GroupElementClient(float x, float y, float width, float height, float rotation, UUID id, UUID parentId) {
-        super(x, y, width, height, rotation, parentId, id);
+    public GroupElementClient(
+            float x,
+            float y,
+            float width,
+            float height,
+            float rotation,
+            ElementId id,
+            ParentElementId parentId
+    ) {
+        super(x, y, width, height, rotation, id, parentId);
         clientElements = new CopyOnWriteArrayList<>();
     }
 
     @Override
     public void renderImGui(float scale) {
+        createTextures();
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
     }
 
@@ -47,8 +63,16 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         }
     }
 
+    /**
+     * Returns an unmodifiable view of the client elements list.
+     */
     public List<ClientElementInterface> getClientElements() {
-        return clientElements;
+        return clientElementsView;
+    }
+
+    private void onChildrenModified() {
+        setBounds();
+        clientElementsView = List.copyOf(clientElements); // Update the unmodifiable view
     }
 
     public List<ClientElementInterface> unpackClient() {
@@ -66,57 +90,57 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     }
 
     public void addClientElement(ClientElementInterface element) {
-        element.setParentId(this.getId());
+        element.setParentId(this.getId().toParent());
         clientElements.add(element);
-        setBounds();
+        onChildrenModified();
     }
 
     public void addClientElement(int index, ClientElementInterface element) {
-        element.setParentId(this.getId());
+        element.setParentId(this.getId().toParent());
         clientElements.add(index, element);
-        setBounds();
+        onChildrenModified();
     }
 
     public void addClientElementFirst(ClientElementInterface element) {
-        element.setParentId(this.getId());
+        element.setParentId(this.getId().toParent());
         clientElements.addFirst(element);
-        setBounds();
+        onChildrenModified();
     }
 
     public void addAllElements(List<ClientElementInterface> elements) {
-        elements.forEach(e -> e.setParentId(this.getId()));
+        elements.forEach(e -> e.setParentId(this.getId().toParent()));
         clientElements.addAll(elements);
-        setBounds();
+        onChildrenModified();
     }
 
     public void addAllElements(int index, List<ClientElementInterface> elements) {
-        elements.forEach(e -> e.setParentId(this.getId()));
+        elements.forEach(e -> e.setParentId(this.getId().toParent()));
         clientElements.addAll(index, elements);
-        setBounds();
+        onChildrenModified();
     }
 
     public void setClientElements(List<ClientElementInterface> elements) {
         clientElements.clear();
-        elements.forEach(e -> e.setParentId(this.getId()));
+        elements.forEach(e -> e.setParentId(this.getId().toParent()));
         clientElements.addAll(elements);
-        setBounds();
+        onChildrenModified();
     }
 
     public void removeClientElement(ClientElementInterface element) {
         clientElements.remove(element);
-        setBounds();
+        onChildrenModified();
     }
 
     public void removeClientElement(int index) {
         clientElements.remove(index);
-        setBounds();
+        onChildrenModified();
     }
 
     @Override
     public void setFactor(float factor) {
         super.setFactor(factor);
         clientElements.forEach(e -> e.setFactor(factor)); // Update factor for all client elements
-        calculateBounds(); // Recalculate bounds after factor change
+        onChildrenModified();
     }
 
     @Override
@@ -231,21 +255,28 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         super.setWidth(width); // Do so for the super class
     }
 
-    @Override
-    public void renderPreview(float w, float h) {
-        ImGui.image(groupIconId, w, h);
+    private void createTextures() {
+        if (groupIcon == null && !triedCreateTexture) {
+            try {
+                groupIcon = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(getClass().getResourceAsStream("/assets/myworld_traffic_addition/textures/imgui/icons/group.png")),
+                        "Group Icon"
+                );
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.error("Could not create group icon texture", e);
+            }
+        }
+
+        triedCreateTexture = true;
     }
 
     @Override
-    public void dispose() {
-        // recursively dispose children
-        clientElements.forEach(e -> {
-            try {
-                e.dispose();
-            } catch (Exception ex) {
-                MyWorldTrafficAddition.LOGGER.error("Could not dispose element: {}", e.getName(), ex);
-            }
-        });
-        clientElements.clear();
+    public @Nullable ImGuiTexture getThumbnailTexture() {
+        return groupIcon;
+    }
+
+    @Override
+    public String getGenericTranslatableName() {
+        return "Group Element"; // TODO: Add translation support
     }
 }

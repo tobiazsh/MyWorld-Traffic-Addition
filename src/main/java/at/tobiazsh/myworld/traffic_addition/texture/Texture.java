@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.stb.STBImage.*;
 
+@Deprecated
 public class Texture {
 	private int textureId;
 	private int width = -1, height = -1, channels = -1;

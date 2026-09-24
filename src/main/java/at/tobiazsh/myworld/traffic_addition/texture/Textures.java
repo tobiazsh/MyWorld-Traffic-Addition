@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class Textures {
 	public static Map<String, Texture> loadedTextures = new HashMap<>();
 
