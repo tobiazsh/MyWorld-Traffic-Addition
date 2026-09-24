@@ -57,18 +57,18 @@ public class OnlineImageCache {
 
     /**
      * Caches an image to the cache directory. Overwrites any existing file with the same name.
+     *
      * @param imageBytesPng The byte array of the image (any format).
      * @param imageName The name of the image file to be saved in the cache directory - including the extension!
+     *
+     * @return The path to the cached image file.
+     * @throws IOException If an I/O error occurs while writing the image to the cache directory.
      */
-    public static Path cacheImage(byte[] imageBytesPng, String imageName) {
+    public static Path cacheImage(byte[] imageBytesPng, String imageName) throws IOException {
         Path cacheDir = ClientCustomImageDirectory.getCacheImageDir();
         Path imagePath = cacheDir.resolve(imageName);
 
-        try {
-            Files.write(imagePath, imageBytesPng);
-        } catch (IOException e) {
-            MyWorldTrafficAddition.LOGGER.error("Failed to cache image: {}", e.getMessage());
-        }
+        Files.write(imagePath, imageBytesPng);
 
         return imagePath;
     }

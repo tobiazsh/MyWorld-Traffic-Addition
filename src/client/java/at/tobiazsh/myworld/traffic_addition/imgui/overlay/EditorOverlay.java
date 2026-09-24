@@ -11,7 +11,7 @@ public final class EditorOverlay implements ImGuiOverlay {
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
     public final ErrorPopup errorPopup = new ErrorPopup("editor_error_popup");
-    private final SignEditor signEditor = new SignEditor("main_sign_editor", errorPopup);
+    public final SignEditor signEditor = new SignEditor("main_sign_editor", errorPopup);
 
     private boolean isVisible = false;
 

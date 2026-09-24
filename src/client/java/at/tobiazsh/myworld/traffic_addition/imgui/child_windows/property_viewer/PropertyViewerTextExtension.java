@@ -4,8 +4,9 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.font.FontDefinition;
-import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontHelper;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontRepository;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
@@ -13,7 +14,6 @@ import imgui.type.ImString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
@@ -22,7 +22,6 @@ import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslation
  */
 public class PropertyViewerTextExtension implements PropertyViewerExtension {
 
-    private final AtomicBoolean pushedBold = new AtomicBoolean(false);
     private final ImString textBuffer = new ImString(512);
     private TextElementClient element;
 
@@ -30,6 +29,8 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
     private final ImInt fontIndex = new ImInt();
     private List<FontDefinition> availableFonts = new ArrayList<>();
     private List<String> availableFontNames = new ArrayList<>();
+
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
     @Override
     public void render(String id) {
@@ -39,9 +40,9 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
     }
 
     private void renderTextControls(String id) {
-        FontHelper.pushRobotoBold(pushedBold);
+        fontScope.push(DefaultFonts.RobotoBold);
         ImGui.text(trIC("text.mwta.sign-editor.property-extension.text.text.header", id, "textCtrlHeader"));
-        FontHelper.popRobotoBold(pushedBold);
+        fontScope.pop();
 
         if (ImGui.inputText(
                 trIC("text.mwta.sign-editor.property-extension.text.text.input", id, "textCtrlInput"),
@@ -55,9 +56,9 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
 
     private void renderFontControls(String id) {
         if (ImGui.beginChild(id + "fontControls")) {
-            FontHelper.pushRobotoBold(pushedBold);
+            fontScope.push(DefaultFonts.RobotoBold);
             ImGui.text(trIC("text.mwta.sign-editor.property-extension.text.font.header", id, "fontCtrlHeader"));
-            FontHelper.popRobotoBold(pushedBold);
+            fontScope.pop();
 
             ImGui.inputFloat(
                     trIC("text.mwta.sign-editor.property-extension.text.font.size", id, "fontCtrlSize"),

@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.cache.LRUCache;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ConfirmationPopup;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import net.minecraft.resources.Identifier;
@@ -18,7 +19,10 @@ public class CachingPreferencePage extends PreferencePage {
 
     public CachingPreferencePage(ImGuiFontScope fontScope) {
         super(fontScope);
+        this.confirmationPopup = new ConfirmationPopup("caching_preference_page_confirmation_popup", fontScope);
     }
+
+    private final ConfirmationPopup confirmationPopup;
 
     @Override
     public @NonNull Identifier getId() {
@@ -32,6 +36,8 @@ public class CachingPreferencePage extends PreferencePage {
 
     @Override
     public void draw() {
+        confirmationPopup.render();
+
         settingDrawInfo(
                 tr("ImGui.Main.Preferences.SettingTitle", "Clear all Caches"), // Clear all Caches
                 tr("ImGui.Main.Preferences.SettingDescription", "Clear all Caches") // Clear all Caches Description
@@ -84,13 +90,13 @@ public class CachingPreferencePage extends PreferencePage {
 
     private void drawClearCacheModal() {
         if (ImGui.beginPopupModal(tr("ImGui.Main.Preferences.Misc", "Clear Cache"))) {
-            ImGui.pushFont(ImGuiImpl.RobotoBold);
+            fontScope.push(DefaultFonts.RobotoBold);
             ImGui.text(tr("ImGui.Main.Preferences.Misc", "Clear Caches for") + " ..."); // Clear Cache for ...
-            ImGui.popFont();
+            fontScope.pop();
 
             LRUCache.getRegisteredCaches().forEach((s, cache) -> {
                 if (ImGui.button(s.replaceAll("_", " "))) {
-                    ConfirmationPopup.show(
+                    confirmationPopup.show(
                             tr("ImGui.Main.Preferences.Misc", "Do you really want to clear the cache?"),
                             tr("ImGui.Global.Warn", "This action cannot be undone!"),
                             (confirmed) -> {

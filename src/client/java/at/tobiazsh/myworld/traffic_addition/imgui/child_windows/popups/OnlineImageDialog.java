@@ -1,19 +1,20 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiImpl;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.image.ImageUtils;
 import at.tobiazsh.myworld.traffic_addition.image.ByteImage;
 import at.tobiazsh.myworld.traffic_addition.filesystem.ClientCustomImageDirectory;
-import at.tobiazsh.myworld.traffic_addition.utils.crypto.Crypto;
+import at.tobiazsh.myworld.traffic_addition.utils.crypto.Encoding;
 import at.tobiazsh.myworld.traffic_addition.image.ImageLoader;
 import at.tobiazsh.myworld.traffic_addition.network.ImageDownloader;
 import at.tobiazsh.myworld.traffic_addition.gui.NativeFileDialogs;
 import at.tobiazsh.myworld.traffic_addition.texture.Texture;
 import com.google.gson.JsonObject;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.type.ImBoolean;
@@ -85,6 +86,10 @@ public class OnlineImageDialog {
     private static float progressPopupWidth = 500;
     private static float progressPopupHeight = 160;
 
+    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+    private final ConfirmationPopup confirmationPopup;
+    private final ErrorPopup errorPopup;
+
     public enum OnlineImageDialogPage {
         NEW,
         EDIT,
@@ -96,6 +101,8 @@ public class OnlineImageDialog {
 
     public OnlineImageDialog(String key) {
         this.key = key;
+        this.confirmationPopup = new ConfirmationPopup(key, fontScope);
+        this.errorPopup = new ErrorPopup(key);
     }
 
 
@@ -111,7 +118,8 @@ public class OnlineImageDialog {
                 case CONFIRM -> renderConfirmPage();
             }
 
-            ConfirmationPopup.render(); // Render confirmation popup
+            this.confirmationPopup.render();
+            this.errorPopup.render();
 
             ImGui.endPopup();
         }
@@ -143,7 +151,7 @@ public class OnlineImageDialog {
             if (downloader.hasError()) { // Error occurred
                 Error e = downloader.getError();
                 MyWorldTrafficAddition.LOGGER.error(e.getMessage());
-                ErrorPopup.open(e, null);
+                this.errorPopup.open(e, null);
             } else {
                 setImageData(result);
             }
@@ -183,7 +191,7 @@ public class OnlineImageDialog {
                 result = ImageLoader.loadFileToStbImage(Path.of(path));
             } catch (IOException e) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to load image from file: {}", e.getMessage());
-                ErrorPopup.open(
+                this.errorPopup.open(
                         new Error(
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Error loading image from file"),
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Could not load image from the selected file. Please check the file and try again.")),
@@ -219,10 +227,10 @@ public class OnlineImageDialog {
         ImGui.setNextWindowSize(progressPopupWidth, progressPopupHeight);
         if (ImGui.beginPopupModal(tr("ImGui.Child.PopUps.OnlineImageDialog", "Operation Progress"))) {
 
-            ImGui.pushFont(ImGuiImpl.RobotoBoldMedium); // Set font to bold
+            fontScope.push(DefaultFonts.RobotoBoldMedium); // Set font to bold
             ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(progressPopupTitle)) / 2); // Center title
             ImGui.text(progressPopupTitle); // Display title
-            ImGui.popFont(); // Pop Font
+            fontScope.pop();
 
             ImGui.progressBar(operationProgress);
             ImGui.textWrapped(operationMessage); // Status text
@@ -243,10 +251,10 @@ public class OnlineImageDialog {
         windowWidth = 800;
         windowHeight = 300;
 
-        ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
+        fontScope.push(DefaultFonts.RobotoBoldMedium);
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Enter Image URL"))) / 2); // Center title
         ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Enter Image URL")); // Display title
-        ImGui.popFont(); // Pop Font
+        fontScope.pop();
 
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - ImGui.calcItemWidth()) / 2); // Center input field
         ImGui.inputText("##imageUrlDummylabel", imageUrl); // Input field for URL
@@ -293,10 +301,10 @@ public class OnlineImageDialog {
         windowWidth = 1300;
         windowHeight = 600;
 
-        ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
+        fontScope.push(DefaultFonts.RobotoBoldMedium);
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Image Size Options"))) / 2); // Center title
         ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Image Size Options")); // Display title
-        ImGui.popFont(); // Pop Font
+        fontScope.pop();
 
         ImGui.separator();
 
@@ -309,7 +317,7 @@ public class OnlineImageDialog {
             abort();
             ImGui.closeCurrentPopup();
 
-            ErrorPopup.open(
+            this.errorPopup.open(
                     new Error(
                             "An error occured!",
                             "MyWorld Traffic Addition has failed at loading the image data. Please check the logs for more details."
@@ -363,10 +371,10 @@ public class OnlineImageDialog {
             close(true);
         }, this::abort);
 
-        ImGui.pushFont(ImGuiImpl.RobotoBoldMedium);
+        fontScope.push(DefaultFonts.RobotoBoldMedium);
         ImGui.setCursorPosX((ImGui.getWindowSizeX() - MyWorldTrafficAdditionClient.imgui.calcTextSizeX(tr("ImGui.Child.PopUps.OnlineImageDialog", "Confirm Image Upload"))) / 2); // Center title
         ImGui.text(tr("ImGui.Child.PopUps.OnlineImageDialog", "Confirm Image Upload")); // Display title
-        ImGui.popFont();
+        fontScope.pop();
 
         ImGui.inputText(tr("Global", "Name"), imageName); // Input field for image name
         ImGui.textWrapped(tr("ImGui.Child.PopUps.OnlineImageDialog", "Give your image a unique name"));
@@ -396,7 +404,7 @@ public class OnlineImageDialog {
 
             if (result.getC() == null) {
                 MyWorldTrafficAddition.LOGGER.error("Failed to scale image! Aborting...");
-                ConfirmationPopup.show(
+                this.confirmationPopup.show(
                         tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to scale image"),
                         tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "MyWorld Traffic Addition has failed at scaling the image. Please check the logs for more details. Continue anyway (all actions are permanent)"),
                         (callback) -> {
@@ -471,7 +479,7 @@ public class OnlineImageDialog {
         uploadThread = new Thread(() -> { // Upload in a new thread
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding image to PNG");
             byte[] imagePngData = ImageUtils.encodePNG(imageData, imgW.get(0), imgH.get(0), imgC.get(0), () -> {
-                ErrorPopup.open(
+                this.errorPopup.open(
                         new Error(
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Error encoding image to PNG!"),
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Could not encode image to PNG! Check logs!")),
@@ -494,7 +502,7 @@ public class OnlineImageDialog {
 
             operationMessage = tr("ImGui.Child.PopUps.OnlineImageDialog", "Encoding thumbnail to PNG");
             byte[] thumbnailPngData = ImageUtils.encodePNG(thumbnail.getC(), thumbnail.getA(), thumbnail.getB(), imgC.get(0), () -> {
-                ErrorPopup.open(
+                this.errorPopup.open(
                         new Error(
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Error encoding thumbnail to PNG!"),
                                 tr("ImGui.Child.PopUps.OnlineImageDialog", "Could not encode thumbnail to PNG! Check logs!")),
@@ -589,7 +597,7 @@ public class OnlineImageDialog {
     private static JsonObject createMetadata(String imageName, UUID playerUuid, UUID imageUuid, boolean hide, Instant uploadDateTime) {
         JsonObject metadata = new JsonObject();
         metadata.addProperty("UploaderUUID", playerUuid.toString());
-        metadata.addProperty("ImageName", Crypto.encodeBase64(imageName));
+        metadata.addProperty("ImageName", Encoding.encodeBase64(imageName));
         metadata.addProperty("ImageUUID", imageUuid.toString());
         metadata.addProperty("CreationDate", uploadDateTime.toString());
         metadata.addProperty("Hidden", hide);
@@ -619,7 +627,7 @@ public class OnlineImageDialog {
     private void restoreOriginal() {
         if (originalImageData == null) {
             MyWorldTrafficAddition.LOGGER.error("Backup image data does not exist!");
-            ConfirmationPopup.show(
+            this.confirmationPopup.show(
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to load backup"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "MyWorld Traffic Addition has failed at loading the image backup. Continue anyways"),
                     (callback) -> {
@@ -652,7 +660,7 @@ public class OnlineImageDialog {
 
     private void createImageBackup() {
         if (imageData == null) {
-            ConfirmationPopup.show(
+            this.confirmationPopup.show(
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to create backup"),
                     tr("ImGui.Child.PopUps.OnlineImageDialog.Error", "Failed to create a backup of the image file. Please check the logs for more details. Continue anyway (all actions are permanent)"),
                     (callback)-> {

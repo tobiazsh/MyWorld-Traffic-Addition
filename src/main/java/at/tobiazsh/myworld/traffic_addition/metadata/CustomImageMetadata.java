@@ -1,7 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.metadata;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.utils.crypto.Crypto;
+import at.tobiazsh.myworld.traffic_addition.utils.crypto.Encoding;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -42,7 +42,7 @@ public class CustomImageMetadata {
     }
 
     public String getImageName() {
-        return Crypto.decodeBase64(imageName);
+        return Encoding.decodeBase64(imageName);
     }
 
     public boolean isHidden() {

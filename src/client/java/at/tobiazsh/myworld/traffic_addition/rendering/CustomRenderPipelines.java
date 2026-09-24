@@ -16,12 +16,10 @@ public class CustomRenderPipelines {
 
 
     static {
-        RENDERTYPE_CUSTOM_TEXT_INTENSITY = RenderPipelines.register(RenderPipeline.builder(TEXT_SNIPPET, FOG_SNIPPET)
+        RENDERTYPE_CUSTOM_TEXT_INTENSITY = RenderPipelines.register(RenderPipeline.builder(TEXT_SNIPPET, MATRICES_FOG_SNIPPET)
                 .withLocation("pipeline/text_intensity")
                 .withVertexShader("core/rendertype_text_intensity")
                 .withFragmentShader("core/rendertype_text_intensity")
-                .withSampler("Sampler0")
-                .withSampler("Sampler2")
                 .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false, 0f, 0f))
                 .build()
         );
@@ -30,8 +28,6 @@ public class CustomRenderPipelines {
                 .withLocation("pipeline/sign_element_translucent")
                 .withVertexShader("core/entity")
                 .withFragmentShader("core/entity")
-                .withSampler("Sampler0")
-                .withSampler("Sampler2")
                 .withShaderDefine("NO_CARDINAL_LIGHTING")
                 .build()
         );
@@ -40,9 +36,6 @@ public class CustomRenderPipelines {
                 .withLocation("pipeline/sign_element_cutout")
                 .withVertexShader("core/entity")
                 .withFragmentShader("core/entity")
-                .withSampler("Sampler0")
-                .withSampler("Sampler1")
-                .withSampler("Sampler2")
                 .withShaderDefine("ALPHA_CUTOUT", 0.1F)
                 .withShaderDefine("NO_CARDINAL_LIGHTING")
                 .build()
@@ -52,9 +45,6 @@ public class CustomRenderPipelines {
                 .withLocation("pipeline/sign_element_solid")
                 .withVertexShader("core/entity")
                 .withFragmentShader("core/entity")
-                .withSampler("Sampler0")
-                .withSampler("Sampler1")
-                .withSampler("Sampler2")
                 .withShaderDefine("NO_CARDINAL_LIGHTING")
                 .build()
         );

@@ -8,8 +8,8 @@ import dev.tobiazsh.imguib3d.client.overlay.ImGuiOverlay;
 
 public class ConfigurationOverlay implements ImGuiOverlay {
 
-    private final PreferencesWindow preferencesWindow = new PreferencesWindow("main_preferences_window");
-    private final AboutWindow aboutWindow = new AboutWindow("main_about_window");
+    public final PreferencesWindow preferencesWindow = new PreferencesWindow("main_preferences_window");
+    public final AboutWindow aboutWindow = new AboutWindow("main_about_window");
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
@@ -21,6 +21,8 @@ public class ConfigurationOverlay implements ImGuiOverlay {
 
     public void close() {
         isVisible = false;
+        preferencesWindow.show = false;
+        aboutWindow.close();
     }
 
     @Override

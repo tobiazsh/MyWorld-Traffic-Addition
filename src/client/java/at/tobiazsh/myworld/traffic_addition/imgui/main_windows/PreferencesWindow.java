@@ -15,14 +15,17 @@ public class PreferencesWindow {
 
     public static final PreferencesWindow INSTANCE = new PreferencesWindow("main_preferences_window");
 
-    public PreferencesWindow(String id) {
-        this.id = id;
-    }
-
     private final String id;
     public boolean show = false;
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+    private final ConfirmationPopup confirmationPopup;
+
+    public PreferencesWindow(String id) {
+        this.id = id;
+        this.confirmationPopup = new ConfirmationPopup("preferences_window_confirmation_popup_" + id, fontScope);
+    }
+
 
     private final ImmutableList<PreferencePage> pages = ImmutableList.of(
             new LanguagePreferencePage(fontScope),
@@ -49,7 +52,7 @@ public class PreferencesWindow {
 
         menuBar();
 
-        ConfirmationPopup.render();
+        confirmationPopup.render();
 
         drawPages();
 
@@ -103,7 +106,7 @@ public class PreferencesWindow {
     }
 
     private void dispose() {
-        ConfirmationPopup.show(
+        confirmationPopup.show(
                 tr("ImGui.Global.Warn", "Do you really want to exit?"),
                 tr("ImGui.Global.Warn", "All unsaved changes will be gone!"), (confirmed) -> {
             if (confirmed) this.show = false;

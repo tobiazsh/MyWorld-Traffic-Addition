@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.screens;
 
+import at.tobiazsh.myworld.traffic_addition.imgui.overlay.OverlayStorage;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
@@ -149,7 +150,18 @@ public class CustomizableSignSettingScreen extends Screen {
         // Re-opening fixes issues with button focus when using space in ImGui
         reopen(false);
         this.clearAll();
-        SignEditor.open(this.pos, this.world, isInitialized);
+        OverlayStorage.EDITOR_OVERLAY.open();
+        SignEditor editor = OverlayStorage.EDITOR_OVERLAY.signEditor;
+
+        BlockEntity blockEntity = this.world.getBlockEntity(this.pos);
+
+        if (!(blockEntity instanceof CustomizableSignBlockEntity customizableSignBlockEntity)) {
+            this.player.sendSystemMessage(Component.literal("Failed to open sign editor! Sign is not a customizable sign."));
+            return;
+        }
+
+        editor.initialize(customizableSignBlockEntity);
+        editor.open();
     }
 
     private void reopen(boolean showChildren) {
@@ -221,7 +233,7 @@ public class CustomizableSignSettingScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        boolean close = SignEditor.isClosed();
+        boolean close = OverlayStorage.EDITOR_OVERLAY.signEditor.isOpen();
 
         if (close)
             showChildren = true;

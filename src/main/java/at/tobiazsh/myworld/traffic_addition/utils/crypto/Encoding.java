@@ -2,9 +2,13 @@ package at.tobiazsh.myworld.traffic_addition.utils.crypto;
 
 import org.apache.commons.codec.binary.Base32;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class Crypto {
+public class Encoding {
+
+    private static final Base32 BASE32 = new Base32();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
 
     /**
      * Encodes a string using Base64 and also makes it URL-safe by replacing certain characters. Only decode with the decode method from this class.
@@ -12,7 +16,7 @@ public class Crypto {
      * @return The encoded string
      */
     public static String encodeBase64(String plainText) {
-        String encoded = Base64.getEncoder().encodeToString(plainText.getBytes()); // Encode
+        String encoded = BASE64_ENCODER.encodeToString(plainText.getBytes()); // Encode
         encoded = encoded.replace("+", "-").replace("/", "_").replace("=", ""); // Make URL-Safe
         return encoded;
     }
@@ -42,9 +46,8 @@ public class Crypto {
      * @return The encoded string
      */
     public static String encodeBase32(String plainText) {
-        Base32 base32 = new Base32();
-        String encoded = base32.encodeAsString(plainText.getBytes());
-        encoded = encoded.replace("=", ""); // Remove padding
+        String encoded = BASE32.encodeAsString(plainText.getBytes(StandardCharsets.UTF_8))
+                .replace("=", ""); // Remove padding
         return encoded;
     }
 
@@ -62,6 +65,6 @@ public class Crypto {
 
         Base32 base32 = new Base32();
         byte[] decodedBytes = base32.decode(encodedText);
-        return new String(decodedBytes);
+        return new String(decodedBytes, StandardCharsets.UTF_8);
     }
 }

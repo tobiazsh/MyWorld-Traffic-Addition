@@ -1,6 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups;
 
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
 
@@ -8,17 +11,28 @@ import static at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator.tr;
 
 public class ConfirmationPopup {
 
-    private static String text;
-    private static String information;
-    private static boolean confirmed = false;
-    private static boolean shouldOpen = false;
-    public static boolean waitingOnInput = false;
+    private String text;
+    private String information;
+    private boolean confirmed = false;
+    private boolean shouldOpen = false;
 
-    public static void render() {
-        if (ImGui.beginPopupModal(tr("Global", "Warning") + "##Popup")) {
-            ImGui.pushFont(ImGuiImpl.RobotoBold);
+    public boolean waitingOnInput = false;
+
+    private final ImGuiFontScope fontScope;
+    private final String id;
+
+    public ConfirmationPopup(String id, ImGuiFontScope fontScope) {
+        this.id = id;
+        this.fontScope = fontScope;
+    }
+
+    public void render() {
+        if (ImGui.beginPopupModal(tr("Global", "Warning") + "##Popup" + id)) {
+
+            fontScope.push(DefaultFonts.RobotoBold);
             ImGui.text(text);
-            ImGui.popFont();
+            fontScope.pop();
+
             ImGui.text(information);
 
             if (ImGui.button(tr("Global", "Yes"))) {
@@ -43,15 +57,15 @@ public class ConfirmationPopup {
         }
     }
 
-    public static void show(String warn, String info, Consumer<Boolean> callback) {
+    public void show(String warn, String info, Consumer<Boolean> callback) {
         text = warn;
         information = info;
 
-        ConfirmationPopup.shouldOpen = true;
-        ConfirmationPopup.waitingOnInput = true;
+        shouldOpen = true;
+        waitingOnInput = true;
 
         new Thread(() -> {
-           while (ConfirmationPopup.waitingOnInput) {
+           while (waitingOnInput) {
                try { Thread.sleep(500); } catch (InterruptedException ignore) {}
            }
 

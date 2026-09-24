@@ -8,9 +8,9 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  */
 
 
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
+import at.tobiazsh.myworld.traffic_addition.imgui.overlay.OverlayStorage;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
@@ -31,6 +31,8 @@ public class AboutWindow {
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
+    private boolean show = false;
+
     private final String id;
 
     public AboutWindow(String id) {
@@ -38,12 +40,15 @@ public class AboutWindow {
     }
 
     public void render() {
+        if (!show) return;
+
         ImGui.begin(tr("Global", "About") + " " + title + "###" + id, ImGuiWindowFlags.MenuBar);
 
         if (ImGui.beginMenuBar()) {
             if (ImGui.beginMenu(tr("Global", "Window"))) { // "Window" menu
                 if (ImGui.menuItem(tr("Global", "Quit to Minecraft"))) { // "Quit to Minecraft" menu item
-                    ImGuiRenderer.showAboutWindow = false;
+                    close();
+                    OverlayStorage.CONFIGURATION_OVERLAY.close();
                 }
                 ImGui.endMenu();
             }
@@ -80,5 +85,13 @@ public class AboutWindow {
         fontScope.pop();
 
         ImGui.end();
+    }
+
+    public void close() {
+        show = false;
+    }
+
+    public void open() {
+        show = true;
     }
 }

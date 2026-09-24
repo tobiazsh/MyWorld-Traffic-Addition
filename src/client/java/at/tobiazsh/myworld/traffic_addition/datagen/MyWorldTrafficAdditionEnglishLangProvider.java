@@ -48,4 +48,8 @@ public class MyWorldTrafficAdditionEnglishLangProvider extends FabricLanguagePro
         translationBuilder.add("text.mwta.error-popup.message", "Message");
         translationBuilder.add("text.mwta.error-popup.close", "Close");
     }
+
+    private void generateElementListWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
+        translationBuilder.add("text.mwta.element-list.title", "Element List");
+    }
 }

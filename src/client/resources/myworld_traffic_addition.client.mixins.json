@@ -15,6 +15,5 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "GameRendererMixin"
   ]
 }

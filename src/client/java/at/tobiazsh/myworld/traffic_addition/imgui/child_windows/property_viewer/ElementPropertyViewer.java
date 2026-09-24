@@ -77,9 +77,6 @@ public class ElementPropertyViewer {
 
     public void render() {
         if (ImGui.begin("Element Properties##" + id)) {
-            // TODO: Export naming into element window to make it more intuitive for the user
-            renderName();
-            ImGui.separator();
             renderDimensions();
             ImGui.separator();
             renderRotation();
@@ -90,15 +87,6 @@ public class ElementPropertyViewer {
 
             ImGui.end();
         }
-    }
-
-    private void renderName() {
-        fontScope.push(DefaultFonts.RobotoBold);
-        ImGui.inputText(trIC("text.mwta.sign-editor.property-viewer.name", id, "nameInput"), nameBuffer, 256);
-        fontScope.pop();
-
-        if (ImGui.button(trIC("text.mwta.sign-editor.property-viewer.name.apply", id, "applyNameBtn")))
-            element.setName(nameBuffer.get());
     }
 
     private void renderDimensions() {

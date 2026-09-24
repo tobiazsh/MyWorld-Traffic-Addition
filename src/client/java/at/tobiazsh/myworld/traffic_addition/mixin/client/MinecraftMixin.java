@@ -42,7 +42,7 @@ public abstract class MinecraftMixin implements MinecraftClientAccessor {
         return this.fontManager;
     }
 
-    @Inject(method = "destroy", at = @At("HEAD"))
+    @Inject(method = "stop", at = @At("HEAD"))
     public void stop(CallbackInfo ci) {
         MyWorldTrafficAdditionClient.onStopGame();
     }

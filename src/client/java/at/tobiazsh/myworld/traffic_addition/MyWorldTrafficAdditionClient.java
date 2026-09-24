@@ -1,16 +1,11 @@
 package at.tobiazsh.myworld.traffic_addition;
 
-import at.tobiazsh.myworld.traffic_addition.block_entities.*;
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TexturableElementInterface;
 import at.tobiazsh.myworld.traffic_addition.fix.CustomizableSignReinitializer;
-import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontHelper;
-import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.ErrorPopup;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
-import at.tobiazsh.myworld.traffic_addition.imgui.ImGuiRenderer;
-import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.PreferencesWindow;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
+import at.tobiazsh.myworld.traffic_addition.imgui.overlay.OverlayStorage;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
@@ -30,23 +25,24 @@ import at.tobiazsh.myworld.traffic_addition.screens.SignPoleRotationScreen;
 import at.tobiazsh.myworld.traffic_addition.error.Error;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
-import at.tobiazsh.myworld.traffic_addition.texture.DynamicTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.HybridTextureSweeper;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
+import dev.tobiazsh.imguib3d.client.overlay.ImGuiOverlayManager;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +52,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.ModBlockEntities.*;
 
@@ -94,24 +90,31 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		addGlobalReceivers();
 		GlobalReceiverClient.bulkRegisterGlobalReceiversClient(globalReceiverClients);
 
+		ImGuiOverlayManager.getInstance().add(OverlayStorage.EDITOR_OVERLAY);
+
 		addBlockEntityRenderers();
 		RegistrableBlockEntityRender.bulkRegisterBlockEntityRenderers(blockEntityRenderers);
 
 		ClientCommandRegistrationCallback.EVENT.register(ModCommandsClient::initialize);
 
-        registerOnChunkUnload();
-
 		registerCustomProtocols();
 
 		OnlineImageCache.createCacheDir();
 
-		ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
+		ClientLifecycleEvents.CLIENT_STARTED.register((_) -> {
 			MyWorldTrafficAddition.LOGGER.info("Loading Background Atlases from the Autoload folder...");
 			autoloadBackgroundAtlases();
 			MyWorldTrafficAddition.LOGGER.info("Loaded {} background atlases", BackgroundLoader.BACKGROUND_SPRITES.size());
 
 			MyWorldTrafficAddition.LOGGER.info("Registering essential fonts...");
-			FontHelper.registerAll();
+			DefaultFonts.registerAll();
+		});
+
+		// Sweep all HybridTextures every tick to free up memory
+		ClientTickEvents.END_CLIENT_TICK.register((minecraft) -> {
+			Level level = minecraft.level;
+			if (level == null) return;
+			HybridTextureSweeper.getInstance().sweep(level.getGameTime());
 		});
 
 		CustomizableSignReinitializer.register();
@@ -167,9 +170,14 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 				new GlobalReceiverClient<>(ShowImGuiWindow.Id, (payload -> {
 					switch (ModVars.ImGuiWindowIds.values()[payload.windowId()]) {
-						case ABOUT -> ImGuiRenderer.showAboutWindow = true;
-						case DEMO -> ImGuiRenderer.showDemoWindow = !ImGuiRenderer.showDemoWindow;
-						case PREF -> PreferencesWindow.INSTANCE.open();
+						case ABOUT -> {
+							OverlayStorage.CONFIGURATION_OVERLAY.open();
+							OverlayStorage.CONFIGURATION_OVERLAY.aboutWindow.render();
+						}
+						case PREF -> {
+							OverlayStorage.CONFIGURATION_OVERLAY.open();
+							OverlayStorage.CONFIGURATION_OVERLAY.preferencesWindow.render();
+						}
 					}
 				})),
 
@@ -189,7 +197,14 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
         CustomClientNetworking.getInstance().registerProtocolHandler(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "get_server_error"), bytes -> {
             Error error = Error.fromBytes(bytes);
-            ErrorPopup.open(error, null);
+
+			SystemToast toast = new SystemToast(
+					SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+					Component.literal(error.getTitle()),
+					Component.literal(error.getMessage())
+			);
+
+			Minecraft.getInstance().gui.toastManager().addToast(toast);
         });
 
 		// Get total number of uploaded images
@@ -230,50 +245,6 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 		MyWorldTrafficAddition.LOGGER.info("Thank you for playing MyWorld Traffic Addition! <3");
 	}
-
-    private static void registerOnChunkUnload() {
-        ClientChunkEvents.CHUNK_UNLOAD.register((ClientLevel world, LevelChunk chunk) -> {
-            for (BlockEntity be : chunk.getBlockEntities().values()) {
-                if (be instanceof CustomizableSignBlockEntity csbEntity) {
-                    customizableSignDeleteUnusedTextures(csbEntity);
-                }
-            }
-        });
-    }
-
-    /**
-     * Deletes all unused textures of the given CustomizableSignBlockEntity (if no elements are using them anymore). This is to prevent memory leaks.
-     * @param blockEntity The CustomizableSignBlockEntity to delete unused textures from.
-     */
-    private static void customizableSignDeleteUnusedTextures(CustomizableSignBlockEntity blockEntity) {
-        Map<BlockPos, List<ClientElementInterface>> elementMap = CustomizableSignBlockEntityRenderer.elements;
-        List<ClientElementInterface> elements = elementMap.get(blockEntity.getBlockPos());
-
-        if (elements == null)
-            return;
-
-        for (ClientElementInterface element : elements) {
-            if (!(element instanceof TexturableElementInterface texturableElement)) // If the element is not texturable, skip it
-                continue;
-
-            if (!texturableElement.isTextureLoaded()) // If the texture is not loaded, skip it
-                continue;
-
-            DynamicTexture texture = texturableElement.getDynamicTexture();
-            if (texture == null)
-                continue;
-
-            try {
-                texture.destroy(); // Won't destroy just yet if there are subscribers
-                texturableElement.markTextureStale(); // Mark texture as stale. NOW it get's destroyed if no subscribers are left
-            } catch (Exception e) {
-                MyWorldTrafficAddition.LOGGER.warn("Could not mark texture stale for {}", texturableElement, e);
-            }
-        }
-
-        // Notify renderer that the chunk got unloaded
-        CustomizableSignBlockEntityRenderer.invalidateTexture(blockEntity.getBlockPos());
-    }
 
 	// ---------------- PREFERENCES ----------------
 
