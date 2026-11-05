@@ -35,8 +35,9 @@
 	"depends": {
 		"fabricloader": ">=0.19.2",
 		"minecraft": [
-            "26.1", "26.1.1", "26.1.2"
+            "~26.2"
 		],
+		"imguib3d": "1.1.2",
 		"java": ">=25",
 		"fabric-api": "*"
 	},
