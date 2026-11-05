@@ -2,6 +2,8 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.block_entities.CustomizableSignBlockEntity;
 import at.tobiazsh.myworld.traffic_addition.data_fix.GlobalDataFixer;
+import at.tobiazsh.myworld.traffic_addition.font.FontGlossary;
+import at.tobiazsh.myworld.traffic_addition.font.ServerFontDiscovery;
 import at.tobiazsh.myworld.traffic_addition.payload.block_modification.*;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomServerNetworking;
@@ -118,6 +120,8 @@ public class MyWorldTrafficAddition implements ModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Counting uploaded images and reading metadata into memory...");
 		OnlineImageBackend.countEntriesAndReadIntoMemory();
 		MyWorldTrafficAddition.LOGGER.info("Found {} uploaded images", OnlineImageBackend.totalEntries);
+
+		initFonts();
 
 		MyWorldTrafficAddition.LOGGER.info("{} {} initialized successfully!", MOD_ID_HUMAN, MOD_VERSION);
 	}
@@ -327,6 +331,19 @@ public class MyWorldTrafficAddition implements ModInitializer {
 				serverPreferencesLocation.toFile(),
 				serverPreferences,
 				MyWorldTrafficAddition.LOGGER::error
+		);
+	}
+
+	private void initFonts() {
+		MyWorldTrafficAddition.LOGGER.info("Searching for fonts in server font directory...");
+		ServerFontDiscovery.getInstance().discover();
+
+		int numDefaultFonts = FontGlossary.getInstance().getDefaultFonts().size();
+		int numCustomFonts = FontGlossary.getInstance().getKnownFonts().size() - numDefaultFonts;
+
+		MyWorldTrafficAddition.LOGGER.info(
+				"Found {} default fonts and met {} custom fonts",
+				numDefaultFonts, numCustomFonts
 		);
 	}
 
