@@ -9,12 +9,9 @@ package at.tobiazsh.myworld.traffic_addition.mixin.client;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 
-import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
-import at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.font.FontManager;
-import com.mojang.blaze3d.platform.Window;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -30,7 +27,7 @@ public abstract class MinecraftMixin implements MinecraftClientAccessor {
     // Injects after fontManager has been initialized
     @Inject(method = "updateFontOptions", at = @At("TAIL"))
     private void createTTFRenderer(CallbackInfo ci) {
-        CustomMinecraftFont.initFonts();
+        //CustomMinecraftFont.initFonts();
     }
 
     @Shadow

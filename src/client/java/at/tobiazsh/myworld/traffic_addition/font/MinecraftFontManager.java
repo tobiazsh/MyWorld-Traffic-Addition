@@ -24,11 +24,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class DynamicFontManager {
+public final class MinecraftFontManager {
 
-    private DynamicFontManager() {}
+    private MinecraftFontManager() {}
 
-    private static final DynamicFontManager INSTANCE = new DynamicFontManager();
+    private static final MinecraftFontManager INSTANCE = new MinecraftFontManager();
 
     @FunctionalInterface
     public interface ThrowingSupplier<T> {
@@ -41,7 +41,7 @@ public final class DynamicFontManager {
     private final Map<LogicalFont, DynamicMinecraftFont> fontEntries = new ConcurrentHashMap<>();
     private final Map<LogicalFont, CompletableFuture<DynamicMinecraftFont>> inFlight = new ConcurrentHashMap<>();
 
-    public static DynamicFontManager getInstance() {
+    public static MinecraftFontManager getInstance() {
         return INSTANCE;
     }
 
@@ -99,7 +99,7 @@ public final class DynamicFontManager {
 
     }
 
-    public DynamicMinecraftFont loadInternal(
+    private DynamicMinecraftFont loadInternal(
             LogicalFont logicalFont,
             GlyphProvider glyphProvider,
             FontLifetime lifetime

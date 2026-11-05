@@ -7,7 +7,6 @@
     "TextureManagerAccessor",
     "font.BakedSheetGlyphMixin",
     "font.FontManagerAccessor",
-    "font.FontManagerMixin",
     "font.FontTextureMixin",
     "font.GlyphStitcherMixin"
   ],

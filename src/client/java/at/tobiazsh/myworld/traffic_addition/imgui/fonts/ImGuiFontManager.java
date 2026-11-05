@@ -2,7 +2,6 @@ package at.tobiazsh.myworld.traffic_addition.imgui.fonts;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.font.FontDefinition;
-import at.tobiazsh.myworld.traffic_addition.font.FontLifetime;
 import at.tobiazsh.myworld.traffic_addition.font.LogicalFont;
 import dev.tobiazsh.imguib3d.client.font.FontIdentifier;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFont;
@@ -10,100 +9,75 @@ import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class FontManager {
+public final class ImGuiFontManager {
 
-    private FontManager() {}
+    private ImGuiFontManager() {}
 
-    private static final FontManager INSTANCE = new FontManager();
-    private final long gracePeriodTicks = 15; // 15 seconds
+    private static final ImGuiFontManager INSTANCE = new ImGuiFontManager();
+    private static final long STALE_SECONDS = 15L;
 
-    public static FontManager getInstance() {
+    public static ImGuiFontManager getInstance() {
         return INSTANCE;
     }
-
-    public record FontEntry(
-            LogicalFont logicalFont,
-            FontLifetime lifetime,
-            ImGuiFont imguiFont,
-            float fontSize,
-            AtomicLong lastUsedTimeSeconds
-    ) {}
 
     public record FontKey(
             LogicalFont logicalFont,
             int fontSize
     ) {}
 
-    private final Map<FontKey, FontEntry> fontEntries = new ConcurrentHashMap<>();
+    private final Map<FontKey, LivingImGuiFont> fontEntries = new ConcurrentHashMap<>();
+    private final Map<FontKey, CompletableFuture<Optional<LivingImGuiFont>>> inFlight = new ConcurrentHashMap<>();
 
-    private CompletableFuture<ImGuiFont> loadFont(FontDefinition fontDefinition, int fontSize) {
+    public CompletableFuture<Optional<LivingImGuiFont>> loadOrGet(FontDefinition fontDefinition, int fontSize) {
         var fontKey = new FontKey(fontDefinition.getLogicalFont(), fontSize);
-        var lifetime = fontDefinition.getLifetime();
 
-        FontEntry existingEntry = fontEntries.get(fontKey);
-
+        LivingImGuiFont existingEntry = fontEntries.get(fontKey);
         if (existingEntry != null) {
-            existingEntry.lastUsedTimeSeconds.set(currentTimeSeconds());
-            return CompletableFuture.completedFuture(existingEntry.imguiFont);
+            existingEntry.use();
+            return CompletableFuture.completedFuture(Optional.of(existingEntry));
         }
 
-        try {
-            return ImGuiFont.loadFromStreamTTF(
-                    fontDefinition.openStream(),
-                    FontIdentifier.of(MyWorldTrafficAddition.MOD_ID, fontDefinition.getLogicalFont().fontHash()),
-                    fontSize
-            );
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(new IOException("Default font is not loaded!", e));
-        }
-    }
+        if (inFlight.containsKey(fontKey))
+            return inFlight.get(fontKey);
 
-    public CompletableFuture<ImGuiFont> loadAndRegisterFont(FontDefinition fontDefinition, int fontSize) {
-        return CompletableFuture.supplyAsync(() -> {
+        return inFlight.computeIfAbsent(fontKey, ignored -> {
             try {
-                return loadFont(fontDefinition, fontSize).join();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                return ImGuiFont.loadFromStreamTTF(
+                        fontDefinition.openStream(),
+                        FontIdentifier.of(MyWorldTrafficAddition.MOD_ID, fontDefinition.getLogicalFont().fontHash()),
+                        fontSize
+                ).thenApplyAsync(font -> {
+                    var livingFont = new LivingImGuiFont(
+                            fontDefinition.getLogicalFont(),
+                            fontDefinition.getLifetime(),
+                            font,
+                            fontSize,
+                            new AtomicLong(System.currentTimeMillis() / 1000L)
+                    );
+
+                    fontEntries.put(fontKey, livingFont);
+                    return Optional.of(livingFont);
+                }, Minecraft.getInstance()).whenComplete((_, _) -> inFlight.remove(fontKey));
+            } catch (IOException e) {
+                // Return an empty future if the font cannot be loaded
+                return CompletableFuture.completedFuture(Optional.empty());
             }
-        }).thenApplyAsync(imguiFont -> {
-            var entry = new FontEntry(
-                    fontDefinition.getLogicalFont(),
-                    fontDefinition.getLifetime(),
-                    imguiFont,
-                    fontSize,
-                    new AtomicLong(currentTimeSeconds())
-            );
-
-            var fontKey = new FontKey(fontDefinition.getLogicalFont(), fontSize);
-
-            fontEntries.put(fontKey, entry);
-            return imguiFont;
-        }, Minecraft.getInstance());
-    }
-
-    public void tick() {
-        long currentTime = currentTimeSeconds();
-
-        for (Map.Entry<FontKey, FontEntry> entry : fontEntries.entrySet()) {
-            if (currentTime - entry.getValue().lastUsedTimeSeconds.get() > gracePeriodTicks) {
-                fontEntries.remove(entry.getKey());
-                entry.getValue().imguiFont.disposeLater();
-                continue;
-            }
-
-            entry.getValue().lastUsedTimeSeconds.set(currentTime);
-        }
-    }
-
-    private long currentTimeSeconds() {
-        return Math.round(System.currentTimeMillis() * 0.001);
+        });
     }
 
     public void sweep() {
+        long currentTimeSeconds = System.currentTimeMillis() / 1000L;
 
+        for (Map.Entry<FontKey, LivingImGuiFont> entry : fontEntries.entrySet()) {
+            if (entry.getValue().isStale(currentTimeSeconds, STALE_SECONDS)) {
+                entry.getValue().imguiFont().disposeLater();
+                fontEntries.remove(entry.getKey());
+            }
+        }
     }
 }

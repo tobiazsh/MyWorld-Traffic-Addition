@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
+@SuppressWarnings("LocalMayUseName")
 @Mixin(GlyphStitcher.class)
 public abstract class GlyphStitcherMixin {
 
@@ -34,14 +35,14 @@ public abstract class GlyphStitcherMixin {
             )
     )
     private void alterBakedSheetGlyph(
-            GlyphInfo glyphInfo,
+            GlyphInfo info,
             GlyphBitmap glyphBitmap,
             CallbackInfoReturnable<BakedSheetGlyph> cir,
-            @Local Identifier identifier,
-            @Local(ordinal = 0) FontTexture fontTexture2
+            @Local Identifier name,
+            @Local(ordinal = 0) FontTexture texture
     ) {
         // Store texture identifier inside the font texture
-        ((FontTextureAccessor) fontTexture2).myworldTrafficAddition$setFontTexture(identifier);
+        ((FontTextureAccessor) texture).myworldTrafficAddition$setFontTexture(name);
     }
 
     @Redirect(
@@ -53,19 +54,19 @@ public abstract class GlyphStitcherMixin {
     )
     private BakedSheetGlyph redirectAdd(
             FontTexture instance,
-            GlyphInfo glyphInfo,
-            GlyphBitmap glyphBitmap
+            GlyphInfo info,
+            GlyphBitmap glyph
     ) {
-        BakedSheetGlyph glyph = instance.add(glyphInfo, glyphBitmap);
+        BakedSheetGlyph bakedGlyph = instance.add(info, glyph);
 
-        if (glyph != null) {
+        if (bakedGlyph != null) {
             Identifier id = ((FontTextureAccessor) instance)
                     .myworldTrafficAddition$getFontTexture();
 
-            ((GlyphIdentifierHolder) glyph)
+            ((GlyphIdentifierHolder) bakedGlyph)
                     .myworldTrafficAddition$setTexture(id);
         }
 
-        return glyph;
+        return bakedGlyph;
     }
 }

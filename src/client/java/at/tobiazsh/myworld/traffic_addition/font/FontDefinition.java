@@ -6,6 +6,9 @@ import java.io.InputStream;
 public interface FontDefinition {
     String getId();
     String getDisplayName();
+    LogicalFont getLogicalFont();
+    DynamicTrueTypeLoader.Options getOptions();
+    FontLifetime getLifetime();
 
     /**
      * Opens an input stream to the font data (TTF).

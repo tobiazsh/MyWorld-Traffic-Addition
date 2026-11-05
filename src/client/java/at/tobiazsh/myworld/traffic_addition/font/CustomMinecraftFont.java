@@ -1,7 +1,5 @@
 package at.tobiazsh.myworld.traffic_addition.font;
 
-import at.tobiazsh.myworld.traffic_addition.filesystem.FileSystem;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.font.FontManagerAccessor;
@@ -19,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Deprecated
 public class CustomMinecraftFont extends BasicFont {
 
     private static final Minecraft client = Minecraft.getInstance();
@@ -27,17 +26,17 @@ public class CustomMinecraftFont extends BasicFont {
     public static List<CustomMinecraftFont> loadedFonts = new ArrayList<>();
     public static final List<String> availableFonts = new ArrayList<>();
 
-    static {
-        FileSystem.Folder fontsFolder = FontManager.getAvailableFonts();
-
-        if (fontsFolder.content.isEmpty()) {
-            MyWorldTrafficAddition.LOGGER.error("No fonts found in /assets/" + MyWorldTrafficAddition.MOD_ID + "/font/");
-        }
-
-        for (FileSystem.DirectoryElement font : fontsFolder) {
-            availableFonts.add(font.path.replaceFirst("/assets/" + MyWorldTrafficAddition.MOD_ID + "/", ""));
-        }
-    }
+//    static {
+//        FileSystem.Folder fontsFolder = FontManager.getAvailableFonts();
+//
+//        if (fontsFolder.content.isEmpty()) {
+//            MyWorldTrafficAddition.LOGGER.error("No fonts found in /assets/" + MyWorldTrafficAddition.MOD_ID + "/font/");
+//        }
+//
+//        for (FileSystem.DirectoryElement font : fontsFolder) {
+//            availableFonts.add(font.path.replaceFirst("/assets/" + MyWorldTrafficAddition.MOD_ID + "/", ""));
+//        }
+//    }
 
     public CustomMinecraftFont(String fontPath, Font renderer) {
         super(fontPath, SPECIAL_FONT_SIZE.MINECRAFT.getSize());

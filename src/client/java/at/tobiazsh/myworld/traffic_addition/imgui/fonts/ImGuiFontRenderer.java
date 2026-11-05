@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.fonts;
 
 import dev.tobiazsh.imguib3d.client.font.ImGuiFont;
-import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import dev.tobiazsh.imguib3d.client.natives.drawlist.ImDrawListExt;
 import imgui.ImDrawList;
 import imgui.ImGui;
@@ -12,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class FontRenderer {
+public class ImGuiFontRenderer {
 
     private static final int IMGUI_VERTEX_SIZE = 20; // Each ImDrawVert is 20 bytes (currentX, currentY, u, v, color)
     private static final int IMGUI_VERTEX_BYTE_OFFSET = 4; // Each vertex has 4 floats (currentX, currentY, u, v, color)
@@ -27,7 +26,10 @@ public class FontRenderer {
      * @param height The height of the text area.
      * @param color The color of the text in rgba format (0-1) in rgba.
      * @param rotationDegrees The rotation of the text in degrees.
-     * @param pivot The pivot point for rotation (0,0 is top-left, 1,1 is bottom-right).
+     * @param pivotX The x-coordinate of the pivot point for rotation normalized (0,0 is top-left, 1,1 is bottom-right).
+     *               Relative to the bounding box of the vertices. For example, (0.5, 0.5) would rotate around the center.
+     * @param pivotY The y-coordinate of the pivot point for rotation normalized (0,0 is top-left, 1,1 is bottom-right).
+     *               Relative to the bounding box of the vertices. For example, (0.5, 0.5) would rotate around the center.
      * @param text The text to render.
      */
     public static void renderFont(
@@ -38,7 +40,8 @@ public class FontRenderer {
             int height,
             int color,
             float rotationDegrees,
-            @NotNull ImVec2 pivot,
+            float pivotX,
+            float pivotY,
             @NotNull String text
     ) {
         if (width == 0 || height == 0) {
@@ -68,14 +71,6 @@ public class FontRenderer {
                 null
         );
 
-        ImGui.textColored(
-                (int) (color[0] * 255),
-                (int) (color[1] * 255),
-                (int) (color[2] * 255),
-                (int) (color[3] * 255),
-                text
-        );
-
         int endVtxIdx = drawList.getVtxCurrentIdx();
 
         if (beginVtxIdx >= endVtxIdx) {
@@ -98,7 +93,8 @@ public class FontRenderer {
                 beginVtxIdx,
                 endVtxIdx,
                 rotationDegrees,
-                pivot
+                pivotX,
+                pivotY
         );
     }
 
@@ -110,19 +106,22 @@ public class FontRenderer {
      * @param beginVtxIdx The starting index of the vertex range to rotate.
      * @param endVtxIdx The ending index of the vertex range to rotate.
      * @param rotationDegrees The rotation angle in degrees (clockwise).
-     * @param pivot The pivot point for rotation normalized (0,0 is top-left, 1,1 is bottom-right).
-     *              The pivot point is relative to the bounding box of the vertices.
+     * @param pivotX The x-coordinate of the pivot point for rotation normalized (0,0 is top-left, 1,1 is bottom-right).
+     *               Relative to the bounding box of the vertices. For example, (0.5, 0.5) would rotate around the center.
+     * @param pivotY The y-coordinate of the pivot point for rotation normalized (0,0 is top-left, 1,1 is bottom-right).
+     *               Relative to the bounding box of the vertices. For example, (0.5, 0.5) would rotate around the center.
      */
     private static void applyRotation(
             @NotNull ByteBuffer vertices,
             int beginVtxIdx,
             int endVtxIdx,
             float rotationDegrees,
-            @NotNull ImVec2 pivot
+            float pivotX,
+            float pivotY
     ) {
         ImVec4 extremes = findExtremes(vertices, beginVtxIdx, endVtxIdx);
-        float centerX = extremes.x + (extremes.z - extremes.x) * pivot.x;
-        float centerY = extremes.y + (extremes.w - extremes.y) * pivot.y;
+        float centerX = extremes.x + (extremes.z - extremes.x) * pivotX;
+        float centerY = extremes.y + (extremes.w - extremes.y) * pivotY;
 
         float radians = (float) Math.toRadians(rotationDegrees);
         float cosTheta = (float) Math.cos(radians);
