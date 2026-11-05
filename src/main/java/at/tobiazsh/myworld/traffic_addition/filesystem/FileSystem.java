@@ -11,10 +11,12 @@ package at.tobiazsh.myworld.traffic_addition.filesystem;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.utils.PathUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -124,7 +126,7 @@ public class FileSystem {
 	 * List all files in the specified path recursively
 	 * @param path Path to the resource.
 	 * @param fromResource Should the path be retrieved from the client resource? If this value is false, please provide the absolute path.
-	 * @return Folder
+	 * @return Folder or null if there aren't any files in the current folder
 	 * @throws IOException Is thrown when an I/O error occurs while crawling the directory structure from the specified path or when an I/O error occurs while creating the file system
 	 * @throws URISyntaxException Is thrown when an error occurs while creating the URI from the specified path
 	 */
@@ -251,7 +253,7 @@ public class FileSystem {
 		}
 	}
 
-	abstract public static class DirectoryElement {
+	abstract public static class DirectoryElement implements Cloneable {
 		public final String path;
 		public final String name;
         public final boolean isResource;
@@ -300,6 +302,8 @@ public class FileSystem {
 			return new java.io.File(path);
 		}
 
+		public abstract DirectoryElement clone();
+
 		/**
 		 * Get the size of the element.
 		 * @return Size of the element. 0 if it is a folder.
@@ -345,6 +349,38 @@ public class FileSystem {
 		}
 
 		/**
+		 * Creates a deep copy of the current folder, including its content.
+		 */
+		@Override
+		public Folder clone() {
+			var folder = new Folder(this.name, this.path, this.isResource);
+
+			List<DirectoryElement> clonedContent = new ArrayList<>();
+
+			for (DirectoryElement element : this.content)
+				clonedContent.add(element.clone());
+
+			folder.content = clonedContent;
+
+			return folder;
+		}
+
+		/**
+		 * Get a file by its filename from the current folder. Returns null if no matching file is found.
+		 * @param name The filename to search for.
+		 * @return The File object if found, or null if not found.
+		 */
+		public @Nullable File getByFilename(String name) {
+			for (DirectoryElement element : content) {
+				if (element.isFile() && element.name.equals(name)) {
+					return (File) element;
+				}
+			}
+
+			return null; // Return null if no matching file is found
+		}
+
+		/**
 		 * Add content to the currentFolder
 		 * @param directoryElement Element to add
 		 */
@@ -377,7 +413,7 @@ public class FileSystem {
 		}
 
 		/**
-		 * Remove all folders from the entire directory structure
+		 * Remove all folders from the entire directory structure and extract all files (from subfolders) to the root folder
 		 * @return Folder
 		 */
 		public Folder concentrateFiles() {
@@ -481,6 +517,14 @@ public class FileSystem {
 			return file.exists() && file.isFile();
 		}
 
+		/**
+		 * Creates a deep copy of the current file.
+		 */
+		@Override
+		public DirectoryElement clone() {
+			return new File(this.name, this.path, this.filetype, this.isResource);
+		}
+
 		public File(String path, boolean isResource) {
             super(evaluateFileName(path), path, isResource);
         }
@@ -531,6 +575,10 @@ public class FileSystem {
 			)) {
 				return bis.readAllBytes();
 			}
+		}
+
+		public InputStream getInputStream() throws IOException, NullPointerException {
+			return isResource ? Objects.requireNonNull(MyWorldTrafficAddition.class.getResource(path)).openStream() : new FileInputStream(path);
 		}
 	}
 }

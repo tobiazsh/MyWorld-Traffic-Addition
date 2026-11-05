@@ -10,12 +10,14 @@ import java.io.InputStream;
  */
 public class JarFontDefinition implements FontDefinition {
 
-    private String jarPath;
-    private String displayName;
+    private final String jarPath;
+    private final String displayName;
+    private final String json;
 
-    public JarFontDefinition(String jarPath, String displayName) {
+    public JarFontDefinition(String jarPath, String displayName, String json) {
         this.jarPath = jarPath;
         this.displayName = displayName;
+        this.json = json;
     }
 
     @Override
@@ -26,10 +28,5 @@ public class JarFontDefinition implements FontDefinition {
     @Override
     public String getDisplayName() {
         return displayName;
-    }
-
-    @Override
-    public InputStream openStream() throws IOException {
-        return JarFontDefinition.class.getResourceAsStream(jarPath);
     }
 }
