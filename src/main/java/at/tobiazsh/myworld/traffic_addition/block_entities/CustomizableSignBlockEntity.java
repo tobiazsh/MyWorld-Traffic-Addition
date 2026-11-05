@@ -93,7 +93,6 @@ public class CustomizableSignBlockEntity extends BlockEntity {
      * @param payload The payload containing the data to set
      * @param player The player who sent it
      */
-    @Environment(EnvType.SERVER)
     public static void setTransmittedTexture(SetCustomizableSignTexturePayload payload, ServerPlayer player) {
         BlockPos pos = new BlockPos(payload.x(), payload.y(), payload.z());
         BlockEntity blockEntity = player.level().getBlockEntity(pos);
