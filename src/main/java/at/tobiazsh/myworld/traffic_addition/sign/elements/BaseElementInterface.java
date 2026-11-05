@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.font.ServerFont;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
@@ -135,7 +136,7 @@ public interface BaseElementInterface {
                     MAIN_CANVAS_ID
             );
 
-            case TEXT_ELEMENT -> element = new TextElement(
+            case LEGACY_TEXT_ELEMENT -> element = new LegacyTextElement(
                     elementPosition[0], elementPosition[1],
                     size[0], size[1],
                     rotation,
@@ -143,6 +144,23 @@ public interface BaseElementInterface {
 
                     new BasicFont(
                             object.get("FontPath").getAsString(),
+                            object.get("FontSize").getAsFloat()
+                    ),
+
+                    object.get("Text").getAsString(),
+                    false,
+                    id,
+                    MAIN_CANVAS_ID
+            );
+
+            case TEXT_ELEMENT -> element = new TextElement(
+                    elementPosition[0], elementPosition[1],
+                    size[0], size[1],
+                    rotation,
+                    factor,
+
+                    ServerFont.of(
+                            object.get("FontHash").getAsString(),
                             object.get("FontSize").getAsFloat()
                     ),
 

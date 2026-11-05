@@ -9,12 +9,12 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
 
 
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
-import at.tobiazsh.myworld.traffic_addition.font.ServerFont;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonObject;
 
-public class TextElement extends BaseElement {
+@Deprecated(since = "2.0.0")
+public class LegacyTextElement extends BaseElement {
 	protected BasicFont font;
 	protected String text;
 
@@ -22,7 +22,7 @@ public class TextElement extends BaseElement {
 
 	// TODO: Rework fonts
 
-	public TextElement(
+	public LegacyTextElement(
 			float x,
 			float y,
 			float width,
@@ -72,8 +72,8 @@ public class TextElement extends BaseElement {
 
 		object.addProperty("ElementType", ELEMENT_TYPE.LEGACY_TEXT_ELEMENT.ordinal());
 		object.addProperty("Text", text);
-		object.addProperty("FontHash", font.font().fontHash());
-		object.addProperty("FontSize", font.fontSize());
+		object.addProperty("FontPath", font.getFontPath());
+		object.addProperty("FontSize", font.getFontSize());
 
 		return object;
 	}

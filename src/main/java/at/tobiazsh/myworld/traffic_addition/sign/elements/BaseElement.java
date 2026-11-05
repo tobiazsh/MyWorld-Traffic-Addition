@@ -12,8 +12,6 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.util.*;
-
 public abstract class BaseElement implements BaseElementInterface {
 
 	protected float x, y, width, height, factor, rotation;
@@ -42,9 +40,10 @@ public abstract class BaseElement implements BaseElementInterface {
 	public enum ELEMENT_TYPE {
 		NONE,
 		IMAGE_ELEMENT,
-		TEXT_ELEMENT,
+		LEGACY_TEXT_ELEMENT, // before font rework
 		GROUP_ELEMENT,
 		ONLINE_IMAGE_ELEMENT,
+		TEXT_ELEMENT
 	}
 
 	public BaseElement(
@@ -245,8 +244,8 @@ public abstract class BaseElement implements BaseElementInterface {
 	}
 
 	/**
-	 * Sets the color of the element (0-255)
-	 * @param color The color to set
+	 * Sets the color of the element (0-1)
+	 * @param color The color to set in rgba format (0-1)
 	 */
 	public void setColor(float[] color) {
 		this.color = color;
@@ -254,7 +253,7 @@ public abstract class BaseElement implements BaseElementInterface {
 
 	/**
 	 * Returns the color of the element (0-1)
-	 * @return The color of the element normalized
+	 * @return The color of the element normalized in rgba format (0-1)
 	 */
 	public float[] getColor() {
 		return new float[]{color[0], color[1], color[2], color[3]};

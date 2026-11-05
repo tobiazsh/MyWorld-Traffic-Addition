@@ -1,5 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.font;
 
+@Deprecated(since = "2.0.0")
 public class BasicFont {
     private float fontSize;
     private String fontPath;
