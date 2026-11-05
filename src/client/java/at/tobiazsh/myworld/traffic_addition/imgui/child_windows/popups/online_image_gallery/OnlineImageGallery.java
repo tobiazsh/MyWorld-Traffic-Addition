@@ -74,9 +74,9 @@ public class OnlineImageGallery {
     }
 
     public void render() {
-        ImGui.pushID(id);
-
         if (!shouldRender) return;
+        
+        ImGui.pushID(id);
 
         if (!texturesToFree.isEmpty()) {
             texturesToFree.forEach(Texture::delete); // Free all textures that are no longer needed
