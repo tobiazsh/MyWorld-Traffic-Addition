@@ -4,34 +4,32 @@ import at.tobiazsh.myworld.traffic_addition.data.CustomizableSignTextureData;
 import at.tobiazsh.myworld.traffic_addition.payload.CustomPayload;
 import at.tobiazsh.myworld.traffic_addition.payload.CustomPayloadDecoder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 public record SetCustomizableSignTexturePayload(int x, int y, int z, CustomizableSignTextureData textureData) implements CustomPayload {
 
     public static final CustomPayloadDecoder<SetCustomizableSignTexturePayload> DECODER = data -> {
-        ByteBuffer buf = ByteBuffer.wrap(data);
+        ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.nativeOrder());
 
-        try {
-            int x = buf.getInt();
-            int y = buf.getInt();
-            int z = buf.getInt();
-            int jsonLength = buf.getInt();
+        int x = buf.getInt();
+        int y = buf.getInt();
+        int z = buf.getInt();
+        int jsonLength = buf.getInt();
 
-            byte[] jsonBytes = new byte[jsonLength];
-            buf.get(jsonBytes);
+        byte[] jsonBytes = new byte[jsonLength];
+        buf.get(jsonBytes);
 
-            String jsonString = new String(jsonBytes);
-            JsonObject textureDataJson = new JsonObject();
-            textureDataJson.addProperty("texture", jsonString);
+        String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
+        JsonObject textureDataJson = JsonParser.parseString(jsonString).getAsJsonObject();
 
-            var textureData = CustomizableSignTextureData.fromJson(textureDataJson);
+        var textureData = CustomizableSignTextureData.fromJson(textureDataJson);
 
-            return new SetCustomizableSignTexturePayload(x, y, z, textureData);
-        } finally {
-            MemoryUtil.memFree(buf);
-        }
+        return new SetCustomizableSignTexturePayload(x, y, z, textureData);
     };
 
     @Override
