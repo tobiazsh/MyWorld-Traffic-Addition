@@ -70,7 +70,7 @@ dependencies {
     unitTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // ImGuiB3D
-    implementation "io.github.tobiazsh.imguib3d:${project.minecraft_version}:${project.imguib3d_version}"
+    implementation "dev.tobiazsh.imguib3d:${project.minecraft_version}:${project.imguib3d_version}"
 
     // Other dependencies
     include implementation("io.github.tobiazsh.jengua:Jengua:${project.jengua_version}") // Jengua; Translation library
