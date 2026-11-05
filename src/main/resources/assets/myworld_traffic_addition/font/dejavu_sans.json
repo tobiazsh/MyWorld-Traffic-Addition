@@ -7,5 +7,6 @@
       "size": 12,
       "oversample": 20
     }
-  ]
+  ],
+  "default": true
 }
