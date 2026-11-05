@@ -31,7 +31,9 @@ public class SpriteAtlasManager {
     }
 
     /**
-     * Loads a sprite atlas from a JSON file
+     * Loads a sprite atlas from a JSON file into memory.
+     * <p>Does not load the actual sprite's file content.
+     *    Use {@link SpriteAtlas#loadTexture(boolean)} to load the texture from the sprite atlas.
      * @param jsonFile the JSON file to load the sprite atlas from
      * @return the loaded SpriteAtlas
      * @throws IOException If an error occurs while reading the file (such as a non-existent file)
@@ -49,8 +51,11 @@ public class SpriteAtlasManager {
         // malformed or the sprite atlas cannot be created
         SpriteAtlas atlas = SpriteAtlas.fromJson(JsonParser.parseString(jsonContent).getAsJsonObject());
 
-        atlas.loadTexture(); // Load the texture into the TextureManager so that we can get the atlas dimensions for sprite initialization
-        atlas.initializeSprites(); // Initialize all sprites to convert their raw data into actual sprites
+        // Do not initialize sprites here. They will be initialized on-the-go when the sprite atlas' content is loaded
+        // into memory the first time and then kept there until the program is closed. This is to avoid loading all the
+        // sprites into memory at once while starting, which could cause a long loading time and high memory usage if
+        // there are many sprites to be loaded.
+
         atlases.put(atlas.getAtlasId(), atlas); // Add the atlas to the manager
 
         return atlas;

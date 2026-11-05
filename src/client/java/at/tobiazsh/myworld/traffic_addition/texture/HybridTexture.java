@@ -37,11 +37,11 @@ public class HybridTexture extends PrimitiveTexture {
 
     private boolean pinned = false;
 
-    private AtomicLong lastUsedTick = new AtomicLong(0);
+    private final AtomicLong lastUsedTick = new AtomicLong(0);
 
     public HybridTexture(
             @NonNull ImGuiTextureImpl imGuiTexture,
-            Identifier id
+            @NonNull Identifier id
     ) {
         super(
                 imGuiTexture.getGpuTexture(),
@@ -127,6 +127,8 @@ public class HybridTexture extends PrimitiveTexture {
 
     /**
      * Only disposes unpinned textures. If the texture is pinned, it will not be disposed of.
+     * <p>Disposes the texture, unregistering it from Minecraft and disposing the ImGuiTexture.
+     * After calling this method, the texture should not be used anymore.
      */
     public void disposeSafe() {
         if (isPinned())

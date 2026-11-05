@@ -5,10 +5,14 @@ import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotFoundException;
 import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import net.minecraft.resources.Identifier;
 import at.tobiazsh.myworld.traffic_addition.texture.Sprite.RawSpriteData;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -53,7 +57,7 @@ public class SpriteAtlas implements AutoCloseable {
     private final String locationInJar; // String for simplicity. Otherwise, use Identifier if refactor is necessary
     private final String name;
     private final boolean isResource;
-    private final DynamicTexture texture;
+    private HybridTexture texture;
     private final HashMap<Identifier, Sprite> sprites = new HashMap<>(); // Map of sprites by their Identifier
     private final HashSet<RawSpriteData> uninitializedSprites = new HashSet<>();
     private final Identifier atlasId;
@@ -77,14 +81,6 @@ public class SpriteAtlas implements AutoCloseable {
         this.isResource = true; // For now, only support resources; Implemented for future use cases
         this.name = name;
 
-        texture = new DynamicTexture(
-                locationInJar,
-                Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, locationInJar),
-                this.isResource // The "always true" is fine because we only support resources for now but might add file support later
-        );
-
-        texture.dontDestroyWhenPossible(); // Atlases, which are in the JAR, should stay in memory unless explicitly removed
-
         this.uninitializedSprites.addAll(Arrays.asList(sprites));
     }
 
@@ -97,7 +93,7 @@ public class SpriteAtlas implements AutoCloseable {
         this(atlasId, locationInJar, atlasId.toString(), sprites);
     }
 
-    public DynamicTexture getTexture() {
+    public @Nullable HybridTexture getTexture() {
         return texture;
     }
 
@@ -106,32 +102,122 @@ public class SpriteAtlas implements AutoCloseable {
     }
 
     /**
-     * Loads the texture into the TextureManager
+     * Loads the texture from scratch and registers it in Minecraft's TextureManager.
+     * <p>This method should be called after the SpriteAtlas is created and before any sprites are used.
+     * @param force If true, forces the texture to be reloaded even if it is already loaded.
+     *              If false, does nothing if the texture is already loaded.
+     * @throws IOException If the texture could not be loaded (e.g. file not found)
      */
-    public void loadTexture() {
-        texture.smartRegisterTexture();
+    public void loadTexture(boolean force) throws IOException {
+        // Do not unload old textures here. They will be disposed of automatically if unpinned.
+
+        if (!force && isUsable()) {
+            if (!isUsableMinecraft())
+                texture.register(); // Register the texture in Minecraft's TextureManager if it is not already registered
+
+            return;
+        }
+
+        ImGuiTexture imGuiTexture;
+
+        try (var stream = SpriteAtlas.class.getResourceAsStream(locationInJar)) {
+            if (stream == null) {
+                throw new IOException(
+                        "Could not load sprite atlas texture from "
+                        + locationInJar + " because the resource does not exist!"
+                );
+            }
+
+            MyWorldTrafficAddition.LOGGER.info("Uploading sprite atlas texture from " + locationInJar + " into GPU memory...");
+
+            imGuiTexture = ImGuiTextureFactory.fromStream(
+                    stream,
+                    "SpriteAtlas_" + atlasId.toString()
+            );
+        }
+
+        texture = HybridTexture.ofImGuiTexture(
+                imGuiTexture,
+                atlasId
+        );
+
+        texture.register(); // Register the texture in Minecraft's TextureManager
+        this.initializeSprites();
+
+        // Unlike the versions before, we do not pin the texture here as atlases will keep expanding in the mod
+        // and allow for files outside the JAR, it is important that only currently used atlases are kept in memory
+        // (pinned). Therefore, the new version requires explicit registration when using and unregistration when no
+        // longer using the atlas. This is done to prevent hogging memory with unused atlases.
     }
 
+    /**
+     * Unloads the texture and unregisters it from Minecraft's TextureManager.
+     */
+    public void unloadTexture() {
+        if (texture != null) {
+            texture.disposeSafe();
+
+            // This does not set the texture to null. Whether the texture is null or not, is an indication of whether
+            // the texture has never been loaded before. This is to make use of automatic unloading of textures when
+            // no longer used (see HybridTextureSweeper), so we can check here if it must be loaded from 0 again or can
+            // be reused.
+        }
+    }
+
+    /**
+     * Returns all the sprites in an unmodifiable collection, no matter whether the texture is actually loaded or
+     * not. Check before using.
+     */
     public Collection<Sprite> getSprites() {
         return Collections.unmodifiableCollection(sprites.values());
     }
 
-    public boolean isLoaded() {
-        return texture.isLoaded();
+    /**
+     * Informs whether the texture is usable (loaded and not disposed) or not.
+     * <p>Does not check whether the sprite is usable specifically for Minecraft or ImGui.
+     *    Use {@link #isUsableMinecraft()} or {@link #isUsableImGui()} for that.
+     */
+    public boolean isUsable() {
+        return texture != null && texture.isUsable();
+    }
+
+    /**
+     * Checks whether the sprite atlas texture is usable for ImGui rendering.
+     * <p>A texture is considered usable in ImGui if it isn't null and has a valid GPU texture and sampler.
+     */
+    public boolean isUsableImGui() {
+        return texture != null && texture.isUsableImGui();
+    }
+
+    /**
+     * Checks whether the sprite atlas texture is usable for Minecraft rendering.
+     * <p>A texture is considered usable in Minecraft if it isn't null, is registered
+     *    and has a valid GPU texture and sampler.
+     */
+    public boolean isUsableMinecraft() {
+        return texture != null && texture.isUsableMinecraft();
     }
 
     public int getAtlasWidth() throws TextureNotLoadedException {
-        if (!isLoaded())
-            throw new TextureNotLoadedException("Cannot get width of SpriteAtlas " + locationInJar + " because the texture is not loaded yet!");
+        if (!isUsable()) {
+            throw new TextureNotLoadedException(
+                    "Cannot get width of SpriteAtlas " +
+                    locationInJar + " because the texture is not loaded!"
+            );
+        }
 
-        return texture.getWidth();
+        return texture.getTextureWidth(0); // Atlases don't have mipmaps
     }
 
     public int getAtlasHeight() throws TextureNotLoadedException {
-        if (!isLoaded())
-            throw new TextureNotLoadedException("Cannot get height of SpriteAtlas " + locationInJar + " because the texture is not loaded yet!");
+        if (!isUsable()) {
+            throw new TextureNotLoadedException(
+                    "Cannot get height of SpriteAtlas " +
+                    locationInJar + " because the texture is not loaded!"
+            );
+        }
 
-        return texture.getHeight();
+        return texture.getTextureHeight(0);
     }
 
     public Identifier getAtlasId() {
@@ -195,7 +281,7 @@ public class SpriteAtlas implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        texture.close();
+        unloadTexture();
     }
 
     // STATIC METHODS ------------------------------------------------------------

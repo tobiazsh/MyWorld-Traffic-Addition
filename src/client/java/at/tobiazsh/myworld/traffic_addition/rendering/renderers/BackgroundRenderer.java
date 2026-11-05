@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.rendering.renderers;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotFoundException;
+import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotUsableException;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.texture.Sprite;
 import at.tobiazsh.myworld.traffic_addition.texture.SpriteAtlas;
@@ -21,6 +22,8 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
+
+import java.io.IOException;
 
 import static at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface.zOffset;
 
@@ -104,16 +107,21 @@ public class BackgroundRenderer {
 
             try {
                 spriteAtlas = SpriteAtlasManager.INSTANCE.getSpriteAtlas(atlasIdentifier);
+                spriteAtlas.loadTexture(false);
                 bgSpr = spriteAtlas.getSprite(BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders));
 
-                if (bgSpr == null)
+                if (bgSpr == null) {
                     throw new SpriteNotFoundException(
                             "Sprite is with id "
-                            + BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders)
-                            + " isnull!"
+                                    + BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), borders)
+                                    + " isnull!"
                     );
+                } else if (!spriteAtlas.isUsableMinecraft()) {
+                    throw new SpriteNotUsableException("SpriteAtlas is not usable in Minecraft!");
+                }
 
-            } catch (SpriteNotFoundException | NullPointerException e) { // Fallback if error during background getter
+              // ↓ Fallback if error during background getter ↓
+            } catch (SpriteNotFoundException | SpriteNotUsableException | NullPointerException | IOException e) {
                 renderColor(
                         Background.WHITE, // Least destructive background
                         poseStack,
@@ -129,10 +137,13 @@ public class BackgroundRenderer {
                 return;
             }
 
+            //noinspection DataFlowIssue // is guaranteed to be non-null here as isUsableMinecraft() was checked above.
+            spriteAtlas.getTexture().touch(); // Mark as used
+
             CustomRenderLayer.ImageLayering backgroundLayer = new CustomRenderLayer.ImageLayering(
                     zOffsetRenderLayer,
                     CustomRenderLayer.ImageLayering.LayeringType.VIEW_OFFSET_Z_LAYERING_BACKWARD_SOLID,
-                    spriteAtlas.getTexture().getId()
+                    spriteAtlas.getTexture().getIdentifier()
             );
 
             RenderType backgroundRenderLayer = backgroundLayer.buildRenderType();
@@ -216,23 +227,31 @@ public class BackgroundRenderer {
 
             try {
                 spriteAtlas = SpriteAtlasManager.INSTANCE.getSpriteAtlas(atlasIdentifier);
+                spriteAtlas.loadTexture(false);
                 bgSpr = spriteAtlas.getSprite(BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), border));
 
-                if (bgSpr == null)
+                if (bgSpr == null) {
                     throw new SpriteNotFoundException(
                             "Sprite is with id "
                                     + BackgroundTextureUtil.getBackgroundTextureIdentifier(spriteAtlas.getAtlasId(), border)
-                                    + " isnull!"
+                                    + " is null!"
                     );
+                } else if (!spriteAtlas.isUsableImGui()) {
+                    throw new SpriteNotUsableException("SpriteAtlas is not usable in ImGui!");
+                }
 
-            } catch (SpriteNotFoundException | NullPointerException e) { // Fallback if error during background getter
+              // ↓ Fallback if error during background getter ↓
+            } catch (SpriteNotFoundException | SpriteNotUsableException | NullPointerException | IOException e) {
                 renderTileColor(Background.WHITE, tileSize); // Fallback to white background
                 MyWorldTrafficAddition.LOGGER.debug("Failed rendering background in ImGui! Fallback to color background!", e);
                 return;
             }
 
+            //noinspection DataFlowIssue // is guaranteed to be non-null here as isUsableImGui() was checked above.
+            spriteAtlas.getTexture().touch(); // Mark as used
+
             ImGui.image(
-                    spriteAtlas.getTexture().getTextureId(),
+                    spriteAtlas.getTexture().getImGuiTexture().getTextureId(),
                     tileSize,
                     tileSize,
                     bgSpr.u1, bgSpr.v1,
