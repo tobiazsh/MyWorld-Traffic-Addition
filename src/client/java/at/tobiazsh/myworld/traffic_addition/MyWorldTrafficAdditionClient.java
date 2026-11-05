@@ -2,10 +2,12 @@ package at.tobiazsh.myworld.traffic_addition;
 
 import at.tobiazsh.myworld.traffic_addition.blocks.SignBlock;
 import at.tobiazsh.myworld.traffic_addition.fix.CustomizableSignReinitializer;
+import at.tobiazsh.myworld.traffic_addition.font.FontRepository;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineImageDialog;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import at.tobiazsh.myworld.traffic_addition.imgui.overlay.OverlayStorage;
+import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
 import at.tobiazsh.myworld.traffic_addition.network.GlobalReceiverClient;
@@ -108,6 +110,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 
 			MyWorldTrafficAddition.LOGGER.info("Registering essential fonts...");
 			DefaultFonts.registerAll();
+
+			JenguaTranslator.setup(); // TODO: Keep for now, replace all translation with MC's later.
 		});
 
 		// Sweep all HybridTextures every tick to free up memory
@@ -118,6 +122,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		});
 
 		CustomizableSignReinitializer.register();
+
+		loadFonts();
 	}
 
 	private static void addBlockEntityRenderers() {
@@ -288,6 +294,12 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 			MyWorldTrafficAddition.LOGGER.info("No client preferences file found. Using empty preferences.");
 			return new ClientPreferences();
 		}
+	}
+
+	private void loadFonts() {
+		MyWorldTrafficAddition.LOGGER.info("Loading fonts from...");
+		FontRepository.getInstance().discover();
+		MyWorldTrafficAddition.LOGGER.info("Loaded {} fonts", FontRepository.getInstance().getFonts().size());
 	}
 
 }
