@@ -147,6 +147,7 @@ public class ElementListEntryRoot implements ListEntryParent {
                 return;
 
             this.clientElementManager.moveElement(elementIndex, index);
+            ImGui.endDragDropTarget();
         }
 
         ImGui.popID();

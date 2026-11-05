@@ -1,54 +1,69 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.font.*;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.PropertyViewerExtension;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.PropertyViewerTextExtension;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.ImGuiFontManager;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.ImGuiFontRenderer;
+import at.tobiazsh.myworld.traffic_addition.imgui.fonts.LivingImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiFont;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
-import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import at.tobiazsh.myworld.traffic_addition.texture.Textures;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
-import at.tobiazsh.myworld.traffic_addition.sign.elements.TextElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.LegacyTextElement;
 import at.tobiazsh.myworld.traffic_addition.rendering.CustomRenderLayer;
 import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
-import imgui.ImFont;
-import imgui.ImGui;
-import imgui.ImVec2;
-import imgui.ImVec4;
+import dev.tobiazsh.imguib3d.client.font.ImGuiFont;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
+import imgui.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 
-import java.util.UUID;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static at.tobiazsh.myworld.traffic_addition.imgui.utils.FontManager.registerFontAsync;
-import static at.tobiazsh.myworld.traffic_addition.font.CustomMinecraftFont.getTextRendererByPath;
-import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.imgui;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
 
 public class TextElementClient extends TextElement implements ClientElementInterface {
 
-    private static int textIconId;
+    private static boolean triedRegisterTexture = false;
+    private static @Nullable ImGuiTexture textIcon;
 
-    static {
-        Minecraft.getInstance().execute(() -> textIconId = Textures.smartRegisterTexture("/assets/myworld_traffic_addition/textures/imgui/icons/text.png").getTextureId());
-    }
+    private FontDefinition fontDefinition;
 
-    private Future<ImGuiFont> fontFuture; // Future for the font
-    private ImGuiFont imGuiFont; // Font after future is done
+    /// Whether something happened that generally prevents the text element from rendering.
+    private final AtomicBoolean canRender = new AtomicBoolean(true);
 
-    private static final String defaultFontPath = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/dejavu_sans.ttf";
-    private static final int defaultFontSize = 24;
-    private static final String defaultText = "Lorem Ipsum";
+    /// Whether something happened that prevents the text element from rendering in ImGui.
+    private final AtomicBoolean canRenderImGui = new AtomicBoolean(true);
+
+    /// Whether something happened that prevents the text element from rendering in Minecraft.
+    private final AtomicBoolean canRenderMinecraft = new AtomicBoolean(true);
+
+    private CompletableFuture<Void> imguiFontFuture = null;
+    private CompletableFuture<Void> minecraftFontFuture = null;
+
+    private LivingImGuiFont imGuiFont = null;
+    private DynamicMinecraftFont minecraftFont = null;
+
+    private static final String DEFAULT_TEXT = "Lorem Ipsum";
 
     public TextElementClient(
             float x, float y,
@@ -56,11 +71,11 @@ public class TextElementClient extends TextElement implements ClientElementInter
             float rotation,
             float factor,
             boolean shouldCalculateWidth,
-            BasicFont font,
+            ServerFont font,
             String text,
-            UUID id, UUID parentId
+            ElementId id, ParentElementId parentId
     ) {
-        super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, parentId, id);
+        super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, id, parentId);
         this.font = font;
     }
 
@@ -70,60 +85,47 @@ public class TextElementClient extends TextElement implements ClientElementInter
     @Override
     public void renderImGui(float scale) {
 
-        if (imGuiFont == null && fontFuture == null) {
-            if (font != null)
-                fontFuture = registerThisFont(); // No font future yet, register it
+        createTextures(); // TODO: Check whether to export it to somewhere else
 
-            return;
-        }
+        if (!canRender.get() || !canRenderImGui.get())
+            return; // Do not render if the font failed to load
 
-        if (imGuiFont == null && !fontFuture.isDone()) {
-            MyWorldTrafficAddition.LOGGER.debug("Font is not ready yet! Can't render text!");
-            return; // not ready yet
-        }
+        if (this.font == null)
+            return; // Do not render if we have no font.
 
-        if (imGuiFont == null) {
-            try {
-                imGuiFont = fontFuture.get(); // blockiert nicht, weil isDone() true
-                if (imGuiFont == null || imGuiFont.isInvalid()) {
-                    return; // safety
-                }
-            } catch (Exception e) {
-                MyWorldTrafficAddition.LOGGER.error("Font loading failed", e);
-                return;
-            }
-        }
+        if (!loadImGuiFontAsync())
+            return; // Font is still loading or something went wrong, so we can't render (yet)
 
         // Another check just to be sure nothing changed in the meantime
-        if (imGuiFont.isInvalid() || !imGuiFont.font.isLoaded() || imGuiFont.font.getScale() <= 0) {
+        if (imGuiFont == null || !imGuiFont.imguiFont().isLoaded()) {
+            // Should not happen as it SHOULD be caught by the canImGui or loadMinecraftFontAsync
             MyWorldTrafficAddition.LOGGER.error("Font is invalid! Can't render text!");
             imGuiFont = null;
-            fontFuture = null;
+            imguiFontFuture = null;
             return;
         }
 
-        ImGui.pushFont(this.imGuiFont.font);
-
         if (!this.isWidthCalculated()) {
-            float width = calculateTextSize(this.imGuiFont.font, this.getText()).x;
-            float height = calculateTextSize(this.imGuiFont.font, this.getText()).y;
+            float width = calculateTextSize(this.imGuiFont.imguiFont(), this.getText()).x;
+            float height = calculateTextSize(this.imGuiFont.imguiFont(), this.getText()).y;
             this.setWidth(width);
             this.setHeight(height);
             this.setWidthCalculated(true);
         }
 
-        float[] color = getColor();
+        this.imGuiFont.use(); // Mark the font as used so it doesn't get unloaded while rendering
 
-        this.imGuiFont.renderText(
-                ImGui.getWindowDrawList(),
-                this.getText(),
-                new ImVec2(x * scale, y * scale),
-                new ImVec2(width * scale, height * scale),
+        ImGuiFontRenderer.renderFont(
+                this.imGuiFont.imguiFont(),
+                (int) this.x,
+                (int) this.y,
+                (int) this.width,
+                (int) this.height,
+                ImColor.rgba(color[0], color[1], color[2], color[3]),
                 rotation,
-                new ImVec4(color[0], color[1], color[2], color[3])
+                0.5f, 0.5f,
+                this.getText()
         );
-
-        ImGui.popFont();
     }
 
     @Override
@@ -135,6 +137,26 @@ public class TextElementClient extends TextElement implements ClientElementInter
             int light,
             Direction facing
     ) {
+
+        if (!canRender.get() || !canRenderMinecraft.get())
+            return; // Do not render if the font failed to load
+
+        if (this.font == null)
+            return; // Do not render if we have no font.
+
+        if (!loadMinecraftFontAsync())
+            return; // Font is still loading or something went wrong, so we can't render (yet)
+
+        if (minecraftFont == null) {
+            // Should not happen as it SHOULD be caught by the canRenderMinecraft or loadMinecraftFontAsync
+            MyWorldTrafficAddition.LOGGER.error("Minecraft font is invalid! Can't render text!");
+            minecraftFont = null;
+            minecraftFontFuture = null;
+            return; // Do not render if the font is not loaded yet.
+        }
+
+        this.minecraftFont.use(); // Mark the font as used so it doesn't get unloaded while rendering
+
         float w = this.calcBlocks(getWidth());
         float h = this.calcBlocks(getHeight());
         float x = this.calcBlocks(getX());
@@ -142,12 +164,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
         float rotation = this.getRotation();
         float[] color = this.getColor();
 
-        CustomTextRenderer textRenderer = (CustomTextRenderer) getTextRendererByPath(this.getFont().getFontPath());
-
-        if (textRenderer == null) {
-            MyWorldTrafficAddition.LOGGER.error("TextRenderer is null! Can't render text!");
-            return;
-        }
+        final CustomTextRenderer textRenderer = minecraftFont.renderer();
 
         float textWidth = textRenderer.width(this.getText());
         float textHeight = textRenderer.lineHeight;
@@ -191,8 +208,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
         // Scale up to match size
         poseStack.scale(effectiveWidthScale, effectiveHeightScale, 1);
 
-        Matrix4f positionMatrix = poseStack.last().pose();
-
         textRenderer.draw(
                 this.getText(),
                 0,0, zOffset,
@@ -211,52 +226,206 @@ public class TextElementClient extends TextElement implements ClientElementInter
     /**
      * Recalculates the width and height the text requires.
      */
-    private static ImVec2 calculateTextSize(ImFont font, String text) {
-        if (font == null) {
-            MyWorldTrafficAddition.LOGGER.debug("Font is not loaded! Can't calculate text size!");
+    private static ImVec2 calculateTextSize(
+            @NotNull ImGuiFont font,
+            String text
+    ) {
+        if (text.isEmpty()) {
             return new ImVec2(0, 0);
         }
 
-        ImGui.pushFont(font);
-
-        float width = imgui.calcTextSize(text).x;
-        float height = imgui.calcTextSize(text).y;
-
-        ImGui.popFont();
-
-        return new ImVec2(width, height);
+        return font.getImFont().calcTextSizeA(
+                font.getFontKey().fontSize(),
+                Float.MAX_VALUE,
+                -1,
+                text
+        );
     }
 
     public static TextElementClient createNew() {
+        @Nullable FontDefinition defaultFont = FontRepository.getInstance().getFallbackFont();
+        ServerFont font;
+
+        if (defaultFont == null) {
+            // Not loaded yet... shouldn't happen, but just in case.
+            // Due to the rendering check (this.font == null) in the rendering method(s),
+            // this is safe to do, as it will just not render if there's no font present.
+            font = null;
+        } else {
+            font = ServerFont.of(
+                    defaultFont.getLogicalFont().fontHash(),
+                    FontRepository.DEFAULT_FONT_SIZE
+            );
+        }
+
         return new TextElementClient(
                 0, 0,
                 0,0,
                 0,
                 1,
                 true,
-                new BasicFont(defaultFontPath, defaultFontSize),
-                defaultText,
+                font,
+                DEFAULT_TEXT,
+                null, // Null, so it registers itself automatically
+                BaseElementInterface.MAIN_CANVAS_ID
+        );
+    }
+
+    public static TextElementClient fromLegacy(LegacyTextElement legacy) {
+        return new TextElementClient(
+                legacy.getX(), legacy.getY(),
+                legacy.getWidth(), legacy.getHeight(),
+                legacy.getRotation(),
+                legacy.getFactor(),
+                !legacy.isWidthCalculated(),
+                ServerFont.of(
+                        LegacyFontMapper.LEGACY_FONTS.get(legacy.getFont().getFontPath()).fontHash(),
+                        legacy.getFont().getFontSize()
+                ),
+                legacy.getText(),
                 null, // Null, so it registers itself automatically
                 BaseElementInterface.MAIN_CANVAS_ID
         );
     }
 
     /**
-     * Registers the font of this element asynchronously.
-     * @return A CompletableFuture that will complete with the registered ImGuiFont.
+     * Tries to load the fallback font from the FontRepository.
+     * If no fallback font is found, it logs an error and returns false.
      */
-    private @Nullable CompletableFuture<ImGuiFont> registerThisFont() {
-        if (font == null || font.getFontPath() == null) {
-            MyWorldTrafficAddition.LOGGER.warn("Tried to register TextElementClient font but font or its properties are null! Operation aborted!");
-            return null;
+    private boolean loadFallbackFont() {
+        FontDefinition fallbackFontDef = FontRepository.getInstance().getFallbackFont();
+
+        if (fallbackFontDef == null) {
+            MyWorldTrafficAddition.LOGGER.error("No fallback font found in FontRepository! Can't load font!");
+            return false;
         }
 
-        return registerFontAsync(font.getFontPath(), font.getFontSize());
+        this.fontDefinition = fallbackFontDef;
+        return true;
+    }
+
+    /**
+     * Tries to load the text element's desired font definition or default if not found.
+     * <p>Does nothing if the font definition is already loaded.
+     * <p>Logs an error if no font definition is available.
+     * {@link #canRender} to false.
+     *
+     * @return Whether any font has been successfully loaded.
+     */
+    private boolean loadFontDefinitionOrDefault() {
+        if (fontDefinition != null)
+            return true; // Already loaded
+
+        FontDefinition fontDef = FontRepository.getInstance().getByHash(font.font().fontHash());
+
+        if (fontDef != null) {
+            this.fontDefinition = fontDef;
+            return true;
+        }
+
+        MyWorldTrafficAddition.LOGGER.debug(
+                "Font definition not found for font hash: {}. Using fallback font!",
+                this.getFont().font().fontHash()
+        );
+
+        if (!loadFallbackFont()) {
+            MyWorldTrafficAddition.LOGGER.error("No fallback font found! Can't load font!");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Tries to load the ImGui font asynchronously. If the font is already loaded, it does nothing.
+     * <p>If the font fails to load, it sets {@link #canRenderImGui}
+     *    or {@link #canRender} to false (depending on the severity) and logs an error.
+     * <p>If the font is still loading, it does nothing and waits for the future to complete.
+     *
+     * @return Whether any font is loaded successfully and rendering can continue.
+     */
+    private boolean loadImGuiFontAsync() {
+        if (imguiFontFuture != null) {
+            if (!imguiFontFuture.isDone())
+                return false; // Font is still loading, just wait
+
+            if (imguiFontFuture.isCompletedExceptionally() || imguiFontFuture.isCancelled()) {
+                MyWorldTrafficAddition.LOGGER.warn("Font future completed exceptionally or cancelled!");
+                canRenderImGui.set(false);
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!loadFontDefinitionOrDefault()) {
+            this.imguiFontFuture = CompletableFuture.failedFuture(new IOException("No font definition found!"));
+            canRender.set(false);
+            return false;
+        }
+
+        imguiFontFuture = ImGuiFontManager.getInstance().loadOrGet(
+                fontDefinition,
+                (int) this.getFont().fontSize()
+        ).thenAcceptAsync(imguiFont -> {
+            if (imguiFont.isEmpty()) {
+                MyWorldTrafficAddition.LOGGER.error("Couldn't load ImGui font of any font definition!");
+                canRenderImGui.set(false);
+                return;
+            }
+
+            this.imGuiFont = imguiFont.get();
+        }, Minecraft.getInstance());
+
+        return false; // Font has just been scheduled to load, so we can't render yet
+    }
+
+    /**
+     * Tries to load the Minecraft font asynchronously. If the font is already loaded, it does nothing.
+     * <p>If the font fails to load, it sets {@link #canRenderMinecraft}
+     *    or {@link #canRender} to false (depending on the severity) and logs an error.
+     * <p>If the font is still loading, it does nothing and waits for the future to complete.
+     *
+     * @return Whether any font is loaded successfully and rendering can continue.
+     */
+    private boolean loadMinecraftFontAsync() {
+        if (minecraftFontFuture != null) {
+            if (!minecraftFontFuture.isDone())
+                return false; // Still loading, wait
+
+            if (minecraftFontFuture.isCompletedExceptionally() || minecraftFontFuture.isCancelled()) {
+                MyWorldTrafficAddition.LOGGER.warn("Minecraft font future completed exceptionally or cancelled!");
+                canRenderMinecraft.set(false);
+            }
+
+            return true; // Font loaded successfully
+        }
+
+        if (!loadFontDefinitionOrDefault()) {
+            this.minecraftFontFuture = CompletableFuture.failedFuture(new IOException("No font definition found!"));
+            canRender.set(false);
+            return false;
+        }
+
+        minecraftFontFuture = MinecraftFontManager.getInstance().loadOrGet(
+                fontDefinition,
+                fontDefinition.getLifetime()
+        ).thenAcceptAsync(minecraftFont -> {
+            if (minecraftFont == null) {
+                MyWorldTrafficAddition.LOGGER.error("Couldn't load Minecraft font of any font definition!");
+                canRenderMinecraft.set(false);
+                return;
+            }
+
+            this.minecraftFont = minecraftFont;
+        }, Minecraft.getInstance());
+
+        return false; // Font has just been scheduled to load, so we can't render yet
     }
 
     @Override
     public void onPaste() {
-        // ClientElementManager.getInstance().registerElement(this);
+        // ClientElementManagtryAssignDefaultFonter.getInstance().registerElement(this);
     }
 
     @Override
@@ -284,34 +453,45 @@ public class TextElementClient extends TextElement implements ClientElementInter
         return copy;
     }
 
-    @Override
-    public void setFont(BasicFont font) {
-        if (font == null) {
-            MyWorldTrafficAddition.LOGGER.error("Tried to set TextElementClient font to null! Operation aborted!");
-            return;
+    private void createTextures() {
+        if (textIcon == null && !triedRegisterTexture) {
+            try {
+                textIcon = ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(Textures.class.getResourceAsStream("/assets/myworld_traffic_addition/textures/imgui/icons/text.png")),
+                        "text_icon"
+                );
+            } catch (IOException e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load text icon texture: {}", e.getMessage());
+            }
         }
 
-        super.setFont(font);
-        this.fontFuture = null;
-        this.imGuiFont = null;
-        this.fontFuture = registerFontAsync(font.getFontPath(), font.getFontSize()); // Register new font future so you don't have to re-open the GUI to see the new font
+        triedRegisterTexture = true;
     }
 
     @Override
-    public void renderPreview(float w, float h) {
-        ImGui.image(textIconId, w, h);
+    public @Nullable ImGuiTexture getThumbnailTexture() {
+        return textIcon;
     }
 
     @Override
+    public String getGenericTranslatableName() {
+        return "Text Element";
+    }
+
+    @Override
+    public Optional<PropertyViewerExtension> getPropertyViewerExtension() {
+        return Optional.of(new PropertyViewerTextExtension());
+    }
+
     public void dispose() {
         try {
-            if (fontFuture != null && !fontFuture.isDone()) {
-                fontFuture.cancel(true);
+            if (imguiFontFuture != null && !imguiFontFuture.isDone()) {
+                imguiFontFuture.cancel(true);
             }
         } catch (Exception e) {
             MyWorldTrafficAddition.LOGGER.error("Failed to dispose TextElementClient font future: {}", e.getMessage());
         }
-        fontFuture = null;
+        imguiFontFuture = null;
         imGuiFont = null;
     }
 }

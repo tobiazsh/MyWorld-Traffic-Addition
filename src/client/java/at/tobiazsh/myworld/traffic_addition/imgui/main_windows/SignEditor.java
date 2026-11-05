@@ -67,7 +67,7 @@ public class SignEditor {
     private ElementAddWindow elementAddWindow;
     private ConfirmationPopup confirmationPopup;
     private OnlineImageGallery onlineImageGallery;
-    private ElementList elementList = new ElementList("elementListWindow", this.clientElementManager);
+    private ElementList elementList;
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
 
@@ -130,19 +130,20 @@ public class SignEditor {
 
         // backgroundTexturePath = null; -> This should not be here. Use customizable sign texture data instead.
 
-        this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
-        this.clientElementManager.importFromSign(masterBlockEntity); // Import the elements from the sign block entity
-        this.clientElementManager.setPixelOfOneBlock(signRatio.y / signHeightBlocks);
-
-        // TODO: Rewrite buggy undo/redo system
-        // Then clear stack here
-
         this.signRatio = calculateRatio(
                 this.signPreview.previewMaxWidth,
                 this.signPreview.previewMaxHeight,
                 signWidthBlocks,
                 signHeightBlocks
         );
+
+        this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
+        this.clientElementManager.importFromSign(masterBlockEntity); // Import the elements from the sign block entity
+        this.clientElementManager.setPixelOfOneBlock(signRatio.y / signHeightBlocks);
+        this.elementList = new ElementList("elementListWindow", this.clientElementManager);
+
+        // TODO: Rewrite buggy undo/redo system
+        // Then clear stack here
 
         this.jsonPreviewPopup = new JsonPreviewPopup("jsonPreview_" + id);
 

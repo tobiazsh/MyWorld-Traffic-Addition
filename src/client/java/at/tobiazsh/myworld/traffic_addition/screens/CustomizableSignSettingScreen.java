@@ -233,12 +233,12 @@ public class CustomizableSignSettingScreen extends Screen {
 
     @Override
     public boolean shouldCloseOnEsc() {
-        boolean close = OverlayStorage.EDITOR_OVERLAY.signEditor.isOpen();
+        boolean open = OverlayStorage.EDITOR_OVERLAY.signEditor.isOpen();
 
-        if (close)
+        if (!open)
             showChildren = true;
 
-        return close;
+        return !open;
     }
 
     @Override

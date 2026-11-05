@@ -23,10 +23,9 @@ public class AboutWindow {
 
     private final static String title = MyWorldTrafficAddition.MOD_ID_HUMAN;
     private final static String author = "Tobiazsh (Tobias)";
-    private final static String description = tr("MWTA", "A Minecraft Mod for improved roads and general canvases in Minecraft"); // Description
+    private final static String description = "A Minecraft Mod for improved roads and general canvases in Minecraft";
     private final static String[] other = {
-            tr("ImGui.Main.AboutWindow", "Made in Austria"),
-            tr("ImGui.Main.AboutWindow", "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯")
+            "While I am writing this, I should probably study for school but eh ¯\\_(^_^)_/¯"
     }; // Other information
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();

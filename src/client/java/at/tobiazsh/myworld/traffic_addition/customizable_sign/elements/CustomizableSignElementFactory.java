@@ -1,6 +1,9 @@
 package at.tobiazsh.myworld.traffic_addition.customizable_sign.elements;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.font.LegacyFontMapper;
+import at.tobiazsh.myworld.traffic_addition.font.LogicalFont;
+import at.tobiazsh.myworld.traffic_addition.font.ServerFont;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.*;
 
 public class CustomizableSignElementFactory {
@@ -24,17 +27,8 @@ public class CustomizableSignElementFactory {
                 return OIEC;
             }
 
-            case TextElement TE -> {
-                TextElementClient TEC = new TextElementClient(
-                        TE.getX(), TE.getY(),
-                        TE.getWidth(), TE.getHeight(),
-                        TE.getRotation(),
-                        TE.getFactor(),
-                        false,
-                        TE.getFont(),
-                        TE.getText(),
-                        TE.getId(), TE.getParentId()
-                );
+            case LegacyTextElement TE -> {
+                TextElementClient TEC = TextElementClient.fromLegacy(TE);
 
                 TEC.setName(TE.getName());
                 TEC.setColor(TE.getColor());

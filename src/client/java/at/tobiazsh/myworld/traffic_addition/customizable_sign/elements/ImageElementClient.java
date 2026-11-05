@@ -133,7 +133,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
                 uv1X, uv1Y,
                 uv2X, uv2Y,
                 uv3X, uv3Y,
-                ImGui.colorConvertFloat4ToU32(color[0], color[1], color[2], color[3]) // Color doesn't work yet
+                ImGui.colorConvertFloat4ToU32(color[0], color[1], color[2], color[3])
         );
     }
 
@@ -319,6 +319,7 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
             );
 
             this.hybridTexture = HybridTexture.ofImGuiTexture(imGuiTexture, key);
+            this.hybridTexture.register();
             this.hybridTexture.pin();
             /* ↑ Pin the texture ↑ because the same texture is shared across ImageElements */
         } catch (Exception e) {

@@ -76,6 +76,8 @@ public class ElementPropertyViewer {
     }
 
     public void render() {
+        if (!isVisible) return;
+
         if (ImGui.begin("Element Properties##" + id)) {
             renderDimensions();
             ImGui.separator();
@@ -163,6 +165,8 @@ public class ElementPropertyViewer {
                         yBuffer)
                 ) element.setY(yBuffer[0]);
             } ImGui.endGroup();
+
+            ImGui.endChild();
         }
     }
 

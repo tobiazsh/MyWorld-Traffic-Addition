@@ -56,7 +56,13 @@ public class SignPreview {
         pxOfBlock *= zoomFactor;
 
         // Make Child that is as big as the sign in pixels
-        ImGui.beginChild("##BottomToTopRenderer", signWidthPixels * zoomFactor, signHeightPixels  * zoomFactor, false, ImGuiWindowFlags.NoScrollbar);
+        ImGui.beginChild(
+                "##BottomToTopRenderer",
+                signWidthPixels * zoomFactor,
+                signHeightPixels  * zoomFactor,
+                false,
+                ImGuiWindowFlags.NoScrollbar
+        );
 
         // Render Background Textures
         // Render from bottom to top and from left to right
@@ -76,7 +82,14 @@ public class SignPreview {
                 if (element == null) continue;
 
                 ImGui.setCursorPos(position.x, position.y);
-                ImGui.beginChild("OVERLAY_CANVAS_" + element.getId(), signWidthPixels * zoomFactor, signHeightPixels  * zoomFactor, false, ImGuiWindowFlags.NoScrollbar);
+
+                ImGui.beginChild(
+                        "OVERLAY_CANVAS_" + element.getId(),
+                        signWidthPixels * zoomFactor,
+                        signHeightPixels  * zoomFactor,
+                        false,
+                        ImGuiWindowFlags.NoScrollbar
+                );
 
                 // Render depending on the type of element
                 renderElement(element, zoomFactor);

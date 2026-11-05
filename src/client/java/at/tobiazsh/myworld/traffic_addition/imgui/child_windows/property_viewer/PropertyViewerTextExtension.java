@@ -2,10 +2,10 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
-import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.font.FontDefinition;
+import at.tobiazsh.myworld.traffic_addition.font.ServerFont;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
-import at.tobiazsh.myworld.traffic_addition.imgui.fonts.FontRepository;
+import at.tobiazsh.myworld.traffic_addition.font.FontRepository;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.type.ImFloat;
@@ -48,8 +48,7 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
                 trIC("text.mwta.sign-editor.property-extension.text.text.input", id, "textCtrlInput"),
                 textBuffer)
         ) {
-            // Make it only activate when the user presses enter or clicks away, not on every keystroke
-            System.out.println("Text changed to: " + textBuffer.get());
+            // TODO: Make it only activate when the user presses enter or clicks away, not on every keystroke
             element.setText(textBuffer.get());
         }
     }
@@ -79,10 +78,7 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
                 trIC("text.mwta.sign-editor.property-extension.text.font.apply", id, "fontApplyBtn")
         )) {
             FontDefinition selectedFont = availableFonts.get(fontIndex.get());
-            element.setFont(new BasicFont(
-                    selectedFont.getId(), // TODO: Switch up everything font-related to use FontDefinition instead of BasicFont
-                    fontSize.get()
-            ));
+            element.setFont(ServerFont.of(selectedFont.getLogicalFont().fontHash(), fontSize.get()));
         }
     }
 
@@ -93,7 +89,7 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
 
         this.element = textElement;
         this.textBuffer.set(textElement.getText());
-        this.fontSize.set(textElement.getFont().getFontSize());
+        this.fontSize.set(textElement.getFont().fontSize());
 
         this.availableFonts = FontRepository.getInstance().getFonts();
         this.availableFontNames = availableFonts.stream().map(FontDefinition::getDisplayName).toList();
