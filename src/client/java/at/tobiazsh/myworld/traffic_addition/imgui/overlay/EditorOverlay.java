@@ -30,7 +30,7 @@ public final class EditorOverlay implements ImGuiOverlay {
 
     @Override
     public void draw() {
-        fontScope.push(DefaultFonts.RobotoNormal);
+        fontScope.push(DefaultFonts.RobotoNormal, DefaultFonts.NORMAL_SIZE);
         errorPopup.render();
         signEditor.render();
         fontScope.pop();

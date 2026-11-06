@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import dev.tobiazsh.imguib3d.client.font.FontIdentifier;
 import dev.tobiazsh.imguib3d.client.font.FontImportance;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFont;
+import imgui.ImGui;
 import org.jspecify.annotations.Nullable;
 
 import java.io.InputStream;
@@ -15,13 +16,13 @@ public class DefaultFonts {
     public static @Nullable ImGuiFont RobotoBoldMedium;
     public static @Nullable ImGuiFont RobotoBoldLarge;
 
-    public static final int NORMAL_SIZE = 20;
+    public static final int NORMAL_SIZE = 18;
     public static final int MEDIUM_SIZE = 30;
     public static final int LARGE_SIZE  = 40;
 
     public static void registerAll() {
-        InputStream isR = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/fonts/roboto_regular.ttf");
-        InputStream isRB = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/fonts/roboto_bold.ttf");
+        InputStream isR = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/roboto_regular.ttf");
+        InputStream isRB = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/roboto_bold.ttf");
 
         ImGuiFont.loadFromStreamTTF(
                 isR,
@@ -51,5 +52,4 @@ public class DefaultFonts {
                 FontImportance.HIGH
         ).thenAccept(font -> RobotoBoldLarge = font);
     }
-
 }
