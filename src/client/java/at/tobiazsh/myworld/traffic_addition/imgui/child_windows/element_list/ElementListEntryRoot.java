@@ -26,10 +26,16 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final ClientElementManager clientElementManager;
 
     private final float dropSpaceHeight = 10;
-    private final float[] dropSpaceColor = new float[]{0.2f, 0.6f, 1.0f, 0.5f};
+    private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.2f};
 
     public ElementListEntryRoot(String id, ClientElementManager manager) {
-        this.dragDropDataType = "ListEntryDragDrop_" + id;
+        this.dragDropDataType = "ListEntryDD_" + id;
+
+        if (dragDropDataType.length() > 32) {
+            throw new RuntimeException(
+                    "DragDropDataType exceeds 32 bytes: " + dragDropDataType + "\nShorten the id to avoid this error."
+            );
+        }
 
         this.listEntryCreator = new ListEntryCreator(
                 this,
@@ -128,6 +134,7 @@ public class ElementListEntryRoot implements ListEntryParent {
         ImVec2 rectMax = new ImVec2(cursorPos.x + maxWidth, cursorPos.y + dropSpaceHeight);
 
         drawList.addRectFilled(rectMin, rectMax, ImGuiColor.toHexARGB(dropSpaceColor));
+        ImGui.dummy(new ImVec2(maxWidth, dropSpaceHeight));
 
         if (ImGui.beginDragDropTarget()) {
             var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);

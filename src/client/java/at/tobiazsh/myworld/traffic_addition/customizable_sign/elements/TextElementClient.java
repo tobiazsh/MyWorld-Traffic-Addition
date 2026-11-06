@@ -66,14 +66,17 @@ public class TextElementClient extends TextElement implements ClientElementInter
     private static final String DEFAULT_TEXT = "Lorem Ipsum";
 
     public TextElementClient(
-            float x, float y,
-            float width, float height,
+            float x,
+            float y,
+            float width,
+            float height,
             float rotation,
             float factor,
             boolean shouldCalculateWidth,
             ServerFont font,
             String text,
-            ElementId id, ParentElementId parentId
+            ElementId id,
+            ParentElementId parentId
     ) {
         super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, id, parentId);
         this.font = font;
@@ -266,7 +269,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 true,
                 font,
                 DEFAULT_TEXT,
-                null, // Null, so it registers itself automatically
+                ElementId.random(),
                 BaseElementInterface.MAIN_CANVAS_ID
         );
     }

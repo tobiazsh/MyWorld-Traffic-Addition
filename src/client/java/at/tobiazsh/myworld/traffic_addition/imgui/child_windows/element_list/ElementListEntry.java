@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
+import imgui.ImVec2;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiSelectableFlags;
@@ -84,13 +85,24 @@ public class ElementListEntry {
         ImGui.pushID(idStr);
         boolean isSelected = selectedIds.contains(id);
 
+        ImVec2 startPos = ImGui.getCursorPos();
+        float spacingY = ImGui.getStyle().getItemSpacingY();
+
+        renderContent(selectedIds);
+
+        ImVec2 endPos = ImGui.getCursorPos();
+        float contentHeight = endPos.y - startPos.y - spacingY;
+
+        ImGui.setCursorPos(startPos);
+
         ImGui.selectable(
                 "##" + id,
                 isSelected,
-                ImGuiSelectableFlags.AllowOverlap | ImGuiSelectableFlags.SpanAllColumns
+                ImGuiSelectableFlags.AllowOverlap | ImGuiSelectableFlags.SpanAllColumns,
+                new ImVec2(0, contentHeight)
         );
 
-        renderContent(selectedIds);
+        ImGui.setCursorPosY(endPos.y);
 
         if (ImGui.isItemHovered()) {
             if (ImGui.isMouseClicked(ImGuiMouseButton.Left))
@@ -115,14 +127,24 @@ public class ElementListEntry {
             if (ImGui.menuItem("Test")) {
                 System.out.println("Test menu item clicked for element: " + element.getName());
             }
+            ImGui.endPopup();
         }
     }
 
     protected void renderContent(Set<ElementId> selectedElementIds) {
         float startY = ImGui.getCursorPosY();
+
         renderPreview();
+
+        float previewHeight = ImGui.getCursorPosY() - startY;
+        float framePaddingY = ImGui.getStyle().getItemSpacingY();
+        float textHeight = ImGui.getFrameHeight() + framePaddingY;
+
         ImGui.sameLine();
-        renderName(ImGui.getCursorPosX(), startY + (previewSize / 2f) - (ImGui.getTextLineHeight() / 2f));
+
+        ImGui.setCursorPosY(startY + (previewHeight - textHeight) / 2);
+        renderName(ImGui.getCursorPosX(), ImGui.getCursorPosY());
+        ImGui.setCursorPosY(startY + previewHeight);
     }
 
     protected void sendDragDropPayload() {
@@ -208,6 +230,9 @@ public class ElementListEntry {
 
     protected void renderName(float posX, float posY) {
         ImGui.setCursorPos(posX, posY);
+
+        float width = ImGui.calcTextSizeX(elementName.get()) + 20; // Add some padding for the input box
+        ImGui.setNextItemWidth(width);
 
         if (ImGui.inputText("##nameInput", elementName, ImGuiInputTextFlags.EnterReturnsTrue))
             element.setName(elementName.get());
