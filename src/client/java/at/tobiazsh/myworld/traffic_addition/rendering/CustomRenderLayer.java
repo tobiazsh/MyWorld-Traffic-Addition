@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static net.minecraft.client.renderer.RenderPipelines.TEXT_GRAYSCALE;
 import static net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
 
 /**
@@ -166,7 +167,7 @@ public class CustomRenderLayer {
 
         private final Function<Identifier, RenderType> TEXT_Z_OFFSET_BACKWARD_INTENSITY = Util.memoize(
                 texture -> {
-                    RenderSetup renderSetup = RenderSetup.builder(RenderPipelines.GUI_TEXT)
+                    RenderSetup renderSetup = RenderSetup.builder(TEXT_GRAYSCALE)
                             .withTexture(TEXTURE_NAME, texture)
                             .useLightmap()
                             .setLayeringTransform(Layering.getZLayeringBackward(zOffset))

@@ -59,7 +59,7 @@ public class ImGuiFontRenderer {
                 font.getFontKey().fontSize(),
                 x,
                 y,
-                ImColor.rgba(255, 255, 255, 255),
+                color,
                 x,
                 y,
                 x + width,

@@ -106,22 +106,32 @@ public class CustomTextRenderer extends Font {
                 int light,
                 float zOffset
         ) {
-            return renderable -> {
-                Identifier textureId = MISSING_TEXTURE;
-                if (renderable instanceof BakedSheetGlyph.GlyphInstance glyphInstance) { // AccessWidener on GlyphInstance!
-                    Identifier resolved = ((GlyphIdentifierHolder) glyphInstance.glyph()).myworldTrafficAddition$getTexture();
-                    if (resolved != null) {
-                        textureId = resolved;
-                    }
+            return new CustomGlyphDrawer() {
+                @Override
+                public void acceptRenderable(TextRenderable renderable) {
+                    this.draw(renderable);
                 }
 
-                CustomRenderLayer.TextLayering renderLayer = new CustomRenderLayer.TextLayering(zOffset, layeringType, textureId);
+                @Override
+                public void acceptGlyph(TextRenderable.@NonNull Styled glyph) { this.draw(glyph); }
 
-                queue.submitCustomGeometry(
-                        poseStack,
-                        renderLayer.buildRenderType(),
-                        (pose, vertexConsumer) -> renderable.render(pose.pose(), vertexConsumer, light, false)
-                );
+                @Override
+                public void acceptEffect(@NonNull TextRenderable bakedGlyph) { this.draw(bakedGlyph); }
+
+                private void draw(TextRenderable glyph) {
+                    Identifier textureId = MISSING_TEXTURE;
+                    if (glyph instanceof BakedSheetGlyph.GlyphInstance gi) {
+                        Identifier resolved = ((GlyphIdentifierHolder) gi.glyph()).myworldTrafficAddition$getTexture();
+                        if (resolved != null) textureId = resolved;
+                    }
+                    CustomRenderLayer.TextLayering layer =
+                            new CustomRenderLayer.TextLayering(zOffset, layeringType, textureId);
+                    queue.submitCustomGeometry(
+                            poseStack,
+                            layer.buildRenderType(),
+                            (pose, vc) -> glyph.render(pose.pose(), vc, light, false)
+                    );
+                }
             };
         }
 

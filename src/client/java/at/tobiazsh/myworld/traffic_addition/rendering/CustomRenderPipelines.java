@@ -1,27 +1,46 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.pipeline.*;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 
 import static net.minecraft.client.renderer.RenderPipelines.*;
 
 public class CustomRenderPipelines {
 
-    public static final RenderPipeline RENDERTYPE_CUSTOM_TEXT_INTENSITY;
+    //public static final RenderPipeline RENDERTYPE_CUSTOM_TEXT_INTENSITY;
     public static final RenderPipeline RENDERTYPE_SIGN_ELEMENT_TRANSLUCENT;
     public static final RenderPipeline RENDERTYPE_SIGN_ELEMENT_CUTOUT;
     public static final RenderPipeline RENDERTYPE_SIGN_ELEMENT_SOLID;
 
 
     static {
-        RENDERTYPE_CUSTOM_TEXT_INTENSITY = RenderPipelines.register(RenderPipeline.builder(TEXT_SNIPPET, MATRICES_FOG_SNIPPET)
-                .withLocation("pipeline/text_intensity")
-                .withVertexShader("core/rendertype_text_intensity")
-                .withFragmentShader("core/rendertype_text_intensity")
-                .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false, 0f, 0f))
-                .build()
-        );
+//        RENDERTYPE_CUSTOM_TEXT_INTENSITY = RenderPipelines.register(RenderPipeline.builder()
+//                .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
+//                .withPrimitiveTopology(PrimitiveTopology.QUADS)
+//                .withLocation("pipeline/text_intensity")
+//                .withBindGroupLayout(BindGroupLayout.builder()
+//                        .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+//                        .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+//                        .build()
+//                )
+//                .withVertexShader(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "core/rendertype_text_intensity"))
+//                .withFragmentShader(Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "core/rendertype_text_intensity"))
+//                .withBindGroupLayout(BindGroupLayout.builder()
+//                        .withSampler("Sampler0")
+//                        .withSampler("Sampler2")
+//                        .build()
+//                )
+//                .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false, -1, -10))
+//                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+//                .build()
+//        );
 
         RENDERTYPE_SIGN_ELEMENT_TRANSLUCENT = RenderPipelines.register(RenderPipeline.builder(ENTITY_SNIPPET)
                 .withLocation("pipeline/sign_element_translucent")
