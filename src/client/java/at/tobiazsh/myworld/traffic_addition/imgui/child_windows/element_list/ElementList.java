@@ -1,12 +1,8 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 

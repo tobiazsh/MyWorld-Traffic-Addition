@@ -1,7 +1,6 @@
 package at.tobiazsh.myworld.traffic_addition.rendering;
 
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.*;
 import com.mojang.blaze3d.platform.CompareOp;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -29,6 +28,7 @@ public class CustomRenderPipelines {
                 .withVertexShader("core/entity")
                 .withFragmentShader("core/entity")
                 .withShaderDefine("NO_CARDINAL_LIGHTING")
+                .withBindGroupLayout(BindGroupLayout.builder().withSampler("Sampler1").build())
                 .build()
         );
 

@@ -79,10 +79,10 @@ public class BackgroundRenderer {
             poseStack.translate(-0.5, -0.5, -0.5);
 
             queue.submitCustomGeometry(poseStack, backgroundRenderLayer, (pose, vertexConsumer) -> {
-                vertexConsumer.addVertex(pose, 0.0f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-                vertexConsumer.addVertex(pose, 1f, 0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-                vertexConsumer.addVertex(pose, 1f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
-                vertexConsumer.addVertex(pose, 0.0f, 1f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 0.0f, 0.0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1.0f, 0.0f, 0.0f).setColor(r, g, b, a).setUv(1.0f, 1.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 1.0f, 1.0f, 0.0f).setColor(r, g, b, a).setUv(1.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
+                vertexConsumer.addVertex(pose, 0.0f, 1.0f, 0.0f).setColor(r, g, b, a).setUv(0.0f, 0.0f).setLight(light).setOverlay(backgroundOverlay).setNormal(0, 0, 1);
             });
 
             poseStack.popPose();
