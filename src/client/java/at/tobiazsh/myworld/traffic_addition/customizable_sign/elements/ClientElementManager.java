@@ -163,6 +163,10 @@ public class ClientElementManager {
 
         ClientElementInterface element = elements.remove(fromIndex);
 
+        if (fromIndex < toIndex) {
+            toIndex--; // Adjust the target index if the element is being moved forward in the list
+        }
+
         if (toIndex <= 0) {
             elements.addFirst(element);
         } else if (toIndex >= elements.size()) {
