@@ -29,6 +29,9 @@ public class ElementList {
 
         if (ImGui.begin(trIC("text.mwta.element-list.title", id, "elementListWindow"))) {
             rootEntry.render();
+
+            ImGui.getStyle().getItem
+
             ImGui.end();
         }
     }

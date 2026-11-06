@@ -83,43 +83,45 @@ public class ElementListEntry {
         Set<ElementId> selectedIds
     ) {
         ImGui.pushID(idStr);
-        boolean isSelected = selectedIds.contains(id);
+        try {
+            boolean isSelected = selectedIds.contains(id);
 
-        ImVec2 startPos = ImGui.getCursorPos();
-        float spacingY = ImGui.getStyle().getItemSpacingY();
+            ImVec2 startPos = ImGui.getCursorPos();
+            float spacingY = ImGui.getStyle().getItemSpacingY();
 
-        renderContent(selectedIds);
+            renderContent(selectedIds);
 
-        ImVec2 endPos = ImGui.getCursorPos();
-        float contentHeight = endPos.y - startPos.y - spacingY;
+            ImVec2 endPos = ImGui.getCursorPos();
+            float contentHeight = endPos.y - startPos.y - spacingY;
 
-        ImGui.setCursorPos(startPos);
+            ImGui.setCursorPos(startPos);
 
-        ImGui.selectable(
-                "##" + id,
-                isSelected,
-                ImGuiSelectableFlags.AllowOverlap | ImGuiSelectableFlags.SpanAllColumns,
-                new ImVec2(0, contentHeight)
-        );
+            ImGui.selectable(
+                    "##" + id,
+                    isSelected,
+                    ImGuiSelectableFlags.AllowOverlap | ImGuiSelectableFlags.SpanAllColumns,
+                    new ImVec2(0, contentHeight)
+            );
 
-        ImGui.setCursorPosY(endPos.y);
+            ImGui.setCursorPosY(endPos.y);
 
-        if (ImGui.isItemHovered()) {
-            if (ImGui.isMouseClicked(ImGuiMouseButton.Left))
-                onSelect.accept(id);
+            if (ImGui.isItemHovered()) {
+                if (ImGui.isMouseClicked(ImGuiMouseButton.Left))
+                    onSelect.accept(id);
 
-            if (ImGui.beginDragDropSource()) {
-                sendDragDropPayload();
-                ImGui.endDragDropSource();
+                if (ImGui.beginDragDropSource()) {
+                    sendDragDropPayload();
+                    ImGui.endDragDropSource();
+                }
             }
-        }
 
-        if (ImGui.beginDragDropTarget()) {
-            acceptDragDropPayload();
-            ImGui.endDragDropTarget();
+            if (ImGui.beginDragDropTarget()) {
+                acceptDragDropPayload();
+                ImGui.endDragDropTarget();
+            }
+        } finally {
+            ImGui.popID();
         }
-
-        ImGui.popID();
     }
 
     protected void renderContextMenu() {

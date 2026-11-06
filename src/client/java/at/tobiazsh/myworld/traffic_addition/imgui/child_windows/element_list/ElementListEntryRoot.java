@@ -11,12 +11,13 @@ import imgui.ImGui;
 import imgui.ImVec2;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ElementListEntryRoot implements ListEntryParent {
 
-    private final List<ElementListEntry> children;
+    private final CopyOnWriteArrayList<ElementListEntry> children;
     private final HashMap<ElementId, ElementListEntry> entries = new HashMap<>(); // All entries, including children of groups, for easy lookup
     private final Set<ElementId> selectedIds = new HashSet<>();
 
@@ -48,7 +49,7 @@ public class ElementListEntryRoot implements ListEntryParent {
 
         this.clientElementManager = manager;
 
-        this.children = new ArrayList<>();
+        this.children = new CopyOnWriteArrayList<>();
         refresh();
     }
 
@@ -125,39 +126,40 @@ public class ElementListEntryRoot implements ListEntryParent {
 
     public void renderDropSpace(int index) {
         ImGui.pushID("DropSpace" + index);
+        try {
+            float maxWidth = ImGui.getContentRegionAvailX();
+            ImVec2 cursorPos = ImGui.getCursorScreenPos();
+            ImDrawList drawList = ImGui.getWindowDrawList();
 
-        float maxWidth = ImGui.getContentRegionAvailX();
-        ImVec2 cursorPos = ImGui.getCursorScreenPos();
-        ImDrawList drawList = ImGui.getWindowDrawList();
+            ImVec2 rectMin = new ImVec2(cursorPos.x, cursorPos.y);
+            ImVec2 rectMax = new ImVec2(cursorPos.x + maxWidth, cursorPos.y + dropSpaceHeight);
 
-        ImVec2 rectMin = new ImVec2(cursorPos.x, cursorPos.y);
-        ImVec2 rectMax = new ImVec2(cursorPos.x + maxWidth, cursorPos.y + dropSpaceHeight);
+            drawList.addRectFilled(rectMin, rectMax, ImGuiColor.toHexARGB(dropSpaceColor));
+            ImGui.dummy(new ImVec2(maxWidth, dropSpaceHeight));
 
-        drawList.addRectFilled(rectMin, rectMax, ImGuiColor.toHexARGB(dropSpaceColor));
-        ImGui.dummy(new ImVec2(maxWidth, dropSpaceHeight));
+            if (ImGui.beginDragDropTarget()) {
+                var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);
 
-        if (ImGui.beginDragDropTarget()) {
-            var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);
+                if (payload == null)
+                    return;
 
-            if (payload == null)
-                return;
+                var entry = listEntryLookup(payload.elementEntryId());
+                int elementIndex = this.clientElementManager.indexOfElement(entry.element);
 
-            var entry = listEntryLookup(payload.elementEntryId());
-            int elementIndex = this.clientElementManager.indexOfElement(entry.element);
+                if (elementIndex == -1) {
+                    MyWorldTrafficAddition.LOGGER.error("Element not found in ClientElementManager: {}", entry.element.getId());
+                    return;
+                }
 
-            if (elementIndex == -1) {
-                MyWorldTrafficAddition.LOGGER.error("Element not found in ClientElementManager: {}", entry.element.getId());
-                return;
+                if (elementIndex == index)
+                    return;
+
+                this.clientElementManager.moveElement(elementIndex, index);
+                ImGui.endDragDropTarget();
             }
-
-            if (elementIndex == index)
-                return;
-
-            this.clientElementManager.moveElement(elementIndex, index);
-            ImGui.endDragDropTarget();
+        } finally {
+            ImGui.popID();
         }
-
-        ImGui.popID();
     }
 
     /**

@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignEditor;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import dev.tobiazsh.imguib3d.client.overlay.ImGuiOverlay;
+import imgui.ImGui;
 
 public final class EditorOverlay implements ImGuiOverlay {
 
