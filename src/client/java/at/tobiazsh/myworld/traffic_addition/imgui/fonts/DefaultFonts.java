@@ -15,6 +15,7 @@ public class DefaultFonts {
     public static @Nullable ImGuiFont RobotoBold;
     public static @Nullable ImGuiFont RobotoBoldMedium;
     public static @Nullable ImGuiFont RobotoBoldLarge;
+    public static @Nullable ImGuiFont JetbrainsMonoRegular;
 
     public static final int NORMAL_SIZE = 18;
     public static final int MEDIUM_SIZE = 30;
@@ -23,6 +24,7 @@ public class DefaultFonts {
     public static void registerAll() {
         InputStream isR = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/roboto_regular.ttf");
         InputStream isRB = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/roboto_bold.ttf");
+        InputStream isJM = DefaultFonts.class.getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/font/jetbrains_mono_regular.ttf");
 
         ImGuiFont.loadFromStreamTTF(
                 isR,
@@ -51,5 +53,12 @@ public class DefaultFonts {
                 LARGE_SIZE,
                 FontImportance.HIGH
         ).thenAccept(font -> RobotoBoldLarge = font);
+
+        ImGuiFont.loadFromStreamTTF(
+                isJM,
+                FontIdentifier.of(MyWorldTrafficAddition.MOD_ID, "Jetbrains Mono Regular"),
+                NORMAL_SIZE,
+                FontImportance.MEDIUM
+        ).thenAccept(font -> JetbrainsMonoRegular = font);
     }
 }

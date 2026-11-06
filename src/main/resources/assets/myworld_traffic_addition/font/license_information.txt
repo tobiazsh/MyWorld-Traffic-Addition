@@ -38,3 +38,11 @@ Source: LACA (https://www.lacarchive.com/item/drogowskaz)
 License: Freeware for non-commercial use. Redistribution is allowed only in the original, unmodified form. Commercial use requires notifying the author (Emil Wojtacki). See the full license terms for details. [Source: https://www.ffonts.net/Drogowskaz.font in included license file]
 
 Disclaimer: The author assumes no responsibility for any consequences of using this font file.
+
+-----
+
+JETBRAINS MONO FONT
+Font name: Jetbrains Mono
+Font author: JetBrains, Philipp Nurullin, Konstantin Bulenkov
+
+License: OFL

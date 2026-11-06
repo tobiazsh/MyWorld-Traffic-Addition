@@ -145,7 +145,7 @@ public class SignEditor {
         // TODO: Rewrite buggy undo/redo system
         // Then clear stack here
 
-        this.jsonPreviewPopup = new JsonPreviewPopup("jsonPreview_" + id);
+        this.jsonPreviewPopup = new JsonPreviewPopup("jsonPreview_" + id, fontScope);
 
         this.elementAddWindow = new ElementAddWindow(
                 "elementAddWindow_" + id,
