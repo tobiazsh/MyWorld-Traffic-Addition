@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.sign.elements.id;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.UUID;
 
 /**
@@ -16,5 +18,10 @@ public record ParentElementId(UUID id) {
 
     public ElementId toChild() {
         return ElementId.of(this.id);
+    }
+
+    @Override
+    public @NotNull String toString() {
+        return this.id.toString();
     }
 }

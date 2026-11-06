@@ -61,7 +61,7 @@ public class TextElement extends BaseElement {
     public JsonObject toJson() {
         JsonObject object = super.getJson();
 
-        object.addProperty("ElementType", ELEMENT_TYPE.LEGACY_TEXT_ELEMENT.ordinal());
+        object.addProperty("ElementType", ELEMENT_TYPE.TEXT_ELEMENT.ordinal());
         object.addProperty("Text", text);
         object.addProperty("FontHash", font.font().fontHash());
         object.addProperty("FontSize", font.fontSize()); // Not really necessary, but useful as a cache so the client doesn't have to calculate raster size.

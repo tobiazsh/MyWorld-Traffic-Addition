@@ -118,12 +118,14 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
         this.imGuiFont.use(); // Mark the font as used so it doesn't get unloaded while rendering
 
+        ImVec2 origin = ImGui.getWindowPos();
+
         ImGuiFontRenderer.renderFont(
                 this.imGuiFont.imguiFont(),
-                (int) this.x,
-                (int) this.y,
-                (int) this.width,
-                (int) this.height,
+                origin.x + scale * this.x,
+                origin.y + scale * this.y,
+                scale * this.width,
+                scale * this.height,
                 ImColor.rgba(color[0], color[1], color[2], color[3]),
                 rotation,
                 0.5f, 0.5f,

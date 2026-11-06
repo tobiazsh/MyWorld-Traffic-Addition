@@ -1,5 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.sign.elements.id;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.UUID;
 
 /**
@@ -17,5 +19,10 @@ public record ElementId(UUID id) {
 
     public static ElementId random() {
         return new ElementId(UUID.randomUUID());
+    }
+
+    @Override
+    public @NotNull String toString() {
+        return this.id.toString();
     }
 }

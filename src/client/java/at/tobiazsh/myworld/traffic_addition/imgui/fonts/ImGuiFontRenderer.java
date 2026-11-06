@@ -2,10 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.fonts;
 
 import dev.tobiazsh.imguib3d.client.font.ImGuiFont;
 import dev.tobiazsh.imguib3d.client.natives.drawlist.ImDrawListExt;
-import imgui.ImDrawList;
-import imgui.ImGui;
-import imgui.ImVec2;
-import imgui.ImVec4;
+import imgui.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
@@ -34,10 +31,10 @@ public class ImGuiFontRenderer {
      */
     public static void renderFont(
             @NotNull ImGuiFont font,
-            int x,
-            int y,
-            int width,
-            int height,
+            float x,
+            float y,
+            float width,
+            float height,
             int color,
             float rotationDegrees,
             float pivotX,
@@ -62,7 +59,7 @@ public class ImGuiFontRenderer {
                 font.getFontKey().fontSize(),
                 x,
                 y,
-                color,
+                ImColor.rgba(255, 255, 255, 255),
                 x,
                 y,
                 x + width,
@@ -71,7 +68,7 @@ public class ImGuiFontRenderer {
                 null
         );
 
-        int endVtxIdx = drawList.getVtxCurrentIdx();
+       int endVtxIdx = drawList.getVtxCurrentIdx();
 
         if (beginVtxIdx >= endVtxIdx) {
             return;

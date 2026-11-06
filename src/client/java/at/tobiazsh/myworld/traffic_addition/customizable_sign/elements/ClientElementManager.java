@@ -231,7 +231,12 @@ public class ClientElementManager {
     public void setData(CustomizableSignTextureData data, CustomizableSignBlockEntity blockEntity) {
         if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
 
-        List<ClientElementInterface> elements = data.getElementContainer().getElements().stream().map(CustomizableSignElementFactory::toClientElement).toList();
+        List<ClientElementInterface> elements = data
+                .getElementContainer()
+                .getElements()
+                .stream()
+                .map(CustomizableSignElementFactory::toClientElement).toList();
+
         registerUnregistered();
 
         this.setElements(elements);
@@ -278,7 +283,7 @@ public class ClientElementManager {
         CustomClientNetworking.getInstance().sendBytesToServer(
                 Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "set_customizable_sign_texture"),
                 payload.encode(),
-                32000,
+                200,
                 50
         );
     }

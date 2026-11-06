@@ -27,6 +27,27 @@ public class CustomizableSignElementFactory {
                 return OIEC;
             }
 
+            case TextElement TE -> {
+                TextElementClient TEC = new TextElementClient(
+                        TE.getX(),
+                        TE.getY(),
+                        TE.getWidth(),
+                        TE.getHeight(),
+                        TE.getRotation(),
+                        TE.getFactor(),
+                        TE.isWidthCalculated(),
+                        TE.getFont(),
+                        TE.getText(),
+                        TE.getId(),
+                        TE.getParentId()
+                );
+
+                TEC.setName(TE.getName());
+                TEC.setColor(TE.getColor());
+
+                return TEC;
+            }
+
             case LegacyTextElement TE -> {
                 TextElementClient TEC = TextElementClient.fromLegacy(TE);
 
