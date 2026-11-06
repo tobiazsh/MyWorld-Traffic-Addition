@@ -164,6 +164,11 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent 
     }
 
     @Override
+    public void deleteChild(ElementListEntry child) {
+        parent.deleteChild(child);
+    }
+
+    @Override
     public void addChild(ElementListEntry child) {
         this.children.addFirst(child);
     }

@@ -103,11 +103,15 @@ public class ElementListEntry {
                     new ImVec2(0, contentHeight)
             );
 
+            renderContextMenu();
+
             ImGui.setCursorPosY(endPos.y);
 
             if (ImGui.isItemHovered()) {
                 if (ImGui.isMouseClicked(ImGuiMouseButton.Left))
                     onSelect.accept(id);
+                else if (ImGui.isMouseClicked(ImGuiMouseButton.Right))
+                    ImGui.openPopup("###context_menu");
 
                 if (ImGui.beginDragDropSource()) {
                     sendDragDropPayload();
@@ -126,8 +130,8 @@ public class ElementListEntry {
 
     protected void renderContextMenu() {
         if (ImGui.beginPopupContextItem("###context_menu")) {
-            if (ImGui.menuItem("Test")) {
-                System.out.println("Test menu item clicked for element: " + element.getName());
+            if (ImGui.menuItem("Delete")) {
+                parent.deleteChild(this);
             }
             ImGui.endPopup();
         }

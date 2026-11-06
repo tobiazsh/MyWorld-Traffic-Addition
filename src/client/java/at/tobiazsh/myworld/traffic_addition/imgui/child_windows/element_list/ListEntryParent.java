@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 
 public interface ListEntryParent {
     void removeChild(ElementListEntry child);
+    void deleteChild(ElementListEntry child);
     void addChild(ElementListEntry child);
     void refresh();
     ElementId getId();

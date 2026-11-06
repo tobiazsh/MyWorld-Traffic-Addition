@@ -180,6 +180,15 @@ public class ElementListEntryRoot implements ListEntryParent {
     }
 
     /**
+     * Deletes a child entry from the root list. Also deletes the corresponding element from the ClientElementManager.
+     * @param child The child entry to delete.
+     */
+    @Override
+    public void deleteChild(ElementListEntry child) {
+        this.clientElementManager.removeElement(child.element);
+    }
+
+    /**
      * Adds a child entry to the root list. Does not inform ClientElementManager, as this is only for the UI
      * representation of the elements.
      * @param child The child entry to add.
