@@ -9,5 +9,6 @@ public class MyWorldTrafficAdditionDataGenerator implements DataGeneratorEntrypo
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(MyWorldTrafficAdditionEnglishLangProvider::new); // English
         pack.addProvider(MyWorldTrafficAdditionGermanLangProvider::new); // German
+        pack.addProvider(MyWorldTrafficAdditionSpanishLangProvider::new); // Spanish
     }
 }

@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class MyWorldTrafficAdditionSpanishLangProvider extends FabricLanguageProvider {
     protected MyWorldTrafficAdditionSpanishLangProvider(FabricPackOutput packOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
-        super(packOutput, registryLookup);
+        super(packOutput, "es_es", registryLookup);
     }
 
     @Override
@@ -30,31 +30,30 @@ public class MyWorldTrafficAdditionSpanishLangProvider extends FabricLanguagePro
     }
 
     private void generateCommandTranslations(@NonNull TranslationBuilder translationBuilder) {
-        translationBuilder.add("commands.myworld_traffic_addition.main_command.root", "This is the main command of MyWorld Traffic Addition. You can configure and execute different things with it, but be cautious!");
-        translationBuilder.add("commands.myworld_traffic_addition.main_command.dev.set", "Set %s for %s to %s!");
+        translationBuilder.add("commands.myworld_traffic_addition.main_command.root", "Esto es el comando principal de MyWorld Traffic Addition. Puedes configurar diversas cosas, ¡pero ten cuidado!");
+        translationBuilder.add("commands.myworld_traffic_addition.main_command.dev.set", "Se ha dado %s para %s a %s!");
     }
 
     private void generateBlockTranslations(@NonNull TranslationBuilder translationBuilder) {
-        translationBuilder.add("block.myworld_traffic_addition.border_block", "Border Block");
-        translationBuilder.add("block.myworld_traffic_addition.special_block", "Special Block");
-        translationBuilder.add("block.myworld_traffic_addition.sign_pole_block", "Sign Pole");
-        translationBuilder.add("block.myworld_traffic_addition.triangular_sign_block", "Triangular Sign");
-        translationBuilder.add("block.myworld_traffic_addition.upside_down_triangular_sign_block", "Upside Down Triangular Sign");
-        translationBuilder.add("block.myworld_traffic_addition.octagonal_sign_block", "Octagonal Sign");
-        translationBuilder.add("block.myworld_traffic_addition.round_sign_block", "Round Sign");
-        translationBuilder.add("block.myworld_traffic_addition.customizable_sign_block", "Customizable Sign");
+        translationBuilder.add("block.myworld_traffic_addition.border_block", "Bloque de Frontera");
+        translationBuilder.add("block.myworld_traffic_addition.sign_pole_block", "Poste de Señal");
+        translationBuilder.add("block.myworld_traffic_addition.triangular_sign_block", "Señal Triangular");
+        translationBuilder.add("block.myworld_traffic_addition.upside_down_triangular_sign_block", "Señal Triangular Invertida");
+        translationBuilder.add("block.myworld_traffic_addition.octagonal_sign_block", "Señal Octagonal");
+        translationBuilder.add("block.myworld_traffic_addition.round_sign_block", "Señal Redonda");
+        translationBuilder.add("block.myworld_traffic_addition.customizable_sign_block", "Señal Personalizable");
 
         translationBuilder.add("itemGroup.myworld_traffic_addition", "MyWorld Traffic Addition");
 
-        translationBuilder.add("screen.myworld_traffic_addition.sign_pole_rotation_screen", "Sign Pole Rotation Screen");
+        translationBuilder.add("screen.myworld_traffic_addition.sign_pole_rotation_screen", "Diálogo de Rotación del Poste de Señal");
 
-        translationBuilder.add("widget.myworld_traffic_addition.rotation_slider", "Rotate Sign Pole");
-        translationBuilder.add("widget.myworld_traffic_addition.draw_editor_button", "Reveal Editor");
-        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button", "Make Master and Initialize");
-        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.false", "Uninitialized");
-        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.true", "Initialized");
+        translationBuilder.add("widget.myworld_traffic_addition.rotation_slider", "Rotar Poste de Señal");
+        translationBuilder.add("widget.myworld_traffic_addition.draw_editor_button", "Mostrar Editor");
+        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button", "Poner como Maestro e Inicializar");
+        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.false", "Sin Inicializar");
+        translationBuilder.add("widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.true", "Inicializado");
 
-        translationBuilder.add("interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited", "This sign is currently being edited by another player and you may thus not access it.");
-        translationBuilder.add("interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements", "This sign has too many elements! Remove a few before you can submit it.");
+        translationBuilder.add("interaction.info.myworld_traffic_addition.customizable_sign.already_being_edited", "Esta señal está siendo editada actualmente por otro jugador. Por lo tanto, no puedes accederla.");
+        translationBuilder.add("interaction.info.myworld_traffic_addition.customizable_sign.too_many_elements", "¡Esta señal tiene demasiados elementos! Elimina algunos antes de poder enviarla.");
     }
 }
