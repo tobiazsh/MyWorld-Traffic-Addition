@@ -60,10 +60,7 @@ public class SignPoleRotationScreen extends Screen {
                 applyRotation((int)getValue());
             }
         };
-
-        confirm = Button.builder(Component.translatable("widget." + MyWorldTrafficAddition.MOD_ID + ".rotation_confirmation_button"), button -> {
-        }).bounds(5, 30, 200, 20).tooltip(Tooltip.create(Component.literal("Tooltip of button1"))).build();
-
+        
         addRenderableWidget(confirm);
         addRenderableWidget(rotation_slider);
     }
