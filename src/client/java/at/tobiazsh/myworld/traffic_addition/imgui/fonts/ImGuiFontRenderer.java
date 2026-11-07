@@ -51,6 +51,13 @@ public class ImGuiFontRenderer {
 
         ImDrawList drawList = ImGui.getWindowDrawList();
 
+        ImVec2 natural = font.getImFont().calcTextSizeA(
+                font.getFontKey().fontSize(),
+                Float.MAX_VALUE,
+                -1,
+                text
+        );
+
         // Get starting position in draw list to transform vertices later
         int beginVtxIdx = drawList.getVtxCurrentIdx();
 
@@ -62,8 +69,8 @@ public class ImGuiFontRenderer {
                 color,
                 x,
                 y,
-                x + width,
-                y + height,
+                x + natural.x,
+                y + natural.y,
                 text,
                 null
         );
@@ -81,8 +88,10 @@ public class ImGuiFontRenderer {
                 vtxBuffer,
                 beginVtxIdx,
                 endVtxIdx,
-                width,
-                height
+                x,
+                y,
+                width / natural.x,
+                height / natural.y
         );
 
         applyRotation(
@@ -149,32 +158,25 @@ public class ImGuiFontRenderer {
      *                 Gotten using the ImDrawListExt.getVtxBuffer(drawList.ptr) method.
      * @param beginVtxIdx The starting index of the vertex range to scale.
      * @param endVtxIdx The ending index of the vertex range to scale.
-     * @param width The target width to scale the vertices to.
-     * @param height The target height to scale the vertices to.
+     * @param scaleX The scaling factor for the width.
+     * @param scaleY The scaling factor for the height.
      */
     private static void applyScaling(
             @NotNull ByteBuffer vertices,
             int beginVtxIdx,
             int endVtxIdx,
-            float width,
-            float height
+            float anchorX,
+            float anchorY,
+            float scaleX,
+            float scaleY
     ) {
-        ImVec4 extremes = findExtremes(vertices, beginVtxIdx, endVtxIdx);
-        float scaleX = width / (extremes.z - extremes.x); // width / (maxX - minX)
-        float scaleY = height / (extremes.w - extremes.y); // height / (maxY - minY)
-
         for (int i = beginVtxIdx; i < endVtxIdx; i++) {
-            int vertexOffset = i * IMGUI_VERTEX_SIZE; // Each ImDrawVert is 20 bytes
-            float x = vertices.getFloat(vertexOffset);
-            float y = vertices.getFloat(vertexOffset + IMGUI_VERTEX_BYTE_OFFSET); // 4 bytes for the currentX coordinate
+            int vertexOffset = i * IMGUI_VERTEX_SIZE;
+            float vx = vertices.getFloat(vertexOffset);
+            float vy = vertices.getFloat(vertexOffset + IMGUI_VERTEX_BYTE_OFFSET);
 
-            // Scale the vertex position
-            float scaledX = extremes.x + (x - extremes.x) * scaleX;
-            float scaledY = extremes.y + (y - extremes.y) * scaleY;
-
-            // Write back the scaled position
-            vertices.putFloat(vertexOffset, scaledX);
-            vertices.putFloat(vertexOffset + IMGUI_VERTEX_BYTE_OFFSET, scaledY);
+            vertices.putFloat(vertexOffset, anchorX + (vx - anchorX) * scaleX);
+            vertices.putFloat(vertexOffset + IMGUI_VERTEX_BYTE_OFFSET, anchorY + (vy - anchorY) * scaleY);
         }
     }
 
