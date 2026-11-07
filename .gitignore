@@ -47,3 +47,4 @@ replay_*.log
 /package.json
 /package-lock.json
 /remappedSrc/
+/src/main/generated/.cache/
