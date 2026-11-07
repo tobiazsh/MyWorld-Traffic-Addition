@@ -41,7 +41,7 @@ public class MyWorldTrafficAdditionEnglishLangProvider extends FabricLanguagePro
 
         translationBuilder.add("itemGroup.myworld_traffic_addition", "MyWorld Traffic Addition");
 
-        translationBuilder.add("screen.myworld_traffic_addition.sign_pole_rotation_screen", "Dialogo de Rotación del Poste de Señal");
+        translationBuilder.add("screen.myworld_traffic_addition.sign_pole_rotation_screen", "Diálogo de Rotación del Poste de Señal");
 
         translationBuilder.add("widget.myworld_traffic_addition.rotation_slider", "Rotar Poste de Señal");
         translationBuilder.add("widget.myworld_traffic_addition.draw_editor_button", "Mostrar Editor");
