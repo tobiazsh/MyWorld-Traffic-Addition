@@ -1,4 +1,4 @@
-package at.tobiazsh.myworld.traffic_addition.datagen;
+package at.tobiazsh.myworld.traffic_addition.datagen.translation;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;

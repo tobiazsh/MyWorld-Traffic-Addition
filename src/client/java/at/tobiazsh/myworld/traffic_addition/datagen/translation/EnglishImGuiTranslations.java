@@ -1,24 +1,14 @@
-package at.tobiazsh.myworld.traffic_addition.datagen;
+package at.tobiazsh.myworld.traffic_addition.datagen.translation;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.minecraft.core.HolderLookup;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider.*;
 import org.jspecify.annotations.NonNull;
 
-import java.util.concurrent.CompletableFuture;
+public class EnglishImGuiTranslations {
 
-public class MyWorldTrafficAdditionEnglishLangProvider extends FabricLanguageProvider {
-    protected MyWorldTrafficAdditionEnglishLangProvider(FabricPackOutput packOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
-        super(packOutput, registryLookup);
-    }
-
-    @Override
-    public void generateTranslations(
-            HolderLookup.@NonNull Provider provider,
-            @NonNull TranslationBuilder translationBuilder
-    ) {
+    public void generate(@NonNull TranslationBuilder translationBuilder) {
         generatePropertyViewerTranslations(translationBuilder);
         generateErrorPopupTranslations(translationBuilder);
+        generateElementListWindowTranslations(translationBuilder);
     }
 
     private void generatePropertyViewerTranslations(@NonNull TranslationBuilder translationBuilder) {

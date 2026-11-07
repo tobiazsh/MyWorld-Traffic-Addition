@@ -1,0 +1,23 @@
+{
+  "text.mwta.error-popup.close": "Close",
+  "text.mwta.error-popup.message": "Message",
+  "text.mwta.error-popup.title": "Error",
+  "text.mwta.sign-editor.property-extension.text.font.apply": "Apply",
+  "text.mwta.sign-editor.property-extension.text.font.family": "Font Family",
+  "text.mwta.sign-editor.property-extension.text.font.header": "Font Controls",
+  "text.mwta.sign-editor.property-extension.text.font.size": "Font Size",
+  "text.mwta.sign-editor.property-extension.text.text.header": "Text Controls",
+  "text.mwta.sign-editor.property-extension.text.text.input": "Text",
+  "text.mwta.sign-editor.property-viewer.color": "Color",
+  "text.mwta.sign-editor.property-viewer.dimensions": "Dimensions",
+  "text.mwta.sign-editor.property-viewer.dimensions.center-x": "Center X",
+  "text.mwta.sign-editor.property-viewer.dimensions.center-y": "Center Y",
+  "text.mwta.sign-editor.property-viewer.dimensions.height": "Height",
+  "text.mwta.sign-editor.property-viewer.dimensions.lock-ratio": "Lock Aspect Ratio",
+  "text.mwta.sign-editor.property-viewer.dimensions.width": "Width",
+  "text.mwta.sign-editor.property-viewer.dimensions.x": "X",
+  "text.mwta.sign-editor.property-viewer.dimensions.y": "Y",
+  "text.mwta.sign-editor.property-viewer.name": "Name",
+  "text.mwta.sign-editor.property-viewer.name.apply": "Apply Name",
+  "text.mwta.sign-editor.property-viewer.rotation": "Rotation"
+}

@@ -301,4 +301,25 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		MyWorldTrafficAddition.LOGGER.info("Loaded {} fonts", FontRepository.getInstance().getFonts().size());
 	}
 
+	/**
+	 * Returns the translation for a given key with a prefix using Minecraft's translation system.
+	 *
+	 * @param prefix The prefix to be used for the translation key, e.g., "screen.xxx".
+	 * @param key The specific key to be translated, e.g., "sign_pole_rotation_screen".
+	 */
+	public static Component getTranslatable(String prefix, String key) {
+		return getTranslatable(prefix, MyWorldTrafficAddition.MOD_ID, key);
+	}
+
+	/**
+	 * Returns the translation for a given key with a prefix using Minecraft's translation system.
+	 *
+	 * @param prefix The prefix to be used for the translation key, e.g., "screen.xxx".
+	 * @param identifier The identifier to be used for the translation key, e.g., "myworld_traffic_addition".
+	 * @param key The specific key to be translated, e.g., "sign_pole_rotation_screen".
+	 */
+	public static Component getTranslatable(String prefix, String identifier, String key) {
+		return Component.translatable(prefix + "." + identifier + "." + key);
+	}
+
 }
