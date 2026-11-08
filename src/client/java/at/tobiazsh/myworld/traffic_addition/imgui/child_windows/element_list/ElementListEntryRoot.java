@@ -138,24 +138,27 @@ public class ElementListEntryRoot implements ListEntryParent {
             ImGui.dummy(new ImVec2(maxWidth, dropSpaceHeight));
 
             if (ImGui.beginDragDropTarget()) {
-                var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);
+                try {
+                    var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);
 
-                if (payload == null)
-                    return;
+                    if (payload == null)
+                        return;
 
-                var entry = listEntryLookup(payload.elementEntryId());
-                int elementIndex = this.clientElementManager.indexOfElement(entry.element);
+                    var entry = listEntryLookup(payload.elementEntryId());
+                    int elementIndex = this.clientElementManager.indexOfElement(entry.element);
 
-                if (elementIndex == -1) {
-                    MyWorldTrafficAddition.LOGGER.error("Element not found in ClientElementManager: {}", entry.element.getId());
-                    return;
+                    if (elementIndex == -1) {
+                        MyWorldTrafficAddition.LOGGER.error("Element not found in ClientElementManager: {}", entry.element.getId());
+                        return;
+                    }
+
+                    if (elementIndex == index)
+                        return;
+
+                    this.clientElementManager.moveElement(elementIndex, index);
+                } finally {
+                    ImGui.endDragDropTarget();
                 }
-
-                if (elementIndex == index)
-                    return;
-
-                this.clientElementManager.moveElement(elementIndex, index);
-                ImGui.endDragDropTarget();
             }
         } finally {
             ImGui.popID();
