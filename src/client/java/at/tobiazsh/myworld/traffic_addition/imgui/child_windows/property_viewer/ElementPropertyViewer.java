@@ -4,7 +4,6 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list.ElementSelectionCallback;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
-import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
@@ -33,6 +32,7 @@ public class ElementPropertyViewer {
 
     private final int[] widthBuffer  = new int[1];
     private final int[] heightBuffer = new int[1];
+    private float lockedRatio = 1f; // width / height
 
     private final int[] xBuffer = new int[1];
     private final int[] yBuffer = new int[1];
@@ -91,6 +91,8 @@ public class ElementPropertyViewer {
 
         this.xBuffer[0] = (int) element.getX();
         this.yBuffer[0] = (int) element.getY();
+
+        captureRatio();
 
         // Only copy inside to be able to make buffer final to make sure it doesn't change reference and break ImGui
         System.arraycopy(element.getColor(), 0, this.colorBuffer, 0, 4);
@@ -153,9 +155,11 @@ public class ElementPropertyViewer {
         final float sliderWidth = 100f;
         final float dimensionBeginY = ImGui.getCursorScreenPosY();
 
-        ImGui.checkbox(getTranslatable(
+        if (ImGui.checkbox(getTranslatable(
                 "text", "mwta", "sign-editor.property-viewer.dimensions.lock-ratio"
-        ).getString(), lockAspectRatio);
+        ).getString(), lockAspectRatio)) {
+            if (lockAspectRatio.get()) captureRatio();
+        }
 
         ImGui.beginGroup(); {
             ImGui.setNextItemWidth(sliderWidth);
@@ -164,12 +168,8 @@ public class ElementPropertyViewer {
                     trIC("text.mwta.sign-editor.property-viewer.dimensions.width", id, "widthInput"),
                     widthBuffer, 1f, 0, (int) (canvasWidth - xBuffer[0]), "%d px")
             ) {
-                if (widthBuffer[0] > canvasWidth)
-                    widthBuffer[0] = (int) Math.clamp(widthBuffer[0], 1, canvasWidth);
-
                 if (lockAspectRatio.get()) {
-                    float aspectRatio = element.getWidth() / element.getHeight();
-                    heightBuffer[0] = (int) (widthBuffer[0] / aspectRatio);
+                    scaleFromWidth(widthBuffer[0]);
                 }
 
                 applySize();
@@ -181,12 +181,10 @@ public class ElementPropertyViewer {
                     trIC("text.mwta.sign-editor.property-viewer.dimensions.height", id, "heightInput"),
                     heightBuffer, 1f, 0, (int) (canvasHeight - yBuffer[0]), "%d px")
             ) {
-                if (heightBuffer[0] > canvasHeight)
-                    heightBuffer[0] = (int) Math.clamp(heightBuffer[0], 1, canvasHeight);
+                int maxWidth = (int) canvasWidth - xBuffer[0];
 
                 if (lockAspectRatio.get()) {
-                    float aspectRatio = element.getWidth() / element.getHeight();
-                    widthBuffer[0] = (int) (heightBuffer[0] * aspectRatio);
+                    scaleFromHeight(heightBuffer[0]);
                 }
 
                 applySize();
@@ -240,7 +238,7 @@ public class ElementPropertyViewer {
             } ImGui.endGroup();
         } ImGui.endGroup();
 
-        // Vertical separator between width/height/ratio and X/Y/center controls
+        // Vertical separator between desiredWidth/desiredHeight/ratio and X/Y/center controls
         final float lineThickness = 1f;
         ImGui.getWindowDrawList().addLine(
                 separatorX,
@@ -288,6 +286,28 @@ public class ElementPropertyViewer {
         this.element.setSize(this.widthBuffer[0], this.heightBuffer[0]);
     }
 
+    private void scaleFromWidth(int desiredWidth) {
+        int maxW = Math.max(1, (int) (canvasWidth - xBuffer[0]));
+        int maxH = Math.max(1, (int) (canvasHeight - yBuffer[0]));
+
+        int widthLimit = Math.clamp((int) Math.floor(maxH * lockedRatio), 1, maxW);
+
+        int w = Math.clamp(desiredWidth, 1, widthLimit);
+        widthBuffer[0]  = w;
+        heightBuffer[0] = Math.clamp(Math.round(w / lockedRatio), 1, maxH);
+    }
+
+    private void scaleFromHeight(int desiredHeight) {
+        int maxW = Math.max(1, (int) (canvasWidth - xBuffer[0]));
+        int maxH = Math.max(1, (int) (canvasHeight - yBuffer[0]));
+
+        int heightLimit = Math.clamp((int) Math.floor(maxW / lockedRatio), 1, maxH);
+
+        int h = Math.clamp(desiredHeight, 1, heightLimit);
+        heightBuffer[0] = h;
+        widthBuffer[0]  = Math.clamp(Math.round(h * lockedRatio), 1, maxW);
+    }
+
     private void applyPosition() {
         if (this.element == null) return;
         this.element.setPosition(this.xBuffer[0], this.yBuffer[0]);
@@ -317,6 +337,12 @@ public class ElementPropertyViewer {
                 prepare(element);
             }
         };
+    }
+
+    private void captureRatio() {
+        if (element == null) return;
+        float w = element.getWidth(), h = element.getHeight();
+        if (w > 0 && h > 0) lockedRatio = w / h;
     }
 
     public static void renderSectionTitle(String text, ImGuiFontScope fontScope) {
