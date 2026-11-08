@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 public class ElementListEntryRoot implements ListEntryParent {
 
+    private final ElementSelectionCallback selectionCallback;
+
     private final CopyOnWriteArrayList<ElementListEntry> children;
     private final HashMap<ElementId, ElementListEntry> entries = new HashMap<>(); // All entries, including children of groups, for easy lookup
     private final Set<ElementId> selectedIds = new HashSet<>();
@@ -29,8 +31,9 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final float dropSpaceHeight = 10;
     private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.2f};
 
-    public ElementListEntryRoot(String id, ClientElementManager manager) {
+    public ElementListEntryRoot(String id, ClientElementManager manager, ElementSelectionCallback selectionCallback) {
         this.dragDropDataType = "ListEntryDD_" + id;
+        this.selectionCallback = selectionCallback;
 
         if (dragDropDataType.length() > 32) {
             throw new RuntimeException(
@@ -54,10 +57,13 @@ public class ElementListEntryRoot implements ListEntryParent {
     }
 
     private void onSelect(ElementId id) {
-        if (selectedIds.contains(id))
+        if (selectedIds.contains(id)) {
             selectedIds.remove(id);
-        else
+        } else {
             selectedIds.add(id);
+        }
+
+        selectionCallback.getSelectedIds(Set.copyOf(selectedIds));
     }
 
     private void onNewEntry(ElementListEntry child) {
@@ -65,6 +71,7 @@ public class ElementListEntryRoot implements ListEntryParent {
     }
 
     private void onEntryRemoved(ElementListEntry child) {
+        selectedIds.remove(child.getId());
         entries.remove(child.getId());
     }
 
@@ -180,6 +187,10 @@ public class ElementListEntryRoot implements ListEntryParent {
     @Override
     public void removeChild(ElementListEntry child) {
         children.remove(child);
+        // Do not update selection here. Items are only removed from the list, not entirely deleted.
+        // It may still exist somewhere (maybe in a group)
+
+        // Selection will also be updated on onElementRemoved()!
     }
 
     /**
@@ -189,6 +200,8 @@ public class ElementListEntryRoot implements ListEntryParent {
     @Override
     public void deleteChild(ElementListEntry child) {
         this.clientElementManager.removeElement(child.element);
+        // Manually removing from list is not necessary, as ClientElementManager will trigger a refresh of the list if changes occur
+
     }
 
     /**

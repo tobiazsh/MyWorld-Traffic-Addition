@@ -1,14 +1,20 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer;
 
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
+import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list.ElementSelectionCallback;
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
+import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.getTranslatable;
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.*;
 
 public class ElementPropertyViewer {
@@ -16,19 +22,20 @@ public class ElementPropertyViewer {
     private boolean isVisible = false;
 
     private @Nullable PropertyViewerExtension extension;
-    private ClientElementInterface element;
+    private @Nullable ClientElementInterface element;
 
     private final ImGuiFontScope fontScope = ImGuiFontScope.create();
+    private final ClientElementManager clientElementManager;
 
     private final String id;
 
     private final ImString nameBuffer = new ImString(256);
 
-    private final float[] widthBuffer  = new float[1];
-    private final float[] heightBuffer = new float[1];
+    private final int[] widthBuffer  = new int[1];
+    private final int[] heightBuffer = new int[1];
 
-    private final float[] xBuffer = new float[1];
-    private final float[] yBuffer = new float[1];
+    private final int[] xBuffer = new int[1];
+    private final int[] yBuffer = new int[1];
 
     private final float[] rotationBuffer = new float[1];
 
@@ -42,18 +49,34 @@ public class ElementPropertyViewer {
 
     ImBoolean lockAspectRatio = new ImBoolean(false);
 
-    public ElementPropertyViewer(String id) {
+    public ElementPropertyViewer(String id, ClientElementManager elementManager) {
         this.id = id;
+        this.clientElementManager = elementManager;
     }
 
+    // TODO: Will become more relevant if we allow the canvas size to change dynamically for fine-tuning of sign size.
     public void setCanvasSize(float widthPixels, float heightPixels) {
         this.canvasWidth = widthPixels;
         this.canvasHeight = heightPixels;
     }
 
-    public void prepare(ClientElementInterface element, float canvasWidth, float canvasHeight) {
-        setCanvasSize(canvasWidth, canvasHeight);
+    public void clean() {
+        this.xBuffer[0] = 0;
+        this.yBuffer[0] = 0;
+        this.widthBuffer[0] = 0;
+        this.heightBuffer[0] = 0;
+        this.rotationBuffer[0] = 0;
+        this.colorBuffer[0] = 0;
+        this.colorBuffer[1] = 0;
+        this.colorBuffer[2] = 0;
+        this.colorBuffer[3] = 0;
 
+        this.element = null;
+        this.nameBuffer.set("unset");
+        this.extension = null;
+    }
+
+    public void prepare(@NonNull ClientElementInterface element) {
         element.getPropertyViewerExtension().ifPresentOrElse(ext -> {
             this.extension = ext;
             ext.setElement(element);
@@ -63,11 +86,11 @@ public class ElementPropertyViewer {
 
         this.nameBuffer.set(element.getName());
 
-        this.widthBuffer[0] = element.getWidth();
-        this.heightBuffer[0] = element.getHeight();
+        this.widthBuffer[0] = (int) element.getWidth();
+        this.heightBuffer[0] = (int) element.getHeight();
 
-        this.xBuffer[0] = element.getX();
-        this.yBuffer[0] = element.getY();
+        this.xBuffer[0] = (int) element.getX();
+        this.yBuffer[0] = (int) element.getY();
 
         // Only copy inside to be able to make buffer final to make sure it doesn't change reference and break ImGui
         System.arraycopy(element.getColor(), 0, this.colorBuffer, 0, 4);
@@ -79,125 +102,194 @@ public class ElementPropertyViewer {
         if (!isVisible) return;
 
         if (ImGui.begin("Element Properties##" + id)) {
-            renderDimensions();
-            ImGui.separator();
-            renderRotation();
-            ImGui.separator();
-            renderColor();
-            ImGui.separator();
-            if (extension != null) extension.render(this.id);
 
-            ImGui.end();
+            if (element == null)
+                renderInformation();
+            else
+                renderContent();
         }
+
+        ImGui.end();
+    }
+
+    public void renderInformation() {
+        // Center the information text so it's at least somewhat beautiful...
+        String information = getTranslatable(
+                "text",
+                "sign-editor.property-viewer.invalid-selection" // TR: "No or too many elements selected."
+        ).getString();
+
+        float windowWidth = ImGui.getWindowWidth();
+        float windowHeight = ImGui.getWindowHeight();
+        float textWidth = ImGui.calcTextSize(information).x;
+        float textHeight = ImGui.calcTextSize(information).y;
+
+        ImGui.setCursorPosX((windowWidth - textWidth) / 2);
+        ImGui.setCursorPosY((windowHeight - textHeight) / 2);
+
+        this.fontScope.push(DefaultFonts.RobotoBold);
+        ImGui.text(information);
+        this.fontScope.pop();
+    }
+
+    public void renderContent() {
+        renderDimensions();
+        ImGui.separator();
+        renderRotation();
+        ImGui.separator();
+        renderColor();
+        ImGui.separator();
+        if (extension != null) extension.render(this.id);
     }
 
     private void renderDimensions() {
-        if (ImGui.beginChild("Dimensions##" + id)) {
-            fontScope.push(DefaultFonts.RobotoBold);
-            ImGui.text(trIC("text.mwta.sign-editor.property-viewer.dimensions", id, "dimensionsTitle"));
-            fontScope.pop();
+        if (this.element == null) return;
 
-            ImGui.beginGroup();
-            {
-                ImGui.checkbox(trIC(
-                        "text.mwta.sign-editor.property-viewer.dimensions.lock-ratio",
-                        id, "aspect-locker"
-                ), lockAspectRatio);
+        renderSectionTitle(
+                getTranslatable("text", "mwta", "sign-editor.property-viewer.dimensions").getString(),
+                fontScope
+        );
 
-                if (ImGui.dragFloat(
-                        trIC("text.mwta.sign-editor.property-viewer.dimensions.width", id, "widthInput"),
-                        widthBuffer)
-                ) {
-                    if (widthBuffer[0] > canvasWidth)
-                        widthBuffer[0] = Math.clamp(widthBuffer[0], 1, canvasWidth);
+        final float sliderWidth = 100f;
+        final float dimensionBeginY = ImGui.getCursorScreenPosY();
 
-                    if (lockAspectRatio.get()) {
-                        float aspectRatio = element.getWidth() / element.getHeight();
-                        heightBuffer[0] = (int) (widthBuffer[0] / aspectRatio);
-                    }
+        ImGui.checkbox(getTranslatable(
+                "text", "mwta", "sign-editor.property-viewer.dimensions.lock-ratio"
+        ).getString(), lockAspectRatio);
 
-                    applySize();
+        ImGui.beginGroup(); {
+            ImGui.setNextItemWidth(sliderWidth);
+
+            if (ImGui.dragInt(
+                    trIC("text.mwta.sign-editor.property-viewer.dimensions.width", id, "widthInput"),
+                    widthBuffer, 1f, 0, (int) (canvasWidth - xBuffer[0]), "%d px")
+            ) {
+                if (widthBuffer[0] > canvasWidth)
+                    widthBuffer[0] = (int) Math.clamp(widthBuffer[0], 1, canvasWidth);
+
+                if (lockAspectRatio.get()) {
+                    float aspectRatio = element.getWidth() / element.getHeight();
+                    heightBuffer[0] = (int) (widthBuffer[0] / aspectRatio);
                 }
 
-                if (ImGui.dragFloat(
-                        trIC("text.mwta.sign-editor.property-viewer.dimensions.height", id, "heightInput"),
-                        heightBuffer)
-                ) {
-                    if (heightBuffer[0] > canvasHeight)
-                        heightBuffer[0] = Math.clamp(heightBuffer[0], 1, canvasHeight);
+                applySize();
+            }
 
-                    if (lockAspectRatio.get()) {
-                        float aspectRatio = element.getWidth() / element.getHeight();
-                        widthBuffer[0] = (int) (heightBuffer[0] * aspectRatio);
-                    }
+            ImGui.setNextItemWidth(sliderWidth);
 
-                    applySize();
+            if (ImGui.dragInt(
+                    trIC("text.mwta.sign-editor.property-viewer.dimensions.height", id, "heightInput"),
+                    heightBuffer, 1f, 0, (int) (canvasHeight - yBuffer[0]), "%d px")
+            ) {
+                if (heightBuffer[0] > canvasHeight)
+                    heightBuffer[0] = (int) Math.clamp(heightBuffer[0], 1, canvasHeight);
+
+                if (lockAspectRatio.get()) {
+                    float aspectRatio = element.getWidth() / element.getHeight();
+                    widthBuffer[0] = (int) (heightBuffer[0] * aspectRatio);
                 }
-            } ImGui.endGroup();
 
-            ImGui.sameLine();
+                applySize();
+            }
+        } ImGui.endGroup();
 
-            ImGui.beginGroup();
-            {
+        ImGui.sameLine();
+        final float spacingPosDim = 10f;
+        ImGui.dummy(spacingPosDim, 0f);
+        final float separatorX = ImGui.getItemRectMinX() + spacingPosDim / 2f; // center of the dummy
+        ImGui.sameLine();
+
+        ImGui.beginGroup(); {
+
+            ImGui.beginGroup(); {
+                ImGui.setNextItemWidth(sliderWidth);
+
+                if (ImGui.dragInt(
+                        trIC("text.mwta.sign-editor.property-viewer.dimensions.x", id, "xInput"),
+                        xBuffer, 1f, 0 , (int) (canvasWidth - widthBuffer[0]))
+                ) element.setX(xBuffer[0]);
+
+                ImGui.sameLine();
+
                 if (ImGui.button(trIC(
                         "text.mwta.sign-editor.property-viewer.dimensions.center-x",
                         id, "centerXBtn"))
                 ) {
-                    xBuffer[0] = (canvasWidth - element.getWidth()) / 2;
+                    xBuffer[0] = (int) ((canvasWidth - element.getWidth()) / 2);
                     applyPosition();
                 }
+            } ImGui.endGroup();
+
+            ImGui.beginGroup(); {
+                ImGui.setNextItemWidth(sliderWidth);
+
+                if (ImGui.dragInt(
+                        trIC("text.mwta.sign-editor.property-viewer.dimensions.y", id, "yInput"),
+                        yBuffer, 1f, 0, (int) (canvasHeight - heightBuffer[0]))
+                ) element.setY(yBuffer[0]);
+
+                ImGui.sameLine();
 
                 if (ImGui.button(trIC(
                         "text.mwta.sign-editor.property-viewer.dimensions.center-y",
                         id, "centerYBtn"))
                 ) {
-                    yBuffer[0] = (canvasHeight - element.getHeight()) / 2;
+                    yBuffer[0] = (int) ((canvasHeight - element.getHeight()) / 2);
                     applyPosition();
                 }
-
-                if (ImGui.dragFloat(
-                        trIC("text.mwta.sign-editor.property-viewer.dimensions.x", id, "xInput"),
-                        xBuffer)
-                ) element.setX(xBuffer[0]);
-
-                if (ImGui.dragFloat(
-                        trIC("text.mwta.sign-editor.property-viewer.dimensions.y", id, "yInput"),
-                        yBuffer)
-                ) element.setY(yBuffer[0]);
             } ImGui.endGroup();
+        } ImGui.endGroup();
 
-            ImGui.endChild();
-        }
+        // Vertical separator between width/height/ratio and X/Y/center controls
+        final float lineThickness = 1f;
+        ImGui.getWindowDrawList().addLine(
+                separatorX,
+                dimensionBeginY,
+                separatorX,
+                ImGui.getCursorScreenPosY() - ImGui.getStyle().getItemSpacingY(),
+                ImGui.getColorU32(1f, 1f, 1f, .2f),
+                lineThickness
+        );
     }
 
     private void renderRotation() {
-        fontScope.push(DefaultFonts.RobotoBold);
-        ImGui.text(trIC("text.mwta.sign-editor.property-viewer.rotation", id, "rotationTitle"));
-        fontScope.pop();
+        if (this.element == null) return; // Make IntelliJ happy AND it serves as a safety check for my future stupidity
+
+        renderSectionTitle(
+                getTranslatable("text", "mwta", "sign-editor.property-viewer.rotation").getString(),
+                fontScope
+        ); // TR: "Rotation"
 
         if (ImGui.dragFloat(
                 trIC("text.mwta.sign-editor.property-viewer.rotation", id, "rotationInput"),
-                rotationBuffer
+                rotationBuffer, 1f, 0, 360, "%.1f°"
         )) element.setRotation(rotationBuffer[0]);
     }
 
     private void renderColor() {
-        fontScope.push(DefaultFonts.RobotoBold);
-        ImGui.text(trIC("text.mwta.sign-editor.property-viewer.color", id, "colorTitle"));
-        fontScope.pop();
+        if (this.element == null) return;
 
-        if (ImGui.colorEdit4(
+        renderSectionTitle(
+                getTranslatable("text", "mwta", "sign-editor.property-viewer.color").getString(),
+                fontScope
+        ); // TR: "Color"
+
+        ImGui.setNextItemWidth(200f);
+
+        if (ImGui.colorPicker4(
                 trIC("text.mwta.sign-editor.property-viewer.color", id, "colorInput"),
                 colorBuffer,
-                ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf
+                ImGuiColorEditFlags.AlphaBar | ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.DisplayHex | ImGuiColorEditFlags.DisplayHSV
         )) element.setColor(colorBuffer);
     }
 
     private void applySize() {
+        if (this.element == null) return;
         this.element.setSize(this.widthBuffer[0], this.heightBuffer[0]);
     }
 
     private void applyPosition() {
+        if (this.element == null) return;
         this.element.setPosition(this.xBuffer[0], this.yBuffer[0]);
     }
 
@@ -209,8 +301,28 @@ public class ElementPropertyViewer {
         this.isVisible = visible;
     }
 
-    public boolean toggleVisibility() {
+    public void toggleVisibility() {
         this.isVisible = !this.isVisible;
-        return this.isVisible;
+    }
+
+    public ElementSelectionCallback getSelectionCallback() {
+        return selectedIds -> {
+            if (selectedIds.size() != 1) {
+                clean();
+                return;
+            }
+
+            var element = clientElementManager.getElementById(selectedIds.iterator().next());
+            if (element != null) {
+                prepare(element);
+            }
+        };
+    }
+
+    public static void renderSectionTitle(String text, ImGuiFontScope fontScope) {
+        fontScope.push(DefaultFonts.RobotoBold);
+        ImGui.text(text);
+        fontScope.pop();
+        ImGuiTools.drawLineMaxX();
     }
 }

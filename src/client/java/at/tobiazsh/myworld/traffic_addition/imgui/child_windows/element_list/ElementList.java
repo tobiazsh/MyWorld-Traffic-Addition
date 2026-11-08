@@ -18,9 +18,9 @@ public class ElementList {
 
     private final ElementListEntryRoot rootEntry;
 
-    public ElementList(String id, ClientElementManager manager) {
+    public ElementList(String id, ClientElementManager manager, ElementSelectionCallback selectionCallback) {
         this.id = id;
-        this.rootEntry = new ElementListEntryRoot(id, manager);
+        this.rootEntry = new ElementListEntryRoot(id, manager, selectionCallback);
         manager.elementListChangedEvent.addListener(rootEntry::refresh);
     }
 

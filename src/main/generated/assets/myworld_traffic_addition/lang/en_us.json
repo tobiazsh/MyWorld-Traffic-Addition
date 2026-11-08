@@ -34,6 +34,7 @@
   "text.mwta.sign-editor.property-viewer.name": "Name",
   "text.mwta.sign-editor.property-viewer.name.apply": "Apply Name",
   "text.mwta.sign-editor.property-viewer.rotation": "Rotation",
+  "text.myworld_traffic_addition.sign-editor.property-viewer.invalid-selection": "No or too many elements selected.",
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.check_button": "Make Master and Initialize",
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.false": "Uninitialized",
   "widget.myworld_traffic_addition.customizable_sign_edit_screen.init_status.true": "Initialized",

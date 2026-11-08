@@ -24,10 +24,11 @@ public class EnglishImGuiTranslations {
         translationBuilder.add("text.mwta.sign-editor.property-viewer.dimensions.center-y", "Center Y");
         translationBuilder.add("text.mwta.sign-editor.property-viewer.rotation", "Rotation");
         translationBuilder.add("text.mwta.sign-editor.property-viewer.color", "Color");
+        translationBuilder.add("text.myworld_traffic_addition.sign-editor.property-viewer.invalid-selection", "No or too many elements selected.");
 
-        translationBuilder.add("text.mwta.sign-editor.property-extension.text.text.header", "Text Controls");
+        translationBuilder.add("text.mwta.sign-editor.property-extension.text.text.header", "Text");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.text.input", "Text");
-        translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.header", "Font Controls");
+        translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.header", "Font");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.size", "Font Size");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.family", "Font Family");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.apply", "Apply");

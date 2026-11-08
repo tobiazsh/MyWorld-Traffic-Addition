@@ -123,12 +123,8 @@ public class SignEditor {
         this.isVisible = true;
         this.blockEntity = masterBlockEntity;
 
-        // selectedElement = null; -> This should not be here. It needs to be exported.
-
         this.signHeightBlocks = masterBlockEntity.getHeight();
         this.signWidthBlocks = masterBlockEntity.getWidth();
-
-        // backgroundTexturePath = null; -> This should not be here. Use customizable sign texture data instead.
 
         this.signRatio = calculateRatio(
                 this.signPreview.previewMaxWidth,
@@ -140,7 +136,15 @@ public class SignEditor {
         this.clientElementManager = new ClientElementManager(); // Drop the old manager and create a new one
         this.clientElementManager.importFromSign(masterBlockEntity); // Import the elements from the sign block entity
         this.clientElementManager.setPixelOfOneBlock(signRatio.y / signHeightBlocks);
-        this.elementList = new ElementList("elementListWindow", this.clientElementManager);
+
+        this.propertyViewer = new ElementPropertyViewer("propertyViewer_" + id, clientElementManager);
+        this.propertyViewer.setCanvasSize( signRatio.x, signRatio.y); // Set the canvas size to the calculated ratio
+
+        this.elementList = new ElementList(
+                "elementListWindow",
+                this.clientElementManager,
+                this.propertyViewer.getSelectionCallback()
+        );
 
         // TODO: Rewrite buggy undo/redo system
         // Then clear stack here
@@ -160,8 +164,6 @@ public class SignEditor {
         this.confirmationPopup = new ConfirmationPopup("confirmationPopup_" + id, this.fontScope);
 
         this.onlineImageGallery = new OnlineImageGallery("onlineImageGallery_" + id);
-
-        this.propertyViewer = new ElementPropertyViewer("propertyViewer_" + id);
 
         this.jsonInjector = new JsonInjector(
                 "jsonInjector_" + id,

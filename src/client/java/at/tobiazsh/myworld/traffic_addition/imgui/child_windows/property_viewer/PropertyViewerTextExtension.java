@@ -15,6 +15,8 @@ import imgui.type.ImString;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.getTranslatable;
+import static at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.ElementPropertyViewer.renderSectionTitle;
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
 /**
@@ -40,9 +42,10 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
     }
 
     private void renderTextControls(String id) {
-        fontScope.push(DefaultFonts.RobotoBold);
-        ImGui.text(trIC("text.mwta.sign-editor.property-extension.text.text.header", id, "textCtrlHeader"));
-        fontScope.pop();
+        renderSectionTitle(
+                getTranslatable("text", "mwta", "sign-editor.property-extension.text.text.header").getString(),
+                fontScope
+        ); // TR: "Text Controls"
 
         if (ImGui.inputText(
                 trIC("text.mwta.sign-editor.property-extension.text.text.input", id, "textCtrlInput"),
@@ -54,10 +57,11 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
     }
 
     private void renderFontControls(String id) {
-        if (ImGui.beginChild(id + "fontControls")) {
-            fontScope.push(DefaultFonts.RobotoBold);
-            ImGui.text(trIC("text.mwta.sign-editor.property-extension.text.font.header", id, "fontCtrlHeader"));
-            fontScope.pop();
+        ImGui.beginGroup(); {
+            renderSectionTitle(
+                    getTranslatable("text", "mwta", "sign-editor.property-extension.text.font.header").getString(),
+                    fontScope
+            ); // TR: "Font Controls"
 
             ImGui.inputFloat(
                     trIC("text.mwta.sign-editor.property-extension.text.font.size", id, "fontCtrlSize"),
@@ -70,9 +74,7 @@ public class PropertyViewerTextExtension implements PropertyViewerExtension {
                     availableFontNames.toArray(new String[0]),
                     availableFonts.size()
             );
-
-            ImGui.endChild();
-        }
+        } ImGui.endGroup();
 
         if (ImGui.button(
                 trIC("text.mwta.sign-editor.property-extension.text.font.apply", id, "fontApplyBtn")
