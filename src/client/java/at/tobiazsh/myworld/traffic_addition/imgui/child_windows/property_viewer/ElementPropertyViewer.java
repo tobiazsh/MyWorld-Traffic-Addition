@@ -181,8 +181,6 @@ public class ElementPropertyViewer {
                     trIC("text.mwta.sign-editor.property-viewer.dimensions.height", id, "heightInput"),
                     heightBuffer, 1f, 0, (int) (canvasHeight - yBuffer[0]), "%d px")
             ) {
-                int maxWidth = (int) canvasWidth - xBuffer[0];
-
                 if (lockAspectRatio.get()) {
                     scaleFromHeight(heightBuffer[0]);
                 }
