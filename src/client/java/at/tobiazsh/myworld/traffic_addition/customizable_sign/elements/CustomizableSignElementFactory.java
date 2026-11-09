@@ -35,7 +35,6 @@ public class CustomizableSignElementFactory {
                         TE.getHeight(),
                         TE.getRotation(),
                         TE.getFactor(),
-                        TE.isWidthCalculated(),
                         TE.getFont(),
                         TE.getText(),
                         TE.getId(),

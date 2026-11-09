@@ -9,9 +9,8 @@ public class TextElement extends BaseElement {
     protected ServerFont font;
     protected String text;
 
-    // TODO: Maybe remove this and just scale it on-the-go while writing and then let the user scale manually width?
+    // TODO: Maybe scale it on-the-go while writing and then let the user scale manually width?
     //  You don't want squished fonts normally anyway so defaulting to a non-squished font is sensible.
-    protected boolean widthIsCalculated;
 
     public TextElement(
             float x,
@@ -22,23 +21,13 @@ public class TextElement extends BaseElement {
             float factor,
             ServerFont font,
             String text,
-            boolean shouldCalculateWidth,
             ElementId id,
             ParentElementId parentId
     ) {
         super(x, y, width, height, factor, rotation, id, parentId);
         this.font = font;
         this.text = text;
-        this.widthIsCalculated = !shouldCalculateWidth;
         this.setColor(new float[]{0, 0, 0, 1});
-    }
-
-    public boolean isWidthCalculated() {
-        return this.widthIsCalculated;
-    }
-
-    public void setWidthCalculated(boolean widthIsCalculated) {
-        this.widthIsCalculated = widthIsCalculated;
     }
 
     public String getText() {

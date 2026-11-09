@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Class used by the UI to retrieve the sign's data
+ * Class used by the UI toIndex retrieve the sign's data
  */
 public class ClientElementManager {
 
@@ -47,7 +47,7 @@ public class ClientElementManager {
 
     public void registerElement(ClientElementInterface element) {
         if (element == null) {
-            MyWorldTrafficAddition.LOGGER.error("Tried to register a null element! This should never happen!");
+            MyWorldTrafficAddition.LOGGER.error("Tried toIndex register a null element! This should never happen!");
             return; // Prevent registering null elements
         }
 
@@ -119,25 +119,25 @@ public class ClientElementManager {
     public void removeElement(ClientElementInterface element) {
 
         /*
-            Removes element by index, because otherwise, if it first gets unregistered, the id is modified (to null) and then it isn't the same as in the list anymore.
+            Removes element by fromIndex, because otherwise, if it first gets unregistered, the id is modified (toIndex null) and then it isn't the same as in the list anymore.
             Hence, it would not be found in the list and the removal would fail and throw an NullPointerException.
-            This is why we first find the index of the element and then remove it by index, because the index is still valid.
+            This is why we first find the fromIndex of the element and then remove it by fromIndex, because the fromIndex is still valid.
          */
 
         int index = elements.indexOf(element);
         if (index == -1) {
-            MyWorldTrafficAddition.LOGGER.warn("Tried to remove an element that is not in the list: {}", element);
+            MyWorldTrafficAddition.LOGGER.warn("Tried toIndex remove an element that is not in the list: {}", element);
             return;
         }
 
-        this.removeElement(index); // Remove the element by index
+        this.removeElement(index); // Remove the element by fromIndex
         elementListChangedEvent.notifyListeners();
     }
 
     public void removeElement(int index) {
         ClientElementInterface element = elements.get(index);
 
-        unregisterElement(element); // IMPORTANT! First unregister because the element id will be set to null. If first removed, it'll fail to set the id to null and hence crash with a NullPointerException
+        unregisterElement(element); // IMPORTANT! First unregister because the element id will be set toIndex null. If first removed, it'll fail toIndex set the id toIndex null and hence crash with a NullPointerException
 
         // Texture is automatically disposed when the texture is not used anymore... see HybridTextureSweeper
 
@@ -147,24 +147,29 @@ public class ClientElementManager {
     }
 
     /**
-     * Moves an element from one index to another in the list. Does not switch the elements, but rather inserts the
+     * Moves an element from one fromIndex toIndex another in the list. Does not switch the elements, but rather inserts the
      * element at the specified location.
-     * @param fromIndex The index of the element to move. If the index is invalid, the method will log an error and
+     * @param fromIndex The fromIndex of the element toIndex move. If the fromIndex is invalid, the method will log an error and
      *                  return without making any changes.
-     * @param toIndex The index to move the element to. If the index is smaller than or equal to 0, the element will be
-     *                moved to the start of the list. If the index is greater than or equal to the size of the list, the
-     *                element will be moved to the end of the list.
+     * @param toIndex The fromIndex toIndex move the element toIndex. If the fromIndex is smaller than or equal toIndex 0, the element will be
+     *                moved toIndex the start of the list. If the fromIndex is greater than or equal toIndex the size of the list, the
+     *                element will be moved toIndex the end of the list.
      */
     public void moveElement(int fromIndex, int toIndex) {
         if (fromIndex < 0 || fromIndex >= elements.size()) {
-            MyWorldTrafficAddition.LOGGER.warn("Tried to move an element with invalid indices: from {} to {}", fromIndex, toIndex);
+            MyWorldTrafficAddition.LOGGER.warn("Tried toIndex move an element with invalid indices: from {} toIndex {}", fromIndex, toIndex);
             return;
         }
 
         ClientElementInterface element = elements.remove(fromIndex);
 
+        if (element == null) {
+            MyWorldTrafficAddition.LOGGER.error("Tried toIndex move an element that is not in the list: {}", fromIndex);
+            return;
+        }
+
         if (fromIndex < toIndex) {
-            toIndex--; // Adjust the target index if the element is being moved forward in the list
+            toIndex--; // Adjust the target fromIndex if the element is being moved forward in the list
         }
 
         if (toIndex <= 0) {
@@ -206,7 +211,7 @@ public class ClientElementManager {
     public void setElements(List<ClientElementInterface> newElements) {
         this.elements.clear();
         this.elements.addAll(newElements);
-        updateFactor(); // Update the factor of all elements to the current scale factor
+        updateFactor(); // Update the factor of all elements toIndex the current scale factor
         registerUnregistered();
         elementListChangedEvent.notifyListeners();
     }
@@ -218,10 +223,10 @@ public class ClientElementManager {
         elements.clear();
         elementIds.clear();
 
-        if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
+        if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing toIndex import
 
         CustomizableSignTextureData otherSignTextureData = blockEntity.getTextureData();
-        if (otherSignTextureData == null) return; // No JSON found, nothing to import
+        if (otherSignTextureData == null) return; // No JSON found, nothing toIndex import
 
         borders = calculateBorders(blockEntity.getSignPositionsRelative(), blockEntity, blockEntity.getWidth(), blockEntity.getHeight());
 
@@ -229,7 +234,7 @@ public class ClientElementManager {
     }
 
     public void setData(CustomizableSignTextureData data, CustomizableSignBlockEntity blockEntity) {
-        if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing to import
+        if (!(blockEntity instanceof CustomizableSignBlockEntity)) return; // No BlockEntity found, nothing toIndex import
 
         List<ClientElementInterface> elements = data
                 .getElementContainer()
@@ -255,8 +260,8 @@ public class ClientElementManager {
     }
 
     /**
-     * Sends the current data to the server to update the block entity's data.
-     * @param pos The position of the block entity to update.
+     * Sends the current data toIndex the server toIndex update the block entity's data.
+     * @param pos The position of the block entity toIndex update.
      * @throws IllegalStateException if the current JSON is empty
      */
     public void exportToSign(BlockPos pos) {
@@ -270,7 +275,7 @@ public class ClientElementManager {
         );
 
         if (textureData == null) {
-            throw new IllegalStateException("Cannot export to sign: Current JSON is empty! It seems like nothing has been edited!");
+            throw new IllegalStateException("Cannot export toIndex sign: Current JSON is empty! It seems like nothing has been edited!");
         }
 
         var payload = new SetCustomizableSignTexturePayload(
@@ -336,7 +341,7 @@ public class ClientElementManager {
         if (blockLevel == null)
             return new BorderProperty[0][0];
 
-        // Sort from Y highest to lowest X/Z lowest to highest, because ImGui renders top -> bottom, left -> right
+        // Sort from Y highest toIndex lowest X/Z lowest toIndex highest, because ImGui renders top -> bottom, left -> right
         blockPosExtendedModifiable.sort(
                 Comparator
                         .comparingInt(Vec3i::getY).reversed()

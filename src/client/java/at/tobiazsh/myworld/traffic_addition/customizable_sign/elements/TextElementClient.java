@@ -65,6 +65,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
 
     private static final String DEFAULT_TEXT = "Lorem Ipsum";
 
+    private boolean isWidthCalculated = true;
+
     public TextElementClient(
             float x,
             float y,
@@ -72,13 +74,12 @@ public class TextElementClient extends TextElement implements ClientElementInter
             float height,
             float rotation,
             float factor,
-            boolean shouldCalculateWidth,
             ServerFont font,
             String text,
             ElementId id,
             ParentElementId parentId
     ) {
-        super(x, y, width, height, rotation, factor, null, text, shouldCalculateWidth, id, parentId);
+        super(x, y, width, height, rotation, factor, null, text, id, parentId);
         this.font = font;
     }
 
@@ -108,12 +109,12 @@ public class TextElementClient extends TextElement implements ClientElementInter
             return;
         }
 
-        if (!this.isWidthCalculated()) {
+        if (!this.isWidthCalculated) {
             float width = calculateTextSize(this.imGuiFont.imguiFont(), this.getText()).x;
             float height = calculateTextSize(this.imGuiFont.imguiFont(), this.getText()).y;
             this.setWidth(width);
             this.setHeight(height);
-            this.setWidthCalculated(true);
+            this.isWidthCalculated = true;
         }
 
         this.imGuiFont.use(); // Mark the font as used so it doesn't get unloaded while rendering
@@ -268,12 +269,11 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 0,0,
                 0,
                 1,
-                true,
                 font,
                 DEFAULT_TEXT,
                 ElementId.random(),
                 BaseElementInterface.MAIN_CANVAS_ID
-        );
+        ).calculateWidth();
     }
 
     public static TextElementClient fromLegacy(LegacyTextElement legacy) {
@@ -282,7 +282,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 legacy.getWidth(), legacy.getHeight(),
                 legacy.getRotation(),
                 legacy.getFactor(),
-                !legacy.isWidthCalculated(),
                 ServerFont.of(
                         LegacyFontMapper.LEGACY_FONTS.get(legacy.getFont().getFontPath()).fontHash(),
                         legacy.getFont().getFontSize()
@@ -428,6 +427,11 @@ public class TextElementClient extends TextElement implements ClientElementInter
         return false; // Font has just been scheduled to load, so we can't render yet
     }
 
+    public TextElementClient calculateWidth() {
+        this.isWidthCalculated = false;
+        return this;
+    }
+
     @Override
     public void onPaste() {
         // ClientElementManagtryAssignDefaultFonter.getInstance().registerElement(this);
@@ -445,7 +449,6 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 this.getWidth(), this.getHeight(),
                 this.getRotation(),
                 this.getFactor(),
-                false,
                 this.getFont(),
                 this.getText(),
                 null,

@@ -165,7 +165,6 @@ public interface BaseElementInterface {
                     ),
 
                     object.get("Text").getAsString(),
-                    false,
                     id,
                     MAIN_CANVAS_ID
             );
