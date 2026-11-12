@@ -247,6 +247,36 @@ public class ElementListEntryRoot implements ListEntryParent {
     }
 
     @Override
+    public void addElement(ClientElementInterface element, int index) {
+        this.clientElementManager.addElement(index, element);
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
+    public void addElementChild(ClientElementInterface element) {
+        this.clientElementManager.addElement(element);
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of
+    }
+
+    @Override
+    public void addElementChild(ClientElementInterface element, int index) {
+        this.clientElementManager.addElement(index, element);
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
+    public void addElementsChild(List<ClientElementInterface> elements) {
+        this.clientElementManager.addAllElements(elements);
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
+    public void addElementsChild(List<ClientElementInterface> elements, int index) {
+        this.clientElementManager.addAllElements(index, elements);
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
     public ElementId getId() {
         return BaseElementInterface.MAIN_CANVAS_ID.toChild();
     }

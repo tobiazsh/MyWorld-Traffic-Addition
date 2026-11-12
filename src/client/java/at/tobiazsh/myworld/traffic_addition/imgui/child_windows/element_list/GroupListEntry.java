@@ -194,25 +194,73 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     }
 
     @Override
-    public void addChild(ElementListEntry child) {
-        this.children.addFirst(child);
-    }
-
-    @Override
     public void addElement(ClientElementInterface element) {
         this.parent.addElement(element);
     }
 
     @Override
+    public void addElement(ClientElementInterface element, int index) {
+        this.parent.addElement(element, index);
+    }
+
+    @Override
+    public void addElementChild(ClientElementInterface element) {
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return;
+
+        groupElementClient.addClientElement(element);
+        // No need to add as child to this list, as the refresh() method will handle that when the group is refreshed.
+
+        // No need to refresh the list of children here, as the group will be refreshed automatically when the element
+        // is added to the group.
+    }
+
+    @Override
+    public void addElementChild(ClientElementInterface element, int index) {
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return;
+
+        groupElementClient.addClientElement(index, element);
+        // No need to add as child to this list, as the refresh() method will handle that when the group is refreshed.
+
+        // No need to refresh the list of children here, as the group will be refreshed automatically when the element
+        // is added to the group.
+    }
+
+    @Override
+    public void addElementsChild(List<ClientElementInterface> elements) {
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return;
+
+        groupElementClient.addAllElements(elements);
+        // No need to add as children to this list, as the refresh() method will handle that when the group is refreshed.
+
+        // No need to refresh the list of children here, as the group will be refreshed automatically when the elements
+        // are added to the group.
+    }
+
+    @Override
+    public void addElementsChild(List<ClientElementInterface> elements, int index) {
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return;
+
+        groupElementClient.addAllElements(index, elements);
+        // No need to add as children to this list, as the refresh() method will handle that when the group is refreshed.
+
+        // No need to refresh the list of children here, as the group will be refreshed automatically when the elements
+        // are added to the group.
+    }
+
+    @Override
     public void removeFromGroup(ElementListEntry child) {
-        this.removeChild(child);
-        parent.addChild(child);
+        this.deleteChild(child);
+        parent.addElementChild(child.getElement());
     }
 
     @Override
     public void addToGroup(ElementListEntry child) {
         // Does essentially the same as addChild, but is semantically different, so we keep it separate.
-        this.addChild(child);
+        this.addElementChild(child.getElement());
     }
 
     // DO NOT dispose the groupThumbnailTexture here, as it is shared among all instances of GroupListEntry.
