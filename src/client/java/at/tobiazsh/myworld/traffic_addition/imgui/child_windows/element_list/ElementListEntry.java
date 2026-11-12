@@ -323,14 +323,17 @@ public class ElementListEntry {
      * @param payload The received drag-and-drop payload.
      */
     protected void onElementDropped(@NonNull ElementListEntryDragDropPayload payload) {
-        // Create group here
-        var droppedElementEntry = listEntryLookup.getEntryById(payload.elementEntryId());
+        groupWith(payload.elementEntryId());
+    }
+
+    private void groupWith(ElementId other) {
+        var droppedElementEntry = listEntryLookup.getEntryById(other);
 
         if (droppedElementEntry.isEmpty())
             return;
 
-        droppedElementEntry.get().parent.removeChild(droppedElementEntry.get());
-        parent.removeChild(this);
+        droppedElementEntry.get().parent.deleteChild(droppedElementEntry.get());
+        parent.deleteChild(this);
 
         float minX = Math.min(droppedElementEntry.get().getElement().getX(), this.getElement().getX());
         float minY = Math.min(droppedElementEntry.get().getElement().getY(), this.getElement().getY());
@@ -347,19 +350,7 @@ public class ElementListEntry {
                 parent.getId().toParent()
         );
 
-        var groupEntry = new GroupListEntry(
-                groupElement,
-                ElementId.random(), // Generate a new ID for the group
-                dragDropDataType,
-                parent,
-                onSelect,
-                onNewEntry,
-                onEntryRemoved,
-                listEntryLookup
-        );
-
-        parent.addChild(groupEntry);
-        onNewEntry.accept(groupEntry);
+        parent.addElementChild(groupElement);
     }
 
     protected void renderPreview() {
