@@ -157,8 +157,8 @@ public class ElementListEntry {
 
         }
 
-        if (ImGui.menuItem("Group with selected")) {
-            groupWithSelected(selectedIds);
+        if (ImGui.menuItem("Group selected")) {
+            groupSelected(selectedIds);
         }
 
         if (ImGui.menuItem("Group with below")) {
@@ -211,19 +211,24 @@ public class ElementListEntry {
         parent.addElement(group);
     }
 
-    private void groupWithSelected(Set<ElementId> selectedIds) {
+    /**
+     * Groups selected elements. Does not guarantee that this element will be part of the group.
+     * <p>All selected elements must have the same parent, otherwise the grouping will not be performed.
+     * @param selectedIds The set of selected element IDs to group together.
+     */
+    private void groupSelected(Set<ElementId> selectedIds) {
         var elements = selectedIds.stream()
                 .map(listEntryLookup::getEntryById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toSet());
 
-        if (!parentMatches(parent, elements)) {
+        if (!parentMatches(elements)) {
             // TODO: Information to user that elements must have the same parent to be grouped together
+            return;
         }
 
-        parent.removeChild(this);
-        elements.forEach(entry -> entry.parent.removeChild(entry));
+        elements.forEach(entry -> entry.parent.deleteChild(entry));
 
         float maxX = (float) elements.stream()
                 .mapToDouble(entry -> entry.element.getX() + entry.element.getWidth())
@@ -255,18 +260,19 @@ public class ElementListEntry {
         );
 
         group.setParentId(parent.getId().toParent());
-        group.addClientElement(this.element);
         elements.forEach(entry -> group.addClientElement(entry.element));
 
-        parent.addElement(group);
+        parent.addElementChild(group);
     }
 
-    private static boolean parentMatches(ListEntryParent parent, Set<ElementListEntry> entries) {
+    private static boolean parentMatches(Set<ElementListEntry> entries) {
         if (entries.isEmpty())
             return true;
 
+        var firstParent = entries.iterator().next().parent;
+
         for (var entry : entries) {
-            if (entry.parent != parent)
+            if (entry.parent != firstParent)
                 return false;
         }
 
