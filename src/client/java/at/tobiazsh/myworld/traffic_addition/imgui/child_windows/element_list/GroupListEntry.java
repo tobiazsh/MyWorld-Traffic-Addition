@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElem
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
+import imgui.flag.ImGuiDir;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -63,6 +64,8 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
                         listEntryLookup
                 ))
                 .collect(Collectors.toList());
+
+        this.overrideSelectableHeight = true;
     }
 
     @Override
@@ -90,17 +93,40 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
 
     @Override
     protected void renderContent(Set<ElementId> selectedElementIds) {
-        // TODO: Maybe center the button
+        float startY = ImGui.getCursorPosY();
 
-        if (ImGui.button((isExpanded ? "▶"  : "▼") + "###expand_button")) {
-            isExpanded = !isExpanded;
-        }
+        renderPreview();
+
+        float previewHeight = ImGui.getCursorPosY() - startY;
+        float framePaddingY = ImGui.getStyle().getItemSpacingY();
+        float textHeight = ImGui.getFrameHeight() + framePaddingY;
 
         ImGui.sameLine();
-        super.renderContent(selectedElementIds);
+
+        ImGui.setCursorPosY(startY + (previewHeight - textHeight) / 2);
+        renderName(ImGui.getCursorPosX(), ImGui.getCursorPosY());
+
+        final float arrowButtonSize = ImGui.getFontSize() + ImGui.getStyle().getFramePadding().y * 2;
+        ImGui.setCursorPosY(startY + (previewHeight - textHeight) / 2);
+        ImGui.setCursorPosX(ImGui.getWindowSizeX() - arrowButtonSize - ImGui.getStyle().getItemSpacingX() - ImGui.getStyle().getScrollbarSize());
+        if (ImGui.arrowButton("dropDownToggler", isExpanded ? ImGuiDir.Down : ImGuiDir.Left))
+            isExpanded = !isExpanded;
+
+        ImGui.setCursorPosY(startY + previewHeight);
+
+        float endY = ImGui.getCursorPosY();
+        this.selectableHeight = (int) (endY - startY);
+
+        ImGui.dummy(0, 0);
 
         if (isExpanded) {
-            renderChildren(Set.of());
+            try {
+                ImGui.beginGroup();
+                renderChildren(selectedElementIds);
+                ImGui.dummy(0, 0);
+            } finally {
+                ImGui.endGroup();
+            }
         }
     }
 

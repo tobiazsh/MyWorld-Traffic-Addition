@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.tr;
 
@@ -42,6 +41,8 @@ public class ElementListEntry {
     protected @Nullable ImGuiTexture thumbnailTexture; // Not final because GroupListEntry overrides it with a different texture
 
     protected int previewSize = 50;
+    protected boolean overrideSelectableHeight = false; // So that the selectable height does not expand over children in e.g. group entries.
+    protected int selectableHeight = 0;
 
     protected static @Nullable ImGuiTexture genericThumbnailTexture;
 
@@ -92,7 +93,9 @@ public class ElementListEntry {
             renderContent(selectedIds);
 
             ImVec2 endPos = ImGui.getCursorPos();
-            float contentHeight = endPos.y - startPos.y - spacingY;
+
+            if (!overrideSelectableHeight)
+                selectableHeight = (int) (endPos.y - startPos.y - spacingY);
 
             ImGui.setCursorPos(startPos);
 
@@ -100,7 +103,7 @@ public class ElementListEntry {
                     "##" + id,
                     isSelected,
                     ImGuiSelectableFlags.AllowOverlap | ImGuiSelectableFlags.SpanAllColumns,
-                    new ImVec2(0, contentHeight)
+                    new ImVec2(0, selectableHeight)
             );
 
             renderContextMenu();
