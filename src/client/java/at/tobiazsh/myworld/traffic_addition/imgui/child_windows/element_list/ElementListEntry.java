@@ -17,8 +17,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.tr;
 
@@ -106,7 +108,7 @@ public class ElementListEntry {
                     new ImVec2(0, selectableHeight)
             );
 
-            renderContextMenu();
+            renderContextMenu(selectedIds);
 
             ImGui.setCursorPosY(endPos.y);
 
@@ -131,14 +133,14 @@ public class ElementListEntry {
         }
     }
 
-    protected void renderContextMenu() {
+    protected void renderContextMenu(Set<ElementId> selectedIds) {
         if (ImGui.beginPopupContextItem("###context_menu")) {
-            renderContextMenuContent();
+            renderContextMenuContent(selectedIds);
             ImGui.endPopup();
         }
     }
 
-    protected void renderContextMenuContent() {
+    protected void renderContextMenuContent(Set<ElementId> selectedIds) {
         if (ImGui.menuItem("Delete")) {
             parent.deleteChild(this);
         }
@@ -156,7 +158,7 @@ public class ElementListEntry {
         }
 
         if (ImGui.menuItem("Group with selected")) {
-
+            groupWithSelected(selectedIds);
         }
 
         if (ImGui.menuItem("Group with below")) {
@@ -209,8 +211,66 @@ public class ElementListEntry {
         parent.addElement(group);
     }
 
-    private void groupWithSelected() {
+    private void groupWithSelected(Set<ElementId> selectedIds) {
+        var elements = selectedIds.stream()
+                .map(listEntryLookup::getEntryById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
 
+        if (!parentMatches(parent, elements)) {
+            // TODO: Information to user that elements must have the same parent to be grouped together
+        }
+
+        parent.removeChild(this);
+        elements.forEach(entry -> entry.parent.removeChild(entry));
+
+        float maxX = (float) elements.stream()
+                .mapToDouble(entry -> entry.element.getX() + entry.element.getWidth())
+                .max().orElse(0d);
+
+        float minX = (float) elements.stream()
+                .mapToDouble(entry -> entry.element.getX())
+                .min().orElse(0d);
+
+        float maxY = (float) elements.stream()
+                .mapToDouble(entry -> entry.element.getY() + entry.element.getHeight())
+                .max().orElse(0d);
+
+        float minY = (float) elements.stream()
+                .mapToDouble(entry -> entry.element.getY())
+                .min().orElse(0d);
+
+        // TODO: Respect the rotation of the elements when creating the group. Make a method "getBoundingBox" in
+        //  base element interface.
+
+        var group = new GroupElementClient(
+                minX,
+                minY,
+                maxX - minX,
+                maxY - minY,
+                0f,
+                ElementId.random(),
+                parent.getId().toParent()
+        );
+
+        group.setParentId(parent.getId().toParent());
+        group.addClientElement(this.element);
+        elements.forEach(entry -> group.addClientElement(entry.element));
+
+        parent.addElement(group);
+    }
+
+    private static boolean parentMatches(ListEntryParent parent, Set<ElementListEntry> entries) {
+        if (entries.isEmpty())
+            return true;
+
+        for (var entry : entries) {
+            if (entry.parent != parent)
+                return false;
+        }
+
+        return true;
     }
 
     protected void renderContent(Set<ElementId> selectedElementIds) {
