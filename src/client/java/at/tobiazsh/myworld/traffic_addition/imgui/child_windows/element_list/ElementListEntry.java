@@ -209,6 +209,9 @@ public class ElementListEntry {
         group.addClientElement(elementBelow.get().element);
 
         parent.addElement(group);
+        // No need to manually refresh, as the above call to addElement will trigger a refresh of the list of children
+        // in the parent. 'Cause addElement() will add the group to the ClientElementManager, which has a callback to
+        // refresh the list of children in the parent.
     }
 
     /**
