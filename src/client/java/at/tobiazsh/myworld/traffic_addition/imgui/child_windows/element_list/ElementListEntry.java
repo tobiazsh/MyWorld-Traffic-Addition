@@ -191,14 +191,13 @@ public class ElementListEntry {
         float maxY = Math.max(this.element.getY() + this.element.getHeight(), elementBelow.get().element.getY() + elementBelow.get().element.getHeight());
         float minX = Math.min(this.element.getX(), elementBelow.get().element.getX());
         float minY = Math.min(this.element.getY(), elementBelow.get().element.getY());
-        float rotation = Math.max(this.element.getRotation(), elementBelow.get().element.getRotation());
 
         var group = new GroupElementClient(
                 minX,
                 minY,
                 maxX - minX,
                 maxY - minY,
-                rotation,
+                0f,
                 ElementId.random(),
                 parent.getId().toParent()
         );
