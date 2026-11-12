@@ -215,6 +215,9 @@ public class ElementListEntry {
     }
 
     protected void renderContent(Set<ElementId> selectedElementIds) {
+        if (this.thumbnailTexture == null)
+            updateThumbnailTexture();
+
         float startY = ImGui.getCursorPosY();
 
         renderPreview();
@@ -302,13 +305,17 @@ public class ElementListEntry {
         // If all else fails, render a placeholder text
         if (thumbnailTexture != null && thumbnailTexture.isUsable()) {
             ImGui.image(thumbnailTexture.getTextureId(), previewSize, previewSize);
-        } else if (genericThumbnailTexture.isUsable()) {
+        } else if (genericThumbnailTexture != null && genericThumbnailTexture.isUsable()) {
             ImGui.image(genericThumbnailTexture.getTextureId(), previewSize, previewSize);
         } else {
             renderNoThumbnailPlaceholder();
         }
 
         ImGui.setItemTooltip(tr(element.getGenericTranslatableName()));
+    }
+
+    protected void updateThumbnailTexture() {
+        this.thumbnailTexture = element.getThumbnailTexture();
     }
 
     protected void renderName(float posX, float posY) {
