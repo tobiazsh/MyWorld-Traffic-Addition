@@ -451,7 +451,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 this.getFactor(),
                 this.getFont(),
                 this.getText(),
-                null,
+                ElementId.random(),
                 this.getParentId()
         );
 
