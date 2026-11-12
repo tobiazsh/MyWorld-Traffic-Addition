@@ -145,13 +145,11 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     }
 
     protected void renderChildren(Set<ElementId> selectedElementIds) {
-        if (isExpanded) {
-            ImGui.indent();
-            for (ElementListEntry child : children) {
-                child.render(selectedElementIds);
-            }
-            ImGui.unindent();
+        ImGui.indent();
+        for (ElementListEntry child : children) {
+            child.render(selectedElementIds);
         }
+        ImGui.unindent();
     }
 
     private void createGroupThumbnailTexture() {
