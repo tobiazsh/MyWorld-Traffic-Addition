@@ -99,10 +99,10 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
             return;
 
         // Remove the dropped element from its current parent
-        droppedElementEntry.get().parent.removeChild(droppedElementEntry.get());
+        droppedElementEntry.get().parent.deleteChild(droppedElementEntry.get());
 
         // Add the dropped element to this group
-        this.addChild(droppedElementEntry.get());
+        this.addElementChild(droppedElementEntry.get().element);
     }
 
     @Override
