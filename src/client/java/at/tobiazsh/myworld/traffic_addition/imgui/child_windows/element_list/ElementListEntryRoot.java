@@ -158,6 +158,7 @@ public class ElementListEntryRoot implements ListEntryParent {
 
         children.clear();
         children.addAll(refreshedChildren);
+        entries.putAll(refreshedChildren.stream().collect(Collectors.toMap(ElementListEntry::getId, Function.identity())));
     }
 
     public void renderDropSpace(int index) {
