@@ -12,6 +12,7 @@ import imgui.ImVec2;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,8 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final CopyOnWriteArrayList<ElementListEntry> children;
     private final HashMap<ElementId, ElementListEntry> entries = new HashMap<>(); // All entries, including children of groups, for easy lookup
     private final Set<ElementId> selectedIds = new HashSet<>();
+
+    private final AtomicBoolean refreshScheduled = new AtomicBoolean(false);
 
     private final String dragDropDataType;
     private final ListEntryCreator listEntryCreator;
@@ -106,13 +109,22 @@ public class ElementListEntryRoot implements ListEntryParent {
             dropSpaceIndex++;
             renderDropSpace(dropSpaceIndex);
         }
+
+        if (refreshScheduled.getAndSet(false)) {
+            immediateRefresh();
+        }
     }
 
     /**
      * Refreshes the list of children based on the current elements in the provided ClientElementManager.
+     * <p>Refresh happens deferred, so that it does not interfere with the current render cycle.
      */
     @Override
     public void refresh() {
+        this.refreshScheduled.set(true);
+    }
+
+    public void immediateRefresh() {
         var elementChildren = this.clientElementManager.getElements();
 
         Map<ElementId, ElementListEntry> existingEntries = children.stream()
@@ -227,17 +239,6 @@ public class ElementListEntryRoot implements ListEntryParent {
     public void deleteChild(ElementListEntry child) {
         this.clientElementManager.removeElement(child.element);
         // Manually removing from list is not necessary, as ClientElementManager will trigger a refresh of the list if changes occur
-
-    }
-
-    /**
-     * Adds a child entry to the root list. Does not inform ClientElementManager, as this is only for the UI
-     * representation of the elements.
-     * @param child The child entry to add.
-     */
-    @Override
-    public void addChild(ElementListEntry child) {
-        children.add(child);
     }
 
     @Override
