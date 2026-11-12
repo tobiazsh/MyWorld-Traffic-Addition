@@ -116,6 +116,12 @@ public class ClientElementManager {
         elementListChangedEvent.notifyListeners();
     }
 
+    /**
+     * Removes the given element from the list of elements and unregisters it. If the element is not in the list, nothing happens.
+     * <p>Does not search for the element recursively in groups, only the direct elements of this manager are affected.
+     * For removing elements from groups, use the {@link GroupElementClient#removeClientElement(ClientElementInterface)}.
+     * @param element The element to remove from the list of elements.
+     */
     public void removeElement(ClientElementInterface element) {
 
         /*

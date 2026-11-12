@@ -265,13 +265,15 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
 
     @Override
     public void removeFromGroup(ElementListEntry child) {
-        this.deleteChild(child);
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return;
+
+        groupElementClient.removeClientElement(child.getElement());
         parent.addElementChild(child.getElement());
     }
 
     @Override
     public void addToGroup(ElementListEntry child) {
-        // Does essentially the same as addChild, but is semantically different, so we keep it separate.
         this.addElementChild(child.getElement());
     }
 

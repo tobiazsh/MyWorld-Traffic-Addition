@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.tr;
 
+// TODO: Translate this classes ImGui text to Minecraft translation keys
+
 public class ElementListEntry {
 
     protected final ClientElementInterface element;
@@ -353,6 +355,9 @@ public class ElementListEntry {
                 ElementId.random(),
                 parent.getId().toParent()
         );
+
+        groupElement.addClientElement(this.getElement());
+        groupElement.addClientElement(droppedElementEntry.get().getElement());
 
         parent.addElementChild(groupElement);
     }
