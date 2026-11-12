@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class GroupListEntry extends ElementListEntry implements ListEntryParent {
+public class GroupListEntry extends ElementListEntry implements ListEntryParent, GroupingElement {
 
     private static @Nullable ImGuiTexture groupThumbnailTexture;
 
@@ -33,7 +33,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent 
             Consumer<ElementId> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
-            Function<ElementId, @Nullable ElementListEntry> listEntryLookup
+            ListEntryLookup listEntryLookup
     ) {
         if (!(element instanceof GroupElementClient groupElement))
             throw new RuntimeException("GroupListEntry can only be created with a GroupElementClient, but got: " + element.getClass().getName());
@@ -66,34 +66,33 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent 
     }
 
     @Override
-    protected void renderContextMenu() {
-        if (ImGui.beginPopupContextItem("###context_menu")) {
-            if (ImGui.menuItem("TestGroup")) {
-                System.out.println("Test menu item clicked for element: " + element.getName());
-            }
+    protected void renderContextMenuContent() {
+        super.renderContextMenuContent();
+
+        if (ImGui.menuItem("Dissolve Group")) {
+
         }
     }
 
-
     @Override
     protected void onElementDropped(@NonNull ElementListEntryDragDropPayload payload) {
-        var droppedElementEntry = listEntryLookup.apply(payload.elementEntryId());
+        var droppedElementEntry = listEntryLookup.getEntryById(payload.elementEntryId());
 
-        if (droppedElementEntry == null)
+        if (droppedElementEntry.isEmpty())
             return;
 
         // Remove the dropped element from its current parent
-        droppedElementEntry.parent.removeChild(droppedElementEntry);
+        droppedElementEntry.get().parent.removeChild(droppedElementEntry.get());
 
         // Add the dropped element to this group
-        this.addChild(droppedElementEntry);
+        this.addChild(droppedElementEntry.get());
     }
 
     @Override
     protected void renderContent(Set<ElementId> selectedElementIds) {
         // TODO: Maybe center the button
 
-        if (ImGui.button((isExpanded ? "▼"  : "▶") + "###expand_button")) {
+        if (ImGui.button((isExpanded ? "▶"  : "▼") + "###expand_button")) {
             isExpanded = !isExpanded;
         }
 
@@ -171,6 +170,23 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent 
     @Override
     public void addChild(ElementListEntry child) {
         this.children.addFirst(child);
+    }
+
+    @Override
+    public void addElement(ClientElementInterface element) {
+        this.parent.addElement(element);
+    }
+
+    @Override
+    public void removeFromGroup(ElementListEntry child) {
+        this.removeChild(child);
+        parent.addChild(child);
+    }
+
+    @Override
+    public void addToGroup(ElementListEntry child) {
+        // Does essentially the same as addChild, but is semantically different, so we keep it separate.
+        this.addChild(child);
     }
 
     // DO NOT dispose the groupThumbnailTexture here, as it is shared among all instances of GroupListEntry.

@@ -31,6 +31,27 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final float dropSpaceHeight = 10;
     private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.2f};
 
+    private final ListEntryLookup listEntryLookup = new ListEntryLookup() {
+        @Override
+        public Optional<ElementListEntry> getEntryById(ElementId id) {
+            return Optional.ofNullable(entries.get(id));
+        }
+
+        @Override
+        public int getIndexOfEntry(ElementId id) {
+            return children.indexOf(getEntryById(id).orElse(null));
+        }
+
+        @Override
+        public Optional<ElementListEntry> getEntryByIndex(int index) {
+            if (index < 0 || index >= children.size()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(children.get(index));
+        }
+    };
+
     public ElementListEntryRoot(String id, ClientElementManager manager, ElementSelectionCallback selectionCallback) {
         this.dragDropDataType = "ListEntryDD_" + id;
         this.selectionCallback = selectionCallback;
@@ -47,7 +68,7 @@ public class ElementListEntryRoot implements ListEntryParent {
                 this::onSelect,
                 this::onNewEntry,
                 this::onEntryRemoved,
-                this::listEntryLookup
+                this.listEntryLookup
         );
 
         this.clientElementManager = manager;
@@ -73,10 +94,6 @@ public class ElementListEntryRoot implements ListEntryParent {
     private void onEntryRemoved(ElementListEntry child) {
         selectedIds.remove(child.getId());
         entries.remove(child.getId());
-    }
-
-    private ElementListEntry listEntryLookup(ElementId id) {
-        return entries.get(id);
     }
 
     public void render() {
@@ -151,11 +168,20 @@ public class ElementListEntryRoot implements ListEntryParent {
                     if (payload == null)
                         return;
 
-                    var entry = listEntryLookup(payload.elementEntryId());
-                    int elementIndex = this.clientElementManager.indexOfElement(entry.element);
+                    var entry = listEntryLookup.getEntryById(payload.elementEntryId());
+
+                    if (entry.isEmpty()) {
+                        MyWorldTrafficAddition.LOGGER.error("Dropped element entry not found: {}", payload.elementEntryId());
+                        return;
+                    }
+
+                    int elementIndex = this.clientElementManager.indexOfElement(entry.get().element);
 
                     if (elementIndex == -1) {
-                        MyWorldTrafficAddition.LOGGER.error("Element not found in ClientElementManager: {}", entry.element.getId());
+                        MyWorldTrafficAddition.LOGGER.error(
+                                "Element not found in ClientElementManager: {}",
+                                entry.get().element.getId()
+                        );
                         return;
                     }
 
@@ -212,6 +238,12 @@ public class ElementListEntryRoot implements ListEntryParent {
     @Override
     public void addChild(ElementListEntry child) {
         children.add(child);
+    }
+
+    @Override
+    public void addElement(ClientElementInterface element) {
+        this.clientElementManager.addElement(element);
+        this.refresh(); // Refresh to ensure the new element is added to the list
     }
 
     @Override

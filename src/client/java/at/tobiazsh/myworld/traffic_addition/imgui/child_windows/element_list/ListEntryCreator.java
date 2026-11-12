@@ -15,7 +15,7 @@ public final class ListEntryCreator {
     private final Consumer<ElementId> onSelect;
     private final Consumer<ElementListEntry> onNewEntry;
     private final Consumer<ElementListEntry> onEntryRemoved;
-    private final Function<ElementId, @Nullable ElementListEntry> listEntryLookup;
+    private final ListEntryLookup listEntryLookup;
 
     ListEntryCreator(
             ListEntryParent parent,
@@ -23,7 +23,7 @@ public final class ListEntryCreator {
             Consumer<ElementId> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
-            Function<ElementId, @Nullable ElementListEntry> listEntryLookup
+            ListEntryLookup listEntryLookup
     ) {
         this.parent = parent;
         this.dragDropDataType = dragDropDataType;

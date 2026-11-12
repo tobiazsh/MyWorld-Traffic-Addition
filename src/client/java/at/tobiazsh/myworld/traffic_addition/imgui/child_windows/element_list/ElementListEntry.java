@@ -34,7 +34,7 @@ public class ElementListEntry {
 
     protected final Consumer<ElementId> onSelect;
 
-    protected final Function<ElementId, @Nullable ElementListEntry> listEntryLookup;
+    protected final ListEntryLookup listEntryLookup;
 
     protected final Consumer<ElementListEntry> onNewEntry;
     protected final Consumer<ElementListEntry> onEntryRemoved;
@@ -53,7 +53,7 @@ public class ElementListEntry {
             Consumer<ElementId> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
-            Function<ElementId, @Nullable ElementListEntry> listEntryLookup
+            ListEntryLookup listEntryLookup
     ) {
         this.element = element;
         this.id = id;
@@ -130,11 +130,85 @@ public class ElementListEntry {
 
     protected void renderContextMenu() {
         if (ImGui.beginPopupContextItem("###context_menu")) {
-            if (ImGui.menuItem("Delete")) {
-                parent.deleteChild(this);
-            }
+            renderContextMenuContent();
             ImGui.endPopup();
         }
+    }
+
+    protected void renderContextMenuContent() {
+        if (ImGui.menuItem("Delete")) {
+            parent.deleteChild(this);
+        }
+
+        if (ImGui.menuItem("Cut")) {
+
+        }
+
+        if (ImGui.menuItem("Copy")) {
+
+        }
+
+        if (ImGui.menuItem("Duplicate")) {
+
+        }
+
+        if (ImGui.menuItem("Group with selected")) {
+
+        }
+
+        if (ImGui.menuItem("Group with below")) {
+            groupWithBelow();
+        }
+
+        if (ImGui.beginItemTooltip()) {
+            ImGui.text("Group with below. Won't do anything if there is no element below.");
+            ImGui.endTooltip();
+        }
+
+        if (parent instanceof GroupingElement groupingElement && ImGui.menuItem("Free from group")) {
+            groupingElement.removeFromGroup(this);
+        }
+    }
+
+    private void groupWithBelow() {
+        int index = listEntryLookup.getIndexOfEntry(id);
+        int indexBelow = index + 1;
+        var elementBelow = listEntryLookup.getEntryByIndex(indexBelow);
+
+        // TODO: If you want to make this any better, you could disable the menu item if there is no element below
+        //  Doing this simply with listEntryLookup.getIndexOfEntry(id) is too expensive. Must figure out a way to
+        //  get the current index more efficiently to achieve this behaviour.
+        if (elementBelow.isEmpty())
+            return;
+
+        parent.deleteChild(this);
+        elementBelow.get().parent.deleteChild(elementBelow.get());
+
+        float maxX = Math.max(this.element.getX() + this.element.getWidth(), elementBelow.get().element.getX() + elementBelow.get().element.getWidth());
+        float maxY = Math.max(this.element.getY() + this.element.getHeight(), elementBelow.get().element.getY() + elementBelow.get().element.getHeight());
+        float minX = Math.min(this.element.getX(), elementBelow.get().element.getX());
+        float minY = Math.min(this.element.getY(), elementBelow.get().element.getY());
+        float rotation = Math.max(this.element.getRotation(), elementBelow.get().element.getRotation());
+
+        var group = new GroupElementClient(
+                minX,
+                minY,
+                maxX - minX,
+                maxY - minY,
+                rotation,
+                ElementId.random(),
+                parent.getId().toParent()
+        );
+
+        group.setParentId(parent.getId().toParent());
+        group.addClientElement(this.element);
+        group.addClientElement(elementBelow.get().element);
+
+        parent.addElement(group);
+    }
+
+    private void groupWithSelected() {
+
     }
 
     protected void renderContent(Set<ElementId> selectedElementIds) {
@@ -179,18 +253,18 @@ public class ElementListEntry {
      */
     protected void onElementDropped(@NonNull ElementListEntryDragDropPayload payload) {
         // Create group here
-        var droppedElementEntry = listEntryLookup.apply(payload.elementEntryId());
+        var droppedElementEntry = listEntryLookup.getEntryById(payload.elementEntryId());
 
-        if (droppedElementEntry == null)
+        if (droppedElementEntry.isEmpty())
             return;
 
-        droppedElementEntry.parent.removeChild(droppedElementEntry);
+        droppedElementEntry.get().parent.removeChild(droppedElementEntry.get());
         parent.removeChild(this);
 
-        float minX = Math.min(droppedElementEntry.getElement().getX(), this.getElement().getX());
-        float minY = Math.min(droppedElementEntry.getElement().getY(), this.getElement().getY());
-        float maxX = Math.max(droppedElementEntry.getElement().getX(), this.getElement().getX());
-        float maxY = Math.max(droppedElementEntry.getElement().getY(), this.getElement().getY());
+        float minX = Math.min(droppedElementEntry.get().getElement().getX(), this.getElement().getX());
+        float minY = Math.min(droppedElementEntry.get().getElement().getY(), this.getElement().getY());
+        float maxX = Math.max(droppedElementEntry.get().getElement().getX(), this.getElement().getX());
+        float maxY = Math.max(droppedElementEntry.get().getElement().getY(), this.getElement().getY());
 
         var groupElement = new GroupElementClient(
                 minX,
