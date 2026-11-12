@@ -73,8 +73,22 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
         super.renderContextMenuContent(selectedIds);
 
         if (ImGui.menuItem("Dissolve Group")) {
-
+            dissolveGroup();
         }
+    }
+
+    protected void dissolveGroup() {
+        List<ClientElementInterface> childElements = children.stream()
+                .map(ElementListEntry::getElement)
+                .toList();
+
+        int groupIndex = listEntryLookup.getIndexOfEntry(getId());
+
+        for (int i = 0; i < childElements.size(); i++) {
+            parent.addElementChild(childElements.get(i), groupIndex + i);
+        }
+
+        deleteChild(this);
     }
 
     @Override
