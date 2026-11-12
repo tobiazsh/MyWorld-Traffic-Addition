@@ -69,8 +69,8 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     }
 
     @Override
-    protected void renderContextMenuContent() {
-        super.renderContextMenuContent();
+    protected void renderContextMenuContent(Set<ElementId> selectedIds) {
+        super.renderContextMenuContent(selectedIds);
 
         if (ImGui.menuItem("Dissolve Group")) {
 
