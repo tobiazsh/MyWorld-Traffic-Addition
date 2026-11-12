@@ -243,7 +243,7 @@ public class ElementListEntryRoot implements ListEntryParent {
     @Override
     public void addElement(ClientElementInterface element) {
         this.clientElementManager.addElement(element);
-        this.refresh(); // Refresh to ensure the new element is added to the list
+        // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
     }
 
     @Override
