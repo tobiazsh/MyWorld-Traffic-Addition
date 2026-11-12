@@ -154,7 +154,8 @@ public class ElementListEntry {
         }
 
         if (ImGui.menuItem("Duplicate")) {
-
+            var copy = element.copy();
+            parent.addElementChild(copy, 0);
         }
 
         if (ImGui.menuItem("Group selected")) {
