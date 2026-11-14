@@ -7,6 +7,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
@@ -21,6 +22,8 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.*;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.SignPreview;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.online_image_gallery.OnlineImageGallery;
 import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.property_viewer.ElementPropertyViewer;
+import at.tobiazsh.myworld.traffic_addition.imgui.toast.Toast;
+import at.tobiazsh.myworld.traffic_addition.imgui.toast.ToastType;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.SignClipboard;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
@@ -356,6 +359,56 @@ public class SignEditor {
             if (ImGui.menuItem("Test New Data Parsing")) DebugFunctions.testNewDataParse();
 
             if (ImGui.menuItem("Inject JSON")) jsonInjector.open();
+
+            if (ImGui.menuItem("Show Test Toasts")) {
+                var warningToast = new Toast.Builder()
+                        .title("Warning Test")
+                        .content("This is a test warning toast!")
+                        .type(ToastType.WARNING)
+                        .build();
+
+                var successToast = new Toast.Builder()
+                        .title("Success Test")
+                        .content("This is a test success toast!")
+                        .type(ToastType.SUCCESS)
+                        .build();
+
+                var errorToast = new Toast.Builder()
+                        .title("Error Test")
+                        .content("This is a test error toast!")
+                        .type(ToastType.ERROR)
+                        .build();
+
+                var infoToast = new Toast.Builder()
+                        .title("Info Test")
+                        .content("This is a test info toast!")
+                        .type(ToastType.INFO)
+                        .build();
+
+                var noneToast = new Toast.Builder()
+                        .title("None Test")
+                        .content("This is a test none toast!")
+                        .type(ToastType.NONE)
+                        .build();
+
+                var longToast = new Toast.Builder()
+                        .title("Very long toast title")
+                        .content("Hello, this is a very long toast content message, which I am very excited to write. "
+                                + "I can finally express my hate for translation system. I just hate anything translation. "
+                                + "Everything is so fucking bulky and not immediately obvious what one key is supposed to "
+                                + "be in real English. Also, Minecraft's translation system is very verbose and, let's be "
+                                + "honest, my own library, Jengua, sucks. "
+                        )
+                        .type(ToastType.INFO)
+                        .build();
+
+                MyWorldTrafficAdditionClient.getToaster().addToast(warningToast);
+                MyWorldTrafficAdditionClient.getToaster().addToast(successToast);
+                MyWorldTrafficAdditionClient.getToaster().addToast(errorToast);
+                MyWorldTrafficAdditionClient.getToaster().addToast(infoToast);
+                MyWorldTrafficAdditionClient.getToaster().addToast(noneToast);
+                MyWorldTrafficAdditionClient.getToaster().addToast(longToast);
+            }
 
             ImGui.endMenu();
         }

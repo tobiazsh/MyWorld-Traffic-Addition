@@ -7,6 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.imgui.child_windows.popups.OnlineIma
 import at.tobiazsh.myworld.traffic_addition.imgui.fonts.DefaultFonts;
 import at.tobiazsh.myworld.traffic_addition.imgui.main_windows.SignSelector;
 import at.tobiazsh.myworld.traffic_addition.imgui.overlay.OverlayStorage;
+import at.tobiazsh.myworld.traffic_addition.imgui.toast.Toaster;
 import at.tobiazsh.myworld.traffic_addition.language.JenguaTranslator;
 import at.tobiazsh.myworld.traffic_addition.network.ChunkedDataPayload;
 import at.tobiazsh.myworld.traffic_addition.network.CustomClientNetworking;
@@ -29,6 +30,7 @@ import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import at.tobiazsh.myworld.traffic_addition.texture.HybridTextureSweeper;
 import at.tobiazsh.myworld.traffic_addition.texture.sign.BackgroundLoader;
+import dev.tobiazsh.imguib3d.client.overlay.ImGuiOverlay;
 import dev.tobiazsh.imguib3d.client.overlay.ImGuiOverlayManager;
 import imgui.ImGui;
 import net.fabricmc.api.ClientModInitializer;
@@ -65,6 +67,8 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	private static final List<GlobalReceiverClient<? extends CustomPacketPayload>> globalReceiverClients = new ArrayList<>();
 	private static final List<RegistrableBlockEntityRender<? extends @NotNull BlockEntity, ? extends @NotNull BlockEntityRenderState>> blockEntityRenderers = new ArrayList<>();
 
+	private static final Toaster toaster = new Toaster();
+
 	public static final Path clientPreferencesLocation =
 			FabricLoader.getInstance().getConfigDir()
 					.resolve(MyWorldTrafficAddition.MOD_ID)
@@ -91,6 +95,7 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 		addGlobalReceivers();
 		GlobalReceiverClient.bulkRegisterGlobalReceiversClient(globalReceiverClients);
 
+		ImGuiOverlayManager.getInstance().add(OverlayStorage.TOAST_OVERLAY);
 		ImGuiOverlayManager.getInstance().add(OverlayStorage.EDITOR_OVERLAY);
 
 		addBlockEntityRenderers();
@@ -320,6 +325,11 @@ public class MyWorldTrafficAdditionClient implements ClientModInitializer {
 	 */
 	public static Component getTranslatable(String prefix, String identifier, String key) {
 		return Component.translatable(prefix + "." + identifier + "." + key);
+	}
+
+	/// Get global toaster
+	public static Toaster getToaster() {
+		return toaster;
 	}
 
 }
