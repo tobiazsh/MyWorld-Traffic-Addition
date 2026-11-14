@@ -18,6 +18,10 @@ public class Toaster {
         toasts.removeIf(Toast::isExpired);
     }
 
+    public boolean hasToasts() {
+        return !toasts.isEmpty();
+    }
+
     public void render() {
         if (toasts.isEmpty()) return; // Nothing to render
 

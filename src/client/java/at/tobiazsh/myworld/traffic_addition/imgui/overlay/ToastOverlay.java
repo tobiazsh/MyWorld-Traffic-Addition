@@ -23,6 +23,9 @@ public class ToastOverlay implements ImGuiOverlay {
 
     @Override
     public void draw() {
+        if (!toasterProvider.get().hasToasts())
+            return; // Prevent unnecessary pushes/pops to font scope
+
         fontScope.push(DefaultFonts.RobotoNormal, DefaultFonts.NORMAL_SIZE);
         toasterProvider.get().render();
         fontScope.pop();
