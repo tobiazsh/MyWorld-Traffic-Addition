@@ -135,13 +135,20 @@ public class ElementListEntryRoot implements ListEntryParent {
 
         List<ElementListEntry> refreshedChildren = new ArrayList<>(elementChildren.size());
 
-        for (ClientElementInterface element : elementChildren) {
-            var childEntry = existingEntries.remove(element.getId());
+        for (int i = 0; i < elementChildren.size(); i++) {
+            ClientElementInterface element = elementChildren.get(i);
+            ElementListEntry childEntry = existingEntries.remove(element.getId());
+            ElementListEntry previous = i > 0 ? refreshedChildren.get(i-1) : null;
 
             if (childEntry == null) {
                 childEntry = listEntryCreator.create(element);
                 onNewEntry(childEntry);
             }
+
+            childEntry.setPreviousNeighbour(previous);
+
+            if (previous != null)
+                previous.setNextNeighbour(childEntry);
 
             refreshedChildren.add(childEntry);
         }

@@ -9,6 +9,7 @@ public class EnglishImGuiTranslations {
         generatePropertyViewerTranslations(translationBuilder);
         generateErrorPopupTranslations(translationBuilder);
         generateElementListWindowTranslations(translationBuilder);
+        generateElementWindowTranslations(translationBuilder);
     }
 
     private void generatePropertyViewerTranslations(@NonNull TranslationBuilder translationBuilder) {
@@ -32,6 +33,11 @@ public class EnglishImGuiTranslations {
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.size", "Font Size");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.family", "Font Family");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.apply", "Apply");
+    }
+
+    private void generateElementWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
+        translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.header", "Grouping failed");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.content", "The other element could not be found!");
     }
 
     private void generateErrorPopupTranslations(@NonNull TranslationBuilder translationBuilder) {

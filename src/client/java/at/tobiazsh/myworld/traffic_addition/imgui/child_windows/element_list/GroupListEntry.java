@@ -52,18 +52,30 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
                 listEntryLookup
         );
 
-        this.children = groupElement.getClientElements().stream()
-                .map(child -> new ElementListEntry(
-                        child,
-                        child.getId(),
-                        dragDropDataType,
-                        this,
-                        onSelect,
-                        onNewEntry,
-                        onEntryRemoved,
-                        listEntryLookup
-                ))
-                .collect(Collectors.toList());
+        this.children = new ArrayList<>();
+
+        for (int i = 0; i < groupElement.getClientElements().size(); i++) {
+            var child = groupElement.getClientElements().get(i);
+
+            ElementListEntry previousEntry = i > 0 ? children.get(i - 1) : null;
+
+            var entry = new ElementListEntry(
+                    child,
+                    child.getId(),
+                    dragDropDataType,
+                    this,
+                    onSelect,
+                    onNewEntry,
+                    onEntryRemoved,
+                    listEntryLookup
+            );
+
+            entry.setPreviousNeighbour(previousEntry);
+            children.add(entry);
+
+            if (previousEntry != null)
+                previousEntry.setNextNeighbour(entry);
+        }
 
         this.overrideSelectableHeight = true;
     }
@@ -176,13 +188,20 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
 
         List<ElementListEntry> refreshedChildren = new ArrayList<>(elementChildren.size());
 
-        for (ClientElementInterface element : elementChildren) {
-            var childEntry = existingEntries.remove(element.getId());
+        for (int i = 0; i < elementChildren.size(); i++) {
+            ClientElementInterface element = elementChildren.get(i);
+            ElementListEntry childEntry = existingEntries.remove(element.getId());
+            ElementListEntry previous = i > 0 ? refreshedChildren.get(i-1) : null;
 
             if (childEntry == null) {
                 childEntry = listEntryCreator.create(element);
                 onNewEntry.accept(childEntry);
             }
+
+            childEntry.setPreviousNeighbour(previous);
+
+            if (previous != null)
+                previous.setNextNeighbour(childEntry);
 
             refreshedChildren.add(childEntry);
         }

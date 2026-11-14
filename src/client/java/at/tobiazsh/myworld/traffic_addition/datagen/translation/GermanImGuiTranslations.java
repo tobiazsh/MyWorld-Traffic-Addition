@@ -9,6 +9,7 @@ public class GermanImGuiTranslations {
         generatePropertyViewerTranslations(translationBuilder);
         generateErrorPopupTranslations(translationBuilder);
         generateElementListWindowTranslations(translationBuilder);
+        generateElementWindowTranslations(translationBuilder);
     }
 
     private void generatePropertyViewerTranslations(@NonNull TranslationBuilder translationBuilder) {
@@ -31,6 +32,11 @@ public class GermanImGuiTranslations {
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.size", "Schriftgröße");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.family", "Schriftart");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.font.apply", "Anwenden");
+    }
+
+    private void generateElementWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
+        translationBuilder.add("text.myworld_traffic_addition.element-list.group.below.none-below.header", "Gruppierung fehlgeschlagen!");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.content", "Das andere Element konnte nicht gefunden werden.");
     }
 
     private void generateErrorPopupTranslations(@NonNull TranslationBuilder translationBuilder) {

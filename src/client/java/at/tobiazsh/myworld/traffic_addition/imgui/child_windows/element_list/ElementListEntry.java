@@ -1,8 +1,11 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
+import at.tobiazsh.myworld.traffic_addition.imgui.toast.Toast;
+import at.tobiazsh.myworld.traffic_addition.imgui.toast.ToastType;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
@@ -22,6 +25,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.getTranslatable;
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.tr;
 
 // TODO: Translate this classes ImGui text to Minecraft translation keys
@@ -47,6 +51,9 @@ public class ElementListEntry {
     protected int previewSize = 50;
     protected boolean overrideSelectableHeight = false; // So that the selectable height does not expand over children in e.g. group entries.
     protected int selectableHeight = 0;
+
+    private @Nullable ElementListEntry previous;
+    private @Nullable ElementListEntry next;
 
     protected static @Nullable ImGuiTexture genericThumbnailTexture;
 
@@ -74,6 +81,14 @@ public class ElementListEntry {
 
         this.onNewEntry = onNewEntry;
         this.onEntryRemoved = onEntryRemoved;
+    }
+
+    public void setPreviousNeighbour(@Nullable ElementListEntry previous) {
+        this.previous = previous;
+    }
+
+    public void setNextNeighbour(@Nullable ElementListEntry next) {
+        this.next = next;
     }
 
     public ElementId getId() {
@@ -160,17 +175,32 @@ public class ElementListEntry {
             parent.addElementChild(copy, 0);
         }
 
+        if (ImGui.beginMenu("Group...")) {
+            if (previous == null)
+                ImGui.beginDisabled();
+
+            if (ImGui.menuItem("Group with above")) {
+                groupWithIndex(1);
+            }
+
+            if (previous == null)
+                ImGui.endDisabled();
+
+            if (next == null)
+                ImGui.beginDisabled();
+
+            if (ImGui.menuItem("Group with below")) {
+                groupWithIndex(-1);
+            }
+
+            if (next == null)
+                ImGui.endDisabled();
+
+            ImGui.endMenu();
+        }
+
         if (ImGui.menuItem("Group selected")) {
             groupSelected(selectedIds);
-        }
-
-        if (ImGui.menuItem("Group with below")) {
-            groupWithBelow();
-        }
-
-        if (ImGui.beginItemTooltip()) {
-            ImGui.text("Group with below. Won't do anything if there is no element below.");
-            ImGui.endTooltip();
         }
 
         if (parent instanceof GroupingElement groupingElement && ImGui.menuItem("Free from group")) {
@@ -178,16 +208,27 @@ public class ElementListEntry {
         }
     }
 
-    private void groupWithBelow() {
+    /**
+     * Group with any index.
+     * @param delta The distance to the index you want to group with.
+     */
+    private void groupWithIndex(int delta) {
         int index = listEntryLookup.getIndexOfEntry(id);
-        int indexBelow = index + 1;
+        int indexBelow = index + delta;
         var elementBelow = listEntryLookup.getEntryByIndex(indexBelow);
 
-        // TODO: If you want to make this any better, you could disable the menu item if there is no element below
-        //  Doing this simply with listEntryLookup.getIndexOfEntry(id) is too expensive. Must figure out a way to
-        //  get the current index more efficiently to achieve this behaviour.
-        if (elementBelow.isEmpty())
+        if (elementBelow.isEmpty()) {
+            MyWorldTrafficAdditionClient.getToaster().addToast(
+                    new Toast.Builder()
+                            .title(getTranslatable("text", "element-list.group.element-not-found.header").getString())
+                            .content(getTranslatable("text", "element-list.group.element-not-found.content").getString())
+                            .type(ToastType.WARNING)
+                            .timeToLive(10000)
+                            .build()
+            );
+
             return;
+        }
 
         parent.deleteChild(this);
         elementBelow.get().parent.deleteChild(elementBelow.get());
