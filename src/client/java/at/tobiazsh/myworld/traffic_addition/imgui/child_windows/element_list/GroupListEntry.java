@@ -30,7 +30,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     private final GenericDropSpace<ElementListEntryDragDropPayload> dropSpace;
 
     private static final float DROP_SPACE_HEIGHT = 10;
-    private static final int DROP_SPACE_COLOUR = ImGui.getColorU32(1, 1, 1, .2f);
+    private static final int DROP_SPACE_COLOUR = ImGui.getColorU32(1, 1, 1, .0f);
 
     private final AtomicBoolean shouldRefresh = new AtomicBoolean(false);
 

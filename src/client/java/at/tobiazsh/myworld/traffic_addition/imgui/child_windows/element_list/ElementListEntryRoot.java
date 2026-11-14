@@ -29,7 +29,7 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final ClientElementManager clientElementManager;
 
     private final float dropSpaceHeight = 10;
-    private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.2f};
+    private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.0f};
 
     private final GenericDropSpace<ElementListEntryDragDropPayload> dropSpace;
 
