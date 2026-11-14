@@ -13,6 +13,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,9 +24,15 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     private static @Nullable ImGuiTexture groupThumbnailTexture;
 
     private boolean isExpanded = false;
-    private final List<ElementListEntry> children;
+    private final CopyOnWriteArrayList<ElementListEntry> children;
 
     private final ListEntryCreator listEntryCreator;
+    private final GenericDropSpace<ElementListEntryDragDropPayload> dropSpace;
+
+    private static final float DROP_SPACE_HEIGHT = 10;
+    private static final int DROP_SPACE_COLOUR = ImGui.getColorU32(1, 1, 1, .2f);
+
+    private final AtomicBoolean shouldRefresh = new AtomicBoolean(false);
 
     public GroupListEntry(
             ClientElementInterface element,
@@ -52,7 +60,15 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
                 listEntryLookup
         );
 
-        this.children = new ArrayList<>();
+        this.dropSpace = new GenericDropSpace<>(
+                DROP_SPACE_HEIGHT,
+                DROP_SPACE_COLOUR,
+                dragDropDataType,
+                ElementListEntryDragDropPayload.class,
+                this::onDrop
+        );
+
+        this.children = new CopyOnWriteArrayList<>();
 
         for (int i = 0; i < groupElement.getClientElements().size(); i++) {
             var child = groupElement.getClientElements().get(i);
@@ -156,12 +172,55 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
         }
     }
 
+    private void onDrop(ElementListEntryDragDropPayload payload, int toIndex) {
+        var entry = children.stream()
+                .filter(child -> child.id == payload.elementEntryId())
+                .findFirst();
+
+        if (entry.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.error("Dropped element entry not found: {}", payload.elementEntryId());
+            return;
+        }
+
+        int fromIndex = this.children.indexOf(entry.get());
+
+        if (toIndex == -1) {
+            MyWorldTrafficAddition.LOGGER.error(
+                    "Element not found in ClientElementManager: {}",
+                    entry.get().element.getId()
+            );
+            return;
+        }
+
+        if (toIndex == fromIndex || toIndex == fromIndex + 1)
+            return;
+
+        if (fromIndex < toIndex) {
+            toIndex--; // Adjust the target fromIndex if the element is being moved forward in the list
+        }
+
+        moveChild(toIndex, fromIndex);
+    }
+
     protected void renderChildren(Set<ElementId> selectedElementIds) {
         ImGui.indent();
+
+        int index = 0;
+        dropSpace.renderNew(index);
+
         for (ElementListEntry child : children) {
+            index++;
             child.render(selectedElementIds);
+            dropSpace.renderNew(index);
         }
+
         ImGui.unindent();
+    }
+
+    @Override
+    protected void preRender() {
+        if (shouldRefresh.compareAndSet(true, false))
+            refresh();
     }
 
     private void createGroupThumbnailTexture() {
@@ -222,6 +281,19 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
     @Override
     public void deleteChild(ElementListEntry child) {
         parent.deleteChild(child);
+    }
+
+    @Override
+    public boolean moveChild(int from, int to) {
+        if (!(this.element instanceof GroupElementClient groupElementClient))
+            return false;
+
+        var entry = groupElementClient.getClientElements().get(from);
+        groupElementClient.removeClientElement(from);
+        groupElementClient.addClientElement(to, entry);
+        refresh();
+
+        return true;
     }
 
     @Override

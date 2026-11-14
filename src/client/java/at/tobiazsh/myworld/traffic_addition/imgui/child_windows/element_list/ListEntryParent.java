@@ -22,6 +22,12 @@ public interface ListEntryParent {
     void deleteChild(ElementListEntry child);
 
     /**
+     * Moves a child from index {@code from} to index {@code to}.
+     * @return Whether the child got successfully moved or not.
+     */
+    boolean moveChild(int from, int to);
+
+    /**
      * Adds element to element manager, but does not add it to the list of children of this parent.
      * <p>Refreshes the list of children after adding the element.
      * @param element The element to add.

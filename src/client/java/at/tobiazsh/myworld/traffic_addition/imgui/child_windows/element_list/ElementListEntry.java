@@ -37,7 +37,7 @@ public class ElementListEntry {
     protected final String idStr;
     protected final ImString elementName = new ImString(512);
     protected final String dragDropDataType;
-    protected final ListEntryParent parent; // Null if this is a top-level element, otherwise points to the parent group entry
+    protected final ListEntryParent parent;
 
     protected final Consumer<ElementId> onSelect;
 
@@ -102,6 +102,8 @@ public class ElementListEntry {
     public void render(
         Set<ElementId> selectedIds
     ) {
+        preRender();
+
         ImGui.pushID(idStr);
         try {
             boolean isSelected = selectedIds.contains(id);
@@ -149,6 +151,9 @@ public class ElementListEntry {
             ImGui.popID();
         }
     }
+
+    // Left open for child classes
+    protected void preRender() { }
 
     protected void renderContextMenu(Set<ElementId> selectedIds) {
         if (ImGui.beginPopupContextItem("###context_menu")) {

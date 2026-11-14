@@ -6,9 +6,6 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
-import imgui.ImDrawList;
-import imgui.ImGui;
-import imgui.ImVec2;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,6 +30,8 @@ public class ElementListEntryRoot implements ListEntryParent {
 
     private final float dropSpaceHeight = 10;
     private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.2f};
+
+    private final GenericDropSpace<ElementListEntryDragDropPayload> dropSpace;
 
     private final ListEntryLookup listEntryLookup = new ListEntryLookup() {
         @Override
@@ -74,6 +73,14 @@ public class ElementListEntryRoot implements ListEntryParent {
                 this.listEntryLookup
         );
 
+        this.dropSpace = new GenericDropSpace<>(
+                dropSpaceHeight,
+                ImGuiColor.toHexARGB(dropSpaceColor),
+                dragDropDataType,
+                ElementListEntryDragDropPayload.class,
+                this::onDrop
+        );
+
         this.clientElementManager = manager;
 
         this.children = new CopyOnWriteArrayList<>();
@@ -102,12 +109,12 @@ public class ElementListEntryRoot implements ListEntryParent {
     public void render() {
         int dropSpaceIndex = 0;
 
-        renderDropSpace(dropSpaceIndex);
+        dropSpace.renderNew(dropSpaceIndex);
 
         for (ElementListEntry child : children) {
             child.render(selectedIds);
             dropSpaceIndex++;
-            renderDropSpace(dropSpaceIndex);
+            dropSpace.renderNew(dropSpaceIndex);
         }
 
         if (refreshScheduled.getAndSet(false)) {
@@ -168,54 +175,28 @@ public class ElementListEntryRoot implements ListEntryParent {
         entries.putAll(refreshedChildren.stream().collect(Collectors.toMap(ElementListEntry::getId, Function.identity())));
     }
 
-    public void renderDropSpace(int index) {
-        ImGui.pushID("DropSpace" + index);
-        try {
-            float maxWidth = ImGui.getContentRegionAvailX();
-            ImVec2 cursorPos = ImGui.getCursorScreenPos();
-            ImDrawList drawList = ImGui.getWindowDrawList();
+    private void onDrop(ElementListEntryDragDropPayload payload, int index) {
+        var entry = listEntryLookup.getEntryById(payload.elementEntryId());
 
-            ImVec2 rectMin = new ImVec2(cursorPos.x, cursorPos.y);
-            ImVec2 rectMax = new ImVec2(cursorPos.x + maxWidth, cursorPos.y + dropSpaceHeight);
-
-            drawList.addRectFilled(rectMin, rectMax, ImGuiColor.toHexARGB(dropSpaceColor));
-            ImGui.dummy(new ImVec2(maxWidth, dropSpaceHeight));
-
-            if (ImGui.beginDragDropTarget()) {
-                try {
-                    var payload = ImGui.acceptDragDropPayload(dragDropDataType, ElementListEntryDragDropPayload.class);
-
-                    if (payload == null)
-                        return;
-
-                    var entry = listEntryLookup.getEntryById(payload.elementEntryId());
-
-                    if (entry.isEmpty()) {
-                        MyWorldTrafficAddition.LOGGER.error("Dropped element entry not found: {}", payload.elementEntryId());
-                        return;
-                    }
-
-                    int elementIndex = this.clientElementManager.indexOfElement(entry.get().element);
-
-                    if (elementIndex == -1) {
-                        MyWorldTrafficAddition.LOGGER.error(
-                                "Element not found in ClientElementManager: {}",
-                                entry.get().element.getId()
-                        );
-                        return;
-                    }
-
-                    if (elementIndex == index)
-                        return;
-
-                    this.clientElementManager.moveElement(elementIndex, index);
-                } finally {
-                    ImGui.endDragDropTarget();
-                }
-            }
-        } finally {
-            ImGui.popID();
+        if (entry.isEmpty()) {
+            MyWorldTrafficAddition.LOGGER.error("Dropped element entry not found: {}", payload.elementEntryId());
+            return;
         }
+
+        int elementIndex = this.clientElementManager.indexOfElement(entry.get().element);
+
+        if (elementIndex == -1) {
+            MyWorldTrafficAddition.LOGGER.error(
+                    "Element not found in ClientElementManager: {}",
+                    entry.get().element.getId()
+            );
+            return;
+        }
+
+        if (elementIndex == index)
+            return;
+
+        this.clientElementManager.moveElement(elementIndex, index);
     }
 
     /**
@@ -247,6 +228,12 @@ public class ElementListEntryRoot implements ListEntryParent {
     public void deleteChild(ElementListEntry child) {
         this.clientElementManager.removeElement(child.element);
         // Manually removing from list is not necessary, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
+    public boolean moveChild(int from, int to) {
+        this.clientElementManager.moveElement(from, to);
+        return true;
     }
 
     @Override

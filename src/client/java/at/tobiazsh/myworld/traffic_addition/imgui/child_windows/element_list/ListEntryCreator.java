@@ -3,10 +3,8 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
-import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public final class ListEntryCreator {
 
