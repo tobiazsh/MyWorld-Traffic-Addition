@@ -180,7 +180,7 @@ public class ElementListEntry {
                 ImGui.beginDisabled();
 
             if (ImGui.menuItem("Group with above")) {
-                groupWithIndex(1);
+                groupWithIndex(-1);
             }
 
             if (previous == null)
@@ -190,7 +190,7 @@ public class ElementListEntry {
                 ImGui.beginDisabled();
 
             if (ImGui.menuItem("Group with below")) {
-                groupWithIndex(-1);
+                groupWithIndex(1);
             }
 
             if (next == null)
