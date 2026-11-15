@@ -458,9 +458,4 @@ public class ElementListEntry {
             throw new RuntimeException("Failed to load generic element thumbnail texture", e);
         }
     }
-
-    protected void dispose() {
-        if (thumbnailTexture != null)
-            thumbnailTexture.dispose();
-    }
 }
