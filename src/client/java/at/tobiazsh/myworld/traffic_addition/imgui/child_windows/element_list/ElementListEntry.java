@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.getTranslatable;
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.tr;
 
-// TODO: Translate this classes ImGui text to Minecraft translation keys
-
 public class ElementListEntry {
 
     protected final ClientElementInterface element;
@@ -163,28 +161,28 @@ public class ElementListEntry {
     }
 
     protected void renderContextMenuContent(Set<ElementId> selectedIds) {
-        if (ImGui.menuItem("Delete")) {
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.delete").getString())) {
             parent.deleteChild(this);
         }
 
-        if (ImGui.menuItem("Cut")) {
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.cut").getString())) {
 
         }
 
-        if (ImGui.menuItem("Copy")) {
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.copy").getString())) {
 
         }
 
-        if (ImGui.menuItem("Duplicate")) {
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.duplicate").getString())) {
             var copy = element.copy();
             parent.addElementChild(copy, 0);
         }
 
-        if (ImGui.beginMenu("Group...")) {
+        if (ImGui.beginMenu(getTranslatable("text", "element-list.context-menu.group").getString())) {
             if (previous == null)
                 ImGui.beginDisabled();
 
-            if (ImGui.menuItem("Group with above")) {
+            if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.group.above").getString())) {
                 groupWithIndex(-1);
             }
 
@@ -194,7 +192,7 @@ public class ElementListEntry {
             if (next == null)
                 ImGui.beginDisabled();
 
-            if (ImGui.menuItem("Group with below")) {
+            if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.group.below").getString())) {
                 groupWithIndex(1);
             }
 
@@ -204,11 +202,11 @@ public class ElementListEntry {
             ImGui.endMenu();
         }
 
-        if (ImGui.menuItem("Group selected")) {
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.group.selected").getString())) {
             groupSelected(selectedIds);
         }
 
-        if (parent instanceof GroupingElement groupingElement && ImGui.menuItem("Free from group")) {
+        if (parent instanceof GroupingElement groupingElement && ImGui.menuItem(getTranslatable("text", "element-list.context-menu.group.free").getString())) {
             groupingElement.removeFromGroup(this);
         }
     }

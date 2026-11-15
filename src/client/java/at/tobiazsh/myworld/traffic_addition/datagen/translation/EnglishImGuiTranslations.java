@@ -38,6 +38,17 @@ public class EnglishImGuiTranslations {
     private void generateElementWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
         translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.header", "Grouping failed");
         translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.content", "The other element could not be found!");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Cut");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Copy");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Delete");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplicate");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group", "Group...");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.above", "Group with above");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.below", "Group with below");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.selected", "Group with selected");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.free", "Free from group");
     }
 
     private void generateErrorPopupTranslations(@NonNull TranslationBuilder translationBuilder) {

@@ -25,6 +25,7 @@ public class GermanImGuiTranslations {
         translationBuilder.add("text.mwta.sign-editor.property-viewer.dimensions.center-y", "Y Zentrieren");
         translationBuilder.add("text.mwta.sign-editor.property-viewer.rotation", "Rotation");
         translationBuilder.add("text.mwta.sign-editor.property-viewer.color", "Farbe");
+        translationBuilder.add("text.myworld_traffic_addition.sign-editor.property-viewer.invalid-selection", "Keines oder zu viele Elemente ausgewählt.");
 
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.text.header", "Texteinstellungen");
         translationBuilder.add("text.mwta.sign-editor.property-extension.text.text.input", "Text");
@@ -37,6 +38,17 @@ public class GermanImGuiTranslations {
     private void generateElementWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
         translationBuilder.add("text.myworld_traffic_addition.element-list.group.below.none-below.header", "Gruppierung fehlgeschlagen!");
         translationBuilder.add("text.myworld_traffic_addition.element-list.group.element-not-found.content", "Das andere Element konnte nicht gefunden werden.");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Ausschneiden");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Kopieren");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Löschen");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplizieren");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group", "Gruppieren...");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.above", "Mit oben gruppieren");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.below", "Mit unten gruppieren");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.selected", "Mit ausgewählten gruppieren");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.free", "Von Gruppe befreien");
     }
 
     private void generateErrorPopupTranslations(@NonNull TranslationBuilder translationBuilder) {

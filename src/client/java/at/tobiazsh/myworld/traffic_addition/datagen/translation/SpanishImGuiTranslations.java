@@ -37,6 +37,17 @@ public class SpanishImGuiTranslations {
         translationBuilder.add("text.mwta.error-popup.title", "Error");
         translationBuilder.add("text.mwta.error-popup.message", "Mensaje");
         translationBuilder.add("text.mwta.error-popup.close", "Cerrar");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Cortar");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Copiar");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Eliminar");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplicar");
+
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group", "Agrupar...");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.above", "Agrupar con Encima");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.below", "Agrupar con Debajo");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.selected", "Agrupar con Seleccionados");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.group.free", "Sacar del Grupo");
     }
 
     private void generateElementListWindowTranslations(@NonNull TranslationBuilder translationBuilder) {
