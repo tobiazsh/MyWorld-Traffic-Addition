@@ -5,7 +5,6 @@ import at.tobiazsh.myworld.traffic_addition.data.Background;
 import at.tobiazsh.myworld.traffic_addition.rendering.renderers.BackgroundRenderer;
 import at.tobiazsh.myworld.traffic_addition.utils.BorderProperty;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -45,7 +44,6 @@ public class SignPreview {
     public void render(
             float signWidthPixels, float signHeightPixels,
             float pxOfBlock, // Pixel of one block
-            ImVec2 position,
             List<ClientElementInterface> drawables,
             Background background,
             BorderProperty[][] borders
@@ -54,6 +52,9 @@ public class SignPreview {
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);  // Remove padding inside the frame
 
         pxOfBlock *= zoomFactor;
+
+        float originX = ImGui.getCursorScreenPosX();
+        float originY = ImGui.getCursorScreenPosY();
 
         // Make Child that is as big as the sign in pixels
         ImGui.beginChild(
@@ -74,6 +75,17 @@ public class SignPreview {
 
         ImGui.endChild();
 
+        ImGui.setCursorScreenPos(originX, originY);
+
+        ImGui.beginChild(
+                "##ChildrenDrawer",
+                signWidthPixels * zoomFactor,
+                signHeightPixels  * zoomFactor,
+                false,
+                ImGuiWindowFlags.NoScrollbar |
+                ImGuiWindowFlags.NoResize
+        );
+
         if (!drawables.isEmpty()) {
             for (int i = drawables.size() - 1; i >= 0; i--) {
                 ClientElementInterface element = drawables.get(i); // Get element to render
@@ -81,22 +93,16 @@ public class SignPreview {
                 // Skip non-render-able elements
                 if (element == null) continue;
 
-                ImGui.setCursorPos(position.x, position.y);
-
-                ImGui.beginChild(
-                        "OVERLAY_CANVAS_" + element.getId(),
-                        signWidthPixels * zoomFactor,
-                        signHeightPixels  * zoomFactor,
-                        false,
-                        ImGuiWindowFlags.NoScrollbar
-                );
+                ImGui.setCursorScreenPos(originX, originY);
 
                 // Render depending on the type of element
                 renderElement(element, zoomFactor);
-
-                ImGui.endChild();
             }
         }
+
+        ImGui.setCursorPos(0, 0);
+        ImGui.dummy(signWidthPixels * zoomFactor, signHeightPixels * zoomFactor);
+        ImGui.endChild();
 
         ImGui.popStyleVar(2);
     }

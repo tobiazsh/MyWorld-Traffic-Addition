@@ -206,7 +206,6 @@ public class SignEditor {
                 signRatio.x,
                 signRatio.y,
                 this.clientElementManager.getPixelsPerBlock(),
-                new ImVec2(previewX, previewY),
                 this.clientElementManager.getElements(),
                 this.clientElementManager.textureData.getBackground(),
                 this.clientElementManager.getBorders()
