@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.font.BasicFont;
 import at.tobiazsh.myworld.traffic_addition.font.ServerFont;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.event.BaseElementEventSubscriber;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
@@ -11,7 +12,7 @@ import com.google.gson.JsonObject;
 
 import java.util.*;
 
-public interface BaseElementInterface {
+public interface BaseElementInterface extends BaseElementEventSubscriber {
 
     // ------------- STATIC VARIABLES ------------------------------------------------
 

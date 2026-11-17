@@ -7,6 +7,8 @@ package at.tobiazsh.myworld.traffic_addition.sign.elements;
  * @author Tobias
  */
 
+import at.tobiazsh.myworld.traffic_addition.event.EventListener;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.event.BaseElementEvents;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import com.google.gson.JsonArray;
@@ -19,6 +21,8 @@ public abstract class BaseElement implements BaseElementInterface {
 	protected final ElementId id;
 	protected ParentElementId parentId;
 	protected float[] color = new float[]{1f, 1f, 1f, 1f};
+
+	protected final BaseElementEvents event = new BaseElementEvents();
 
 	/***********************************
 	 * !!!! IMPORTANT INFORMATION !!!!
@@ -138,15 +142,18 @@ public abstract class BaseElement implements BaseElementInterface {
 	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
+		event.geometryHandler.invoke();
 	}
 
 	// Separate methods for x and y to save a little bit of memory
 	public void setX(float x) {
 		this.x = x;
+		event.geometryHandler.invoke();
 	}
 
 	public void setY(float y) {
 		this.y = y;
+		event.geometryHandler.invoke();
 	}
 
 	public float getX() {
@@ -160,14 +167,17 @@ public abstract class BaseElement implements BaseElementInterface {
 	public void setSize(float width, float height) {
 		this.width = width;
 		this.height = height;
+		event.geometryHandler.invoke();
 	}
 
 	public void setWidth(float width) {
 		this.width = width;
+		event.geometryHandler.invoke();
 	}
 
 	public void setHeight(float height) {
 		this.height = height;
+		event.geometryHandler.invoke();
 	}
 
 	public float getWidth() {
@@ -184,6 +194,7 @@ public abstract class BaseElement implements BaseElementInterface {
 
 	public BaseElement scalePercentSize(float percent) {
 		this.width = this.width + (this.width * (percent / 100));
+		event.geometryHandler.invoke();
 		return this;
 	}
 
@@ -207,15 +218,19 @@ public abstract class BaseElement implements BaseElementInterface {
 			this.width = newVal;
 			this.height = newOppositeVal;
 		}
+
+		event.geometryHandler.invoke();
 	}
 
 	public BaseElement scaleHeight(float factor) {
 		this.height *= factor;
+		event.geometryHandler.invoke();
 		return this;
 	}
 
 	public BaseElement scaleWidth(float factor) {
 		this.width *= factor;
+		event.geometryHandler.invoke();
 		return this;
 	}
 
@@ -237,6 +252,7 @@ public abstract class BaseElement implements BaseElementInterface {
 
 	public void setRotation(float angle) {
 		this.rotation = angle;
+		event.geometryHandler.invoke();
 	}
 
 	public float getRotation() {
@@ -292,4 +308,17 @@ public abstract class BaseElement implements BaseElementInterface {
 	 * @return The JSON Object
 	 */
 	public abstract JsonObject toJson();
+
+	/**
+	 * Anonymizes this element; All event listeners will be invalid and the element cannot be tracked through
+	 * event listeners anymore.
+	 */
+	public void anonymize() {
+		this.event.anonymizeAll();
+	}
+
+	@Override
+	public AutoCloseable subscribeGeometryChanged(EventListener onGeometryChanged) {
+		return event.geometryHandler.subscribe(onGeometryChanged);
+	}
 }
