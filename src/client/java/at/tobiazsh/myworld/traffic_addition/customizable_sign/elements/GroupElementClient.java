@@ -13,9 +13,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GroupElementClient extends GroupElement implements ClientElementInterface {
@@ -25,6 +23,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
     private final List<ClientElementInterface> clientElements;
     private List<ClientElementInterface> clientElementsView = List.of(); // Unmodifiable view of the client elements list
+    private Map<ElementId, AutoCloseable> geometryListeners = new HashMap<>();
     private boolean expanded = false;
 
     public GroupElementClient(
@@ -92,42 +91,78 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     public void addClientElement(ClientElementInterface element) {
         element.setParentId(this.getId().toParent());
         clientElements.add(element);
+        initializeElement(element);
         onChildrenModified();
     }
 
     public void addClientElement(int index, ClientElementInterface element) {
         element.setParentId(this.getId().toParent());
         clientElements.add(index, element);
+        initializeElement(element);
         onChildrenModified();
     }
 
     public void addAllElements(List<ClientElementInterface> elements) {
-        elements.forEach(e -> e.setParentId(this.getId().toParent()));
+        elements.forEach(e -> {
+            e.setParentId(this.getId().toParent());
+            initializeElement(e);
+        });
+
         clientElements.addAll(elements);
         onChildrenModified();
     }
 
     public void addAllElements(int index, List<ClientElementInterface> elements) {
-        elements.forEach(e -> e.setParentId(this.getId().toParent()));
+        elements.forEach(e -> {
+            e.setParentId(this.getId().toParent());
+            initializeElement(e);
+        });
+
         clientElements.addAll(index, elements);
         onChildrenModified();
     }
 
     public void setClientElements(List<ClientElementInterface> elements) {
+        uninitializeAllElements();
         clientElements.clear();
-        elements.forEach(e -> e.setParentId(this.getId().toParent()));
+
+        elements.forEach(e -> {
+            e.setParentId(this.getId().toParent());
+            initializeElement(e);
+        });
+
         clientElements.addAll(elements);
         onChildrenModified();
     }
 
     public void removeClientElement(ClientElementInterface element) {
         clientElements.remove(element);
+        uninitializeElement(element);
         onChildrenModified();
     }
 
     public void removeClientElement(int index) {
-        clientElements.remove(index);
+        var element = clientElements.remove(index);
+        uninitializeElement(element);
         onChildrenModified();
+    }
+
+    /**
+     * Tells the class that an element has been added so it can register all kinds of required stuff for it.
+     */
+    private void initializeElement(ClientElementInterface e) {
+        geometryListeners.put(e.getId(), e.subscribeGeometryChanged(this::onChildrenModified));
+    }
+
+    private void uninitializeAllElements() {
+        geometryListeners.clear();
+    }
+
+    /**
+     * Tells the class that an element has been removed so it can break all ties with the element.
+     */
+    private void uninitializeElement(ClientElementInterface e) {
+        geometryListeners.remove(e.getId());
     }
 
     @Override
@@ -141,18 +176,51 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     public float[] calculateBounds() {
         if (clientElements.isEmpty()) return new float[]{0, 0, 0, 0};
 
-        ClientElementInterface firstElement = clientElements.getFirst();
-        float minX = firstElement.getX();
-        float minY = firstElement.getY();
-        float maxX = firstElement.getX() + firstElement.getWidth();
-        float maxY = firstElement.getY() + firstElement.getHeight();
+        final float pivotX = 0; // Pivot X in -1...0...1 || TODO: Create variable "pivot" in base element to specify
+        final float pivotY = 0; // Pivot Y in -1...0...1 || TODO  the pivot point it should rotate around
 
-        for (int i = 1; i < clientElements.size(); i++) {
-            ClientElementInterface element = clientElements.get(i);
-            minX = Math.min(minX, element.getX());
-            minY = Math.min(minY, element.getY());
-            maxX = Math.max(maxX, element.getX() + element.getWidth());
-            maxY = Math.max(maxY, element.getY() + element.getHeight());
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE;
+        float maxY = -Float.MAX_VALUE;
+
+        for (ClientElementInterface element : clientElements) {
+            float x = element.getX();
+            float y = element.getY();
+            float w = element.getWidth();
+            float h = element.getHeight();
+
+            float angle = (float) Math.toRadians(element.getRotation());
+            float cos = Math.abs((float) Math.cos(Math.toRadians(angle)));
+            float sin = Math.abs((float) Math.sin(Math.toRadians(angle)));
+
+            // Absolute pivot position
+            float px = x + w * (pivotX + 1.0f) * 0.5f;
+            float py = y + h * (pivotY + 1.0f) * 0.5f;
+
+            // Rectangle center relative to pivot
+            float dx = x + w * 0.5f - px;
+            float dy = y + h * 0.5f - py;
+
+            // Rotate around pivot
+            float cx = px + dx * cos - dy * sin;
+            float cy = py + dx * sin - dy * cos;
+
+            // Calc extents
+            float extentX = (
+                    Math.abs(width * cos) +
+                    Math.abs(height * sin)
+            ) * 0.5f;
+
+            float extentY = (
+                    Math.abs(width * sin) +
+                    Math.abs(height * cos)
+            ) * 0.5f;
+
+            minX = Math.min(minX, cx - extentX);
+            minY = Math.min(minY, cy - extentY);
+            maxX = Math.max(maxX, cx + extentX);
+            maxY = Math.max(maxY, cy + extentY);
         }
 
         return new float[]{minX, minY, maxX, maxY};

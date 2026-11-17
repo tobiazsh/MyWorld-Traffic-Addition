@@ -274,7 +274,13 @@ public class ElementListEntry {
                 .collect(Collectors.toSet());
 
         if (!parentMatches(elements)) {
-            // TODO: Information to user that elements must have the same parent to be grouped together
+            MyWorldTrafficAdditionClient.getToaster().addToast(new Toast.Builder()
+                    .type(ToastType.INFO)
+                    .title("Grouping not possible")
+                    .content("To group, all targeted elements must have the same parent.")
+                    .timeToLive(10000)
+                    .build());
+
             return;
         }
 
