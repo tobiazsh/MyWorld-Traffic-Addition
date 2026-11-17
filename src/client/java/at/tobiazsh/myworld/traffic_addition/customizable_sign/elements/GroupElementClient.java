@@ -101,12 +101,6 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         onChildrenModified();
     }
 
-    public void addClientElementFirst(ClientElementInterface element) {
-        element.setParentId(this.getId().toParent());
-        clientElements.addFirst(element);
-        onChildrenModified();
-    }
-
     public void addAllElements(List<ClientElementInterface> elements) {
         elements.forEach(e -> e.setParentId(this.getId().toParent()));
         clientElements.addAll(elements);
