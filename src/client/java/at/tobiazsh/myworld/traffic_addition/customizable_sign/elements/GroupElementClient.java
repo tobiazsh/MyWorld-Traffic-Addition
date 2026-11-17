@@ -7,7 +7,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
-
+import imgui.ImGui;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
@@ -26,6 +26,8 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     private Map<ElementId, AutoCloseable> geometryListeners = new HashMap<>();
     private boolean expanded = false;
 
+    private boolean manipulatingChildren = false; // Used for suppression of events while manipulating children
+
     public GroupElementClient(
             float x,
             float y,
@@ -41,6 +43,24 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
     @Override
     public void renderImGui(float scale) {
+        // TODO: REMOVE DEBUG SHIT
+        float originX = ImGui.getCursorScreenPosX();
+        float originY = ImGui.getCursorScreenPosY();
+
+        var drawList = ImGui.getWindowDrawList();
+
+        int col = ImGui.getColorU32(1f, .2f, .2f, 1f);
+        drawList.addRect(
+                originX + x * scale,
+                originY + y * scale,
+                originX + (x + width) * scale,
+                originY + (y + height) * scale,
+                col,
+                0f,
+                0,      // flags
+                4f      // thickness
+        );
+
         createTextures();
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
     }
@@ -70,6 +90,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     }
 
     private void onChildrenModified() {
+        if (manipulatingChildren) return; // Do not do anything while we're manually manipulating children
         setBounds();
         clientElementsView = List.copyOf(clientElements); // Update the unmodifiable view
     }
@@ -179,10 +200,10 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         final float pivotX = 0; // Pivot X in -1...0...1 || TODO: Create variable "pivot" in base element to specify
         final float pivotY = 0; // Pivot Y in -1...0...1 || TODO  the pivot point it should rotate around
 
-        float minX = Float.MAX_VALUE;
-        float minY = Float.MAX_VALUE;
-        float maxX = -Float.MAX_VALUE;
-        float maxY = -Float.MAX_VALUE;
+        float minX = Float.POSITIVE_INFINITY;
+        float minY = Float.POSITIVE_INFINITY;
+        float maxX = Float.NEGATIVE_INFINITY;
+        float maxY = Float.NEGATIVE_INFINITY;
 
         for (ClientElementInterface element : clientElements) {
             float x = element.getX();
@@ -190,9 +211,9 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
             float w = element.getWidth();
             float h = element.getHeight();
 
-            float angle = (float) Math.toRadians(element.getRotation());
-            float cos = Math.abs((float) Math.cos(Math.toRadians(angle)));
-            float sin = Math.abs((float) Math.sin(Math.toRadians(angle)));
+            double angle = Math.toRadians(element.getRotation());
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
 
             // Absolute pivot position
             float px = x + w * (pivotX + 1.0f) * 0.5f;
@@ -202,20 +223,15 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
             float dx = x + w * 0.5f - px;
             float dy = y + h * 0.5f - py;
 
-            // Rotate around pivot
+            // Rotate center around pivot (signed cos/sin)
             float cx = px + dx * cos - dy * sin;
-            float cy = py + dx * sin - dy * cos;
+            float cy = py + dx * sin + dy * cos;
 
-            // Calc extents
-            float extentX = (
-                    Math.abs(width * cos) +
-                    Math.abs(height * sin)
-            ) * 0.5f;
-
-            float extentY = (
-                    Math.abs(width * sin) +
-                    Math.abs(height * cos)
-            ) * 0.5f;
+            // Extents of the rotated rectangle (abs only here)
+            float absCos = Math.abs(cos);
+            float absSin = Math.abs(sin);
+            float extentX = (w * absCos + h * absSin) * 0.5f;
+            float extentY = (w * absSin + h * absCos) * 0.5f;
 
             minX = Math.min(minX, cx - extentX);
             minY = Math.min(minY, cy - extentY);
@@ -267,54 +283,78 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
         return copy;
     }
 
+    private void manipulateChildren(Runnable r) {
+        manipulatingChildren = true;
+        try {
+            r.run();
+        } finally {
+            manipulatingChildren = false;
+        }
+        onChildrenModified();
+    }
+
     @Override
     public void setX(float newX) {
-        clientElements.forEach(e -> e.setX(e.getX() + newX - this.x)); // Update X for all client elements
+        final float dx = newX - this.x;
+        if (dx == 0) return;
         this.x = newX;
+        manipulateChildren(() -> clientElements.forEach(e -> e.setX(e.getX() + dx)));
+        // X will additionally be updated in calculateBounds because of the callback
     }
 
     @Override
     public void setY(float newY) {
-        clientElements.forEach(e -> e.setY(e.getY() + newY - this.y)); // Update Y for all client elements
+        final float dy = newY - this.y;
+        if (dy == 0) return;
         this.y = newY;
+        manipulateChildren(() -> clientElements.forEach(e -> e.setY(e.getY() + dy)));
+        // Y will additionally be updated in calculateBounds because of the callback
     }
 
     @Override
     public void setHeight(float height) {
         float oldHeight = getHeight();
-        if (oldHeight == 0) return; // Prevent division by zero
+        if (oldHeight <= 0) return; // Prevent division by zero
         float scale = height / oldHeight; // ik, it's a duplicate; Ion care tbh
 
         float originY = this.getY(); // Calc origin (Top-left corner of the group)
 
-        //Scale element's height and adjust their positions accordingly
-        clientElements.forEach(element -> {
+        manipulateChildren(() -> clientElements.forEach(element -> {
+            element.setY(originY + (element.getY() - originY) * scale);
             element.setHeight(element.getHeight() * scale); // Update element height
+        }));
 
-            float relativeY = element.getY() - originY; // Distance from origin
-            element.setY(originY + relativeY * scale); // Adjusted position
-        });
-
-        super.setHeight(height); // Do so for the super class
+        // No need to set height as height is determined by children (even callback calculates values for us)
     }
 
     @Override
     public void setWidth(float width) {
-        float oldWidth = getWidth();
-        if (oldWidth == 0) return; // Prevent division by zero
+        final float oldWidth = getWidth();
+        if (oldWidth <= 0) return; // Prevent division by zero
         float scale = width / oldWidth; // ik, it's a duplicate; Ion care tbh
 
         float originX = this.getX(); // Calc origin (Top-left corner of the group)
 
-        //Scale element's width and adjust their positions accordingly
-        clientElements.forEach(element -> {
-            element.setWidth(element.getWidth() * scale); // Update element width
+        manipulateChildren(() -> clientElements.forEach(element -> {
+            element.setX(originX + (element.getX() - originX) * scale);
+            element.setWidth(element.getWidth() * scale); // Update element height
+        }));
 
-            float relativeX = element.getX() - originX; // Distance from origin
-            element.setX(originX + relativeX * scale); // Adjusted position
-        });
+        // No need to set height as height is determined by children (even callback calculates values for us)
+    }
 
-        super.setWidth(width); // Do so for the super class
+    @Override
+    public void setSize(float width, float height) {
+        // Calls the event callback twice but I think that's an acceptable trade-off for such clean code
+        setWidth(width);
+        setHeight(height);
+    }
+
+    @Override
+    public void setPosition(float x, float y) {
+        // Calls the event callback twice but I think that's an acceptable trade-off for such clean code
+        setX(x);
+        setY(y);
     }
 
     private void createTextures() {
