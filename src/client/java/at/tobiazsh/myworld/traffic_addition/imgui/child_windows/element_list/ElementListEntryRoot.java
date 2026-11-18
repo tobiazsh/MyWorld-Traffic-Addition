@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import imgui.ImGui;
-import imgui.flag.ImGuiChildFlags;
 import imgui.flag.ImGuiPopupFlags;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -104,10 +103,21 @@ public class ElementListEntryRoot implements ListEntryParent {
         refresh();
     }
 
-    private void onSelect(ElementId id) {
+    /**
+     * Adds the selected element to the list of selected elements, or
+     * replaces the entire list with the selected element only.
+     *
+     * @param id The element's id to mark as selected.
+     * @param add Whether to add (true) the element to the list of selected elements, or (false) make it the only
+     *            selected element.
+     */
+    private void onSelect(ElementId id, boolean add) {
         if (selectedIds.contains(id)) {
             selectedIds.remove(id);
         } else {
+            if (!add)
+                selectedIds.clear();
+
             selectedIds.add(id);
         }
 

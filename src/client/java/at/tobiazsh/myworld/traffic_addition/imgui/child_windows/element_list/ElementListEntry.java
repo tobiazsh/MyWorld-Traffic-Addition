@@ -13,6 +13,7 @@ import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiKey;
 import imgui.flag.ImGuiMouseButton;
 import imgui.flag.ImGuiSelectableFlags;
 import imgui.type.ImString;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,7 @@ public class ElementListEntry {
 
     protected final ElementClipboard clipboard;
 
-    protected final Consumer<ElementId> onSelect;
+    protected final BiConsumer<ElementId, Boolean> onSelect;
 
     protected final ListEntryLookup listEntryLookup;
 
@@ -63,7 +65,7 @@ public class ElementListEntry {
             ElementId id,
             String dragDropDataType,
             ListEntryParent parent,
-            Consumer<ElementId> onSelect,
+            BiConsumer<ElementId, Boolean> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
             ListEntryLookup listEntryLookup,
@@ -135,10 +137,14 @@ public class ElementListEntry {
             ImGui.setCursorPosY(endPos.y);
 
             if (ImGui.isItemHovered()) {
-                if (ImGui.isMouseClicked(ImGuiMouseButton.Left))
-                    onSelect.accept(id);
-                else if (ImGui.isMouseClicked(ImGuiMouseButton.Right))
+                if (ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
+                    onSelect.accept(
+                            id,
+                            ImGui.isKeyDown(ImGuiKey.LeftCtrl) || ImGui.isKeyDown(ImGuiKey.RightCtrl)
+                    );
+                } else if (ImGui.isMouseClicked(ImGuiMouseButton.Right)) {
                     ImGui.openPopup("###context_menu");
+                }
 
                 if (ImGui.beginDragDropSource()) {
                     sendDragDropPayload();

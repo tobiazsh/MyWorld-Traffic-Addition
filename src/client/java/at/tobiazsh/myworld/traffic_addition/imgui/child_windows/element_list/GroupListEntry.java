@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +41,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
             ElementId id,
             String dragDropDataType,
             ListEntryParent parent,
-            Consumer<ElementId> onSelect,
+            BiConsumer<ElementId, Boolean> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
             ListEntryLookup listEntryLookup,

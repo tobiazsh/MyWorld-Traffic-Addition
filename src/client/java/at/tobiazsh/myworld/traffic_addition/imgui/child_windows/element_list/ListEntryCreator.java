@@ -5,13 +5,14 @@ import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientEle
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ListEntryCreator {
 
     private final ListEntryParent parent;
     private final String dragDropDataType;
-    private final Consumer<ElementId> onSelect;
+    private final BiConsumer<ElementId, Boolean> onSelect;
     private final Consumer<ElementListEntry> onNewEntry;
     private final Consumer<ElementListEntry> onEntryRemoved;
     private final ListEntryLookup listEntryLookup;
@@ -20,7 +21,7 @@ public final class ListEntryCreator {
     ListEntryCreator(
             ListEntryParent parent,
             String dragDropDataType,
-            Consumer<ElementId> onSelect,
+            BiConsumer<ElementId, Boolean> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
             ListEntryLookup listEntryLookup,
