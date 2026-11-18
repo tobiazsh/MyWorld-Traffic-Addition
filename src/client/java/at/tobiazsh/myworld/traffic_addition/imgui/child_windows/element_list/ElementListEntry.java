@@ -12,10 +12,7 @@ import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
 import imgui.ImVec2;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiKey;
-import imgui.flag.ImGuiMouseButton;
-import imgui.flag.ImGuiSelectableFlags;
+import imgui.flag.*;
 import imgui.type.ImString;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -468,7 +465,11 @@ public class ElementListEntry {
         float width = ImGui.calcTextSizeX(elementName.get()) + 20; // Add some padding for the input box
         ImGui.setNextItemWidth(width);
 
-        if (ImGui.inputText("##nameInput", elementName, ImGuiInputTextFlags.EnterReturnsTrue))
+        ImGui.pushStyleColor(ImGuiCol.FrameBg, 0);
+        ImGui.inputText("##nameInput", elementName);
+        ImGui.popStyleColor();
+
+        if (ImGui.isItemDeactivatedAfterEdit())
             element.setName(elementName.get());
     }
 
