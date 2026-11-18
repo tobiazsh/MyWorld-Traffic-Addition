@@ -264,7 +264,7 @@ public abstract class BaseElement implements BaseElementInterface {
 	 * @param color The color to set in rgba format (0-1)
 	 */
 	public void setColor(float[] color) {
-		this.color = color;
+		this.color = new float[]{color[0], color[1], color[2], color[3]};
 	}
 
 	/**
