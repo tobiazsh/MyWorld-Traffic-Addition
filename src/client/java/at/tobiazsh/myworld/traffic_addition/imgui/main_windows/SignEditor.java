@@ -8,6 +8,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.main_windows;
  */
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.CustomizableSignElementFactory;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
@@ -59,7 +60,6 @@ public class SignEditor {
     private boolean isVisible = false;
     private boolean isDebug = false;
 
-    private ClientElementInterface selectedElement = null; // Maybe not necessary ??? There HAS to be another way!
     private ImVec2 signRatio;
 
     private final SignPreview signPreview = SignPreview.createDefault();
@@ -141,12 +141,13 @@ public class SignEditor {
         this.clientElementManager.setPixelOfOneBlock(signRatio.y / signHeightBlocks);
 
         this.propertyViewer = new ElementPropertyViewer("propertyViewer_" + id, clientElementManager);
-        this.propertyViewer.setCanvasSize( signRatio.x, signRatio.y); // Set the canvas size to the calculated ratio
+        this.propertyViewer.setCanvasSize(signRatio.x, signRatio.y); // Set the canvas size to the calculated ratio
 
         this.elementList = new ElementList(
                 "elementListWindow",
                 this.clientElementManager,
-                this.propertyViewer.getSelectionCallback()
+                this.propertyViewer.getSelectionCallback(),
+                ElementClipboard.getCommonClipboard()
         );
 
         // TODO: Rewrite buggy undo/redo system

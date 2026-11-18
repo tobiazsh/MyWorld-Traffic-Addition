@@ -1,6 +1,7 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
@@ -42,12 +43,13 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
             Consumer<ElementId> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
-            ListEntryLookup listEntryLookup
+            ListEntryLookup listEntryLookup,
+            ElementClipboard clipboard
     ) {
         if (!(element instanceof GroupElementClient groupElement))
             throw new RuntimeException("GroupListEntry can only be created with a GroupElementClient, but got: " + element.getClass().getName());
 
-        super(groupElement, id, dragDropDataType, parent, onSelect, onNewEntry, onEntryRemoved, listEntryLookup);
+        super(groupElement, id, dragDropDataType, parent, onSelect, onNewEntry, onEntryRemoved, listEntryLookup, clipboard);
         if (groupThumbnailTexture == null) createGroupThumbnailTexture();
         this.thumbnailTexture = groupThumbnailTexture;
 
@@ -57,7 +59,8 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
                 onSelect,
                 onNewEntry,
                 onEntryRemoved,
-                listEntryLookup
+                listEntryLookup,
+                clipboard
         );
 
         this.dropSpace = new GenericDropSpace<>(
@@ -83,7 +86,8 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
                     onSelect,
                     onNewEntry,
                     onEntryRemoved,
-                    listEntryLookup
+                    listEntryLookup,
+                    clipboard
             );
 
             entry.setPreviousNeighbour(previousEntry);

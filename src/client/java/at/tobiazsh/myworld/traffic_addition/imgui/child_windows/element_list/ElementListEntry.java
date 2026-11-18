@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
+import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
 import at.tobiazsh.myworld.traffic_addition.imgui.toast.Toast;
@@ -37,6 +38,8 @@ public class ElementListEntry {
     protected final String dragDropDataType;
     protected final ListEntryParent parent;
 
+    protected final ElementClipboard clipboard;
+
     protected final Consumer<ElementId> onSelect;
 
     protected final ListEntryLookup listEntryLookup;
@@ -63,7 +66,8 @@ public class ElementListEntry {
             Consumer<ElementId> onSelect,
             Consumer<ElementListEntry> onNewEntry,
             Consumer<ElementListEntry> onEntryRemoved,
-            ListEntryLookup listEntryLookup
+            ListEntryLookup listEntryLookup,
+            ElementClipboard clipboard
     ) {
         this.element = element;
         this.id = id;
@@ -76,6 +80,7 @@ public class ElementListEntry {
         this.onSelect = onSelect;
 
         this.listEntryLookup = listEntryLookup;
+        this.clipboard = clipboard;
 
         this.onNewEntry = onNewEntry;
         this.onEntryRemoved = onEntryRemoved;
@@ -166,11 +171,32 @@ public class ElementListEntry {
         }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.cut").getString())) {
-
+            parent.deleteChild(this);
+            clipboard.setElement(this.getElement());
         }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.copy").getString())) {
+            clipboard.setElement(this.getElement());
+        }
 
+        boolean deactived = false;
+
+        if (clipboard.getElement(false) == null) {
+            ImGui.beginDisabled();
+            deactived = true;
+        }
+
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.paste").getString())) {
+            parent.addElementChild(clipboard.getElement(true));
+        }
+
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.paste-in-place").getString())) {
+            parent.addElementChild(clipboard.getElement(true), listEntryLookup.getIndexOfEntry(this.getId()));
+        }
+
+        if (deactived) {
+            ImGui.endDisabled();
+            deactived = false;
         }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.duplicate").getString())) {
@@ -301,9 +327,6 @@ public class ElementListEntry {
         float minY = (float) elements.stream()
                 .mapToDouble(entry -> entry.element.getY())
                 .min().orElse(0d);
-
-        // TODO: Respect the rotation of the elements when creating the group. Make a method "getBoundingBox" in
-        //  base element interface.
 
         var group = new GroupElementClient(
                 minX,

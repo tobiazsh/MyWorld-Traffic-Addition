@@ -1,17 +1,24 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
+import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiColor;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
+import imgui.ImGui;
+import imgui.flag.ImGuiChildFlags;
+import imgui.flag.ImGuiPopupFlags;
+import imgui.flag.ImGuiWindowFlags;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient.getTranslatable;
 
 public class ElementListEntryRoot implements ListEntryParent {
 
@@ -32,6 +39,8 @@ public class ElementListEntryRoot implements ListEntryParent {
     private final float[] dropSpaceColor = new float[]{1f, 1f, 1f, 0.0f};
 
     private final GenericDropSpace<ElementListEntryDragDropPayload> dropSpace;
+
+    private final ElementClipboard clipboard;
 
     private final ListEntryLookup listEntryLookup = new ListEntryLookup() {
         @Override
@@ -54,7 +63,12 @@ public class ElementListEntryRoot implements ListEntryParent {
         }
     };
 
-    public ElementListEntryRoot(String id, ClientElementManager manager, ElementSelectionCallback selectionCallback) {
+    public ElementListEntryRoot(
+            String id,
+            ClientElementManager manager,
+            ElementSelectionCallback selectionCallback,
+            ElementClipboard clipboard
+    ) {
         this.dragDropDataType = "ListEntryDD_" + id;
         this.selectionCallback = selectionCallback;
 
@@ -70,8 +84,11 @@ public class ElementListEntryRoot implements ListEntryParent {
                 this::onSelect,
                 this::onNewEntry,
                 this::onEntryRemoved,
-                this.listEntryLookup
+                this.listEntryLookup,
+                clipboard
         );
+
+        this.clipboard = clipboard;
 
         this.dropSpace = new GenericDropSpace<>(
                 dropSpaceHeight,
@@ -106,8 +123,16 @@ public class ElementListEntryRoot implements ListEntryParent {
         entries.remove(child.getId());
     }
 
-    public void render() {
+    public void render(float height) {
         int dropSpaceIndex = 0;
+
+        ImGui.beginChild(
+                "##element_list_entry_root",
+                ImGui.getContentRegionAvailX(),
+                height,
+                false,
+                ImGuiWindowFlags.NoResize
+        );
 
         dropSpace.renderNew(dropSpaceIndex);
 
@@ -117,8 +142,38 @@ public class ElementListEntryRoot implements ListEntryParent {
             dropSpace.renderNew(dropSpaceIndex);
         }
 
+        if (ImGui.beginPopupContextWindow(
+                "##context-menu",
+                ImGuiPopupFlags.MouseButtonRight |
+                        ImGuiPopupFlags.NoOpenOverExistingPopup |
+                        ImGuiPopupFlags.NoOpenOverItems
+        )) {
+            renderContextMenu();
+            ImGui.endPopup();
+        }
+
+        ImGui.endChild();
+
         if (refreshScheduled.getAndSet(false)) {
             immediateRefresh();
+        }
+    }
+
+    private void renderContextMenu() {
+        boolean deactived = false;
+
+        if (clipboard.getElement(false) == null) {
+            ImGui.beginDisabled();
+            deactived = true;
+        }
+
+        if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.paste").getString())) {
+            this.addElementChild(clipboard.getElement(true));
+        }
+
+        if (deactived) {
+            ImGui.endDisabled();
+            deactived = false;
         }
     }
 

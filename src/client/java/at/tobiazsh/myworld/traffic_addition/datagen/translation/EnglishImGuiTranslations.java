@@ -41,6 +41,8 @@ public class EnglishImGuiTranslations {
 
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Cut");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Copy");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste-in-place", "Paste in place");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste", "Paste");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Delete");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplicate");
 

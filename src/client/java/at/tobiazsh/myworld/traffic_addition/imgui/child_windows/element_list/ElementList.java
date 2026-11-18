@@ -1,8 +1,11 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
+import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
+
+import java.awt.datatransfer.Clipboard;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
@@ -13,14 +16,18 @@ public class ElementList {
 
     private boolean isVisible = false;
 
-    private final ImGuiFontScope fontScope = ImGuiFontScope.create();
     private final String id;
 
     private final ElementListEntryRoot rootEntry;
 
-    public ElementList(String id, ClientElementManager manager, ElementSelectionCallback selectionCallback) {
+    public ElementList(
+            String id,
+            ClientElementManager manager,
+            ElementSelectionCallback selectionCallback,
+            ElementClipboard clipboard
+    ) {
         this.id = id;
-        this.rootEntry = new ElementListEntryRoot(id, manager, selectionCallback);
+        this.rootEntry = new ElementListEntryRoot(id, manager, selectionCallback, clipboard);
         manager.elementListChangedEvent.addListener(rootEntry::refresh);
     }
 
@@ -28,7 +35,7 @@ public class ElementList {
         if (!isVisible) return;
 
         if (ImGui.begin(trIC("text.mwta.element-list.title", id, "elementListWindow"))) {
-            rootEntry.render();
+            rootEntry.render(ImGui.getContentRegionAvailY());
             ImGui.end();
         }
     }

@@ -41,6 +41,8 @@ public class GermanImGuiTranslations {
 
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Ausschneiden");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Kopieren");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste-in-place", "Hier einfügen");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste", "Einfügen");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Löschen");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplizieren");
 

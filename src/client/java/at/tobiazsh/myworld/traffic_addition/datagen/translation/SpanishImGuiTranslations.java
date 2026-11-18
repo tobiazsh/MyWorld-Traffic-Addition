@@ -40,6 +40,8 @@ public class SpanishImGuiTranslations {
 
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.cut", "Cortar");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.copy", "Copiar");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste-in-place", "Pegar aquí");
+        translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.paste", "Pegar");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.delete", "Eliminar");
         translationBuilder.add("text.myworld_traffic_addition.element-list.context-menu.duplicate", "Duplicar");
 
