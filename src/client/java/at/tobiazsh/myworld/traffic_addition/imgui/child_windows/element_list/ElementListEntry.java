@@ -488,4 +488,8 @@ public class ElementListEntry {
             throw new RuntimeException("Failed to load generic element thumbnail texture", e);
         }
     }
+
+    public ListEntryParent getParent() {
+        return this.parent;
+    }
 }

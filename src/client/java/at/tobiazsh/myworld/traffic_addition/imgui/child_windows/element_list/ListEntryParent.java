@@ -74,6 +74,16 @@ public interface ListEntryParent {
      */
     void addElementsChild(List<ClientElementInterface> elements, int index);
 
+    /**
+     * Returns the index of the provided child, or -1 of not found.
+     */
+    int indexOf(ElementListEntry child);
+
+    /**
+     * Returns the amount of children stored in this parent.
+     */
+    int size();
+
     void refresh();
     ElementId getId();
 }

@@ -1,8 +1,12 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
 import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
 import imgui.ImGui;
+import imgui.flag.ImGuiDir;
+import imgui.flag.ImGuiPopupFlags;
+import imgui.flag.ImGuiStyleVar;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
@@ -16,6 +20,7 @@ public class ElementList {
     private final String id;
 
     private final ElementListEntryRoot rootEntry;
+    private final ClientElementManager manager;
 
     public ElementList(
             String id,
@@ -25,6 +30,7 @@ public class ElementList {
     ) {
         this.id = id;
         this.rootEntry = new ElementListEntryRoot(id, manager, selectionCallback, clipboard);
+        this.manager = manager;
         manager.elementListChangedEvent.addListener(rootEntry::refresh);
     }
 
@@ -51,10 +57,55 @@ public class ElementList {
         if (ImGui.button("+", controlBarButtonSize, controlBarButtonSize)) {
             ImGui.openPopup(addMenuId);
         }
+
+        ImGui.sameLine();
+        ImGui.dummy(controlBarButtonSize, 0);
+        ImGui.sameLine();
+
+        renderUpDownButton();
+    }
+
+    private void renderUpDownButton() {
+        float textHeight = ImGui.getTextLineHeight();
+        float arrowButtonPadding = (controlBarButtonSize - textHeight) / 2f;
+
+        var selectedIds = rootEntry.getSelectedIds();
+        boolean oneSelected = selectedIds.size() == 1;
+        var child = oneSelected ? this.rootEntry.getChild(selectedIds.iterator().next()) : null;
+        int selectedIndex = oneSelected && child != null ? child.getParent().indexOf(child) : -1;
+        int size = child != null ? child.getParent().size() : 0;
+        boolean canMoveUp = selectedIndex > 0;
+        boolean canMoveDown = selectedIndex < size - 1;
+
+        if (!canMoveUp)
+            ImGui.beginDisabled();
+
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, arrowButtonPadding, arrowButtonPadding);
+        if (ImGui.arrowButton("##moveElementUp", ImGuiDir.Up) && child != null) {
+            child.getParent().moveChild(selectedIndex, selectedIndex - 1);
+        }
+        ImGui.popStyleVar();
+
+        if (!canMoveUp)
+            ImGui.endDisabled();
+
+        ImGui.sameLine();
+
+        if (!canMoveDown)
+            ImGui.beginDisabled();
+
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, arrowButtonPadding, arrowButtonPadding);
+        if (ImGui.arrowButton("##moveElementDown", ImGuiDir.Down) && child != null) {
+            child.getParent().moveChild(selectedIndex, selectedIndex + 1);
+        }
+        ImGui.popStyleVar();
+
+        if (!canMoveDown)
+            ImGui.endDisabled();
     }
 
     private void renderAddMenu() {
-        if (ImGui.beginPopupContextItem(addMenuId)) {
+        if (ImGui.beginPopupContextItem(addMenuId, ImGuiPopupFlags.NoOpenOverExistingPopup)) {
             if (ImGui.menuItem("New Group")) {
                 System.out.println("new group!");
             }

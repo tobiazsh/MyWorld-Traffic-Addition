@@ -10,6 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElementInterface;
 import imgui.ImGui;
 import imgui.flag.ImGuiPopupFlags;
 import imgui.flag.ImGuiWindowFlags;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -274,6 +275,10 @@ public class ElementListEntryRoot implements ListEntryParent {
         return Set.copyOf(selectedIds);
     }
 
+    public @Nullable ElementListEntry getChild(ElementId id) {
+        return entries.get(id);
+    }
+
     /**
      * Removes a child entry from the root list. Does not inform ClientElementManager, as this is only for the UI
      * representation of the elements.
@@ -338,6 +343,16 @@ public class ElementListEntryRoot implements ListEntryParent {
     public void addElementsChild(List<ClientElementInterface> elements, int index) {
         this.clientElementManager.addAllElements(index, elements);
         // No need to manually add to list, as ClientElementManager will trigger a refresh of the list if changes occur
+    }
+
+    @Override
+    public int indexOf(ElementListEntry child) {
+        return children.indexOf(child);
+    }
+
+    @Override
+    public int size() {
+        return children.size();
     }
 
     @Override

@@ -73,32 +73,9 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
         );
 
         this.children = new CopyOnWriteArrayList<>();
-
-        for (int i = 0; i < groupElement.getClientElements().size(); i++) {
-            var child = groupElement.getClientElements().get(i);
-
-            ElementListEntry previousEntry = i > 0 ? children.get(i - 1) : null;
-
-            var entry = new ElementListEntry(
-                    child,
-                    child.getId(),
-                    dragDropDataType,
-                    this,
-                    onSelect,
-                    onNewEntry,
-                    onEntryRemoved,
-                    listEntryLookup,
-                    clipboard
-            );
-
-            entry.setPreviousNeighbour(previousEntry);
-            children.add(entry);
-
-            if (previousEntry != null)
-                previousEntry.setNextNeighbour(entry);
-        }
-
         this.overrideSelectableHeight = true;
+
+        refresh();
     }
 
     @Override
@@ -357,6 +334,16 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
 
         // No need to refresh the list of children here, as the group will be refreshed automatically when the elements
         // are added to the group.
+    }
+
+    @Override
+    public int indexOf(ElementListEntry child) {
+        return children.indexOf(child);
+    }
+
+    @Override
+    public int size() {
+        return children.size();
     }
 
     @Override
