@@ -38,5 +38,30 @@ public interface ClientElementInterface extends BaseElementInterface {
 
     @Nullable ImGuiTexture getThumbnailTexture();
 
+    /**
+     * Make use of a preview in the for this element. Get preview using {@link #getPreview()}.
+     * @param force Whether to force-create the preview even if it already exists.
+     */
+    void usePreview(boolean force);
+
+    /**
+     * Destroy the current preview.
+     */
+    void destroyPreview();
+
+    /**
+     * Returns the preview of the element. A preview is basically a copy of the element,
+     * which can be modified, without having to add an extra entry to the client element list and
+     * without modifying the actual element. It will be rendered on top of the actual element, while still rendering
+     * the original element itself.
+     * @return Either null, if no preview as been created, or the preview itself.
+     */
+    @Nullable ClientElementInterface getPreview();
+
+    /**
+     * Render the preview in ImGui, as rendering the preview in Minecraft makes no sense.
+     */
+    void renderPreview(float scale);
+
     String getGenericTranslatableName();
 }

@@ -44,6 +44,8 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
 
     private final AtomicBoolean autoSize = new AtomicBoolean(false);
 
+    private @Nullable ClientElementInterface preview = null;
+
     private static final int DEFAULT_WIDTH = 64;
     private static final int DEFAULT_HEIGHT = 64;
 
@@ -135,6 +137,9 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
                 uv3X, uv3Y,
                 ImGui.colorConvertFloat4ToU32(color[0], color[1], color[2], color[3])
         );
+
+        if (this.preview != null) // Guard technically not necessary, but makes it more obvious
+            renderPreview(scale);
     }
 
     /**
@@ -377,6 +382,32 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
     @Override
     public @Nullable ImGuiTexture getThumbnailTexture() {
         return this.hybridTexture != null ? this.hybridTexture.getImGuiTexture() : null;
+    }
+
+    @Override
+    public void usePreview(boolean force) {
+        if (this.preview != null && !force)
+            return;
+
+        this.preview = this.copy();
+    }
+
+    @Override
+    public void destroyPreview() {
+        this.preview = null;
+    }
+
+    @Override
+    public @Nullable ClientElementInterface getPreview() {
+        return this.preview;
+    }
+
+    @Override
+    public void renderPreview(float scale) {
+        if (this.preview == null)
+            return;
+
+        this.preview.renderImGui(scale);
     }
 
     @Override

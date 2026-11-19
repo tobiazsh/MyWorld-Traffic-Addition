@@ -29,9 +29,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -64,6 +63,8 @@ public class TextElementClient extends TextElement implements ClientElementInter
     private DynamicMinecraftFont minecraftFont = null;
 
     private static final String DEFAULT_TEXT = "Lorem Ipsum";
+
+    private @Nullable ClientElementInterface preview = null;
 
     private boolean isWidthCalculated = true;
 
@@ -132,6 +133,9 @@ public class TextElementClient extends TextElement implements ClientElementInter
                 0.5f, 0.5f,
                 this.getText()
         );
+
+        if (this.preview != null) // Guard technically not necessary, but makes it more obvious
+            this.renderPreview(scale);
     }
 
     @Override
@@ -233,7 +237,7 @@ public class TextElementClient extends TextElement implements ClientElementInter
      * Recalculates the width and height the text requires.
      */
     private static ImVec2 calculateTextSize(
-            @NotNull ImGuiFont font,
+            @NonNull ImGuiFont font,
             String text
     ) {
         if (text.isEmpty()) {
@@ -479,6 +483,32 @@ public class TextElementClient extends TextElement implements ClientElementInter
     @Override
     public @Nullable ImGuiTexture getThumbnailTexture() {
         return textIcon;
+    }
+
+    @Override
+    public void usePreview(boolean force) {
+        if (this.preview != null && !force)
+            return;
+
+        this.preview = this.copy();
+    }
+
+    @Override
+    public void destroyPreview() {
+        this.preview = null;
+    }
+
+    @Override
+    public @Nullable ClientElementInterface getPreview() {
+        return this.preview;
+    }
+
+    @Override
+    public void renderPreview(float scale) {
+        if (this.preview == null)
+            return;
+
+        this.preview.renderImGui(scale);
     }
 
     @Override

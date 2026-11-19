@@ -54,6 +54,8 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     private final AtomicBoolean mayDownload = new AtomicBoolean(true); // Flag to control if the image should be downloaded
 
+    private @Nullable ClientElementInterface preview = null;
+
     private ImVec2 p0, p1, p2, p3;
 
     public OnlineImageElementClient(
@@ -125,6 +127,9 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
                 uv3X, uv3Y,
                 ImGui.colorConvertFloat4ToU32(color[0], color[1], color[2], color[3]) // Color doesn't work yet
         );
+
+        if (this.preview != null) // Guard technically not necessary, but makes it more obvious
+            renderPreview(scale);
     }
 
     /**
@@ -414,6 +419,32 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     @Override
     public @Nullable ImGuiTexture getThumbnailTexture() {
         return null;
+    }
+
+    @Override
+    public void usePreview(boolean force) {
+        if (this.preview != null && !force)
+            return;
+
+        this.preview = this.copy();
+    }
+
+    @Override
+    public void destroyPreview() {
+        this.preview = null;
+    }
+
+    @Override
+    public @Nullable ClientElementInterface getPreview() {
+        return this.preview;
+    }
+
+    @Override
+    public void renderPreview(float scale) {
+        if (this.preview == null)
+            return;
+
+        this.preview.renderImGui(scale);
     }
 
     @Override

@@ -8,7 +8,6 @@ import at.tobiazsh.myworld.traffic_addition.imgui.utils.ImGuiTools;
 import dev.tobiazsh.imguib3d.client.font.ImGuiFontScope;
 import imgui.ImGui;
 import imgui.flag.ImGuiColorEditFlags;
-import imgui.flag.ImGuiSliderFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import org.jspecify.annotations.NonNull;
@@ -169,8 +168,11 @@ public class ElementPropertyViewer {
                     trIC("text.mwta.sign-editor.property-viewer.dimensions.width", id, "widthInput"),
                     widthBuffer, 1f, 0, (int) (canvasWidth - xBuffer[0]), "%d px")
             ) {
-                // TODO: Implement a preview element somehow, which has it's shit updated immediately, but has no
-                //  event listeners, which would cause a massive lag or at least rather inefficient rendering
+                this.element.usePreview(false);
+                var preview = this.element.getPreview();
+
+                if (preview != null)
+                    this.element.getPreview().setWidth(widthBuffer[0]);
             }
 
 
@@ -180,6 +182,7 @@ public class ElementPropertyViewer {
                 }
 
                 applySize();
+                this.element.destroyPreview();
             }
 
             ImGui.setNextItemWidth(sliderWidth);
@@ -188,8 +191,11 @@ public class ElementPropertyViewer {
                     trIC("text.mwta.sign-editor.property-viewer.dimensions.height", id, "heightInput"),
                     heightBuffer, 1f, 0, (int) (canvasHeight - yBuffer[0]), "%d px")
             ) {
-                // TODO: Implement a preview element somehow, which has it's shit updated immediately, but has no
-                //  event listeners, which would cause a massive lag or at least rather inefficient rendering
+                this.element.usePreview(false);
+                var preview = this.element.getPreview();
+
+                if (preview != null)
+                    this.element.getPreview().setHeight(heightBuffer[0]);
             }
 
             if (ImGui.isItemDeactivatedAfterEdit()) {
@@ -198,6 +204,7 @@ public class ElementPropertyViewer {
                 }
 
                 applySize();
+                this.element.destroyPreview();
             }
 
         } ImGui.endGroup();
@@ -217,12 +224,17 @@ public class ElementPropertyViewer {
                         trIC("text.mwta.sign-editor.property-viewer.dimensions.x", id, "xInput"),
                         xBuffer, 1f, 0 , (int) (canvasWidth - widthBuffer[0]))
                 ) {
-                    // TODO: Implement a preview element somehow, which has it's shit updated immediately, but has no
-                    //  event listeners, which would cause a massive lag or at least rather inefficient rendering
+                    this.element.usePreview(false);
+                    var preview = this.element.getPreview();
+
+                    if (preview != null)
+                        this.element.getPreview().setX(xBuffer[0]);
                 }
 
-                if (ImGui.isItemDeactivatedAfterEdit())
+                if (ImGui.isItemDeactivatedAfterEdit()) {
                     element.setX(xBuffer[0]);
+                    this.element.destroyPreview();
+                }
 
                 ImGui.sameLine();
 
@@ -242,12 +254,17 @@ public class ElementPropertyViewer {
                         trIC("text.mwta.sign-editor.property-viewer.dimensions.y", id, "yInput"),
                         yBuffer, 1f, 0, (int) (canvasHeight - heightBuffer[0]))
                 ) {
-                    // TODO: Implement a preview element somehow, which has it's shit updated immediately, but has no
-                    //  event listeners, which would cause a massive lag or at least rather inefficient rendering
+                    this.element.usePreview(false);
+                    var preview = this.element.getPreview();
+
+                    if (preview != null)
+                        this.element.getPreview().setY(yBuffer[0]);
                 }
 
-                if (ImGui.isItemDeactivatedAfterEdit())
+                if (ImGui.isItemDeactivatedAfterEdit()) {
                     element.setY(yBuffer[0]);
+                    this.element.destroyPreview();
+                }
 
                 ImGui.sameLine();
 
@@ -284,7 +301,17 @@ public class ElementPropertyViewer {
         if (ImGui.dragFloat(
                 trIC("text.mwta.sign-editor.property-viewer.rotation", id, "rotationInput"),
                 rotationBuffer, 1f, 0, 360, "%.1f°"
-        )) element.setRotation(rotationBuffer[0]);
+        )) {
+            this.element.usePreview(false);
+
+            if (this.element.getPreview() != null)
+                this.element.getPreview().setRotation(rotationBuffer[0]);
+        }
+
+        if (ImGui.isItemDeactivatedAfterEdit()) {
+            this.element.setRotation(rotationBuffer[0]);
+            this.element.destroyPreview();
+        }
     }
 
     private void renderColor() {

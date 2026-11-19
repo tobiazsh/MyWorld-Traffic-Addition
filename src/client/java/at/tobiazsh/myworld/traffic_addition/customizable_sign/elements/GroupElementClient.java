@@ -26,6 +26,11 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     private Map<ElementId, AutoCloseable> geometryListeners = new HashMap<>();
     private boolean expanded = false;
 
+
+    /// Preview of the element itself. Useful when you want the user to see how the transformation looks without
+    /// transforming it yet.
+    private @Nullable ClientElementInterface preview = null;
+
     private boolean manipulatingChildren = false; // Used for suppression of events while manipulating children
 
     public GroupElementClient(
@@ -63,6 +68,9 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
         createTextures();
         this.getClientElements().reversed().forEach(element -> element.renderImGui(scale));
+
+        if (this.preview != null) // Guard technically not necessary, but makes it more obvious
+            renderPreview(scale);
     }
 
     // Was not necessary in older mod versions because Groups were unpacked in CustomizableBlockEntity, but
@@ -273,7 +281,7 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
 
     @Override
     public ClientElementInterface copy() {
-        GroupElementClient copy = new GroupElementClient(x, y, width, height, rotation, null, parentId); // ID null because it'll be registered when added to the render list
+        GroupElementClient copy = new GroupElementClient(x, y, width, height, rotation, ElementId.random(), parentId);
         copy.setName(this.getName());
         copy.setColor(this.getColor());
         copy.setFactor(this.getFactor());
@@ -375,6 +383,39 @@ public class GroupElementClient extends GroupElement implements ClientElementInt
     @Override
     public @Nullable ImGuiTexture getThumbnailTexture() {
         return groupIcon;
+    }
+
+    @Override
+    public void usePreview(boolean force) {
+        if (this.preview != null && !force)
+            return;
+
+        this.preview = this.copy();
+    }
+
+    @Override
+    public void destroyPreview() {
+        this.preview = null;
+    }
+
+    /**
+     * Returns the preview of the element. A preview is basically a copy of the element (and, as for the group element,
+     * its children too), which can be modified, without having to add an extra entry to the client element list and
+     * without modifying the actual element. It will be rendered on top of the actual element, while still rendering
+     * the original element itself.
+     * @return Either null, if no preview as been created, or the preview itself.
+     */
+    @Override
+    public @Nullable ClientElementInterface getPreview() {
+        return preview;
+    }
+
+    @Override
+    public void renderPreview(float scale) {
+        if (this.preview == null)
+            return;
+
+        this.preview.renderImGui(scale);
     }
 
     @Override
