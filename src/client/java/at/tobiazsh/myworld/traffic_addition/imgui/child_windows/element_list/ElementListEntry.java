@@ -182,12 +182,10 @@ public class ElementListEntry {
             clipboard.setElement(this.getElement());
         }
 
-        boolean deactived = false;
+        boolean clipboardEmpty = clipboard.getElement(false) == null;
 
-        if (clipboard.getElement(false) == null) {
+        if (clipboardEmpty)
             ImGui.beginDisabled();
-            deactived = true;
-        }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.paste").getString())) {
             parent.addElementChild(clipboard.getElement(true));
@@ -197,10 +195,8 @@ public class ElementListEntry {
             parent.addElementChild(clipboard.getElement(true), listEntryLookup.getIndexOfEntry(this.getId()));
         }
 
-        if (deactived) {
+        if (clipboardEmpty)
             ImGui.endDisabled();
-            deactived = false;
-        }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.duplicate").getString())) {
             var copy = element.copy();
