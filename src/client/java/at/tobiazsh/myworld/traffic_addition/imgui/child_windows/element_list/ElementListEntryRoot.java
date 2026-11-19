@@ -261,6 +261,9 @@ public class ElementListEntryRoot implements ListEntryParent {
         if (elementIndex == index)
             return;
 
+        if (index > elementIndex)
+            index--; // Adjust index if moving forward in the list
+
         this.clientElementManager.moveElement(elementIndex, index);
     }
 

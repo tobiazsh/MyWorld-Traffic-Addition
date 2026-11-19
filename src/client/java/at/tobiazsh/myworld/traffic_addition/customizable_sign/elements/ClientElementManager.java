@@ -167,15 +167,14 @@ public class ClientElementManager {
             return;
         }
 
+        if (toIndex == fromIndex)
+            return;
+
         ClientElementInterface element = elements.remove(fromIndex);
 
         if (element == null) {
             MyWorldTrafficAddition.LOGGER.error("Tried toIndex move an element that is not in the list: {}", fromIndex);
             return;
-        }
-
-        if (fromIndex < toIndex) {
-            toIndex--; // Adjust the target fromIndex if the element is being moved forward in the list
         }
 
         if (toIndex <= 0) {
