@@ -2,6 +2,7 @@ package at.tobiazsh.myworld.traffic_addition.texture;
 
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.TextureManagerAccessor;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureImpl;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,9 +35,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HybridTexture extends PrimitiveTexture {
 
     private final @NonNull ImGuiTexture imGuiTexture;
-    private final @NonNull Identifier id;
 
-    private boolean pinned = false;
+    private boolean registered;
+    private final AtomicBoolean pinned = new AtomicBoolean(false);
 
     private final AtomicLong lastUsedTick = new AtomicLong(0);
 
@@ -50,14 +52,13 @@ public class HybridTexture extends PrimitiveTexture {
                 id
         );
 
-        this.id = id;
         this.imGuiTexture = imGuiTexture;
     }
 
     /**
      * Creates a new {@link HybridTexture} from an {@link ImGuiTexture}. Registers the texture in Minecraft's
      * {@link net.minecraft.client.renderer.texture.TextureManager} if the {@link ImGuiTexture} is not null.
-     * íf the {@link ImGuiTexture} is null, returns a {@link HybridTexture} with both fields set to null.
+     * If the {@link ImGuiTexture} is null, returns a {@link HybridTexture} with both fields set to null.
      *
      * @param imGuiTexture The ImGuiTexture to create the HybridTexture from.
      *                     Copies the references to the GPU texture, GPU texture view and sampler from the ImGuiTexture.
@@ -74,9 +75,40 @@ public class HybridTexture extends PrimitiveTexture {
         if (!(imGuiTexture instanceof ImGuiTextureImpl impl))
             throw new IllegalArgumentException("ImGuiTexture must be an instance of ImGuiTextureImpl");
 
-        return new HybridTexture(impl, id);
+        var texture = new HybridTexture(impl, id);
+        texture.register();
+        return texture;
     }
 
+    /**
+     * Creates a new {@link HybridTexture} from an {@link ImGuiTexture} if it is not registered inside of Minecraft's
+     * texture manager yet. If it isn't registered, a new instance is created and registered in the
+     * {@link net.minecraft.client.renderer.texture.TextureManager}.
+     * If the {@link ImGuiTexture} is null, returns a {@link HybridTexture} with both fields set to null.
+     *
+     * @param imGuiTextureSupplier A supplier of the ImGuiTexture. Used to not unnecessarily create resources later disposed.
+     *                             Can throw an exception. Whatever exception is thrown is passed up to this method.
+     *                             Copies the references to the GPU texture, GPU texture view and sampler from the ImGuiTexture.
+     * @param id The id to register the texture with in the TextureManager.
+     * @param <E> The type of exception thrown by ThrowableException.
+     * @return A new HybridTexture instance.
+     *
+     * @throws IllegalArgumentException if the {@link ImGuiTexture} is not an instance of
+     * @throws E Any exception thrown by the supplier.
+     * {@link dev.tobiazsh.imguib3d.client.texture.ImGuiTextureImpl}
+     */
+    public static <E extends Exception> @NonNull HybridTexture ofImGuiTextureCached(
+            ThrowingSupplier<@NonNull ImGuiTexture, E> imGuiTextureSupplier,
+            Identifier id
+    ) throws E {
+        var cachedTexture = tryGetFromManager(id);
+
+        if (cachedTexture != null)
+            return cachedTexture;
+
+        var texture = imGuiTextureSupplier.get();
+        return ofImGuiTexture(texture, id);
+    }
 
     /**
      * Tries to get the {@link HybridTexture} from Minecraft's
@@ -84,27 +116,22 @@ public class HybridTexture extends PrimitiveTexture {
      * If the texture is not found, returns an empty {@link Optional}.
      *
      * @param id The id of the texture to get from the TextureManager.
-     * @return An {@link Optional} containing the {@link HybridTexture} if found, or an empty {@link Optional} if not
-     * found.
+     * @return A {@link HybridTexture} if found, or null.
      */
-    public static Optional<HybridTexture> tryGetFromManager(Identifier id) {
+    public static @Nullable HybridTexture tryGetFromManager(Identifier id) {
         @Nullable AbstractTexture texture = ((TextureManagerAccessor) Minecraft.getInstance()).getByPath().get(id);
 
         if (texture == null)
-            return Optional.empty();
+            return null;
 
         if (!(texture instanceof HybridTexture hybridTexture))
-            return Optional.empty();
+            return null;
 
-        return Optional.of(hybridTexture);
+        return hybridTexture;
     }
 
     public @NonNull ImGuiTexture getImGuiTexture() {
         return imGuiTexture;
-    }
-
-    public @NonNull Identifier getIdentifier() {
-        return id;
     }
 
     public long getLastUsedTick() {
@@ -138,11 +165,42 @@ public class HybridTexture extends PrimitiveTexture {
     }
 
     /**
+     * Registers the texture in Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager} if it's not
+     * already registered. If the texture is already registered, this method does nothing.
+     */
+    public void register() {
+        if (this.registered)
+            return;
+
+        Minecraft.getInstance().getTextureManager().register(id, this);
+        this.registered = true;
+    }
+
+    /**
+     * Unregisters the texture from Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager} if it's
+     * registered. If the texture is not registered, this method does nothing.
+     */
+    public void unregister() {
+        if (!this.registered)
+            return;
+
+        Minecraft.getInstance().getTextureManager().release(id);
+        this.registered = false;
+    }
+
+    /**
      * Checks if the texture is usable in Minecraft. A texture is considered usable in Minecraft if it isn't null, is
      * registered and has a valid GPU texture and sampler.
      */
     public boolean isUsableMinecraft() {
         return isRegistered() && isUsable();
+    }
+
+    /**
+     * Checks if the texture is registered in Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager}.
+     */
+    public boolean isRegistered() {
+        return registered;
     }
 
     /**
@@ -157,14 +215,14 @@ public class HybridTexture extends PrimitiveTexture {
      * Checks if the texture is pinned. A pinned texture should not be disposed of by the HybridTextureSweeper.
      */
     public boolean isPinned() {
-        return pinned;
+        return pinned.get();
     }
 
     /**
      * Pins the texture. A pinned texture should not be disposed of by the HybridTextureSweeper.
      */
     public void pin() {
-        pinned = true;
+        pinned.set(true);
     }
 
     public void touch() {
@@ -182,7 +240,7 @@ public class HybridTexture extends PrimitiveTexture {
      * Unpins the texture. An unpinned texture can be disposed of by the HybridTextureSweeper.
      */
     public void unpin() {
-        pinned = false;
+        pinned.set(false);
     }
 
     /**

@@ -13,13 +13,11 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * A class consisting of a GPU texture view, GPU texture and a sampler, representing a primitive texture, extending
- * the {@link net.minecraft.client.renderer.texture.AbstractTexture} class. Can be registered in the
- * {@link net.minecraft.client.renderer.texture.TextureManager} and used in Minecraft rendering.
+ * the {@link net.minecraft.client.renderer.texture.AbstractTexture} class.
  */
 public class PrimitiveTexture extends AbstractTexture {
 
     protected final Identifier id;
-    protected boolean registered;
 
     public PrimitiveTexture(
             @Nullable GpuTexture gpuTexture,
@@ -60,28 +58,8 @@ public class PrimitiveTexture extends AbstractTexture {
         );
     }
 
-    /**
-     * Registers the texture in Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager} if it's not
-     * already registered. If the texture is already registered, this method does nothing.
-     */
-    public void register() {
-        if (this.registered)
-            return;
-
-        Minecraft.getInstance().getTextureManager().register(id, this);
-        this.registered = true;
-    }
-
-    /**
-     * Unregisters the texture from Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager} if it's
-     * registered. If the texture is not registered, this method does nothing.
-     */
-    public void unregister() {
-        if (!this.registered)
-            return;
-
-        Minecraft.getInstance().getTextureManager().release(id);
-        this.registered = false;
+    public @NonNull Identifier getIdentifier() {
+        return id;
     }
 
     /**
@@ -114,12 +92,5 @@ public class PrimitiveTexture extends AbstractTexture {
      */
     public boolean isUsable() {
         return this.texture != null && this.textureView != null;
-    }
-
-    /**
-     * Checks if the texture is registered in Minecraft's {@link net.minecraft.client.renderer.texture.TextureManager}.
-     */
-    public boolean isRegistered() {
-        return registered;
     }
 }

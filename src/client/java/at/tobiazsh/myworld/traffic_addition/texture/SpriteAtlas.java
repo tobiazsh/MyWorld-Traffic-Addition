@@ -3,6 +3,7 @@ package at.tobiazsh.myworld.traffic_addition.texture;
 import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.exception.SpriteNotFoundException;
 import at.tobiazsh.myworld.traffic_addition.exception.TextureNotLoadedException;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
@@ -118,30 +119,23 @@ public class SpriteAtlas implements AutoCloseable {
             return;
         }
 
-        ImGuiTexture imGuiTexture;
-
-        try (var stream = SpriteAtlas.class.getResourceAsStream(locationInJar)) {
-            if (stream == null) {
-                throw new IOException(
-                        "Could not load sprite atlas texture from "
-                        + locationInJar + " because the resource does not exist!"
+        ThrowingSupplier<ImGuiTexture, Exception> imGuiTextureSupplier = () ->
+                ImGuiTextureFactory.fromStream(
+                        Objects.requireNonNull(SpriteAtlas.class.getResourceAsStream(locationInJar)),
+                        "SpriteAtlas_" + atlasId.toString()
                 );
-            }
+
+        try {
+            texture = HybridTexture.ofImGuiTextureCached(
+                    imGuiTextureSupplier,
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "SpriteAtlas_" + atlasId.toString())
+            );
 
             MyWorldTrafficAddition.LOGGER.info("Uploading sprite atlas texture from " + locationInJar + " into GPU memory...");
-
-            imGuiTexture = ImGuiTextureFactory.fromStream(
-                    stream,
-                    "SpriteAtlas_" + atlasId.toString()
-            );
+        } catch (Exception e) {
+            throw new IOException("Could not upload sprite atlas texture:", e);
         }
 
-        texture = HybridTexture.ofImGuiTexture(
-                imGuiTexture,
-                atlasId
-        );
-
-        texture.register(); // Register the texture in Minecraft's TextureManager
         this.initializeSprites();
 
         // Unlike the versions before, we do not pin the texture here as atlases will keep expanding in the mod

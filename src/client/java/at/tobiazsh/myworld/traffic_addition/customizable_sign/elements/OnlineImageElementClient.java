@@ -10,6 +10,7 @@ import at.tobiazsh.myworld.traffic_addition.sign.elements.OnlineImageElement;
 import at.tobiazsh.myworld.traffic_addition.cache.OnlineImageCache;
 import at.tobiazsh.myworld.traffic_addition.network.OnlineImageNetworking;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import com.mojang.math.Axis;
 import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
@@ -256,40 +257,40 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
 
     private void loadStaticTextures() {
         if (loadingTexture == null && !loadingLoadFailed.get()) {
-            try {
-                ImGuiTexture imguiTexture = ImGuiTextureFactory.fromStream(
+            ThrowingSupplier<ImGuiTexture, Exception> imguiTextureSupplier = () ->
+                    ImGuiTextureFactory.fromStream(
                         Objects.requireNonNull(getClass().getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/textures/imgui/loading_placeholder.png")),
                         MyWorldTrafficAddition.MOD_ID + ":OnlineImageLoadingTexture"
-                );
+                    );
 
-                loadingTexture = HybridTexture.ofImGuiTexture(
-                        imguiTexture,
+            try {
+                loadingTexture = HybridTexture.ofImGuiTextureCached(
+                        imguiTextureSupplier,
                         Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element.loading")
                 );
 
                 loadingTexture.pin();
-                loadingTexture.register();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 loadingLoadFailed.set(true);
                 throw new RuntimeException(e);
             }
         }
 
         if (notFoundTexture == null && !notFoundLoadFailed.get()) { // Not found acts as a fallback!
-            try {
-                ImGuiTexture imguiTexture = ImGuiTextureFactory.fromStream(
+            ThrowingSupplier<ImGuiTexture, Exception> imguiTextureSupplier = () ->
+                    ImGuiTextureFactory.fromStream(
                         Objects.requireNonNull(getClass().getResourceAsStream("/assets/" + MyWorldTrafficAddition.MOD_ID + "/textures/imgui/not_found.png")),
                         MyWorldTrafficAddition.MOD_ID + ":OnlineImageNotFoundTexture"
-                );
+                    );
 
-                notFoundTexture = HybridTexture.ofImGuiTexture(
-                        imguiTexture,
+            try {
+                notFoundTexture = HybridTexture.ofImGuiTextureCached(
+                        imguiTextureSupplier,
                         Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element.not_found")
                 );
 
                 notFoundTexture.pin();
-                notFoundTexture.register();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 notFoundLoadFailed.set(true);
                 throw new RuntimeException(e);
             }
@@ -360,15 +361,17 @@ public class OnlineImageElementClient extends OnlineImageElement implements Clie
     }
 
     private void loadTexture(Path path) {
-        try {
-            ImGuiTexture imguiTexture = ImGuiTextureFactory.fromFile(path, MyWorldTrafficAddition.MOD_ID + ":OnlineImageElement_" + getPictureReference().toString());
+        ThrowingSupplier<ImGuiTexture, IOException> imguiTextureSupplier = () ->
+                ImGuiTextureFactory.fromFile(
+                    path,
+                    MyWorldTrafficAddition.MOD_ID + ":OnlineImageElement_" + getPictureReference().toString()
+                );
 
-            hybridTexture = HybridTexture.ofImGuiTexture(
-                    imguiTexture,
+        try {
+            hybridTexture = HybridTexture.ofImGuiTextureCached(
+                    imguiTextureSupplier,
                     Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "online_image_element." + getPictureReference().toString())
             );
-
-            hybridTexture.register();
 
             if (shouldAutoSize.get()) {
                 setSizeToTexture();

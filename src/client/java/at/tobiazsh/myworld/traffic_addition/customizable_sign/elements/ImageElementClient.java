@@ -5,6 +5,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAdditionClient;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
 import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ParentElementId;
 import at.tobiazsh.myworld.traffic_addition.texture.*;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
 import at.tobiazsh.myworld.traffic_addition.utils.math.BlockPosFloat;
 import at.tobiazsh.myworld.traffic_addition.utils.crypto.Encoding;
 import at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils;
@@ -26,9 +27,11 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import static at.tobiazsh.myworld.traffic_addition.imgui.utils.ImUtil.rotatePivot;
 import static at.tobiazsh.myworld.traffic_addition.utils.DirectionUtils.getRightSideDirection;
@@ -272,20 +275,23 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
         if (fallbackHybridTexture != null || !fallbackLoadingFailed.get())
             return;
 
-        try {
-            ImGuiTexture imguiFallbackTexture = ImGuiTextureFactory.fromStream(
+        ThrowingSupplier<ImGuiTexture, IOException> imguiFallbackTexture = () ->
+                ImGuiTextureFactory.fromStream(
                     Objects.requireNonNull(MyWorldTrafficAddition.class.getResourceAsStream("/assets/myworld_traffic_addition/textures/imgui/element_icon.png")),
                     MyWorldTrafficAddition.MOD_ID + ":ImageFallbackTexture"
-            );
+                );
 
-            fallbackHybridTexture = HybridTexture.ofImGuiTexture(
+        try {
+            fallbackHybridTexture = HybridTexture.ofImGuiTextureCached(
                     imguiFallbackTexture,
                     Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "image_element.fallback")
             );
 
+            if (fallbackLoadingFailed.get())
+                return;
+
             fallbackHybridTexture.pin(); // Don't let the fallback texture be swept away by the HybridTextureSweeper
-            fallbackHybridTexture.register();
-        } catch (Exception e) {
+        } catch (IOException e) {
             MyWorldTrafficAddition.LOGGER.error("Failed to load fallback texture for ImageElement!", e);
             fallbackLoadingFailed.set(true);
         }
@@ -310,31 +316,29 @@ public class ImageElementClient extends ImageElement implements ClientElementInt
                 Encoding.encodeBase32(resourcePath)
         );
 
-        Optional<HybridTexture> loadedTexture = HybridTexture.tryGetFromManager(key);
-
-        if (loadedTexture.isPresent()) {
-            this.hybridTexture = loadedTexture.get();
-            return;
-        }
-
-        try {
-            ImGuiTexture imGuiTexture = ImGuiTextureFactory.fromStream(
+        ThrowingSupplier<ImGuiTexture, IOException> imGuiTextureSupplier = () ->
+                ImGuiTextureFactory.fromStream(
                     Objects.requireNonNull(MyWorldTrafficAddition.class.getResourceAsStream(resourcePath)),
                     "Image Element Texture " + key
+                );
+
+        try {
+            this.hybridTexture = HybridTexture.ofImGuiTextureCached(
+                    imGuiTextureSupplier,
+                    key
             );
 
-            this.hybridTexture = HybridTexture.ofImGuiTexture(imGuiTexture, key);
-            this.hybridTexture.register();
+            if (textureLoadFailed.get())
+                return;
+
             this.hybridTexture.pin();
-            /* ↑ Pin the texture ↑ because the same texture is shared across ImageElements */
-        } catch (Exception e) {
+
+            if (autoSize.get())
+                setSizeToTexture();
+        } catch (IOException e) {
             MyWorldTrafficAddition.LOGGER.error("Failed to load fallback texture for ImageElement!", e);
             textureLoadFailed.set(true);
-            return;
         }
-
-        if (autoSize.get())
-            setSizeToTexture();
     }
 
     /**
