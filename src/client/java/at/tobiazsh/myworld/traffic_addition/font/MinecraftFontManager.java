@@ -4,6 +4,7 @@ import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.access.client.MinecraftClientAccessor;
 import at.tobiazsh.myworld.traffic_addition.mixin.client.font.FontManagerAccessor;
 import at.tobiazsh.myworld.traffic_addition.rendering.text.CustomTextRenderer;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
 import com.mojang.blaze3d.font.GlyphProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -30,10 +31,7 @@ public final class MinecraftFontManager {
 
     private static final MinecraftFontManager INSTANCE = new MinecraftFontManager();
 
-    @FunctionalInterface
-    public interface ThrowingSupplier<T> {
-        T get() throws IOException;
-    }
+    private static final int STALE_TICKS = 10 * 20; // 10 seconds
 
     public static final Executor LOAD_EXECUTOR =
             Executors.newFixedThreadPool(2, r -> new Thread(r, "DynamicFontLoader-Thread"));
@@ -45,11 +43,11 @@ public final class MinecraftFontManager {
         return INSTANCE;
     }
 
-    public CompletableFuture<DynamicMinecraftFont> loadOrGet(
+    public <E extends Exception> CompletableFuture<DynamicMinecraftFont> loadOrGet(
             FontDefinition fontDefinition,
             @Nullable FontLifetime lifetime
     ) {
-        ThrowingSupplier<GlyphProvider> glyphProviderSupplier = () -> {
+        ThrowingSupplier<GlyphProvider, E> glyphProviderSupplier = () -> {
             try {
                 return DynamicTrueTypeLoader.fromStream(fontDefinition.openStream(), fontDefinition.getOptions());
             } catch (IOException e) {
@@ -64,9 +62,9 @@ public final class MinecraftFontManager {
         );
     }
 
-    public CompletableFuture<DynamicMinecraftFont> loadOrGet(
+    public <E extends Exception> CompletableFuture<DynamicMinecraftFont> loadOrGet(
             LogicalFont logicalFont,
-            ThrowingSupplier<GlyphProvider> loader,
+            ThrowingSupplier<GlyphProvider, E> loader,
             FontLifetime lifetime
     ) {
         DynamicMinecraftFont existing = fontEntries.get(logicalFont);
@@ -75,20 +73,20 @@ public final class MinecraftFontManager {
             return CompletableFuture.completedFuture(existing);
         }
 
-        return inFlight.computeIfAbsent(logicalFont, key -> load(key, loader, lifetime)
+        return inFlight.computeIfAbsent(logicalFont, key -> this.load(key, loader, lifetime)
                 .whenComplete((_, _) -> inFlight.remove(key)));
 
     }
 
-    public CompletableFuture<DynamicMinecraftFont> load(
+    public <E extends Exception> CompletableFuture<DynamicMinecraftFont> load(
             LogicalFont logicalFont,
-            ThrowingSupplier<GlyphProvider> loader,
+            ThrowingSupplier<GlyphProvider, E> loader,
             FontLifetime lifetime
     ) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return loader.get();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new CompletionException(e);
             }
         }, LOAD_EXECUTOR).thenApplyAsync(glyphProvider -> {
