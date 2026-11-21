@@ -196,7 +196,7 @@ public final class MinecraftFontManager {
         }
     }
 
-    public void sweep(long gracePeriodTicks) {
+    public void sweep() {
         long currentTick = currentTick();
 
         if (currentTick < 0)
@@ -206,7 +206,7 @@ public final class MinecraftFontManager {
             if (entry.getValue().lifetime() == FontLifetime.PERMANENT)
                 continue;
 
-            if (currentTick - entry.getValue().lastUsedTick().get() > gracePeriodTicks)
+            if (currentTick - entry.getValue().lastUsedTick().get() > STALE_TICKS)
                 unloadInternal(entry.getKey());
         }
     }
