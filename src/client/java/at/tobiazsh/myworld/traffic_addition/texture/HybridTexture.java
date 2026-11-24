@@ -119,7 +119,7 @@ public class HybridTexture extends PrimitiveTexture {
      * @return A {@link HybridTexture} if found, or null.
      */
     public static @Nullable HybridTexture tryGetFromManager(Identifier id) {
-        @Nullable AbstractTexture texture = ((TextureManagerAccessor) Minecraft.getInstance()).getByPath().get(id);
+        @Nullable AbstractTexture texture = ((TextureManagerAccessor) Minecraft.getInstance().getTextureManager()).getByPath().get(id);
 
         if (texture == null)
             return null;
