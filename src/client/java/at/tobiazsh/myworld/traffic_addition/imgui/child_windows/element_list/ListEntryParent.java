@@ -15,7 +15,7 @@ public interface ListEntryParent {
     void removeChild(ElementListEntry child);
 
     /**
-     * Removes the child from this group and adds it to the parent of this group.
+     * Removes the child from this group.
      * <p>Does not remove children recursively, only the direct children of this group are affected.
      * @param child The child to remove from this group.
      */
