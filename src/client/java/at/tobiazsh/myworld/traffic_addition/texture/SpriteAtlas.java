@@ -122,13 +122,13 @@ public class SpriteAtlas implements AutoCloseable {
         ThrowingSupplier<ImGuiTexture, Exception> imGuiTextureSupplier = () ->
                 ImGuiTextureFactory.fromStream(
                         Objects.requireNonNull(SpriteAtlas.class.getResourceAsStream(locationInJar)),
-                        "SpriteAtlas_" + atlasId.toString()
+                        "sprite_atlas_" + atlasId.toString()
                 );
 
         try {
             texture = HybridTexture.ofImGuiTextureCached(
                     imGuiTextureSupplier,
-                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "SpriteAtlas_" + atlasId.toString())
+                    Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "sprite_atlas_" + atlasId.toString().replace(":", "._."))
             );
 
             MyWorldTrafficAddition.LOGGER.info("Uploading sprite atlas texture from " + locationInJar + " into GPU memory...");
