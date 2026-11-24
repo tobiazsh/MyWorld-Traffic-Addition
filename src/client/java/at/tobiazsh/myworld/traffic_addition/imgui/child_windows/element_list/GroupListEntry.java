@@ -98,7 +98,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
             parent.addElementChild(childElements.get(i), groupIndex + i);
         }
 
-        deleteChild(this);
+        parent.deleteChild(this);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
         droppedElementEntry.get().parent.deleteChild(droppedElementEntry.get());
 
         // Add the dropped element to this group
-        this.addElementChild(droppedElementEntry.get().element);
+        this.addElementChild(droppedElementEntry.get().element, 0);
     }
 
     @Override
@@ -262,7 +262,8 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
 
     @Override
     public void deleteChild(ElementListEntry child) {
-        parent.deleteChild(child);
+        if (this.element instanceof GroupElementClient gec)
+            gec.removeClientElement(child.getElement());
     }
 
     @Override
@@ -352,7 +353,7 @@ public class GroupListEntry extends ElementListEntry implements ListEntryParent,
             return;
 
         groupElementClient.removeClientElement(child.getElement());
-        parent.addElementChild(child.getElement());
+        parent.addElementChild(child.getElement(), parent.indexOf(this));
     }
 
     @Override
