@@ -33,12 +33,7 @@ public final class HybridTextureSweeper {
             if (!(texture instanceof HybridTexture hybridTexture))
                 continue; // Do not dispose of non-HybridTextures
 
-            if (hybridTexture.isPinned())
-                continue; // Do not dispose of pinned textures
-
-            long lastUsedTick = hybridTexture.getLastUsedTick();
-
-            if (lastUsedTick + GRACE_PERIOD_TICKS < currentLevelTick)
+            if (hybridTexture.isStale(currentLevelTick))
                 toDispose.add(hybridTexture); // Mark for disposal
         }
 

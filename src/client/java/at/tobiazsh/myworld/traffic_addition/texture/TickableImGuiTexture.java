@@ -42,6 +42,7 @@ public class TickableImGuiTexture {
     private final AtomicBoolean pinned = new AtomicBoolean(false);
 
     private final AtomicLong lastUsedTick = new AtomicLong(0);
+    private final int gracePeriodTicks = 5 * 20;
 
     public TickableImGuiTexture(
             @NonNull ImGuiTextureImpl imGuiTexture,
@@ -170,5 +171,15 @@ public class TickableImGuiTexture {
      */
     public void unpin() {
         pinned.set(true);
+    }
+
+    public int getGracePeriodTicks() {
+        return gracePeriodTicks;
+    }
+
+    public boolean isStale(long gameTimeTicks) {
+        if (isPinned()) return false;
+
+        return gameTimeTicks > lastUsedTick.get() + gracePeriodTicks;
     }
 }

@@ -41,6 +41,8 @@ public class HybridTexture extends PrimitiveTexture {
 
     private final AtomicLong lastUsedTick = new AtomicLong(0);
 
+    private final int gracePeriodTicks = 5 * 20; // 5 secs, ergo 100 ticks
+
     public HybridTexture(
             @NonNull ImGuiTextureImpl imGuiTexture,
             @NonNull Identifier id
@@ -261,5 +263,15 @@ public class HybridTexture extends PrimitiveTexture {
             return 0;
 
         return textureView.getHeight(mipmapLevel);
+    }
+
+    public boolean isStale(long gameTimeTicks) {
+        if (isPinned()) return false;
+
+        return gameTimeTicks > lastUsedTick.get() + gracePeriodTicks;
+    }
+
+    public int getGracePeriodTicks() {
+        return gracePeriodTicks;
     }
 }
