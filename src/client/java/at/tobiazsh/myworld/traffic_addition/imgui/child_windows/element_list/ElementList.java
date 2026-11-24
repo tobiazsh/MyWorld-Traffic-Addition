@@ -1,12 +1,26 @@
 package at.tobiazsh.myworld.traffic_addition.imgui.child_windows.element_list;
 
+import at.tobiazsh.myworld.traffic_addition.MyWorldTrafficAddition;
 import at.tobiazsh.myworld.traffic_addition.clipboard.ElementClipboard;
-import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementInterface;
 import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.ClientElementManager;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.GroupElementClient;
+import at.tobiazsh.myworld.traffic_addition.customizable_sign.elements.TextElementClient;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.BaseElement;
+import at.tobiazsh.myworld.traffic_addition.sign.elements.id.ElementId;
+import at.tobiazsh.myworld.traffic_addition.texture.TickableImGuiTexture;
+import at.tobiazsh.myworld.traffic_addition.texture.TickableImGuiTextureCacheImpl;
+import at.tobiazsh.myworld.traffic_addition.utils.ThrowingSupplier;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTexture;
+import dev.tobiazsh.imguib3d.client.texture.ImGuiTextureFactory;
 import imgui.ImGui;
 import imgui.flag.ImGuiDir;
 import imgui.flag.ImGuiPopupFlags;
 import imgui.flag.ImGuiStyleVar;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.util.Objects;
 
 import static at.tobiazsh.myworld.traffic_addition.language.MinecraftTranslationHelper.trIC;
 
@@ -21,6 +35,9 @@ public class ElementList {
 
     private final ElementListEntryRoot rootEntry;
     private final ClientElementManager manager;
+
+    @Nullable private static TickableImGuiTexture BIN_TEXTURE = null;
+    private static final String BIN_TEXTURE_LOCATION = "/assets/" + MyWorldTrafficAddition.MOD_ID + "/textures/imgui/icons/trash.png";
 
     public ElementList(
             String id,
@@ -58,11 +75,48 @@ public class ElementList {
             ImGui.openPopup(addMenuId);
         }
 
-        ImGui.sameLine();
-        ImGui.dummy(controlBarButtonSize, 0);
-        ImGui.sameLine();
-
+        spaceSameLine(controlBarButtonSize);
         renderUpDownButton();
+
+        spaceSameLine(controlBarButtonSize);
+        renderDeleteButton();
+    }
+
+    /**
+     * Adds horizontal space on the same line and leaves the next item on the very same line too.
+     * @param space The space to leave out horizontally.
+     */
+    private static void spaceSameLine(final float space) {
+        ImGui.sameLine();
+        ImGui.dummy(space, 0);
+        ImGui.sameLine();
+    }
+
+    private void renderDeleteButton() {
+        boolean hasEntries = !rootEntry.getSelectedIds().isEmpty();
+
+        if (!hasEntries)
+            ImGui.beginDisabled();
+
+        if (BIN_TEXTURE != null) {
+            final float imageSize = controlBarButtonSize - ImGui.getStyle().getFramePaddingX() * 2;
+            BIN_TEXTURE.touch();
+            if (ImGui.imageButton(
+                    "##deleteButton",
+                    BIN_TEXTURE.getImGuiTexture().getTextureId(),
+                    imageSize,
+                    imageSize
+            )) {
+                deleteSelectedIds();
+            }
+        } else {
+            if (ImGui.button("X", controlBarButtonSize, controlBarButtonSize)) {
+                deleteSelectedIds();
+            }
+        }
+
+        if (!hasEntries)
+            ImGui.endDisabled();
     }
 
     private void renderUpDownButton() {
@@ -107,11 +161,19 @@ public class ElementList {
     private void renderAddMenu() {
         if (ImGui.beginPopupContextItem(addMenuId, ImGuiPopupFlags.NoOpenOverExistingPopup)) {
             if (ImGui.menuItem("New Group")) {
-                System.out.println("new group!");
+                var groupElement = new GroupElementClient(
+                        0, 0,
+                        0, 0,
+                        0, ElementId.random(),
+                        BaseElement.MAIN_CANVAS_ID
+                );
+
+                manager.addElementFirst(groupElement);
             }
 
             if (ImGui.menuItem("New Text Element")) {
-                System.out.println("new text!");
+                var textElement = TextElementClient.createNew();
+                manager.addElementFirst(textElement);
             }
 
             if (ImGui.menuItem("New Image Element")) {
@@ -121,16 +183,51 @@ public class ElementList {
         }
     }
 
+    private void deleteSelectedIds() {
+        rootEntry.getSelectedIds().forEach(e -> {
+            var child = rootEntry.getChild(e);
+
+            if (child != null)
+                child.delete();
+        });
+    }
+
+    private static void loadTextures() {
+        if (ElementList.BIN_TEXTURE == null) {
+            ThrowingSupplier<ImGuiTexture, Exception> supplier = () ->
+                    ImGuiTextureFactory.fromStream(
+                            Objects.requireNonNull(ElementList.class.getResourceAsStream(BIN_TEXTURE_LOCATION)),
+                            "ElementList_BinTexture"
+                    );
+
+            try {
+                ElementList.BIN_TEXTURE = TickableImGuiTexture.ofImGuiTextureCached(
+                        supplier,
+                        Identifier.fromNamespaceAndPath(MyWorldTrafficAddition.MOD_ID, "bin_texture"),
+                        true,
+                        TickableImGuiTextureCacheImpl.getInstance()
+                );
+            } catch (IOException | NullPointerException e) {
+                MyWorldTrafficAddition.LOGGER.error("Could not open bin texture at {}! Error: {}", BIN_TEXTURE_LOCATION, e);
+            } catch (Exception e) {
+                MyWorldTrafficAddition.LOGGER.error("Failed to load bin texture at {}! Error: {}", BIN_TEXTURE_LOCATION, e);
+            }
+        }
+    }
+
     private float getControlBarSize() {
         return ImGui.getStyle().getItemSpacingY() * 2 + controlBarButtonSize;
     }
 
     public void toggleVisibility() {
-        this.isVisible = !this.isVisible;
+        if (this.isVisible)
+            hide();
+        else show();
     }
 
     public void show() {
         this.isVisible = true;
+        loadTextures();
     }
 
     public void hide() {
