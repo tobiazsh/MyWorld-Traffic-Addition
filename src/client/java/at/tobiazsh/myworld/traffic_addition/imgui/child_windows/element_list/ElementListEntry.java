@@ -170,16 +170,15 @@ public class ElementListEntry {
 
     protected void renderContextMenuContent(Set<ElementId> selectedIds) {
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.delete").getString())) {
-            parent.deleteChild(this);
+            delete();
         }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.cut").getString())) {
-            parent.deleteChild(this);
-            clipboard.setElement(this.getElement());
+            cut();
         }
 
         if (ImGui.menuItem(getTranslatable("text", "element-list.context-menu.copy").getString())) {
-            clipboard.setElement(this.getElement());
+            copy();
         }
 
         boolean clipboardEmpty = clipboard.getElement(false) == null;
@@ -234,6 +233,28 @@ public class ElementListEntry {
         if (parent instanceof GroupingElement groupingElement && ImGui.menuItem(getTranslatable("text", "element-list.context-menu.group.free").getString())) {
             groupingElement.removeFromGroup(this);
         }
+    }
+
+    /**
+     * Deletes this element from the parent.
+     */
+    public void delete() {
+        this.parent.deleteChild(this);
+    }
+
+    /**
+     * Copies this element to the provided clipboard and removes itself from the parent
+     */
+    public void cut() {
+        parent.deleteChild(this);
+        clipboard.setElement(this.getElement());
+    }
+
+    /**
+     * Copies this element to the provided clipboard
+     */
+    public void copy() {
+        clipboard.setElement(this.getElement());
     }
 
     /**
